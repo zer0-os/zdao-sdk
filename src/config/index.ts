@@ -19,6 +19,10 @@ export const developmentConfiguration = (
     safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
     gateway: 'https://safe-client.staging.gnosisdev.com',
   },
+  zNA: {
+    contract: '',
+    provider,
+  },
   chainId: '4',
 });
 
@@ -33,6 +37,10 @@ export const productionConfiguration = (
     serviceUri: 'https://safe-transaction.gnosis.io',
     safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
     gateway: 'https://safe-client.gnosis.io',
+  },
+  zNA: {
+    contract: '',
+    provider,
   },
   chainId: '1',
 });

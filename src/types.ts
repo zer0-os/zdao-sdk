@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import { Asset, Transaction } from './gnosis-safe/types';
 import { Proposal, TokenMetaData, Vote, zDAO } from './snapshot-io/types';
 
@@ -12,9 +13,15 @@ export interface GnosisSafeConfig {
   gateway: string;
 }
 
+export interface zNAConfig {
+  contract: string;
+  provider: ethers.providers.Web3Provider;
+}
+
 export interface Config {
   snapshot: SnapshotConfig;
   gnosisSafe: GnosisSafeConfig;
+  zNA: zNAConfig;
   chainId: string;
 }
 
@@ -28,11 +35,14 @@ export interface CreateProposalDto {
 }
 
 export interface VoteProposalDto {
+  from: string;
   proposal: string; // proposal id
+  proposalType: string; // only used for snapshot, @todo
   choice: number; // 1 or 2
 }
 
 export interface ExecuteProposalDto {
+  from: string;
   proposal: string; // proposal id
 }
 
@@ -64,13 +74,18 @@ export interface Instance {
    * Get zDAO transactions by zNA
    * @param zNA zNA address to get zDAO assets
    */
-  getZDAOTransactionsByZNA(zNA: string): Promise<Array<Transaction>>;
+  getZDAOTransactionsByZNA(
+    zNA: string
+  ): Promise<Array<Transaction> | undefined>;
 
   /**
    * Get all the proposals added in the zDAO
    * @param zNA zNA address
    */
-  getProposalsByZDAOId(zNA: string, skip: number): Promise<Array<Proposal>>;
+  getProposalsByZDAOId(
+    zNA: string,
+    skip: number
+  ): Promise<Array<Proposal> | undefined>;
 
   /**
    * Get proposal by proposal id
@@ -98,12 +113,15 @@ export interface Instance {
    */
   getProposalResults(
     zNA: string,
-    proposal: any,
-    votes: any
-  ): Promise<{
-    resultsByVoteBalance: number;
-    sumOfResultsBalance: number;
-  }>;
+    proposal: Proposal,
+    votes: Array<Vote>
+  ): Promise<
+    | {
+        resultsByVoteBalance: number;
+        sumOfResultsBalance: number;
+      }
+    | undefined
+  >;
 
   /**
    * Get voting power of the user in zDAO
@@ -112,7 +130,11 @@ export interface Instance {
    * @param proposal proposal information
    * @returns voting power as number
    */
-  getVotingPower(zNA: string, account: string, proposal: any): Promise<number>;
+  getVotingPower(
+    zNA: string,
+    account: string,
+    proposal: any
+  ): Promise<number | undefined>;
 
   /**
    * Create a proposal in zDAO
@@ -120,7 +142,11 @@ export interface Instance {
    * @param payload packaged parameters to create a proposal
    * @returns proposal id if success
    */
-  createProposal(dao: zDAO, payload: CreateProposalDto): Promise<string>;
+  createProposal(
+    signer: ethers.Wallet,
+    dao: zDAO,
+    payload: CreateProposalDto
+  ): Promise<string | undefined>;
 
   /**
    * Cast a vote on proposal
@@ -128,7 +154,11 @@ export interface Instance {
    * @param payload packaged paramters to cast a vote
    * @returns true if successfully cast a vote
    */
-  voteProposal(dao: zDAO, payload: VoteProposalDto): Promise<boolean>;
+  voteProposal(
+    signer: ethers.Wallet,
+    dao: zDAO,
+    payload: VoteProposalDto
+  ): Promise<string | undefined>;
 
   /**
    * Execute a proposal in zDAO
@@ -136,5 +166,9 @@ export interface Instance {
    * @param payload packaged parameters to execute a proposal
    * @returns tx hash
    */
-  executeProposal(dao: zDAO, payload: ExecuteProposalDto): Promise<string>;
+  executeProposal(
+    signer: ethers.Wallet,
+    dao: zDAO,
+    payload: ExecuteProposalDto
+  ): Promise<string | undefined>;
 }

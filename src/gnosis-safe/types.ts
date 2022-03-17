@@ -18,8 +18,8 @@ export interface Asset {
 }
 
 export enum TransactionType {
-  SENT = 'Sent',
-  RECEIVED = 'Received',
+  SENT = 'SENT',
+  RECEIVED = 'RECEIVED',
 }
 
 export enum TransactionStatus {
@@ -32,13 +32,48 @@ export enum TransactionStatus {
   WILL_BE_REPLACED = 'WILL_BE_REPLACED',
 }
 
+export type TransferInfo =
+  | {
+      type: AssetType.ERC20;
+      tokenAddress: string;
+      tokenName?: string;
+      tokenSymbol?: string;
+      logoUri?: string;
+      decimals?: number;
+      value: string;
+    } // Erc20 transfer
+  | {
+      type: AssetType.ERC721;
+      tokenAddress: string;
+      tokenId: string;
+      tokenName?: string;
+      tokenSymbol?: string;
+      logoUri?: string;
+    } // Erc721 transfer
+  | {
+      type: AssetType.NATIVE_TOKEN;
+      value: string;
+    }; // Ether transfer
+
 export interface Transaction {
   type: TransactionType;
-  asset: string; // Asset address
-  amount: string; // Transaction amount
+  asset: TransferInfo; // Asset information
   from: string; // Sender address
   to: string; // Recipient address
-  txHash: string; // txHash address
+  txHash?: string; // txHash address
   created: Date; // Transaction time
   status: TransactionStatus;
 }
+
+// export interface GnosisSafeClient {
+//   transferToken(
+//     recipient: string,
+//     amount: string | BigNumber | number
+//   ): Promise<any>;
+//   transferEther(
+//     recipient: string,
+//     amount: string | BigNumber | number
+//   ): Promise<any>;
+//   getTokens(): Promise<any>;
+//   getTransactions(): Promise<any>;
+// }

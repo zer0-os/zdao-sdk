@@ -10,9 +10,10 @@ import {
   Instance,
   VoteProposalDto,
 } from './types';
+import { ethers } from 'ethers';
 
 export const createInstance = (config: Config): Instance => {
-  const naming = createZNAClient(config.chainId);
+  const naming = createZNAClient(config.zNA, config.chainId);
   const snapshot = createSnapshotClient(config.snapshot, config.chainId);
   const gnosisSafe = createGnosisSafeClient(config.gnosisSafe, config.chainId);
 
@@ -45,7 +46,11 @@ export const createInstance = (config: Config): Instance => {
         }
       | undefined
     > => {
-      return await gnosisSafe.getZDAOAssetsByZNA(zNA);
+      const dao = await instance.getZDAOByZNA(zNA);
+      if (!dao) {
+        return undefined;
+      }
+      return await gnosisSafe.getZDAOAssetsByZNA(dao);
     },
 
     /**
@@ -54,8 +59,12 @@ export const createInstance = (config: Config): Instance => {
      */
     getZDAOTransactionsByZNA: async (
       zNA: string
-    ): Promise<Array<Transaction>> => {
-      return await gnosisSafe.getZDAOTransactionsByZNA(zNA);
+    ): Promise<Array<Transaction> | undefined> => {
+      const dao = await instance.getZDAOByZNA(zNA);
+      if (!dao) {
+        return undefined;
+      }
+      return await gnosisSafe.getZDAOTransactionsByZNA(dao);
     },
 
     /**
@@ -65,8 +74,12 @@ export const createInstance = (config: Config): Instance => {
     getProposalsByZDAOId: async (
       zNA: string,
       skip: number
-    ): Promise<Array<Proposal>> => {
-      return await snapshot.getProposalsByZDAOId(zNA, skip);
+    ): Promise<Array<Proposal> | undefined> => {
+      const dao = await instance.getZDAOByZNA(zNA);
+      if (!dao) {
+        return undefined;
+      }
+      return await snapshot.getProposalsByZDAOId(dao, skip);
     },
 
     /**
@@ -105,13 +118,20 @@ export const createInstance = (config: Config): Instance => {
      */
     getProposalResults: async (
       zNA: string,
-      proposal: any,
-      votes: any
-    ): Promise<{
-      resultsByVoteBalance: number;
-      sumOfResultsBalance: number;
-    }> => {
-      return await snapshot.getProposalResults(zNA, proposal, votes);
+      proposal: Proposal,
+      votes: Array<Vote>
+    ): Promise<
+      | {
+          resultsByVoteBalance: number;
+          sumOfResultsBalance: number;
+        }
+      | undefined
+    > => {
+      const dao = await instance.getZDAOByZNA(zNA);
+      if (!dao) {
+        return undefined;
+      }
+      return await snapshot.getProposalResults(dao, proposal, votes);
     },
 
     /**
@@ -125,8 +145,12 @@ export const createInstance = (config: Config): Instance => {
       zNA: string,
       account: string,
       proposal: any
-    ): Promise<number> => {
-      return await snapshot.getVotingPower(zNA, account, proposal);
+    ): Promise<number | undefined> => {
+      const dao = await instance.getZDAOByZNA(zNA);
+      if (!dao) {
+        return undefined;
+      }
+      return await snapshot.getVotingPower(dao, account, proposal);
     },
 
     /**
@@ -136,10 +160,11 @@ export const createInstance = (config: Config): Instance => {
      * @returns proposal id if success
      */
     createProposal: async (
+      signer: ethers.Wallet,
       dao: zDAO,
       payload: CreateProposalDto
-    ): Promise<string> => {
-      return await snapshot.createProposal(dao, payload);
+    ): Promise<string | undefined> => {
+      return await snapshot.createProposal(signer, dao, payload);
     },
 
     /**
@@ -149,10 +174,11 @@ export const createInstance = (config: Config): Instance => {
      * @returns true if successfully cast a vote
      */
     voteProposal: async (
+      signer: ethers.Wallet,
       dao: zDAO,
       payload: VoteProposalDto
-    ): Promise<boolean> => {
-      return await snapshot.createProposal(dao, payload);
+    ): Promise<string | undefined> => {
+      return await snapshot.voteProposal(signer, dao, payload);
     },
 
     /**
@@ -162,10 +188,11 @@ export const createInstance = (config: Config): Instance => {
      * @returns tx hash
      */
     executeProposal: async (
+      signer: ethers.Wallet,
       dao: zDAO,
       payload: ExecuteProposalDto
     ): Promise<string> => {
-      return await snapshot.executeProposal(gnosisSafe, dao, payload);
+      return await snapshot.executeProposal(signer, gnosisSafe, dao, payload);
     },
   };
   return instance;
