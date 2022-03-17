@@ -50,18 +50,26 @@ export interface Instance {
   /**
    * Get all the list of zDAO
    */
+  // @feedback: say `list` if you're listing / providing arrays back
+  // @feedback: This should be `listZDAOs()`
   getZDAOs(): Promise<zDAO[]>;
 
   /**
    * Get zDAO by zNA
    * @param zNA zNA address to find zDAO
    */
+  // @feedback: Leave comment for return on exceptions
+  // @feedback: Don't return <Value | undefined> instead throw an error if value cannot be found
+  // @feedback: Provide a `doesZDAOExistAtZNA(zNA: string)` function
   getZDAOByZNA(zNA: string): Promise<zDAO | undefined>;
 
   /**
    * Get zDAO assets by zNAs
    * @param zNA zNA address to get zDAO Assets
    */
+  // @feedback: Throw error if zDAO doesn't exist
+  // @feedback: Define an interface for return structure
+  // @feedback: use [] for array not Array<T>
   getZDAOAssetsByZNA(zNA: string): Promise<
     | {
         amountInUSD: number;
@@ -74,6 +82,8 @@ export interface Instance {
    * Get zDAO transactions by zNA
    * @param zNA zNA address to get zDAO assets
    */
+  // @feedback: Throw error if zDAO doesn't exist
+  // @feedback: Use standard TypeScript array, ie Transaction[]
   getZDAOTransactionsByZNA(
     zNA: string
   ): Promise<Array<Transaction> | undefined>;
@@ -82,6 +92,10 @@ export interface Instance {
    * Get all the proposals added in the zDAO
    * @param zNA zNA address
    */
+  // @feedback: Throw error if zDAO doesn't exist
+  // @feedback: Use standard TypeScript array, ie Transaction[]
+  // @feedback: Call this `listProposalsByZDAO`
+  // @feedback: Paginate this behind the scenes and fetch all proposals
   getProposalsByZDAOId(
     zNA: string,
     skip: number
@@ -91,6 +105,12 @@ export interface Instance {
    * Get proposal by proposal id
    * @param proposalId proposal id
    */
+  // @feedback: Throw error if zDAO doesn't exist
+  // @feedback: Use standard TypeScript array, ie Transaction[]
+  // @feedback: Call this `getProposalDetails`
+  // @feedback: Returns a different structure `ProposalDetails`
+  // @feedback: `ProposalDetails` extends `Proposal`
+  // @feedback: Pass simplest parameters
   getProposalById(proposalId: string): Promise<Proposal | undefined>;
 
   /**
@@ -100,6 +120,9 @@ export interface Instance {
    * @param voter voter address to filter
    * @param skip start index
    */
+  // @feedback: use [] and define interface
+  // @feedback: don't use any
+  // @feedback: use interface not inline object
   getProposalVotes(
     proposalId: string,
     { first, voter, skip }: any
@@ -111,6 +134,8 @@ export interface Instance {
    * @param proposal proposal information
    * @param votes list of votes to calculate result
    */
+  // @feedback use []
+  // @feedback use interface for rtur
   getProposalResults(
     zNA: string,
     proposal: Proposal,
@@ -130,6 +155,7 @@ export interface Instance {
    * @param proposal proposal information
    * @returns voting power as number
    */
+  // @feedback: don't use any
   getVotingPower(
     zNA: string,
     account: string,
@@ -172,3 +198,44 @@ export interface Instance {
     payload: ExecuteProposalDto
   ): Promise<string | undefined>;
 }
+
+
+// @feedback: consider the following:
+
+export type zNA = string;
+
+interface Proposal {
+  id: string;
+  type: string;
+  title: string;
+}
+
+interface ProposalDetails extends Proposal {
+  metadata: any;
+  scores: any;
+}
+
+export interface ZDAOInstance {
+  getAssets(): Promise<
+    | {
+        amountInUSD: number;
+        assets: Array<Asset>;
+      }
+  >; 
+
+  getTransactions(): Promise<Transaction[]>;
+
+   listProposal(): Proposal[];
+
+  getProposalDetails(proposal: Proposal): ProposalDetails;
+}
+
+
+export interface SDKInstance {
+  listZDAOs(): Promise<zNA[]>;
+
+  getZDAOByZNA(zNA: zNA): Promise<ZDAOInstance>;
+
+  doesZDAOExist(zNA: zNA): Promise<boolean>;
+}
+

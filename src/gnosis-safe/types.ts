@@ -32,6 +32,20 @@ export enum TransactionStatus {
   WILL_BE_REPLACED = 'WILL_BE_REPLACED',
 }
 
+
+// @feedback: consider:
+// export type ERC20Transfer = {
+
+// }
+
+// export type TransferInfo = ERC20Transfer | ERC721Transfer;
+
+// let t: TransferInfo = {} as unknown as TransferInfo;
+
+// if (t.type == AssetType.ERC20) {
+//   let v = t as ERC20Transfer;
+// }
+
 export type TransferInfo =
   | {
       type: AssetType.ERC20;
@@ -55,6 +69,8 @@ export type TransferInfo =
       value: string;
     }; // Ether transfer
 
+
+// @feedback: Don't re-use interfaces for multiple functions unless they all return the same values
 export interface Transaction {
   type: TransactionType;
   asset: TransferInfo; // Asset information
