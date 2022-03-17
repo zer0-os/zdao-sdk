@@ -237,5 +237,11 @@ export interface SDKInstance {
   getZDAOByZNA(zNA: zNA): Promise<ZDAOInstance>;
 
   doesZDAOExist(zNA: zNA): Promise<boolean>;
+
+  // createZDAOFromParams for testing
 }
 
+// @feedback: consider adding a function `createZDAOFromParams`
+
+// Just so you can test without zNA => zDAO lookup
+// export const getZDAO = (zNA: string, snapshotSpace: string, otherprams: any) => zDAO;
