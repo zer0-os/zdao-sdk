@@ -1,0 +1,46 @@
+{
+  "name": "@zero-tech/zdao-sdk",
+  "version": "0.0.1",
+  "description": "",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "tsc --build --verbose ./tsconfig.build.json",
+    "lint": "eslint --fix src",
+    "format": "prettier --write ./src/**/*.ts",
+    "prepublish": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zer0-os/zdao-sdk.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zer0-os/zdao-sdk/issues"
+  },
+  "homepage": "https://github.com/zer0-os/zdao-sdk#readme",
+  "dependencies": {
+    "@apollo/client": "^3.5.10",
+    "@gnosis.pm/safe-core-sdk": "^2.0.0",
+    "@gnosis.pm/safe-ethers-adapters": "^0.1.0-alpha.8",
+    "@gnosis.pm/safe-ethers-lib": "^1.0.0",
+    "@gnosis.pm/safe-react-gateway-sdk": "^2.10.1",
+    "@snapshot-labs/snapshot.js": "^0.3.56",
+    "@types/lodash": "^4.14.180",
+    "ethers": "^5.6.0",
+    "graphql-tag": "^2.12.6",
+    "lodash": "^4.17.21",
+    "typescript": "^4.6.2"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.15.0",
+    "@typescript-eslint/parser": "^5.15.0",
+    "eslint": "^8.11.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.5.1",
+    "ts-node": "^10.7.0"
+  }
+}

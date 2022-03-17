@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "ES2018"
+    ],
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "strict": true,
+    "target": "ES2018",
+    "sourceMap": true,
+    "composite": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+  },
+  "include": [
+    "src/**/*.ts","src/**/*.tsx","src/**/*.json",
+    "test",
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "lib": [
+      "ES2018"
+    ],
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "strict": true,
+    "target": "ES2018",
+    "sourceMap": true,
+    "composite": true,
+    "resolveJsonModule": true,
+    "outDir": "lib",
+    "rootDir": "src"
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
