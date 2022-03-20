@@ -27,6 +27,9 @@ import { fetchIpfs } from './utilities/ipfs';
 import { t } from './utilities/messages';
 import { createClient as createZNAClient } from './zNA';
 
+export * from './config';
+export * from './types';
+
 export const createSDKInstance = (config: Config): SDKInstance => {
   // let spaces: Space[] | undefined = undefined;
   const daos: zDAO[] = [];
