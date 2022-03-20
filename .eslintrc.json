@@ -4,6 +4,7 @@
   "plugins": [
     "@typescript-eslint",
     "@typescript-eslint/eslint-plugin",
+    "unused-imports",
     "prettier"
   ],
   "extends": [
@@ -37,7 +38,8 @@
       }
     ],
     "max-len": 0,
-    "@typescript-eslint/require-await": "off",
+    "unused-imports/no-unused-imports": "error",
+    "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": [
       "warn",
       {
