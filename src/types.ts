@@ -1,20 +1,34 @@
+import { TransactionResponse } from '@ethersproject/abstract-provider';
 import { ethers } from 'ethers';
+
+import { SupportedChainId } from './config';
 import { Asset, Transaction } from './gnosis-safe/types';
-import { Proposal, TokenMetaData, Vote, zDAO } from './snapshot-io/types';
+import {
+  Proposal,
+  ProposalDetail,
+  ProposalResult,
+  TokenMetaData,
+  Vote,
+} from './snapshot-io/types';
 
 export interface SnapshotConfig {
+  // uri to Snaphost Hub
   serviceUri: string;
-  ipfsUri: string;
+  // ipfs gateway
+  ipfsGateway: string;
 }
 
 export interface GnosisSafeConfig {
+  // uri to Gnosis Safe service
   serviceUri: string;
-  safeAddress: string;
+  // uri to Gnosis Safe gateway
   gateway: string;
 }
 
 export interface zNAConfig {
+  // address to zDAOCore contract
   contract: string;
+  // web3 provider
   provider: ethers.providers.Web3Provider;
 }
 
@@ -22,11 +36,38 @@ export interface Config {
   snapshot: SnapshotConfig;
   gnosisSafe: GnosisSafeConfig;
   zNA: zNAConfig;
-  chainId: string;
+}
+
+export type zNA = string;
+export type zDAOId = string;
+
+export interface CreateZDAODto {
+  // zNA
+  zNA: zNA;
+  // zDAO title
+  title: string;
+  // address to zDAO creator
+  creator: string;
+  // uri to avatar
+  avatar?: string;
+  // network id where zDAO was created
+  network: SupportedChainId;
+  // adress to Gnosis Safe
+  safeAddress: string;
+  // addresses to Gnosis Safe owners
+  owners: string[];
+  // ERC20 token address to cast a vote
+  votingToken: string;
+}
+
+export interface zDAOAssets {
+  // total asset amount in USD
+  amountInUSD: number;
+  // list of assets in zDAO
+  assets: Asset[];
 }
 
 export interface CreateProposalDto {
-  from: string; // user address who creates a proposal
   title: string;
   body?: string;
   duration: number; // time duration from start to end in seconds
@@ -35,213 +76,146 @@ export interface CreateProposalDto {
 }
 
 export interface VoteProposalDto {
-  from: string;
   proposal: string; // proposal id
   proposalType: string; // only used for snapshot, @todo
-  choice: number; // 1 or 2
+  choice: 1 | 2; // Yes or No
 }
 
 export interface ExecuteProposalDto {
-  from: string;
   proposal: string; // proposal id
 }
 
-export interface Instance {
+export interface SDKInstance {
   /**
-   * Get all the list of zDAO
+   * Get all the list of zNA
+   * @returns list of zNA
    */
-  // @feedback: say `list` if you're listing / providing arrays back
-  // @feedback: This should be `listZDAOs()`
-  getZDAOs(): Promise<zDAO[]>;
+  listZNA(): Promise<zNA[]>;
 
   /**
-   * Get zDAO by zNA
-   * @param zNA zNA address to find zDAO
-   */
-  // @feedback: Leave comment for return on exceptions
-  // @feedback: Don't return <Value | undefined> instead throw an error if value cannot be found
-  // @feedback: Provide a `doesZDAOExistAtZNA(zNA: string)` function
-  getZDAOByZNA(zNA: string): Promise<zDAO | undefined>;
-
-  /**
-   * Get zDAO assets by zNAs
-   * @param zNA zNA address to get zDAO Assets
-   */
-  // @feedback: Throw error if zDAO doesn't exist
-  // @feedback: Define an interface for return structure
-  // @feedback: use [] for array not Array<T>
-  getZDAOAssetsByZNA(zNA: string): Promise<
-    | {
-        amountInUSD: number;
-        assets: Array<Asset>;
-      }
-    | undefined
-  >;
-
-  /**
-   * Get zDAO transactions by zNA
-   * @param zNA zNA address to get zDAO assets
-   */
-  // @feedback: Throw error if zDAO doesn't exist
-  // @feedback: Use standard TypeScript array, ie Transaction[]
-  getZDAOTransactionsByZNA(
-    zNA: string
-  ): Promise<Array<Transaction> | undefined>;
-
-  /**
-   * Get all the proposals added in the zDAO
+   * Create an zDAO instance by zNA
    * @param zNA zNA address
+   * @returns created zDAO instance
+   * @exception throw Error if zNA does not exist
    */
-  // @feedback: Throw error if zDAO doesn't exist
-  // @feedback: Use standard TypeScript array, ie Transaction[]
-  // @feedback: Call this `listProposalsByZDAO`
-  // @feedback: Paginate this behind the scenes and fetch all proposals
-  getProposalsByZDAOId(
-    zNA: string,
-    skip: number
-  ): Promise<Array<Proposal> | undefined>;
+  getZDAOByZNA(zNA: zNA): Promise<ZDAOInstance>;
 
   /**
-   * Get proposal by proposal id
-   * @param proposalId proposal id
+   * Check if zDAO exists
+   * @param zNA zNA address
+   * @returns true if zNA exists
    */
-  // @feedback: Throw error if zDAO doesn't exist
-  // @feedback: Use standard TypeScript array, ie Transaction[]
-  // @feedback: Call this `getProposalDetails`
-  // @feedback: Returns a different structure `ProposalDetails`
-  // @feedback: `ProposalDetails` extends `Proposal`
-  // @feedback: Pass simplest parameters
-  getProposalById(proposalId: string): Promise<Proposal | undefined>;
+  doesZDAOExist(zNA: zNA): Promise<boolean>;
+
+  /**
+   * Create zDAO from parameters for test
+   * @param packaged parameters of zDAO
+   * @exception throw Error if zNA already exists
+   * @exception throw Error if owners is empty
+   * @exception throw Error if title is empty
+   */
+  createZDAOFromParams(param: CreateZDAODto): Promise<void>;
+}
+
+export interface ZDAOInstance {
+  /**
+   * Get the list of zDAO assets and amount in USD
+   * @returns assets in zDAO
+   */
+  listAssets(): Promise<zDAOAssets>;
+
+  /**
+   * Get the list of zDAO transactions
+   * @returns list of transactions
+   */
+  listTransactions(): Promise<Transaction[]>;
+
+  /**
+   * Get the list of the proposals created in the zDAO
+   * @param from start index
+   * @param count number of proposals to fetch
+   * @return list of proposals
+   */
+  listProposals(from: number, count: number): Promise<Proposal[]>;
+
+  /**
+   * Get proposal detail by proposal id
+   * @param proposalId proposal id
+   * @return proposal detail
+   */
+  getProposalDetail(proposalId: string): Promise<ProposalDetail>;
 
   /**
    * Get all the votes by proposal id filtering with the function parameter
    * @param proposalId proposal id
-   * @param first voting count to fetch
+   * @param from start index
+   * @param count voting count to fetch
    * @param voter voter address to filter
-   * @param skip start index
+   * @returns list of votes
    */
-  // @feedback: use [] and define interface
-  // @feedback: don't use any
-  // @feedback: use interface not inline object
   getProposalVotes(
     proposalId: string,
-    { first, voter, skip }: any
-  ): Promise<Array<Vote>>;
+    from: number,
+    count: number,
+    voter: string
+  ): Promise<Vote[]>;
 
   /**
    * Get the result of proposal from votes
-   * @param zNA zNA address
    * @param proposal proposal information
    * @param votes list of votes to calculate result
+   * @returns summarized voting result
    */
-  // @feedback use []
-  // @feedback use interface for rtur
   getProposalResults(
-    zNA: string,
-    proposal: Proposal,
-    votes: Array<Vote>
-  ): Promise<
-    | {
-        resultsByVoteBalance: number;
-        sumOfResultsBalance: number;
-      }
-    | undefined
-  >;
+    proposal: ProposalDetail,
+    votes: Vote[]
+  ): Promise<ProposalResult>;
 
   /**
    * Get voting power of the user in zDAO
-   * @param zNA zNA address
    * @param account account address
    * @param proposal proposal information
    * @returns voting power as number
    */
-  // @feedback: don't use any
-  getVotingPower(
-    zNA: string,
-    account: string,
-    proposal: any
-  ): Promise<number | undefined>;
+  getVotingPower(account: string, proposal: ProposalDetail): Promise<number>;
 
   /**
    * Create a proposal in zDAO
-   * @param dao zDAO
+   * @param signer signer wallet
    * @param payload packaged parameters to create a proposal
    * @returns proposal id if success
    */
   createProposal(
     signer: ethers.Wallet,
-    dao: zDAO,
     payload: CreateProposalDto
-  ): Promise<string | undefined>;
+  ): Promise<string>;
 
   /**
    * Cast a vote on proposal
-   * @param dao zDAO
+   * @param signer signer wallet
    * @param payload packaged paramters to cast a vote
-   * @returns true if successfully cast a vote
+   * @returns vote id if successfully cast a vote
    */
   voteProposal(
     signer: ethers.Wallet,
-    dao: zDAO,
     payload: VoteProposalDto
-  ): Promise<string | undefined>;
+  ): Promise<string>;
 
   /**
    * Execute a proposal in zDAO
-   * @param dao zDAO
+   * @param signer signer wallet
    * @param payload packaged parameters to execute a proposal
-   * @returns tx hash
+   * @returns transaction response
+   * @exception throw Error if signer is not Gnosis Safe owner
+   * @exception throw Error if proposal does not conain meta data to transfer tokens
    */
   executeProposal(
     signer: ethers.Wallet,
-    dao: zDAO,
     payload: ExecuteProposalDto
-  ): Promise<string | undefined>;
+  ): Promise<TransactionResponse>;
 }
 
+// // @feedback: consider adding a function `createZDAOFromParams`
 
-// @feedback: consider the following:
-
-export type zNA = string;
-
-interface Proposal {
-  id: string;
-  type: string;
-  title: string;
-}
-
-interface ProposalDetails extends Proposal {
-  metadata: any;
-  scores: any;
-}
-
-export interface ZDAOInstance {
-  getAssets(): Promise<
-    | {
-        amountInUSD: number;
-        assets: Array<Asset>;
-      }
-  >; 
-
-  getTransactions(): Promise<Transaction[]>;
-
-   listProposal(): Proposal[];
-
-  getProposalDetails(proposal: Proposal): ProposalDetails;
-}
-
-
-export interface SDKInstance {
-  listZDAOs(): Promise<zNA[]>;
-
-  getZDAOByZNA(zNA: zNA): Promise<ZDAOInstance>;
-
-  doesZDAOExist(zNA: zNA): Promise<boolean>;
-
-  // createZDAOFromParams for testing
-}
-
-// @feedback: consider adding a function `createZDAOFromParams`
-
-// Just so you can test without zNA => zDAO lookup
-// export const getZDAO = (zNA: string, snapshotSpace: string, otherprams: any) => zDAO;
+// // Just so you can test without zNA => zDAO lookup
+// // export const getZDAO = (zNA: string, snapshotSpace: string, otherprams: any) => zDAO;

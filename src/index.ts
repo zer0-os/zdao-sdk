@@ -1,198 +1,226 @@
+import { TransactionResponse } from '@ethersproject/abstract-provider';
+import { ethers } from 'ethers';
+import shortid from 'shortid';
+
 import { createClient as createGnosisSafeClient } from './gnosis-safe';
-import { Asset, Transaction } from './gnosis-safe/types';
+import { Transaction } from './gnosis-safe/types';
 import { createClient as createSnapshotClient } from './snapshot-io';
-import { Proposal, Vote, zDAO } from './snapshot-io/types';
-import { createClient as createZNAClient } from './zNA';
+import {
+  Proposal,
+  ProposalDetail,
+  ProposalResult,
+  Vote,
+  zDAO,
+} from './snapshot-io/types';
 import {
   Config,
   CreateProposalDto,
+  CreateZDAODto,
   ExecuteProposalDto,
-  Instance,
+  SDKInstance,
   VoteProposalDto,
+  zDAOAssets,
+  ZDAOInstance,
+  zNA,
 } from './types';
-import { ethers } from 'ethers';
+import { fetchIpfs } from './utilities/ipfs';
+import { t } from './utilities/messages';
+import { createClient as createZNAClient } from './zNA';
 
-export const createInstance = (config: Config): Instance => {
-  const naming = createZNAClient(config.zNA, config.chainId);
-  const snapshot = createSnapshotClient(config.snapshot, config.chainId);
-  const gnosisSafe = createGnosisSafeClient(config.gnosisSafe, config.chainId);
+export const createSDKInstance = (config: Config): SDKInstance => {
+  // let spaces: Space[] | undefined = undefined;
+  const daos: zDAO[] = [];
 
-  const instance: Instance = {
-    /**
-     * Get all the list of zDAO
-     */
-    getZDAOs: async (): Promise<zDAO[]> => {
-      return await naming.getZDAOs();
+  const naming = createZNAClient(config.zNA);
+
+  // const initialize = async (): Promise<Space[]> => {
+  //   if (spaces) {
+  //     return spaces;
+  //   }
+  //   const { chainId } = await config.zNA.provider.getNetwork();
+  //   spaces = await listSpaces(config.snapshot, chainId.toString());
+  //   return spaces;
+  // };
+
+  const listZNA = async (): Promise<zNA[]> => {
+    const zNAs: zNA[] = await naming.listZNA();
+    const merged = zNAs.concat(...daos.map((dao: zDAO) => dao.zNA));
+    return merged.filter((c, index) => merged.indexOf(c) === index);
+  };
+
+  const getZDAOByZNA = async (zNA: zNA): Promise<ZDAOInstance> => {
+    // find zDAO from already registered zDAO list
+    const found = daos.find((dao: zDAO) => dao.zNA === zNA);
+    if (found) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return createZDAOInstance(config, found!);
+    }
+
+    // get zDAO id from contract
+    const daoId = await naming.getZDAOIdByZNA(zNA);
+    if (!daoId) {
+      throw Error(t('not-found-zdao'));
+    }
+    // get zDAO meta data from contract
+    const metaUri = await naming.getDAOMetadataUri(daoId);
+    // parse ipfs json and compose zDAO structure
+    const ipfsData = await fetchIpfs(config.snapshot.ipfsGateway, metaUri);
+    const dao = {
+      id: daoId,
+      zNA,
+      title: ipfsData.title,
+      creator: ipfsData.creator,
+      owners: ipfsData.owners,
+      avatar: ipfsData.avatar,
+      network: ipfsData.network,
+      safeAddress: ipfsData.safeAddress,
+      votingToken: ipfsData.votingToken,
+    };
+    return createZDAOInstance(config, dao);
+  };
+
+  const doesZDAOExist = async (zNA: zNA): Promise<boolean> => {
+    const found = daos.find((dao: zDAO) => dao.zNA === zNA);
+    if (!found) {
+      return await naming.doesZDAOExist(zNA);
+    }
+    return true;
+  };
+
+  const createZDAOFromParams = async (param: CreateZDAODto): Promise<void> => {
+    if (await doesZDAOExist(param.zNA)) {
+      throw Error(t('already-exist-zdao'));
+    }
+    if (param.title.length < 1) {
+      throw Error('empty-zdao-title');
+    }
+    if (param.safeAddress.length < 1) {
+      throw Error('empty-gnosis-address');
+    }
+    if (param.owners.length < 1) {
+      throw Error(t('empty-gnosis-owners'));
+    }
+    if (param.votingToken.length < 1) {
+      throw Error(t('empty-voting-token'));
+    }
+
+    daos.push({
+      id: shortid.generate(),
+      zNA: param.zNA,
+      title: param.title,
+      creator: param.creator,
+      owners: param.owners,
+      avatar: param.avatar,
+      network: param.network.toString(),
+      safeAddress: param.safeAddress,
+      votingToken: param.votingToken,
+    });
+  };
+
+  return {
+    listZNA,
+    getZDAOByZNA,
+    doesZDAOExist,
+    createZDAOFromParams,
+  };
+};
+
+const createZDAOInstance = (config: Config, dao: zDAO): ZDAOInstance => {
+  const snapshot = createSnapshotClient(config.snapshot, dao);
+  const gnosisSafe = createGnosisSafeClient(config.gnosisSafe, dao);
+
+  const instance: ZDAOInstance = {
+    listAssets: async (): Promise<zDAOAssets> => {
+      return await gnosisSafe.listAssets();
     },
 
-    /**
-     * Get zDAO by zNA
-     * @param zNA zNA address to find zDAO
-     */
-    getZDAOByZNA: async (zNA: string): Promise<zDAO | undefined> => {
-      return await naming.getZDAOByZNA(zNA);
+    listTransactions: async (): Promise<Transaction[]> => {
+      return await gnosisSafe.listTransactions();
     },
 
-    /**
-     * Get zDAO assets by zNAs
-     * @param zNA zNA address to get zDAO Assets
-     */
-    getZDAOAssetsByZNA: async (
-      zNA: string
-    ): Promise<
-      | {
-          amountInUSD: number;
-          assets: Array<Asset>;
-        }
-      | undefined
-    > => {
-      const dao = await instance.getZDAOByZNA(zNA);
-      if (!dao) {
-        return undefined;
-      }
-      return await gnosisSafe.getZDAOAssetsByZNA(dao);
+    listProposals: async (from: number, count: number): Promise<Proposal[]> => {
+      return await snapshot.listProposals(from, count);
     },
 
-    /**
-     * Get zDAO transactions by zNA
-     * @param zNA zNA address to get zDAO assets
-     */
-    getZDAOTransactionsByZNA: async (
-      zNA: string
-    ): Promise<Array<Transaction> | undefined> => {
-      const dao = await instance.getZDAOByZNA(zNA);
-      if (!dao) {
-        return undefined;
-      }
-      return await gnosisSafe.getZDAOTransactionsByZNA(dao);
+    getProposalDetail: async (proposalId: string): Promise<ProposalDetail> => {
+      return await snapshot.getProposalDetail(proposalId);
     },
 
-    /**
-     * Get all the proposals added in the zDAO
-     * @param zNA zNA address
-     */
-    getProposalsByZDAOId: async (
-      zNA: string,
-      skip: number
-    ): Promise<Array<Proposal> | undefined> => {
-      const dao = await instance.getZDAOByZNA(zNA);
-      if (!dao) {
-        return undefined;
-      }
-      return await snapshot.getProposalsByZDAOId(dao, skip);
-    },
-
-    /**
-     * Get proposal by proposal id
-     * @param proposalId proposal id
-     */
-    getProposalById: async (
-      proposalId: string
-    ): Promise<Proposal | undefined> => {
-      return await snapshot.getProposalById(proposalId);
-    },
-
-    /**
-     * Get all the votes by proposal id filtering with the function parameter
-     * @param proposalId proposal id
-     * @param first voting count to fetch
-     * @param voter voter address to filter
-     * @param skip start index
-     */
     getProposalVotes: async (
       proposalId: string,
-      { first, voter, skip }: any
-    ): Promise<Array<Vote>> => {
-      return await snapshot.getProposalVotes(proposalId, {
-        first,
-        voter,
-        skip,
-      });
+      from: number,
+      count: number,
+      voter: string
+    ): Promise<Vote[]> => {
+      return await snapshot.getProposalVotes(proposalId, from, count, voter);
     },
 
-    /**
-     * Get the result of proposal from votes
-     * @param zNA zNA address
-     * @param proposal proposal information
-     * @param votes list of votes to calculate result
-     */
     getProposalResults: async (
-      zNA: string,
-      proposal: Proposal,
-      votes: Array<Vote>
-    ): Promise<
-      | {
-          resultsByVoteBalance: number;
-          sumOfResultsBalance: number;
-        }
-      | undefined
-    > => {
-      const dao = await instance.getZDAOByZNA(zNA);
-      if (!dao) {
-        return undefined;
-      }
-      return await snapshot.getProposalResults(dao, proposal, votes);
+      proposal: ProposalDetail,
+      votes: Vote[]
+    ): Promise<ProposalResult> => {
+      return await snapshot.getProposalResults(proposal, votes);
     },
 
-    /**
-     * Get voting power of the user in zDAO
-     * @param zNA zNA address
-     * @param account account address
-     * @param proposal proposal information
-     * @returns voting power as number
-     */
     getVotingPower: async (
-      zNA: string,
       account: string,
-      proposal: any
-    ): Promise<number | undefined> => {
-      const dao = await instance.getZDAOByZNA(zNA);
-      if (!dao) {
-        return undefined;
-      }
-      return await snapshot.getVotingPower(dao, account, proposal);
+      proposal: ProposalDetail
+    ): Promise<number> => {
+      return await snapshot.getVotingPower(account, proposal);
     },
 
-    /**
-     * Create a proposal in zDAO
-     * @param dao zDAO
-     * @param payload packaged parameters to create a proposal
-     * @returns proposal id if success
-     */
     createProposal: async (
       signer: ethers.Wallet,
-      dao: zDAO,
       payload: CreateProposalDto
-    ): Promise<string | undefined> => {
-      return await snapshot.createProposal(signer, dao, payload);
+    ): Promise<string> => {
+      return await snapshot.createProposal(signer, payload);
     },
 
-    /**
-     * Cast a vote on proposal
-     * @param dao zDAO
-     * @param payload packaged paramters to cast a vote
-     * @returns true if successfully cast a vote
-     */
     voteProposal: async (
       signer: ethers.Wallet,
-      dao: zDAO,
       payload: VoteProposalDto
-    ): Promise<string | undefined> => {
-      return await snapshot.voteProposal(signer, dao, payload);
+    ): Promise<string> => {
+      return await snapshot.voteProposal(signer, payload);
     },
 
-    /**
-     * Execute a proposal in zDAO
-     * @param dao zDAO
-     * @param payload packaged parameters to execute a proposal
-     * @returns tx hash
-     */
     executeProposal: async (
       signer: ethers.Wallet,
-      dao: zDAO,
       payload: ExecuteProposalDto
-    ): Promise<string> => {
-      return await snapshot.executeProposal(signer, gnosisSafe, dao, payload);
+    ): Promise<TransactionResponse> => {
+      const isOwner = await gnosisSafe.isOwnerAddress(signer, signer.address);
+      if (!isOwner) {
+        throw Error(t('not-gnosis-owner'));
+      }
+
+      const proposalDetail: ProposalDetail = await snapshot.getProposalDetail(
+        payload.proposal
+      );
+
+      if (!proposalDetail.metadata) {
+        throw Error(t('empty-metadata'));
+      }
+
+      if (
+        !proposalDetail.metadata?.token ||
+        proposalDetail.metadata.token.length < 1
+      ) {
+        // Ether transfer
+        return await gnosisSafe.transferEther(
+          signer,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          proposalDetail.metadata!.recipient,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          proposalDetail.metadata!.amount.toString()
+        );
+      } else {
+        // ERC20 transfer
+        return await gnosisSafe.transferERC20(
+          signer,
+          proposalDetail.metadata.token,
+          proposalDetail.metadata.recipient,
+          proposalDetail.metadata.amount.toString()
+        );
+      }
     },
   };
   return instance;

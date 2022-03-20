@@ -1,5 +1,3 @@
-import { BigNumber } from 'ethers';
-
 export enum AssetType {
   ERC20 = 'ERC20',
   ERC721 = 'ERC721',
@@ -8,12 +6,19 @@ export enum AssetType {
 
 export interface Asset {
   type: AssetType;
+  // address to ERC20 token or ERC721 token, or empty if native coin
   address: string;
-  decimals: number;
-  symbol: string;
+  // token name
   name: string;
+  // token decimals
+  decimals: number;
+  // token symbol
+  symbol: string;
+  // token logo
   logoUri?: string;
+  // bignumber of token amount in wei unit
   amount: string;
+  // token amount in USD
   amountInUSD: number;
 }
 
@@ -32,45 +37,32 @@ export enum TransactionStatus {
   WILL_BE_REPLACED = 'WILL_BE_REPLACED',
 }
 
+export interface ERC20Transfer {
+  type: AssetType.ERC20;
+  tokenAddress: string;
+  tokenName?: string;
+  tokenSymbol?: string;
+  logoUri?: string;
+  decimals?: number;
+  value: string;
+}
 
-// @feedback: consider:
-// export type ERC20Transfer = {
+export interface ERC721Transfer {
+  type: AssetType.ERC721;
+  tokenAddress: string;
+  tokenId: string;
+  tokenName?: string;
+  tokenSymbol?: string;
+  logoUri?: string;
+}
 
-// }
+export interface NativeCoinTransfer {
+  type: AssetType.NATIVE_TOKEN;
+  value: string;
+}
 
-// export type TransferInfo = ERC20Transfer | ERC721Transfer;
+export type TransferInfo = ERC20Transfer | ERC721Transfer | NativeCoinTransfer;
 
-// let t: TransferInfo = {} as unknown as TransferInfo;
-
-// if (t.type == AssetType.ERC20) {
-//   let v = t as ERC20Transfer;
-// }
-
-export type TransferInfo =
-  | {
-      type: AssetType.ERC20;
-      tokenAddress: string;
-      tokenName?: string;
-      tokenSymbol?: string;
-      logoUri?: string;
-      decimals?: number;
-      value: string;
-    } // Erc20 transfer
-  | {
-      type: AssetType.ERC721;
-      tokenAddress: string;
-      tokenId: string;
-      tokenName?: string;
-      tokenSymbol?: string;
-      logoUri?: string;
-    } // Erc721 transfer
-  | {
-      type: AssetType.NATIVE_TOKEN;
-      value: string;
-    }; // Ether transfer
-
-
-// @feedback: Don't re-use interfaces for multiple functions unless they all return the same values
 export interface Transaction {
   type: TransactionType;
   asset: TransferInfo; // Asset information
@@ -80,16 +72,3 @@ export interface Transaction {
   created: Date; // Transaction time
   status: TransactionStatus;
 }
-
-// export interface GnosisSafeClient {
-//   transferToken(
-//     recipient: string,
-//     amount: string | BigNumber | number
-//   ): Promise<any>;
-//   transferEther(
-//     recipient: string,
-//     amount: string | BigNumber | number
-//   ): Promise<any>;
-//   getTokens(): Promise<any>;
-//   getTransactions(): Promise<any>;
-// }

@@ -56,6 +56,7 @@ export const PROPOSALS_QUERY = gql`
       id
       title
       body
+      ipfs
       choices
       start
       end

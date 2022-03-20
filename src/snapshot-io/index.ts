@@ -3,21 +3,91 @@ import Client from '@snapshot-labs/snapshot.js';
 import { addSeconds } from 'date-fns';
 import { ethers } from 'ethers';
 import cloneDeep from 'lodash/cloneDeep';
-import { createApolloClient } from '../helpers/apollo';
-import TransferAbi from '../config/constants/abi/transfer.json';
-import {
-  CreateProposalDto,
-  ExecuteProposalDto,
-  SnapshotConfig,
-  VoteProposalDto,
-} from '../types';
-import { PROPOSALS_QUERY, PROPOSAL_QUERY, VOTES_QUERY } from './queries';
-import { Proposal, Vote, VoteChoice, zDAO } from './types';
-import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
-import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
-import Safe from '@gnosis.pm/safe-core-sdk';
 
-export const createClient = (config: SnapshotConfig, chainId: string) => {
+import TransferAbi from '../config/constants/abi/transfer.json';
+import { createApolloClient } from '../helpers/apollo';
+import { CreateProposalDto, SnapshotConfig, VoteProposalDto } from '../types';
+import { t } from '../utilities/messages';
+import { PROPOSAL_QUERY, PROPOSALS_QUERY, VOTES_QUERY } from './queries';
+import { Proposal, ProposalDetail, Vote, VoteChoice, zDAO } from './types';
+
+const generateStrategies = (
+  address: string,
+  decimals: number,
+  symbol: string
+) => {
+  return [
+    {
+      name: 'erc20-balance-of',
+      params: {
+        address,
+        decimals,
+        symbol,
+      },
+    },
+  ];
+};
+
+// export interface Space {
+//   id: string;
+//   name: string;
+//   avatar: string;
+//   network: string;
+//   followers: number;
+//   score: number;
+// }
+
+// export const listSpaces = async (
+//   config: SnapshotConfig,
+//   chainId: string
+// ): Promise<Space[]> => {
+//   const exploreObj: any = await fetch(`${config.serviceUri}/api/explore`).then(
+//     (res) => res.json()
+//   );
+
+//   const spaces2 = Object.entries(exploreObj.spaces).map(([id, space]: any) => {
+//     // map manually selected categories for verified spaces that don't have set their categories yet
+//     // set to empty array if space.categories is missing
+//     space.categories = space.categories?.length ? space.categories : [];
+//     space.avatarUri = Client.utils.getUrl(space.avatar, config.ipfsGateway);
+
+//     return [id, { id, ...space }];
+//   });
+
+//   const filters = spaces2
+//     .map(([id, space]) => {
+//       const followers = space.followers ?? 0;
+//       const followers1d = space.followers_1d ?? 0;
+//       const isVerified = (verified as any)[id] || 0;
+//       let score = followers1d + followers / 4;
+//       if (isVerified === 1) score = score * 2;
+//       return {
+//         ...space,
+//         followers,
+//         score,
+//       };
+//     })
+//     .filter(
+//       (space) =>
+//         ((chainId === SupportedChainId.ETHEREUM.toString() && !space.private) ||
+//           chainId !== SupportedChainId.ETHEREUM.toString()) &&
+//         (verified as any)[space.id] !== -1
+//     )
+//     .filter((space) => space.network === chainId);
+
+//   const list = orderBy(filters, ['followers', 'score'], ['desc', 'desc']);
+
+//   return list.map((item: any) => ({
+//     id: item.id,
+//     name: item.name,
+//     avatar: item.avatarUri,
+//     network: item.network,
+//     followers: item.followers,
+//     score: item.score,
+//   }));
+// };
+
+export const createClient = (config: SnapshotConfig, dao: zDAO) => {
   const apolloClient = createApolloClient(`${config.serviceUri}/graphql`);
 
   const clientEIP712 = new Client.Client712(config.serviceUri);
@@ -32,20 +102,17 @@ export const createClient = (config: SnapshotConfig, chainId: string) => {
     return ethers.BigNumber.from(10).pow(decimals);
   };
 
-  /**
-   * Get all the proposals added in the zDAO
-   * @param zNA zNA address
-   */
-  const getProposalsByZDAOId = async (
-    dao: zDAO,
-    skip: number
-  ): Promise<Array<Proposal>> => {
+  const listProposals = async (
+    from: number,
+    count: number
+  ): Promise<Proposal[]> => {
     const response = await apolloQuery(
       {
         query: PROPOSALS_QUERY,
         variables: {
           spaceId: dao.zNA,
-          skip,
+          from,
+          first: count,
         },
       },
       'proposals'
@@ -57,7 +124,7 @@ export const createClient = (config: SnapshotConfig, chainId: string) => {
       title: response.title,
       body: response.body,
       ipfs: response.ipfs ?? undefined,
-      choices: response.choices,
+      choices: Object.values(VoteChoice), // response.choices,
       created: new Date(response.start * 1000),
       start: new Date(response.start * 1000),
       end: new Date(response.end * 1000),
@@ -65,18 +132,14 @@ export const createClient = (config: SnapshotConfig, chainId: string) => {
       network: dao.network,
       snapshot: response.snapshot,
       scores: undefined,
-      strategies: response.strategies,
+      // strategies: response.strategies,
       metadata: undefined,
     }));
   };
 
-  /**
-   * Get proposal by proposal id
-   * @param proposalId proposal id
-   */
-  const getProposalById = async (
+  const getProposalDetail = async (
     proposalId: string
-  ): Promise<Proposal | undefined> => {
+  ): Promise<ProposalDetail> => {
     const response = await apolloQuery(
       {
         query: PROPOSAL_QUERY,
@@ -91,7 +154,7 @@ export const createClient = (config: SnapshotConfig, chainId: string) => {
     let metadata = undefined;
     if (response.ipfs) {
       const ipfsData = await Client.utils.ipfsGet(
-        config.ipfsUri,
+        config.ipfsGateway,
         response.ipfs
       );
       if (ipfsData.data && ipfsData.data.message) {
@@ -100,13 +163,18 @@ export const createClient = (config: SnapshotConfig, chainId: string) => {
         const sender = metadataJson.sender;
         const recipient = metadataJson.recipient;
         const token = metadataJson.token;
+        const decimals = metadataJson.decimals ?? 18;
+        const symbol = metadataJson.symbol ?? 'zToken';
         const amount = metadataJson.amount;
 
         metadata = {
           sender,
           recipient,
           token,
+          decimals,
+          symbol,
           amount,
+          abi,
         };
       }
     }
@@ -118,7 +186,7 @@ export const createClient = (config: SnapshotConfig, chainId: string) => {
       title: response.title,
       body: response.body,
       ipfs: response.ipfs ?? undefined,
-      choices: response.choices,
+      choices: Object.values(VoteChoice), // response.choices,
       created: new Date(response.start * 1000),
       start: new Date(response.start * 1000),
       end: new Date(response.end * 1000),
@@ -126,22 +194,17 @@ export const createClient = (config: SnapshotConfig, chainId: string) => {
       network: response.network,
       snapshot: response.snapshot,
       scores: response.scores,
-      strategies: response.strategies,
+      // strategies: response.strategies,
       metadata: metadata,
     };
   };
 
-  /**
-   * Get all the votes by proposal id filtering with the function parameter
-   * @param proposalId proposal id
-   * @param first voting count to fetch
-   * @param voter voter address to filter
-   * @param skip start index
-   */
   const getProposalVotes = async (
     proposalId: string,
-    { first, voter, skip }: any
-  ): Promise<Array<Vote>> => {
+    from = 0,
+    count = 30000,
+    voter = ''
+  ): Promise<Vote[]> => {
     const response = await apolloQuery(
       {
         query: VOTES_QUERY,
@@ -149,9 +212,9 @@ export const createClient = (config: SnapshotConfig, chainId: string) => {
           id: proposalId,
           orderBy: 'vp',
           orderDirection: 'desc',
-          first,
+          first: count,
           voter,
-          skip,
+          skip: from,
         },
       },
       'votes'
@@ -164,22 +227,23 @@ export const createClient = (config: SnapshotConfig, chainId: string) => {
     }));
   };
 
-  /**
-   * Get the result of proposal from votes
-   * @param zNA zNA address
-   * @param proposal proposal information
-   * @param votes list of votes to calculate result
-   */
   const getProposalResults = async (
-    dao: zDAO,
-    proposal: Proposal,
-    votes: Array<Vote>
+    proposal: ProposalDetail,
+    votes: Vote[]
   ): Promise<{
     resultsByVoteBalance: number;
     sumOfResultsBalance: number;
   }> => {
+    //const strategies = proposal.strategies ?? dao.strategies;
+    if (!proposal.metadata) {
+      throw Error(t('empty-metadata'));
+    }
+    const strategies = generateStrategies(
+      proposal.metadata?.token,
+      proposal.metadata?.decimals,
+      proposal.metadata.symbol
+    );
     const voters = votes.map((vote) => vote.voter);
-    const strategies = proposal.strategies ?? dao.strategies;
 
     /* Get scores */
     if (proposal.state !== 'pending') {
@@ -220,19 +284,20 @@ export const createClient = (config: SnapshotConfig, chainId: string) => {
     return results;
   };
 
-  /**
-   * Get voting power of the user in zDAO
-   * @param dao zDAO address
-   * @param account account address
-   * @param proposal proposal information
-   * @returns voting power as number
-   */
   const getVotingPower = async (
-    dao: zDAO,
     account: string,
-    proposal: any
+    proposal: ProposalDetail
   ): Promise<number> => {
-    const strategies = proposal.strategies ?? dao.strategies;
+    // const strategies = proposal.strategies ?? dao.strategies;
+    if (!proposal.metadata) {
+      throw Error(t('empty-metadata'));
+    }
+    const strategies = generateStrategies(
+      proposal.metadata?.token,
+      proposal.metadata?.decimals,
+      proposal.metadata.symbol
+    );
+
     let scores: any = await Client.utils.getScores(
       dao.zNA,
       strategies,
@@ -246,20 +311,13 @@ export const createClient = (config: SnapshotConfig, chainId: string) => {
     return scores.reduce((a: number, b: number) => a + b, 0);
   };
 
-  /**
-   * Create a proposal in zDAO
-   * @param dao zDAO
-   * @param payload packaged parameters to create a proposal
-   * @returns proposal id if success
-   */
   const createProposal = async (
     signer: ethers.Wallet,
-    dao: zDAO,
     payload: CreateProposalDto
-  ): Promise<string | undefined> => {
+  ): Promise<string> => {
     const startDateTime = new Date();
-    const response: any = await clientEIP712.proposal(signer, payload.from, {
-      from: payload.from,
+    const response: any = await clientEIP712.proposal(signer, signer.address, {
+      from: signer.address,
       space: dao.zNA,
       timestamp: parseInt((new Date().getTime() / 1e3).toFixed()),
       type: 'single-choice',
@@ -272,7 +330,13 @@ export const createClient = (config: SnapshotConfig, chainId: string) => {
       ),
       snapshot: payload.snapshot,
       network: dao.network,
-      strategies: JSON.stringify(dao.strategies),
+      strategies: JSON.stringify(
+        generateStrategies(
+          payload.transfer.token,
+          payload.transfer.decimals,
+          payload.transfer.symbol
+        )
+      ), // JSON.stringify(dao.strategies),
       plugins: '{}',
       metadata: JSON.stringify({
         abi: TransferAbi,
@@ -285,82 +349,30 @@ export const createClient = (config: SnapshotConfig, chainId: string) => {
           .toJSON(),
       }),
     });
-    return (response && response.id) ?? undefined;
+    return response.id;
   };
 
-  /**
-   * Cast a vote on proposal
-   * @param dao zDAO
-   * @param payload packaged paramters to cast a vote
-   * @returns true if successfully cast a vote
-   */
   const voteProposal = async (
     signer: ethers.Wallet,
-    dao: zDAO,
     payload: VoteProposalDto
-  ): Promise<string | undefined> => {
-    const response: any = await clientEIP712.vote(signer, payload.from, {
+  ): Promise<string> => {
+    const response: any = await clientEIP712.vote(signer, signer.address, {
       space: dao.zNA,
       proposal: payload.proposal,
       type: payload.proposalType,
       choice: payload.choice,
       metadata: JSON.stringify({}),
     });
-    return (response && response.id) ?? undefined;
-  };
-
-  /**
-   * Execute a proposal in zDAO
-   * @param dao zDAO
-   * @param payload packaged parameters to execute a proposal
-   * @returns tx hash
-   */
-  const executeProposal = async (
-    signer: ethers.Wallet,
-    dao: zDAO,
-    payload: ExecuteProposalDto
-  ): Promise<string | undefined> => {
-    // const service = new SafeService(SAFE_SERVICE_URL);
-    // const ethAdapter = new EthersAdapter({
-    //   ethers,
-    //   signer,
-    // });
-    // const safe = await Safe.create({ ethAdapter, safeAddress: SAFE_ADDRESS });
-    // const owners = await safe.getOwners();
-    // if (!owners.find((owner) => owner === payload.from)) {
-    //   return undefined;
-    // }
-
-    // const safeSigner = new SafeEthersSigner(safe, service, config.provider);
-    // let proposedTx;
-    // if (metaData.token.length > 0) {
-    //   // ERC20 tokens
-    //   const transferContract = new ethers.Contract(
-    //     metaData.token,
-    //     metaData.abi,
-    //     safeSigner
-    //   );
-    //   proposedTx = await transferContract
-    //     .connect(safeSigner)
-    //     .transfer(metaData.recipient, metaData.amount.toString());
-    // } else {
-    //   proposedTx = await safeSigner.sendTransaction({
-    //     to: metaData.recipient,
-    //     value: metaData.amount.toString(),
-    //   });
-    // }
-
-    return '';
+    return response.id;
   };
 
   return {
-    getProposalsByZDAOId,
-    getProposalById,
+    listProposals,
+    getProposalDetail,
     getProposalVotes,
     getProposalResults,
     getVotingPower,
     createProposal,
     voteProposal,
-    executeProposal,
   };
 };

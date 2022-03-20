@@ -1,24 +1,43 @@
-import { zDAO } from '../snapshot-io/types';
-import { zNAConfig } from '../types';
+import { ethers } from 'ethers';
 
-export const createClient = (config: zNAConfig, chainId: string) => {
+import zDAOCore from '../config/constants/abi/zDAOCore.json';
+import { zDAOId, zNA, zNAConfig } from '../types';
+
+export const createClient = (config: zNAConfig) => {
+  const contract = new ethers.Contract(
+    config.contract,
+    zDAOCore,
+    config.provider
+  );
+
   /**
    * Get all the list of zDAO
    */
-  const getZDAOs = async (): Promise<zDAO[]> => {
-    return [];
+  const listZNA = async (): Promise<zNA[]> => {
+    return await contract.getDAOIds();
   };
 
   /**
    * Get zDAO by zNA
    * @param zNA zNA address to find zDAO
    */
-  const getZDAOByZNA = async (zNA: string): Promise<zDAO | undefined> => {
-    return undefined;
+  const getZDAOIdByZNA = async (zNA: zNA): Promise<zDAOId> => {
+    return await contract.zNATozDAO(zNA);
+  };
+
+  const getDAOMetadataUri = async (zDAOId: zDAOId): Promise<string> => {
+    return await contract.getDAOMetadataUri(zDAOId);
+  };
+
+  const doesZDAOExist = async (zNA: zNA): Promise<boolean> => {
+    const daoId = await contract.zNATozDAO(zNA);
+    return daoId.length > 0 ? true : false;
   };
 
   return {
-    getZDAOs,
-    getZDAOByZNA,
+    listZNA,
+    getZDAOIdByZNA,
+    getDAOMetadataUri,
+    doesZDAOExist,
   };
 };

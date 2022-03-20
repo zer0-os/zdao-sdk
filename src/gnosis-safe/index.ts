@@ -1,3 +1,7 @@
+import { TransactionResponse } from '@ethersproject/abstract-provider';
+import Safe from '@gnosis.pm/safe-core-sdk';
+import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
+import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import {
   Erc20Transfer,
   Erc721Transfer,
@@ -10,11 +14,12 @@ import {
   Transfer as GnosisTransfer,
   TransferInfo as GnosisTransferInfo,
 } from '@gnosis.pm/safe-react-gateway-sdk';
-import { ethers } from 'ethers';
+import { BigNumberish, ethers } from 'ethers';
+
+import TransferAbi from '../config/constants/abi/transfer.json';
 import { zDAO } from '../snapshot-io/types';
-import { GnosisSafeConfig } from '../types';
+import { GnosisSafeConfig, zDAOAssets } from '../types';
 import {
-  Asset,
   AssetType,
   Transaction,
   TransactionStatus,
@@ -22,14 +27,8 @@ import {
   TransferInfo,
 } from './types';
 
-export const createClient = (config: GnosisSafeConfig, chainId: string) => {
-  const getZDAOAssetsByZNA = async (
-    dao: zDAO,
-    selectedCurrency = 'USD'
-  ): Promise<{
-    amountInUSD: number;
-    assets: Array<Asset>;
-  }> => {
+export const createClient = (config: GnosisSafeConfig, dao: zDAO) => {
+  const listAssets = async (selectedCurrency = 'USD'): Promise<zDAOAssets> => {
     const safeAddress = ethers.utils.getAddress(dao.safeAddress);
 
     const balances: SafeBalanceResponse = await getBalances(
@@ -58,9 +57,7 @@ export const createClient = (config: GnosisSafeConfig, chainId: string) => {
     };
   };
 
-  const getZDAOTransactionsByZNA = async (
-    dao: zDAO
-  ): Promise<Array<Transaction>> => {
+  const listTransactions = async (): Promise<Transaction[]> => {
     const safeAddress = ethers.utils.getAddress(dao.safeAddress);
 
     const { results } = await getTransactionHistory(
@@ -127,8 +124,76 @@ export const createClient = (config: GnosisSafeConfig, chainId: string) => {
     });
   };
 
+  const isOwnerAddress = async (
+    signer: ethers.Wallet,
+    address: string
+  ): Promise<boolean> => {
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signer,
+    });
+    const safe = await Safe.create({
+      ethAdapter,
+      safeAddress: dao.safeAddress,
+    });
+    const owners = await safe.getOwners();
+    if (!owners.find((owner) => owner === address)) {
+      return false;
+    }
+    return true;
+  };
+
+  const transferERC20 = async (
+    signer: ethers.Wallet,
+    token: string,
+    recipient: string,
+    amount: BigNumberish
+  ): Promise<TransactionResponse> => {
+    const service = new SafeService(config.serviceUri);
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signer,
+    });
+    const safe = await Safe.create({
+      ethAdapter,
+      safeAddress: dao.safeAddress,
+    });
+
+    const safeSigner = new SafeEthersSigner(safe, service, signer.provider);
+    const transferContract = new ethers.Contract(
+      token,
+      TransferAbi,
+      safeSigner
+    );
+    return await transferContract
+      .connect(safeSigner)
+      .transfer(recipient, amount);
+  };
+
+  const transferEther = async (
+    signer: ethers.Wallet,
+    recipient: string,
+    amount: BigNumberish
+  ): Promise<TransactionResponse> => {
+    const service = new SafeService(config.serviceUri);
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signer,
+    });
+    const safe = await Safe.create({
+      ethAdapter,
+      safeAddress: dao.safeAddress,
+    });
+
+    const safeSigner = new SafeEthersSigner(safe, service, signer.provider);
+    return safeSigner.sendTransaction({ to: recipient, value: amount });
+  };
+
   return {
-    getZDAOAssetsByZNA,
-    getZDAOTransactionsByZNA,
+    listAssets,
+    listTransactions,
+    isOwnerAddress,
+    transferERC20,
+    transferEther,
   };
 };

@@ -1,17 +1,19 @@
+import { zDAOId, zNA } from '../types';
+
 export enum VoteChoice {
   Yes = 'Yes',
   No = 'No',
 }
 
 export interface zDAO {
-  id: string; // Global zDAO identifier
-  zNA: string; // Linked zNA
+  id: zDAOId; // Global zDAO identifier
+  zNA: zNA; // Linked zNA
   title?: string; // zDAO title
   creator: string; // Creator wallet address
-  owner: string; // Owner wallet address
+  owners: string[]; // Owner wallet addresses
   avatar?: string; // Avatar uri (https link)
   network: string; // Chain id
-  strategies?: any; // only used for snapshot, @todo
+  // strategies?: any; // only used for snapshot, @todo
   safeAddress: string; // Gnosis Safe address
   votingToken: string; // Voting token address
 }
@@ -20,6 +22,7 @@ export interface TokenMetaData {
   recipient: string; // asset recipient address
   token: string; // asset token address
   decimals: number;
+  symbol: string;
   amount: string; // BigNumber string mutiplied by decimals
 }
 
@@ -33,23 +36,31 @@ export interface Proposal {
   body?: string;
   // @example: This is only available if the proposal was properly created?
   ipfs?: string;
-  choices: string[]; // VoteChoice[];
+  choices: VoteChoice[];
   created: Date;
   start: Date;
   end: Date;
   state: 'pending' | 'active' | 'closed';
   network: string;
   snapshot: string;
-  scores?: number[];
-  strategies?: any; // only used for snapshot, @todo
-  // @feedback: Just create an interface that extends
-  metadata?: TokenMetaData & { sender: string; abi: string };
 }
 
 // @feedback: example:
-interface ProposalMetadata extends TokenMetaData {
+export interface ProposalMetadata extends TokenMetaData {
   sender: string;
   abi: string;
+}
+
+export interface ProposalDetail extends Proposal {
+  scores?: number[];
+  // strategies?: any; // only used for snapshot, @todo
+  // @feedback: Just create an interface that extends
+  metadata?: ProposalMetadata;
+}
+
+export interface ProposalResult {
+  resultsByVoteBalance: number;
+  sumOfResultsBalance: number;
 }
 
 export interface Vote {
