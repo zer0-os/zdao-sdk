@@ -4,8 +4,7 @@ import { ethers } from 'ethers';
 
 import { createSDKInstance } from '../../src';
 import { developmentConfiguration, SupportedChainId } from '../../src/config';
-import { zDAO } from '../../src/snapshot-io/types';
-import { Config, SDKInstance, ZDAOInstance } from '../../src/types';
+import { Config, SDKInstance, zDAO, ZDAOInstance } from '../../src/types';
 import { Asset, AssetType } from '../gnosis-safe/types';
 
 dotenv.config();

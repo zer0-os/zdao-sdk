@@ -10,7 +10,6 @@ import {
   ProposalDetail,
   ProposalResult,
   Vote,
-  zDAO,
 } from './snapshot-io/types';
 import {
   Config,
@@ -19,6 +18,7 @@ import {
   ExecuteProposalDto,
   SDKInstance,
   VoteProposalDto,
+  zDAO,
   zDAOAssets,
   ZDAOInstance,
   zNA,

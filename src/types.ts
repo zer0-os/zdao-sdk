@@ -9,7 +9,6 @@ import {
   ProposalResult,
   TokenMetaData,
   Vote,
-  zDAO,
 } from './snapshot-io/types';
 
 export interface SnapshotConfig {
