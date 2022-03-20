@@ -5,6 +5,7 @@
     "@typescript-eslint",
     "@typescript-eslint/eslint-plugin",
     "unused-imports",
+    "simple-import-sort",
     "prettier"
   ],
   "extends": [
@@ -54,6 +55,8 @@
     ],
     "@typescript-eslint/no-floating-promises": [
       "error"
-    ]
+    ],
+    "simple-import-sort/exports": "error",
+    "simple-import-sort/imports": "error"
   }
 }
