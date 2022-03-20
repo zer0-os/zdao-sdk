@@ -45,9 +45,9 @@ export const SPACES_QUERY = gql`
 `;
 
 export const PROPOSALS_QUERY = gql`
-  query Proposals($spaceId: String!, $skip: Int!) {
+  query Proposals($spaceId: String!, $skip: Int!, $first: Int!) {
     proposals(
-      first: 10
+      first: $first
       skip: $skip
       where: { space_in: [$spaceId] }
       orderBy: "created"

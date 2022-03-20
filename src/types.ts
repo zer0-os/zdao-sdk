@@ -78,7 +78,6 @@ export interface CreateProposalDto {
 
 export interface VoteProposalDto {
   proposal: string; // proposal id
-  proposalType: string; // only used for snapshot, @todo
   choice: 1 | 2; // Yes or No
 }
 

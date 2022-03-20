@@ -8,7 +8,14 @@ import TransferAbi from '../config/constants/abi/transfer.json';
 import { CreateProposalDto, SnapshotConfig, VoteProposalDto } from '../types';
 import { t } from '../utilities/messages';
 import { PROPOSAL_QUERY, PROPOSALS_QUERY, VOTES_QUERY } from './queries';
-import { Proposal, ProposalDetail, Vote, VoteChoice, zDAO } from './types';
+import {
+  Proposal,
+  ProposalDetail,
+  ProposalResult,
+  Vote,
+  VoteChoice,
+  zDAO,
+} from './types';
 
 const generateStrategies = (
   address: string,
@@ -98,7 +105,7 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
   ) => {
     const response = await graphQLClient.request(query, variables);
 
-    return cloneDeep(!path ? response.data : response.data[path]);
+    return cloneDeep(!path ? response : response[path]);
   };
 
   const extendToDecimals = (decimals: number): ethers.BigNumber => {
@@ -106,14 +113,14 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
   };
 
   const listProposals = async (
-    from: number,
-    count: number
+    from = 0,
+    count = 30000
   ): Promise<Proposal[]> => {
     const response = await graphQLQuery(
       PROPOSALS_QUERY,
       {
         spaceId: dao.zNA,
-        from,
+        skip: from,
         first: count,
       },
       'proposals'
@@ -227,10 +234,7 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
   const getProposalResults = async (
     proposal: ProposalDetail,
     votes: Vote[]
-  ): Promise<{
-    resultsByVoteBalance: number;
-    sumOfResultsBalance: number;
-  }> => {
+  ): Promise<ProposalResult> => {
     //const strategies = proposal.strategies ?? dao.strategies;
     if (!proposal.metadata) {
       throw Error(t('empty-metadata'));
@@ -341,9 +345,7 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
         recipient: payload.transfer.recipient,
         token: payload.transfer.token,
         decimals: payload.transfer.decimals,
-        amount: ethers.BigNumber.from(payload.transfer.amount)
-          .mul(extendToDecimals(payload.transfer.decimals))
-          .toJSON(),
+        amount: payload.transfer.amount,
       }),
     });
     return response.id;
@@ -356,7 +358,7 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
     const response: any = await clientEIP712.vote(signer, signer.address, {
       space: dao.zNA,
       proposal: payload.proposal,
-      type: payload.proposalType,
+      type: 'single-choice', // payload.proposalType,
       choice: payload.choice,
       metadata: JSON.stringify({}),
     });

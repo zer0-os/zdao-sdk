@@ -59,7 +59,7 @@ export interface ProposalDetail extends Proposal {
 }
 
 export interface ProposalResult {
-  resultsByVoteBalance: number;
+  resultsByVoteBalance: number[];
   sumOfResultsBalance: number;
 }
 
