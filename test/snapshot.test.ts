@@ -1,9 +1,9 @@
 import * as chaiAsPromised from 'chai-as-promised';
 import { expect, use } from 'chai';
 import { setEnv } from './shared/setupEnv';
-import { Proposal, zDAO } from '../src/snapshot-io/types';
+import { Proposal } from '../src/snapshot-io/types';
 import { developmentConfiguration, SupportedChainId } from '../src/config';
-import { Config } from '../src/types';
+import { Config, zDAO } from '../src/types';
 import { BigNumber, ethers } from 'ethers';
 import { createClient } from '../src/snapshot-io';
 
@@ -91,9 +91,9 @@ describe('Snapshot test', async () => {
     const votes = await snapshot.getProposalVotes(proposalId);
 
     const results = await snapshot.getProposalResults(proposalDetail, votes);
-    expect(results.resultsByVoteBalance[0] + results.resultsByVoteBalance[1]).to.be.equal(
-      results.sumOfResultsBalance
-    );
+    expect(
+      results.resultsByVoteBalance[0] + results.resultsByVoteBalance[1]
+    ).to.be.equal(results.sumOfResultsBalance);
   });
 
   it('should get voting power', async () => {

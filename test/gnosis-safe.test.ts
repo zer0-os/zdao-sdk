@@ -9,9 +9,10 @@ import {
   ERC20Transfer,
   Transaction,
 } from '../src/gnosis-safe/types';
-import { zDAO } from '../src/snapshot-io/types';
-import { Config } from '../src/types';
+import { Config, zDAO } from '../src/types';
 import { setEnv } from './shared/setupEnv';
+
+(global as any).XMLHttpRequest = require('xhr2');
 
 use(chaiAsPromised.default);
 
@@ -49,7 +50,7 @@ describe('Gnosis Safe test', async () => {
   it('should list assets with test tokens', async () => {
     const gnosisSafe = createClient(config.gnosisSafe, dao);
     const assets = await gnosisSafe.listAssets();
-    expect(assets.assets.length).to.gt(2);
+    expect(assets.assets.length).to.gte(2);
 
     // should contain ether token
     const nativeToken = assets.assets.find(
@@ -61,7 +62,8 @@ describe('Gnosis Safe test', async () => {
     const votingToken = assets.assets.find(
       (item: Asset) => item.type === AssetType.ERC20
     );
-    expect(votingToken).to.be.equal(dao.votingToken);
+    expect(votingToken).to.be.not.equal(undefined);
+    expect(votingToken?.address).to.be.equal(dao.votingToken);
   });
 
   it('should list transactions', async () => {

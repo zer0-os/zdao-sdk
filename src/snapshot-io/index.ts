@@ -112,10 +112,6 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
     return cloneDeep(!path ? response : response[path]);
   };
 
-  const extendToDecimals = (decimals: number): ethers.BigNumber => {
-    return ethers.BigNumber.from(10).pow(decimals);
-  };
-
   const listProposals = async (
     from = 0,
     count = 30000

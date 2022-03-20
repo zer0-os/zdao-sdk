@@ -33,8 +33,8 @@ export const createClient = (config: GnosisSafeConfig, dao: zDAO) => {
 
     const balances: SafeBalanceResponse = await getBalances(
       config.gateway,
-      safeAddress,
       dao.network,
+      safeAddress,
       selectedCurrency,
       {
         exclude_spam: true,

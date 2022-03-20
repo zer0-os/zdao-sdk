@@ -4,11 +4,11 @@ import { ethers } from 'ethers';
 import { createSDKInstance } from '../../src';
 import { developmentConfiguration, SupportedChainId } from '../../src/config';
 import { Asset, AssetType } from '../../src/gnosis-safe/types';
-import { zDAO } from '../../src/snapshot-io/types';
-import { Config, SDKInstance, ZDAOInstance } from '../../src/types';
+
+import { Config, SDKInstance, zDAO, ZDAOInstance } from '../../src/types';
 import { setEnv } from '../shared/setupEnv';
 
-// (global as any).XMLHttpRequest = require('xhr2');
+(global as any).XMLHttpRequest = require('xhr2');
 
 const main = async () => {
   const env = setEnv();
@@ -55,4 +55,6 @@ const main = async () => {
   assert.equal(votingToken?.address, dao.votingToken);
 };
 
-main();
+async () => {
+  await main();
+};
