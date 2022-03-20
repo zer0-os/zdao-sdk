@@ -61,6 +61,7 @@ export const createSDKInstance = (config: Config): SDKInstance => {
     if (!daoId) {
       throw Error(t('not-found-zdao'));
     }
+
     // get zDAO meta data from contract
     const metaUri = await naming.getDAOMetadataUri(daoId);
     // parse ipfs json and compose zDAO structure
@@ -109,10 +110,10 @@ export const createSDKInstance = (config: Config): SDKInstance => {
       zNA: param.zNA,
       title: param.title,
       creator: param.creator,
-      owners: param.owners,
       avatar: param.avatar,
       network: param.network.toString(),
       safeAddress: param.safeAddress,
+      owners: param.owners,
       votingToken: param.votingToken,
     });
   };
@@ -130,6 +131,10 @@ const createZDAOInstance = (config: Config, dao: zDAO): ZDAOInstance => {
   const gnosisSafe = createGnosisSafeClient(config.gnosisSafe, dao);
 
   const instance: ZDAOInstance = {
+    getZDAO: (): zDAO => {
+      return dao;
+    },
+
     listAssets: async (): Promise<zDAOAssets> => {
       return await gnosisSafe.listAssets();
     },

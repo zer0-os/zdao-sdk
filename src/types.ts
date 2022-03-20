@@ -9,6 +9,7 @@ import {
   ProposalResult,
   TokenMetaData,
   Vote,
+  zDAO,
 } from './snapshot-io/types';
 
 export interface SnapshotConfig {
@@ -29,7 +30,7 @@ export interface zNAConfig {
   // address to zDAOCore contract
   contract: string;
   // web3 provider
-  provider: ethers.providers.Web3Provider;
+  provider: ethers.providers.Provider;
 }
 
 export interface Config {
@@ -118,6 +119,12 @@ export interface SDKInstance {
 }
 
 export interface ZDAOInstance {
+  /**
+   * Get zDAO
+   * @returns zDAO structure
+   */
+  getZDAO(): zDAO;
+
   /**
    * Get the list of zDAO assets and amount in USD
    * @returns assets in zDAO

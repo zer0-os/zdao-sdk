@@ -10,7 +10,7 @@ export enum SupportedChainId {
 
 export const developmentConfiguration = (
   contract: string,
-  provider: ethers.providers.Web3Provider
+  provider: ethers.providers.Provider
 ): Config => ({
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
@@ -28,7 +28,7 @@ export const developmentConfiguration = (
 
 export const productionConfiguration = (
   contract: string,
-  provider: ethers.providers.Web3Provider
+  provider: ethers.providers.Provider
 ): Config => ({
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',

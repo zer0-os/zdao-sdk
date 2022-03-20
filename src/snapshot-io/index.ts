@@ -1,11 +1,10 @@
-import { QueryOptions } from '@apollo/client';
 import Client from '@snapshot-labs/snapshot.js';
 import { addSeconds } from 'date-fns';
 import { ethers } from 'ethers';
+import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
 import cloneDeep from 'lodash/cloneDeep';
 
 import TransferAbi from '../config/constants/abi/transfer.json';
-import { createApolloClient } from '../helpers/apollo';
 import { CreateProposalDto, SnapshotConfig, VoteProposalDto } from '../types';
 import { t } from '../utilities/messages';
 import { PROPOSAL_QUERY, PROPOSALS_QUERY, VOTES_QUERY } from './queries';
@@ -88,12 +87,16 @@ const generateStrategies = (
 // };
 
 export const createClient = (config: SnapshotConfig, dao: zDAO) => {
-  const apolloClient = createApolloClient(`${config.serviceUri}/graphql`);
+  const graphQLClient = new GraphQLClient(`${config.serviceUri}/graphql`);
 
   const clientEIP712 = new Client.Client712(config.serviceUri);
 
-  const apolloQuery = async (options: QueryOptions, path = '') => {
-    const response = await apolloClient.query(options);
+  const graphQLQuery = async (
+    query: RequestDocument,
+    variables?: Variables,
+    path = ''
+  ) => {
+    const response = await graphQLClient.request(query, variables);
 
     return cloneDeep(!path ? response.data : response.data[path]);
   };
@@ -106,14 +109,12 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
     from: number,
     count: number
   ): Promise<Proposal[]> => {
-    const response = await apolloQuery(
+    const response = await graphQLQuery(
+      PROPOSALS_QUERY,
       {
-        query: PROPOSALS_QUERY,
-        variables: {
-          spaceId: dao.zNA,
-          from,
-          first: count,
-        },
+        spaceId: dao.zNA,
+        from,
+        first: count,
       },
       'proposals'
     );
@@ -140,12 +141,10 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
   const getProposalDetail = async (
     proposalId: string
   ): Promise<ProposalDetail> => {
-    const response = await apolloQuery(
+    const response = await graphQLQuery(
+      PROPOSAL_QUERY,
       {
-        query: PROPOSAL_QUERY,
-        variables: {
-          id: proposalId,
-        },
+        id: proposalId,
       },
       'proposal'
     );
@@ -205,17 +204,15 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
     count = 30000,
     voter = ''
   ): Promise<Vote[]> => {
-    const response = await apolloQuery(
+    const response = await graphQLQuery(
+      VOTES_QUERY,
       {
-        query: VOTES_QUERY,
-        variables: {
-          id: proposalId,
-          orderBy: 'vp',
-          orderDirection: 'desc',
-          first: count,
-          voter,
-          skip: from,
-        },
+        id: proposalId,
+        orderBy: 'vp',
+        orderDirection: 'desc',
+        first: count,
+        voter,
+        skip: from,
       },
       'votes'
     );
