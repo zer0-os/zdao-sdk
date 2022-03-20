@@ -1,21 +1,6 @@
-import { zDAOId, zNA } from '../types';
-
 export enum VoteChoice {
   Yes = 'Yes',
   No = 'No',
-}
-
-export interface zDAO {
-  id: zDAOId; // Global zDAO identifier
-  zNA: zNA; // Linked zNA
-  title?: string; // zDAO title
-  creator: string; // Creator wallet address
-  owners: string[]; // Owner wallet addresses
-  avatar?: string; // Avatar uri (https link)
-  network: string; // Chain id
-  // strategies?: any; // only used for snapshot, @todo
-  safeAddress: string; // Gnosis Safe address
-  votingToken: string; // Voting token address
 }
 
 export interface TokenMetaData {

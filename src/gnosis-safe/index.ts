@@ -17,7 +17,7 @@ import {
 import { BigNumberish, ethers } from 'ethers';
 
 import TransferAbi from '../config/constants/abi/transfer.json';
-import { zDAO } from '../snapshot-io/types';
+import { zDAO } from '../types';
 import { GnosisSafeConfig, zDAOAssets } from '../types';
 import {
   AssetType,

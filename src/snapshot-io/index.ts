@@ -5,7 +5,12 @@ import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
 import cloneDeep from 'lodash/cloneDeep';
 
 import TransferAbi from '../config/constants/abi/transfer.json';
-import { CreateProposalDto, SnapshotConfig, VoteProposalDto } from '../types';
+import {
+  CreateProposalDto,
+  SnapshotConfig,
+  VoteProposalDto,
+  zDAO,
+} from '../types';
 import { t } from '../utilities/messages';
 import { PROPOSAL_QUERY, PROPOSALS_QUERY, VOTES_QUERY } from './queries';
 import {
@@ -14,7 +19,6 @@ import {
   ProposalResult,
   Vote,
   VoteChoice,
-  zDAO,
 } from './types';
 
 const generateStrategies = (
