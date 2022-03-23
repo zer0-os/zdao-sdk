@@ -6,5 +6,6 @@
   "empty-voting-token": "Empty Voting ERC20 Token address",
   "already-exist-zdao": "zDAO already exists",
   "empty-metadata": "Not found Token Transfer information",
-  "not-gnosis-owner": "Not a Gnosis Safe owner address"
+  "not-gnosis-owner": "Not a Gnosis Safe owner address",
+  "not-implemented": "Not implemented"
 }
