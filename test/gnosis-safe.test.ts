@@ -1,6 +1,7 @@
 import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { ethers } from 'ethers';
+
 import { developmentConfiguration, SupportedChainId } from '../src/config';
 import { createClient } from '../src/gnosis-safe';
 import {

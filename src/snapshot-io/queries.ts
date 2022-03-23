@@ -54,6 +54,7 @@ export const PROPOSALS_QUERY = gql`
       orderDirection: desc
     ) {
       id
+      type
       title
       body
       ipfs

@@ -44,12 +44,14 @@ export type zDAOId = string;
 export interface zDAO {
   id: zDAOId; // Global zDAO identifier
   zNA: zNA; // Linked zNA
+  // If not defined, title should be zNA by default
   title?: string; // zDAO title
   creator: string; // Creator wallet address
   owners: string[]; // Owner wallet addresses
+  // avatar uri which starts with https schema
+  // The frontend should use default avatar image if not defined
   avatar?: string; // Avatar uri (https link)
   network: string; // Chain id
-  // strategies?: any; // only used for snapshot, @todo
   safeAddress: string; // Gnosis Safe address
   votingToken: string; // Voting token address
 }
@@ -61,7 +63,7 @@ export interface CreateZDAODto {
   title: string;
   // address to zDAO creator
   creator: string;
-  // uri to avatar
+  // uri to avatar, if not defined, will use default avatar image in frontend
   avatar?: string;
   // network id where zDAO was created
   network: SupportedChainId;
@@ -82,6 +84,7 @@ export interface zDAOAssets {
 
 export interface CreateProposalDto {
   title: string;
+  // If the proposal does not have content, no need to set this member
   body?: string;
   duration: number; // time duration from start to end in seconds
   snapshot: number; // block number

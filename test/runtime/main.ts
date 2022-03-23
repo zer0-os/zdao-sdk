@@ -4,7 +4,6 @@ import { ethers } from 'ethers';
 import { createSDKInstance } from '../../src';
 import { developmentConfiguration, SupportedChainId } from '../../src/config';
 import { Asset, AssetType } from '../../src/gnosis-safe/types';
-
 import { Config, SDKInstance, zDAO, ZDAOInstance } from '../../src/types';
 import { setEnv } from '../shared/setupEnv';
 

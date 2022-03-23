@@ -131,7 +131,7 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
       author: response.author,
       title: response.title,
       body: response.body,
-      ipfs: response.ipfs ?? undefined,
+      ipfs: response.ipfs,
       choices: Object.values(VoteChoice), // response.choices,
       created: new Date(response.start * 1000),
       start: new Date(response.start * 1000),
@@ -139,9 +139,6 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
       status: response.state,
       network: dao.network,
       snapshot: response.snapshot,
-      scores: undefined,
-      // strategies: response.strategies,
-      metadata: undefined,
     }));
   };
 
@@ -191,7 +188,7 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
       author: response.author,
       title: response.title,
       body: response.body,
-      ipfs: response.ipfs ?? undefined,
+      ipfs: response.ipfs,
       choices: Object.values(VoteChoice), // response.choices,
       created: new Date(response.start * 1000),
       start: new Date(response.start * 1000),
@@ -200,7 +197,6 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
       network: response.network,
       snapshot: response.snapshot,
       scores: response.scores,
-      // strategies: response.strategies,
       metadata: metadata,
     };
   };
@@ -235,7 +231,6 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
     proposal: ProposalDetail,
     votes: Vote[]
   ): Promise<ProposalResult> => {
-    //const strategies = proposal.strategies ?? dao.strategies;
     if (!proposal.metadata) {
       throw Error(t('empty-metadata'));
     }
@@ -289,7 +284,6 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
     account: string,
     proposal: ProposalDetail
   ): Promise<number> => {
-    // const strategies = proposal.strategies ?? dao.strategies;
     if (!proposal.metadata) {
       throw Error(t('empty-metadata'));
     }
@@ -337,7 +331,7 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
           payload.transfer.decimals,
           payload.transfer.symbol
         )
-      ), // JSON.stringify(dao.strategies),
+      ),
       plugins: '{}',
       metadata: JSON.stringify({
         abi: TransferAbi,

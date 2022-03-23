@@ -1,11 +1,10 @@
 import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
-import * as dotenv from 'dotenv';
 import { ethers } from 'ethers';
+
 import { createSDKInstance } from '../src';
-import { developmentConfiguration, SupportedChainId } from '../src/config';
+import { developmentConfiguration } from '../src/config';
 import { Config, SDKInstance, zNA } from '../src/types';
-import { t } from '../src/utilities/messages';
 import { setEnv } from './shared/setupEnv';
 
 use(chaiAsPromised.default);

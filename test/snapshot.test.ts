@@ -1,11 +1,12 @@
-import * as chaiAsPromised from 'chai-as-promised';
 import { expect, use } from 'chai';
-import { setEnv } from './shared/setupEnv';
-import { Proposal } from '../src/snapshot-io/types';
-import { developmentConfiguration, SupportedChainId } from '../src/config';
-import { Config, zDAO } from '../src/types';
+import * as chaiAsPromised from 'chai-as-promised';
 import { BigNumber, ethers } from 'ethers';
+
+import { developmentConfiguration, SupportedChainId } from '../src/config';
 import { createClient } from '../src/snapshot-io';
+import { Proposal } from '../src/snapshot-io/types';
+import { Config, zDAO } from '../src/types';
+import { setEnv } from './shared/setupEnv';
 
 use(chaiAsPromised.default);
 
