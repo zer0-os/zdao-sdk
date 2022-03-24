@@ -1,12 +1,6 @@
 import { ethers } from 'ethers';
 
-import { Config } from '../types';
-
-export enum SupportedChainId {
-  ETHEREUM = 1,
-  ROPSTEN = 3,
-  RINKEBY = 4,
-}
+import { Config, SupportedChainId } from '../types';
 
 type AddressMap = { [chainId: number]: string };
 export const MultiCallAddress: AddressMap = {

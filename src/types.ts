@@ -1,16 +1,12 @@
-import { TransactionResponse } from '@ethersproject/abstract-provider';
-import { ethers } from 'ethers';
-
-import { SupportedChainId } from './config';
-import { Asset, Transaction } from './gnosis-safe/types';
 import {
-  Proposal,
-  ProposalDetails,
-  ProposalResult,
-  TokenMetaData,
-  Vote,
-} from './snapshot-io/types';
+  Provider,
+  TransactionResponse,
+} from '@ethersproject/abstract-provider';
+import { Wallet } from '@ethersproject/wallet';
 
+/* -------------------------------------------------------------------------- */
+/*                                Configuration                               */
+/* -------------------------------------------------------------------------- */
 export interface SnapshotConfig {
   // uri to Snaphost Hub
   serviceUri: string;
@@ -29,7 +25,7 @@ export interface zNAConfig {
   // address to zDAOCore contract
   contract: string;
   // web3 provider
-  provider: ethers.providers.Provider;
+  provider: Provider;
 }
 
 export interface Config {
@@ -38,22 +34,132 @@ export interface Config {
   zNA: zNAConfig;
 }
 
+/* -------------------------------------------------------------------------- */
+/*                               Primitive Types                              */
+/* -------------------------------------------------------------------------- */
+
 export type zNA = string;
 export type zDAOId = string;
 
-export interface zDAO {
-  id: zDAOId; // Global zDAO identifier
-  zNA: zNA; // Linked zNA
-  title: string; // zDAO title, zNA by default
-  creator: string; // Creator wallet address
-  owners: string[]; // Owner wallet addresses
-  // avatar uri which starts with https schema
-  // The frontend should use default avatar image if not defined
-  avatar?: string; // Avatar uri (https link)
-  network: string; // Chain id
-  safeAddress: string; // Gnosis Safe address
-  votingToken: string; // Voting token address
+/* -------------------------------------------------------------------------- */
+/*                                Enumerations                                */
+/* -------------------------------------------------------------------------- */
+
+export enum SupportedChainId {
+  ETHEREUM = 1,
+  ROPSTEN = 3,
+  RINKEBY = 4,
 }
+
+export enum VoteChoice {
+  YES = 'Yes',
+  NO = 'No',
+}
+
+export enum AssetType {
+  ERC20 = 'ERC20',
+  ERC721 = 'ERC721',
+  NATIVE_TOKEN = 'NATIVE_TOKEN',
+}
+
+export enum TransactionType {
+  SENT = 'SENT',
+  RECEIVED = 'RECEIVED',
+}
+
+export enum TransactionStatus {
+  AWAITING_CONFIRMATIONS = 'AWAITING_CONFIRMATIONS',
+  AWAITING_EXECUTION = 'AWAITING_EXECUTION',
+  CANCELLED = 'CANCELLED',
+  FAILED = 'FAILED',
+  SUCCESS = 'SUCCESS',
+  PENDING = 'PENDING',
+  WILL_BE_REPLACED = 'WILL_BE_REPLACED',
+}
+
+/* -------------------------------------------------------------------------- */
+/*                            Structure Interfaces                            */
+/* -------------------------------------------------------------------------- */
+
+export type Choice = 1 | 2;
+export interface Vote {
+  voter: string;
+  choice: Choice;
+  power: number; // voting power
+}
+
+export interface Asset {
+  type: AssetType;
+  // address to ERC20 token or ERC721 token, or empty if native coin
+  address: string;
+  // token name
+  name: string;
+  // token decimals
+  decimals: number;
+  // token symbol
+  symbol: string;
+  // token logo
+  logoUri?: string;
+  // bignumber of token amount in wei unit
+  amount: string;
+  // token amount in USD
+  amountInUSD: number;
+}
+
+export interface ERC20Transfer {
+  type: AssetType.ERC20;
+  tokenAddress: string;
+  tokenName?: string;
+  tokenSymbol?: string;
+  logoUri?: string;
+  decimals?: number;
+  value: string;
+}
+
+export interface ERC721Transfer {
+  type: AssetType.ERC721;
+  tokenAddress: string;
+  tokenId: string;
+  tokenName?: string;
+  tokenSymbol?: string;
+  logoUri?: string;
+}
+
+export interface NativeCoinTransfer {
+  type: AssetType.NATIVE_TOKEN;
+  value: string;
+}
+
+export type TransferInfo = ERC20Transfer | ERC721Transfer | NativeCoinTransfer;
+
+export interface Transaction {
+  type: TransactionType;
+  asset: TransferInfo; // Asset information
+  from: string; // Sender address
+  to: string; // Recipient address
+  created: Date; // Transaction time
+  status: TransactionStatus;
+}
+
+export interface zDAOAssets {
+  // total asset amount in USD
+  amountInUSD: number;
+  // list of assets in zDAO
+  assets: Asset[];
+}
+
+export interface TokenMetaData {
+  sender: string;
+  recipient: string; // asset recipient address
+  token: string; // asset token address
+  decimals: number;
+  symbol: string; // token symbol
+  amount: string; // BigNumber string mutiplied by decimals
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                   Params                                   */
+/* -------------------------------------------------------------------------- */
 
 export interface CreateZDAOParams {
   // zNA
@@ -74,13 +180,6 @@ export interface CreateZDAOParams {
   votingToken: string;
 }
 
-export interface zDAOAssets {
-  // total asset amount in USD
-  amountInUSD: number;
-  // list of assets in zDAO
-  assets: Asset[];
-}
-
 export interface CreateProposalParams {
   title: string;
   // If the proposal does not have content, no need to set this member
@@ -92,19 +191,22 @@ export interface CreateProposalParams {
 
 export interface VoteProposalParams {
   proposal: string; // proposal id
-  choice: 1 | 2; // Yes or No
+  choice: Choice; // Yes or No
 }
 
 export interface ExecuteProposalParams {
   proposal: string; // proposal id
 }
 
+/* -------------------------------------------------------------------------- */
+/*                             Instance Interfaces                            */
+/* -------------------------------------------------------------------------- */
 export interface SDKInstance {
   /**
    * Get all the list of zDAO
    * @returns list of zNA
    */
-  listZDAOs(): Promise<zNA[]>;
+  listZDAOs(): zNA[];
 
   /**
    * Create an zDAO instance by zNA
@@ -112,14 +214,14 @@ export interface SDKInstance {
    * @returns created zDAO instance
    * @exception throw Error if zNA does not exist
    */
-  getZDAOByZNA(zNA: zNA): Promise<ZDAOInstance>;
+  getZDAOByZNA(zNA: zNA): zDAO;
 
   /**
    * Check if zDAO exists
    * @param zNA zNA address
    * @returns true if zNA exists
    */
-  doesZDAOExist(zNA: zNA): Promise<boolean>;
+  doesZDAOExist(zNA: zNA): boolean;
 
   /**
    * Create zDAO from parameters for test
@@ -128,15 +230,20 @@ export interface SDKInstance {
    * @exception throw Error if owners is empty
    * @exception throw Error if title is empty
    */
-  createZDAOFromParams(param: CreateZDAOParams): Promise<void>;
+  createZDAOFromParams(param: CreateZDAOParams): void;
 }
 
-export interface ZDAOInstance {
-  /**
-   * Get zDAO
-   * @returns zDAO structure
-   */
-  getDetails(): zDAO;
+export interface zDAO {
+  id: zDAOId; // Global zDAO identifier
+  zNA: zNA; // Linked zNA
+  title: string; // zDAO title, zNA by default
+  creator: string; // Creator wallet address
+  // avatar uri which starts with https schema
+  // The frontend should use default avatar image if not defined
+  avatar?: string; // Avatar uri (https link)
+  network: string; // Chain id
+  safeAddress: string; // Gnosis Safe address
+  votingToken: string; // Voting token address
 
   /**
    * Get the list of zDAO assets and amount in USD
@@ -159,11 +266,35 @@ export interface ZDAOInstance {
   listProposals(from: number, count: number): Promise<Proposal[]>;
 
   /**
-   * Get proposal detail by proposal id
-   * @param proposalId proposal id
-   * @return proposal detail
+   * Create a proposal in zDAO
+   * @param signer signer wallet
+   * @param payload packaged parameters to create a proposal
+   * @returns proposal id if success
    */
-  getProposalDetails(proposalId: string): Promise<ProposalDetails>;
+  createProposal(
+    signer: Wallet,
+    payload: CreateProposalParams
+  ): Promise<Proposal>;
+}
+
+export interface Proposal {
+  id: string; // proposal id
+  type: string; // proposal type, by default 'single-choice'
+  author: string; // proposal creator
+  title: string; // proposal title
+  body?: string; // empty body if not defined
+  ipfs: string; // uri to ipfs which contains proposal information and signature
+  choices: VoteChoice[];
+  created: Date;
+  start: Date;
+  end: Date;
+  state: 'pending' | 'active' | 'closed';
+  network: string; // chain id
+  snapshot: string; // snapshot block number
+  scores: number[]; // scores per all the choices
+  votes: number; // number of voters
+
+  getTokenMetadata(): Promise<TokenMetaData>;
 
   /**
    * Get all the votes by proposal id filtering with the function parameter
@@ -173,23 +304,7 @@ export interface ZDAOInstance {
    * @param voter voter address to filter
    * @returns list of votes
    */
-  getProposalVotes(
-    proposalId: string,
-    from: number,
-    count: number,
-    voter: string
-  ): Promise<Vote[]>;
-
-  /**
-   * Get the result of proposal from votes
-   * @param proposal proposal information
-   * @param votes list of votes to calculate result
-   * @returns summarized voting result
-   */
-  getProposalResults(
-    proposal: ProposalDetails,
-    votes: Vote[]
-  ): Promise<ProposalResult>;
+  listVotes(from: number, count: number, voter: string): Promise<Vote[]>;
 
   /**
    * Get voting power of the user in zDAO
@@ -197,18 +312,7 @@ export interface ZDAOInstance {
    * @param proposal proposal information
    * @returns voting power as number
    */
-  getVotingPower(account: string, proposal: ProposalDetails): Promise<number>;
-
-  /**
-   * Create a proposal in zDAO
-   * @param signer signer wallet
-   * @param payload packaged parameters to create a proposal
-   * @returns proposal id if success
-   */
-  createProposal(
-    signer: ethers.Wallet,
-    payload: CreateProposalParams
-  ): Promise<string>;
+  getVotingPowerOfUser(account: string): Promise<number>;
 
   /**
    * Cast a vote on proposal
@@ -216,10 +320,7 @@ export interface ZDAOInstance {
    * @param payload packaged paramters to cast a vote
    * @returns vote id if successfully cast a vote
    */
-  voteProposal(
-    signer: ethers.Wallet,
-    payload: VoteProposalParams
-  ): Promise<string>;
+  vote(signer: Wallet, choice: Choice): Promise<string>;
 
   /**
    * Execute a proposal in zDAO
@@ -229,13 +330,5 @@ export interface ZDAOInstance {
    * @exception throw Error if signer is not Gnosis Safe owner
    * @exception throw Error if proposal does not conain meta data to transfer tokens
    */
-  executeProposal(
-    signer: ethers.Wallet,
-    payload: ExecuteProposalParams
-  ): Promise<TransactionResponse>;
+  execute(signer: Wallet): Promise<TransactionResponse>;
 }
-
-// // @feedback: consider adding a function `createZDAOFromParams`
-
-// // Just so you can test without zNA => zDAO lookup
-// // export const getZDAO = (zNA: string, snapshotSpace: string, otherprams: any) => zDAO;

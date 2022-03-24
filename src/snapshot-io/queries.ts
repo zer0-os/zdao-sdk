@@ -45,28 +45,34 @@ export const SPACES_QUERY = gql`
 `;
 
 export const PROPOSALS_QUERY = gql`
-  query Proposals($spaceId: String!, $skip: Int!, $first: Int!) {
+  query Proposals(
+    $spaceId: String!
+    $network: String!
+    $skip: Int!
+    $first: Int!
+  ) {
     proposals(
       first: $first
       skip: $skip
-      where: { space_in: [$spaceId] }
+      where: { space_in: [$spaceId], network: $network }
       orderBy: "created"
       orderDirection: desc
     ) {
       id
       type
+      author
       title
       body
       ipfs
       choices
+      created
       start
       end
-      snapshot
       state
-      author
-      space {
-        name
-      }
+      network
+      snapshot
+      scores
+      votes
     }
   }
 `;

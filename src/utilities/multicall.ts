@@ -2,7 +2,8 @@ import { Fragment, Interface, JsonFragment } from '@ethersproject/abi';
 import { CallOverrides, Contract } from '@ethersproject/contracts';
 import { JsonRpcProvider } from '@ethersproject/providers';
 
-import { MultiCallAddress, SupportedChainId } from '../config';
+import { MultiCallAddress } from '../config';
+import { SupportedChainId } from '../types';
 
 export interface Call {
   address: string; // Address of the contract
