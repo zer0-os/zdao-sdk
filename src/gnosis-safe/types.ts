@@ -68,7 +68,6 @@ export interface Transaction {
   asset: TransferInfo; // Asset information
   from: string; // Sender address
   to: string; // Recipient address
-  txHash?: string; // txHash address
   created: Date; // Transaction time
   status: TransactionStatus;
 }

@@ -57,16 +57,16 @@ describe('Snapshot test', async () => {
 
   it('should get proposal detail', async () => {
     const snapshot = createClient(config.snapshot, dao);
-    const proposalDetail = await snapshot.getProposalDetail(
+    const proposalDetails = await snapshot.getProposalDetails(
       '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989'
     );
-    expect(proposalDetail).to.be.not.equal(undefined);
+    expect(proposalDetails).to.be.not.equal(undefined);
 
-    expect(proposalDetail.metadata?.token).to.be.equal(dao.votingToken);
-    expect(proposalDetail.metadata?.recipient).to.be.equal(
+    expect(proposalDetails.metadata?.token).to.be.equal(dao.votingToken);
+    expect(proposalDetails.metadata?.recipient).to.be.equal(
       '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b'
     );
-    expect(proposalDetail.metadata?.amount).to.be.equal(
+    expect(proposalDetails.metadata?.amount).to.be.equal(
       ethers.BigNumber.from(10).pow(18).mul(2300).toString()
     );
   });
@@ -88,10 +88,10 @@ describe('Snapshot test', async () => {
     const snapshot = createClient(config.snapshot, dao);
     const proposalId =
       '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989';
-    const proposalDetail = await snapshot.getProposalDetail(proposalId);
+    const proposalDetails = await snapshot.getProposalDetails(proposalId);
     const votes = await snapshot.getProposalVotes(proposalId);
 
-    const results = await snapshot.getProposalResults(proposalDetail, votes);
+    const results = await snapshot.getProposalResults(proposalDetails, votes);
     expect(
       results.resultsByVoteBalance[0] + results.resultsByVoteBalance[1]
     ).to.be.equal(results.sumOfResultsBalance);
@@ -101,11 +101,11 @@ describe('Snapshot test', async () => {
     const snapshot = createClient(config.snapshot, dao);
     const proposalId =
       '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989';
-    const proposalDetail = await snapshot.getProposalDetail(proposalId);
+    const proposalDetails = await snapshot.getProposalDetails(proposalId);
 
     const vp = await snapshot.getVotingPower(
       '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-      proposalDetail
+      proposalDetails
     );
     expect(vp).to.be.gt(0);
   });

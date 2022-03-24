@@ -5,7 +5,7 @@ import { SupportedChainId } from './config';
 import { Asset, Transaction } from './gnosis-safe/types';
 import {
   Proposal,
-  ProposalDetail,
+  ProposalDetails,
   ProposalResult,
   TokenMetaData,
   Vote,
@@ -44,8 +44,7 @@ export type zDAOId = string;
 export interface zDAO {
   id: zDAOId; // Global zDAO identifier
   zNA: zNA; // Linked zNA
-  // If not defined, title should be zNA by default
-  title?: string; // zDAO title
+  title: string; // zDAO title, zNA by default
   creator: string; // Creator wallet address
   owners: string[]; // Owner wallet addresses
   // avatar uri which starts with https schema
@@ -56,7 +55,7 @@ export interface zDAO {
   votingToken: string; // Voting token address
 }
 
-export interface CreateZDAODto {
+export interface CreateZDAOParams {
   // zNA
   zNA: zNA;
   // zDAO title
@@ -82,7 +81,7 @@ export interface zDAOAssets {
   assets: Asset[];
 }
 
-export interface CreateProposalDto {
+export interface CreateProposalParams {
   title: string;
   // If the proposal does not have content, no need to set this member
   body?: string;
@@ -91,21 +90,21 @@ export interface CreateProposalDto {
   transfer: TokenMetaData;
 }
 
-export interface VoteProposalDto {
+export interface VoteProposalParams {
   proposal: string; // proposal id
   choice: 1 | 2; // Yes or No
 }
 
-export interface ExecuteProposalDto {
+export interface ExecuteProposalParams {
   proposal: string; // proposal id
 }
 
 export interface SDKInstance {
   /**
-   * Get all the list of zNA
+   * Get all the list of zDAO
    * @returns list of zNA
    */
-  listZNA(): Promise<zNA[]>;
+  listZDAOs(): Promise<zNA[]>;
 
   /**
    * Create an zDAO instance by zNA
@@ -129,7 +128,7 @@ export interface SDKInstance {
    * @exception throw Error if owners is empty
    * @exception throw Error if title is empty
    */
-  createZDAOFromParams(param: CreateZDAODto): Promise<void>;
+  createZDAOFromParams(param: CreateZDAOParams): Promise<void>;
 }
 
 export interface ZDAOInstance {
@@ -137,7 +136,7 @@ export interface ZDAOInstance {
    * Get zDAO
    * @returns zDAO structure
    */
-  getZDAO(): zDAO;
+  getDetails(): zDAO;
 
   /**
    * Get the list of zDAO assets and amount in USD
@@ -164,7 +163,7 @@ export interface ZDAOInstance {
    * @param proposalId proposal id
    * @return proposal detail
    */
-  getProposalDetail(proposalId: string): Promise<ProposalDetail>;
+  getProposalDetails(proposalId: string): Promise<ProposalDetails>;
 
   /**
    * Get all the votes by proposal id filtering with the function parameter
@@ -188,7 +187,7 @@ export interface ZDAOInstance {
    * @returns summarized voting result
    */
   getProposalResults(
-    proposal: ProposalDetail,
+    proposal: ProposalDetails,
     votes: Vote[]
   ): Promise<ProposalResult>;
 
@@ -198,7 +197,7 @@ export interface ZDAOInstance {
    * @param proposal proposal information
    * @returns voting power as number
    */
-  getVotingPower(account: string, proposal: ProposalDetail): Promise<number>;
+  getVotingPower(account: string, proposal: ProposalDetails): Promise<number>;
 
   /**
    * Create a proposal in zDAO
@@ -208,7 +207,7 @@ export interface ZDAOInstance {
    */
   createProposal(
     signer: ethers.Wallet,
-    payload: CreateProposalDto
+    payload: CreateProposalParams
   ): Promise<string>;
 
   /**
@@ -219,7 +218,7 @@ export interface ZDAOInstance {
    */
   voteProposal(
     signer: ethers.Wallet,
-    payload: VoteProposalDto
+    payload: VoteProposalParams
   ): Promise<string>;
 
   /**
@@ -232,7 +231,7 @@ export interface ZDAOInstance {
    */
   executeProposal(
     signer: ethers.Wallet,
-    payload: ExecuteProposalDto
+    payload: ExecuteProposalParams
   ): Promise<TransactionResponse>;
 }
 

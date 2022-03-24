@@ -34,7 +34,7 @@ describe('zNA test', async () => {
       votingToken: 'voting token',
     });
 
-    const zNAs: zNA[] = await sdkInstance.listZNA();
+    const zNAs: zNA[] = await sdkInstance.listZDAOs();
     expect(zNAs.length).to.be.equal(1);
   });
 
@@ -75,7 +75,7 @@ describe('zNA test', async () => {
 
     const zdaoInstance = await expect(sdkInstance.getZDAOByZNA('zDAO.eth')).to
       .be.not.rejected;
-    const zdao = zdaoInstance.getZDAO();
+    const zdao = zdaoInstance.getDetails();
     expect(zdao.zNA).to.be.equal('zDAO.eth');
   });
 

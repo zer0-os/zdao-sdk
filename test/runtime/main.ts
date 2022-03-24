@@ -35,7 +35,7 @@ const main = async () => {
   });
 
   const daoInstance: ZDAOInstance = await sdkInstance.getZDAOByZNA(defZNA);
-  const dao: zDAO = daoInstance.getZDAO();
+  const dao: zDAO = daoInstance.getDetails();
 
   const assets = await daoInstance.listAssets();
   assert.equal(assets.assets.length >= 2, true);

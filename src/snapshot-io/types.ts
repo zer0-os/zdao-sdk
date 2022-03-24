@@ -7,15 +7,15 @@ export interface TokenMetaData {
   recipient: string; // asset recipient address
   token: string; // asset token address
   decimals: number;
-  symbol: string;
+  symbol: string; // token symbol
   amount: string; // BigNumber string mutiplied by decimals
 }
 
 export interface Proposal {
   id: string; // proposal id
   type: string; // only used for snapshot, @todo
-  author: string;
-  title: string;
+  author: string; // proposal creator
+  title: string; // proposal title
   body?: string; // empty body if not defined
   ipfs: string; // uri to ipfs which contains proposal information and signature
   choices: VoteChoice[];
@@ -23,8 +23,10 @@ export interface Proposal {
   start: Date;
   end: Date;
   state: 'pending' | 'active' | 'closed';
-  network: string;
-  snapshot: string;
+  network: string; // chain id
+  snapshot: string; // snapshot block number
+  scores: number[]; // scores per all the choices
+  votes: number; // number of voters
 }
 
 // @feedback: example:
@@ -33,9 +35,7 @@ export interface ProposalMetadata extends TokenMetaData {
   abi: string;
 }
 
-export interface ProposalDetail extends Proposal {
-  // undefined if no one votes
-  scores?: number[];
+export interface ProposalDetails extends Proposal {
   // metadata includes meta information for sending tokens to user.
   // undefined if there is no token transfer in the propossal.
   metadata?: ProposalMetadata;

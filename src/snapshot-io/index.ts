@@ -6,16 +6,16 @@ import cloneDeep from 'lodash/cloneDeep';
 
 import TransferAbi from '../config/constants/abi/transfer.json';
 import {
-  CreateProposalDto,
+  CreateProposalParams,
   SnapshotConfig,
-  VoteProposalDto,
+  VoteProposalParams,
   zDAO,
 } from '../types';
 import { t } from '../utilities/messages';
 import { PROPOSAL_QUERY, PROPOSALS_QUERY, VOTES_QUERY } from './queries';
 import {
   Proposal,
-  ProposalDetail,
+  ProposalDetails,
   ProposalResult,
   Vote,
   VoteChoice,
@@ -133,18 +133,20 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
       body: response.body,
       ipfs: response.ipfs,
       choices: Object.values(VoteChoice), // response.choices,
-      created: new Date(response.start * 1000),
+      created: new Date(response.created * 1000),
       start: new Date(response.start * 1000),
       end: new Date(response.end * 1000),
-      status: response.state,
+      state: response.state,
       network: dao.network,
       snapshot: response.snapshot,
+      scores: response.scores,
+      votes: response.votes,
     }));
   };
 
-  const getProposalDetail = async (
+  const getProposalDetails = async (
     proposalId: string
-  ): Promise<ProposalDetail> => {
+  ): Promise<ProposalDetails> => {
     const response = await graphQLQuery(
       PROPOSAL_QUERY,
       {
@@ -197,6 +199,7 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
       network: response.network,
       snapshot: response.snapshot,
       scores: response.scores,
+      votes: response.votes,
       metadata: metadata,
     };
   };
@@ -228,7 +231,7 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
   };
 
   const getProposalResults = async (
-    proposal: ProposalDetail,
+    proposal: ProposalDetails,
     votes: Vote[]
   ): Promise<ProposalResult> => {
     if (!proposal.metadata) {
@@ -282,7 +285,7 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
 
   const getVotingPower = async (
     account: string,
-    proposal: ProposalDetail
+    proposal: ProposalDetails
   ): Promise<number> => {
     if (!proposal.metadata) {
       throw Error(t('empty-metadata'));
@@ -308,7 +311,7 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
 
   const createProposal = async (
     signer: ethers.Wallet,
-    payload: CreateProposalDto
+    payload: CreateProposalParams
   ): Promise<string> => {
     const startDateTime = new Date();
     const response: any = await clientEIP712.proposal(signer, signer.address, {
@@ -347,7 +350,7 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
 
   const voteProposal = async (
     signer: ethers.Wallet,
-    payload: VoteProposalDto
+    payload: VoteProposalParams
   ): Promise<string> => {
     const response: any = await clientEIP712.vote(signer, signer.address, {
       space: dao.zNA,
@@ -361,7 +364,7 @@ export const createClient = (config: SnapshotConfig, dao: zDAO) => {
 
   return {
     listProposals,
-    getProposalDetail,
+    getProposalDetails,
     getProposalVotes,
     getProposalResults,
     getVotingPower,

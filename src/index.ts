@@ -7,17 +7,17 @@ import { Transaction } from './gnosis-safe/types';
 import { createClient as createSnapshotClient } from './snapshot-io';
 import {
   Proposal,
-  ProposalDetail,
+  ProposalDetails,
   ProposalResult,
   Vote,
 } from './snapshot-io/types';
 import {
   Config,
-  CreateProposalDto,
-  CreateZDAODto,
-  ExecuteProposalDto,
+  CreateProposalParams,
+  CreateZDAOParams,
+  ExecuteProposalParams,
   SDKInstance,
-  VoteProposalDto,
+  VoteProposalParams,
   zDAO,
   zDAOAssets,
   ZDAOInstance,
@@ -28,6 +28,8 @@ import { t } from './utilities/messages';
 import { createClient as createZNAClient } from './zNA';
 
 export * from './config';
+export * from './gnosis-safe/types';
+export * from './snapshot-io/types';
 export * from './types';
 
 export const createSDKInstance = (config: Config): SDKInstance => {
@@ -45,8 +47,8 @@ export const createSDKInstance = (config: Config): SDKInstance => {
   //   return spaces;
   // };
 
-  const listZNA = async (): Promise<zNA[]> => {
-    const zNAs: zNA[] = await naming.listZNA();
+  const listZDAOs = async (): Promise<zNA[]> => {
+    const zNAs: zNA[] = await naming.listZDAOs();
     const merged = zNAs.concat(...daos.map((dao: zDAO) => dao.zNA));
     return merged.filter((c, index) => merged.indexOf(c) === index);
   };
@@ -91,7 +93,9 @@ export const createSDKInstance = (config: Config): SDKInstance => {
     return true;
   };
 
-  const createZDAOFromParams = async (param: CreateZDAODto): Promise<void> => {
+  const createZDAOFromParams = async (
+    param: CreateZDAOParams
+  ): Promise<void> => {
     if (await doesZDAOExist(param.zNA)) {
       throw Error(t('already-exist-zdao'));
     }
@@ -122,7 +126,7 @@ export const createSDKInstance = (config: Config): SDKInstance => {
   };
 
   return {
-    listZNA,
+    listZDAOs,
     getZDAOByZNA,
     doesZDAOExist,
     createZDAOFromParams,
@@ -134,7 +138,7 @@ const createZDAOInstance = (config: Config, dao: zDAO): ZDAOInstance => {
   const gnosisSafe = createGnosisSafeClient(config.gnosisSafe, dao);
 
   const instance: ZDAOInstance = {
-    getZDAO: (): zDAO => {
+    getDetails: (): zDAO => {
       return dao;
     },
 
@@ -150,8 +154,10 @@ const createZDAOInstance = (config: Config, dao: zDAO): ZDAOInstance => {
       return await snapshot.listProposals(from, count);
     },
 
-    getProposalDetail: async (proposalId: string): Promise<ProposalDetail> => {
-      return await snapshot.getProposalDetail(proposalId);
+    getProposalDetails: async (
+      proposalId: string
+    ): Promise<ProposalDetails> => {
+      return await snapshot.getProposalDetails(proposalId);
     },
 
     getProposalVotes: async (
@@ -164,7 +170,7 @@ const createZDAOInstance = (config: Config, dao: zDAO): ZDAOInstance => {
     },
 
     getProposalResults: async (
-      proposal: ProposalDetail,
+      proposal: ProposalDetails,
       votes: Vote[]
     ): Promise<ProposalResult> => {
       return await snapshot.getProposalResults(proposal, votes);
@@ -172,61 +178,60 @@ const createZDAOInstance = (config: Config, dao: zDAO): ZDAOInstance => {
 
     getVotingPower: async (
       account: string,
-      proposal: ProposalDetail
+      proposal: ProposalDetails
     ): Promise<number> => {
       return await snapshot.getVotingPower(account, proposal);
     },
 
     createProposal: async (
       signer: ethers.Wallet,
-      payload: CreateProposalDto
+      payload: CreateProposalParams
     ): Promise<string> => {
       return await snapshot.createProposal(signer, payload);
     },
 
     voteProposal: async (
       signer: ethers.Wallet,
-      payload: VoteProposalDto
+      payload: VoteProposalParams
     ): Promise<string> => {
       return await snapshot.voteProposal(signer, payload);
     },
 
     executeProposal: async (
       signer: ethers.Wallet,
-      payload: ExecuteProposalDto
+      payload: ExecuteProposalParams
     ): Promise<TransactionResponse> => {
       const isOwner = await gnosisSafe.isOwnerAddress(signer, signer.address);
       if (!isOwner) {
         throw Error(t('not-gnosis-owner'));
       }
 
-      const proposalDetail: ProposalDetail = await snapshot.getProposalDetail(
-        payload.proposal
-      );
+      const proposalDetails: ProposalDetails =
+        await snapshot.getProposalDetails(payload.proposal);
 
-      if (!proposalDetail.metadata) {
+      if (!proposalDetails.metadata) {
         throw Error(t('empty-metadata'));
       }
 
       if (
-        !proposalDetail.metadata?.token ||
-        proposalDetail.metadata.token.length < 1
+        !proposalDetails.metadata?.token ||
+        proposalDetails.metadata.token.length < 1
       ) {
         // Ether transfer
         return await gnosisSafe.transferEther(
           signer,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          proposalDetail.metadata!.recipient,
+          proposalDetails.metadata!.recipient,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          proposalDetail.metadata!.amount.toString()
+          proposalDetails.metadata!.amount.toString()
         );
       } else {
         // ERC20 transfer
         return await gnosisSafe.transferERC20(
           signer,
-          proposalDetail.metadata.token,
-          proposalDetail.metadata.recipient,
-          proposalDetail.metadata.amount.toString()
+          proposalDetails.metadata.token,
+          proposalDetails.metadata.recipient,
+          proposalDetails.metadata.amount.toString()
         );
       }
     },

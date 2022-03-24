@@ -15,7 +15,7 @@ export const createClient = (config: zNAConfig) => {
   /**
    * Get all the list of zDAO
    */
-  const listZNA = async (): Promise<zNA[]> => {
+  const listZDAOs = async (): Promise<zNA[]> => {
     // return await contract.getDAOIds();
     throw Error(t('not-implemented'));
   };
@@ -41,7 +41,7 @@ export const createClient = (config: zNAConfig) => {
   };
 
   return {
-    listZNA,
+    listZDAOs,
     getZDAOIdByZNA,
     getDAOMetadataUri,
     doesZDAOExist,
