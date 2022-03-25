@@ -40,6 +40,7 @@ export interface Config {
 
 export type zNA = string;
 export type zDAOId = string;
+export type ProposalId = string;
 
 /* -------------------------------------------------------------------------- */
 /*                                Enumerations                                */
@@ -206,7 +207,7 @@ export interface SDKInstance {
    * Get all the list of zDAO
    * @returns list of zNA
    */
-  listZDAOs(): zNA[];
+  listZDAOs(): Promise<zNA[]>;
 
   /**
    * Create an zDAO instance by zNA
@@ -214,14 +215,14 @@ export interface SDKInstance {
    * @returns created zDAO instance
    * @exception throw Error if zNA does not exist
    */
-  getZDAOByZNA(zNA: zNA): zDAO;
+  getZDAOByZNA(zNA: zNA): Promise<zDAO>;
 
   /**
    * Check if zDAO exists
    * @param zNA zNA address
    * @returns true if zNA exists
    */
-  doesZDAOExist(zNA: zNA): boolean;
+  doesZDAOExist(zNA: zNA): Promise<boolean>;
 
   /**
    * Create zDAO from parameters for test
@@ -230,7 +231,7 @@ export interface SDKInstance {
    * @exception throw Error if owners is empty
    * @exception throw Error if title is empty
    */
-  createZDAOFromParams(param: CreateZDAOParams): void;
+  createZDAOFromParams(param: CreateZDAOParams): Promise<void>;
 }
 
 export interface zDAO {
@@ -266,6 +267,14 @@ export interface zDAO {
   listProposals(from: number, count: number): Promise<Proposal[]>;
 
   /**
+   * Get the specific proposal
+   * @param id proposal id
+   * @returns proposal instance
+   * @exception throw Error if not exist proposal id
+   */
+  getProposal(id: ProposalId): Promise<Proposal>;
+
+  /**
    * Create a proposal in zDAO
    * @param signer signer wallet
    * @param payload packaged parameters to create a proposal
@@ -278,9 +287,9 @@ export interface zDAO {
 }
 
 export interface Proposal {
-  id: string; // proposal id
+  id: ProposalId; // proposal id
   type: string; // proposal type, by default 'single-choice'
-  author: string; // proposal creator
+  author: string; // proposal creator address
   title: string; // proposal title
   body?: string; // empty body if not defined
   ipfs: string; // uri to ipfs which contains proposal information and signature
@@ -293,12 +302,14 @@ export interface Proposal {
   snapshot: string; // snapshot block number
   scores: number[]; // scores per all the choices
   votes: number; // number of voters
+  // token meta data is stored in ipfs, this member can be valid after calling
+  // `getTokenMetadata` function
+  metadata?: TokenMetaData;
 
   getTokenMetadata(): Promise<TokenMetaData>;
 
   /**
    * Get all the votes by proposal id filtering with the function parameter
-   * @param proposalId proposal id
    * @param from start index
    * @param count voting count to fetch
    * @param voter voter address to filter
@@ -309,7 +320,6 @@ export interface Proposal {
   /**
    * Get voting power of the user in zDAO
    * @param account account address
-   * @param proposal proposal information
    * @returns voting power as number
    */
   getVotingPowerOfUser(account: string): Promise<number>;
@@ -317,7 +327,7 @@ export interface Proposal {
   /**
    * Cast a vote on proposal
    * @param signer signer wallet
-   * @param payload packaged paramters to cast a vote
+   * @param choice voter's choice
    * @returns vote id if successfully cast a vote
    */
   vote(signer: Wallet, choice: Choice): Promise<string>;
@@ -325,7 +335,6 @@ export interface Proposal {
   /**
    * Execute a proposal in zDAO
    * @param signer signer wallet
-   * @param payload packaged parameters to execute a proposal
    * @returns transaction response
    * @exception throw Error if signer is not Gnosis Safe owner
    * @exception throw Error if proposal does not conain meta data to transfer tokens

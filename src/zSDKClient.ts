@@ -1,6 +1,6 @@
 import shortid from 'shortid';
 
-import { Config, CreateZDAOParams, SDKInstance, zNA } from './types';
+import { Config, CreateZDAOParams, SDKInstance, zDAO, zNA } from './types';
 import { t } from './utilities/messages';
 import zDAOClient from './zDAOClient';
 import zNAClient from './zNAClient';
@@ -16,38 +16,42 @@ class zSDKClient implements SDKInstance {
     this._params = [];
   }
 
-  listZDAOs(): zNA[] {
+  listZDAOs(): Promise<zNA[]> {
     // return this._zNAClient.listZDAOs();
-    return this._params.map((param: CreateZDAOParams) => param.zNA);
+    return Promise.resolve(
+      this._params.map((param: CreateZDAOParams) => param.zNA)
+    );
   }
 
-  getZDAOByZNA(zNA: zNA): zDAOClient {
+  getZDAOByZNA(zNA: zNA): Promise<zDAO> {
     const found = this._params.find((dao: CreateZDAOParams) => dao.zNA === zNA);
     if (!found) {
       throw Error(t('not-found-zdao'));
     }
-    return new zDAOClient(
-      this._config,
-      shortid.generate(),
-      zNA,
-      found.title,
-      found.creator,
-      found.avatar,
-      found.network.toString(),
-      found.safeAddress,
-      found.votingToken
+    return Promise.resolve(
+      new zDAOClient(
+        this._config,
+        shortid.generate(),
+        zNA,
+        found.title,
+        found.creator,
+        found.avatar,
+        found.network.toString(),
+        found.safeAddress,
+        found.votingToken
+      )
     );
   }
 
-  doesZDAOExist(zNA: zNA): boolean {
+  doesZDAOExist(zNA: zNA): Promise<boolean> {
     const found = this._params.find(
       (param: CreateZDAOParams) => param.zNA === zNA
     );
-    return found ? true : false;
+    return Promise.resolve(found ? true : false);
   }
 
-  createZDAOFromParams(param: CreateZDAOParams) {
-    if (this.doesZDAOExist(param.zNA)) {
+  async createZDAOFromParams(param: CreateZDAOParams) {
+    if (await this.doesZDAOExist(param.zNA)) {
       throw Error(t('already-exist-zdao'));
     }
     if (param.title.length < 1) {

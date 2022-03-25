@@ -3,7 +3,14 @@ import { ethers } from 'ethers';
 
 import GnosisSafeClient from './gnosis-safe';
 import SnapshotClient from './snapshot-io';
-import { Choice, Proposal, TokenMetaData, Vote, VoteChoice } from './types';
+import {
+  Choice,
+  Proposal,
+  ProposalId,
+  TokenMetaData,
+  Vote,
+  VoteChoice,
+} from './types';
 import { t } from './utilities/messages';
 import zDAOClient from './zDAOClient';
 
@@ -11,7 +18,7 @@ class zProposal implements Proposal {
   private readonly _zDAO: zDAOClient;
   private readonly _snapshotClient: SnapshotClient;
   private readonly _gnosisSafeClient: GnosisSafeClient;
-  private readonly _id: string;
+  private readonly _id: ProposalId;
   private readonly _type: string;
   private readonly _author: string;
   private readonly _title: string;
@@ -32,7 +39,7 @@ class zProposal implements Proposal {
     zDAO: zDAOClient,
     snapshotClient: SnapshotClient,
     gnosisSafeClient: GnosisSafeClient,
-    id: string,
+    id: ProposalId,
     type: string,
     author: string,
     title: string,
@@ -133,7 +140,7 @@ class zProposal implements Proposal {
   }
 
   async getTokenMetadata(): Promise<TokenMetaData> {
-    if (this._ipfs) {
+    if (!this._ipfs) {
       throw Error(t('empty-voting-token'));
     }
     if (this._metadata) {

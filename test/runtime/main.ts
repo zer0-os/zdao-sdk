@@ -2,9 +2,15 @@ import { assert } from 'chai';
 import { ethers } from 'ethers';
 
 import { createSDKInstance } from '../../src';
-import { developmentConfiguration, SupportedChainId } from '../../src/config';
-import { Asset, AssetType } from '../../src/gnosis-safe/types';
-import { Config, SDKInstance, zDAO, ZDAOInstance } from '../../src/types';
+import { developmentConfiguration } from '../../src/config';
+import {
+  Asset,
+  AssetType,
+  Config,
+  SDKInstance,
+  SupportedChainId,
+  zDAO,
+} from '../../src/types';
 import { setEnv } from '../shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
@@ -34,10 +40,9 @@ const main = async () => {
     votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
   });
 
-  const daoInstance: ZDAOInstance = await sdkInstance.getZDAOByZNA(defZNA);
-  const dao: zDAO = daoInstance.getDetails();
+  const dao: zDAO = sdkInstance.getZDAOByZNA(defZNA);
 
-  const assets = await daoInstance.listAssets();
+  const assets = await dao.listAssets();
   assert.equal(assets.assets.length >= 2, true);
 
   // should contain ether token
@@ -52,8 +57,8 @@ const main = async () => {
   );
   assert.isNotNull(votingToken);
   assert.equal(votingToken?.address, dao.votingToken);
+
+  console.log('Finished successfully');
 };
 
-async () => {
-  await main();
-};
+main();

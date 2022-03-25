@@ -75,8 +75,8 @@ describe('zNA test', async () => {
 
     const zdaoInstance = await expect(sdkInstance.getZDAOByZNA('zDAO.eth')).to
       .be.not.rejected;
-    const zdao = zdaoInstance.getDetails();
-    expect(zdao.zNA).to.be.equal('zDAO.eth');
+
+    expect(zdaoInstance.zNA).to.be.equal('zDAO.eth');
   });
 
   it('should test with contract integration', async () => {

@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 
-import { SupportedChainId } from '../../src/config';
+import { SupportedChainId } from '../../src/types';
 
 dotenv.config();
 

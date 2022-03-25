@@ -16,6 +16,7 @@ import {
   Config,
   CreateProposalParams,
   Proposal,
+  ProposalId,
   Transaction,
   TransactionStatus,
   TransactionType,
@@ -174,7 +175,7 @@ class zDAOClient implements zDAO {
     });
   }
 
-  async listProposals(from: number, count: number): Promise<Proposal[]> {
+  async listProposals(from = 0, count = 3000): Promise<Proposal[]> {
     const proposals: SnapshotProposal[] =
       await this._snapshotClient.listProposals(
         this._zNA,
@@ -206,6 +207,35 @@ class zDAOClient implements zDAO {
           proposal.votes
         )
     );
+  }
+
+  async getProposal(id: ProposalId): Promise<Proposal> {
+    const proposal: SnapshotProposal = await this._snapshotClient.getProposal(
+      id
+    );
+
+    const instance = new zProposal(
+      this,
+      this._snapshotClient,
+      this._gnosisSafeClient,
+      proposal.id,
+      proposal.type,
+      proposal.author,
+      proposal.title,
+      proposal.body ?? '',
+      proposal.ipfs,
+      proposal.choices.map((choice: string) => choice as VoteChoice),
+      proposal.created,
+      proposal.start,
+      proposal.end,
+      proposal.state,
+      proposal.network,
+      proposal.snapshot,
+      proposal.scores,
+      proposal.votes
+    );
+    await instance.getTokenMetadata();
+    return instance;
   }
 
   async createProposal(
