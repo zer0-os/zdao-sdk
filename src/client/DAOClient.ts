@@ -7,10 +7,11 @@ import {
   TransferInfo as GnosisTransferInfo,
 } from '@gnosis.pm/safe-react-gateway-sdk';
 import { ethers } from 'ethers';
+import { cloneDeep } from 'lodash';
 
-import GnosisSafeClient from './gnosis-safe';
-import SnapshotClient from './snapshot-io';
-import { SnapshotProposal } from './snapshot-io/types';
+import GnosisSafeClient from '../gnosis-safe';
+import SnapshotClient from '../snapshot-io';
+import { SnapshotProposal } from '../snapshot-io/types';
 import {
   AssetType,
   Config,
@@ -24,85 +25,60 @@ import {
   VoteChoice,
   zDAO,
   zDAOAssets,
-  zDAOId,
-  zNA,
-} from './types';
-import zProposal from './zProposal';
+  zDAOProperties,
+} from '../types';
+import ProposalClient from './ProposalClient';
 
-class zDAOClient implements zDAO {
+class DAOClient implements zDAO {
   private readonly _config: Config;
   protected readonly _snapshotClient: SnapshotClient;
   protected readonly _gnosisSafeClient: GnosisSafeClient;
-  private readonly _id: zDAOId;
-  private readonly _zNA: zNA;
-  private readonly _title: string;
-  private readonly _creator: string;
-  private readonly _avatar: string | undefined;
-  private readonly _network: string;
-  private readonly _safeAddress: string;
-  private readonly _votingToken: string;
+  protected readonly _properties: zDAOProperties;
 
-  constructor(
-    config: Config,
-    id: zDAOId,
-    zNA: zNA,
-    title: string,
-    creator: string,
-    avatar: string | undefined,
-    network: string,
-    safeAddress: string,
-    votingToken: string
-  ) {
+  constructor(config: Config, properties: zDAOProperties) {
     this._config = config;
-    this._id = id;
-    this._zNA = zNA;
-    this._title = title;
-    this._creator = creator;
-    this._avatar = avatar;
-    this._network = network;
-    this._safeAddress = safeAddress;
-    this._votingToken = votingToken;
+    this._properties = cloneDeep(properties);
 
     this._snapshotClient = new SnapshotClient(config.snapshot);
     this._gnosisSafeClient = new GnosisSafeClient(config.gnosisSafe);
   }
 
   get id() {
-    return this._id;
+    return this._properties.id;
   }
 
   get zNA() {
-    return this._zNA;
+    return this._properties.zNA;
   }
 
   get title() {
-    return this._title;
+    return this._properties.title;
   }
 
   get creator() {
-    return this._creator;
+    return this._properties.creator;
   }
 
   get avatar() {
-    return this._avatar;
+    return this._properties.avatar;
   }
 
   get network() {
-    return this._network;
+    return this._properties.network;
   }
 
   get safeAddress() {
-    return this._safeAddress;
+    return this._properties.safeAddress;
   }
 
   get votingToken() {
-    return this._votingToken;
+    return this._properties.votingToken;
   }
 
   async listAssets(): Promise<zDAOAssets> {
     const balances = await this._gnosisSafeClient.listAssets(
-      this._safeAddress,
-      this._network
+      this.safeAddress,
+      this.network
     );
 
     return {
@@ -123,8 +99,8 @@ class zDAOClient implements zDAO {
   async listTransactions(): Promise<Transaction[]> {
     const transactions: GnosisTransaction[] =
       await this._gnosisSafeClient.listTransactions(
-        this._safeAddress,
-        this._network
+        this.safeAddress,
+        this.network
       );
 
     const mapToTransferInfo = (info: GnosisTransferInfo): TransferInfo => {
@@ -178,34 +154,33 @@ class zDAOClient implements zDAO {
   async listProposals(from = 0, count = 3000): Promise<Proposal[]> {
     const proposals: SnapshotProposal[] =
       await this._snapshotClient.listProposals(
-        this._zNA,
-        this._network,
+        this.zNA,
+        this.network,
         from,
         count
       );
 
     return proposals.map(
       (proposal: SnapshotProposal): Proposal =>
-        new zProposal(
-          this,
-          this._snapshotClient,
-          this._gnosisSafeClient,
-          proposal.id,
-          proposal.type,
-          proposal.author,
-          proposal.title,
-          proposal.body ?? '',
-          proposal.ipfs,
-          proposal.choices.map((choice: string) => choice as VoteChoice),
-          proposal.created,
-          proposal.start,
-          proposal.end,
-          proposal.state,
-          proposal.network,
-          proposal.snapshot,
-          proposal.scores,
-          proposal.votes
-        )
+        new ProposalClient(this, this._snapshotClient, this._gnosisSafeClient, {
+          id: proposal.id,
+          type: proposal.type,
+          author: proposal.author,
+          title: proposal.title,
+          body: proposal.body ?? '',
+          ipfs: proposal.ipfs,
+          choices: proposal.choices.map(
+            (choice: string) => choice as VoteChoice
+          ),
+          created: proposal.created,
+          start: proposal.start,
+          end: proposal.end,
+          state: proposal.state,
+          network: proposal.network,
+          snapshot: proposal.snapshot,
+          scores: proposal.scores,
+          votes: proposal.votes,
+        })
     );
   }
 
@@ -214,25 +189,27 @@ class zDAOClient implements zDAO {
       id
     );
 
-    const instance = new zProposal(
+    const instance = new ProposalClient(
       this,
       this._snapshotClient,
       this._gnosisSafeClient,
-      proposal.id,
-      proposal.type,
-      proposal.author,
-      proposal.title,
-      proposal.body ?? '',
-      proposal.ipfs,
-      proposal.choices.map((choice: string) => choice as VoteChoice),
-      proposal.created,
-      proposal.start,
-      proposal.end,
-      proposal.state,
-      proposal.network,
-      proposal.snapshot,
-      proposal.scores,
-      proposal.votes
+      {
+        id: proposal.id,
+        type: proposal.type,
+        author: proposal.author,
+        title: proposal.title,
+        body: proposal.body ?? '',
+        ipfs: proposal.ipfs,
+        choices: proposal.choices.map((choice: string) => choice as VoteChoice),
+        created: proposal.created,
+        start: proposal.start,
+        end: proposal.end,
+        state: proposal.state,
+        network: proposal.network,
+        snapshot: proposal.snapshot,
+        scores: proposal.scores,
+        votes: proposal.votes,
+      }
     );
     await instance.getTokenMetadata();
     return instance;
@@ -241,48 +218,53 @@ class zDAOClient implements zDAO {
   async createProposal(
     signer: ethers.Wallet,
     payload: CreateProposalParams
-  ): Promise<zProposal> {
+  ): Promise<ProposalClient> {
     const { id: proposalId } = await this._snapshotClient.createProposal(
       signer,
-      this._zNA,
-      payload.title,
-      payload.body,
-      Object.values(VoteChoice),
-      payload.duration,
-      payload.snapshot,
-      this._network,
-      this._safeAddress,
-      payload.transfer.recipient,
-      payload.transfer.token,
-      payload.transfer.decimals,
-      payload.transfer.symbol,
-      payload.transfer.amount
+      {
+        spaceId: this.zNA,
+        title: payload.title,
+        body: payload.body ?? '',
+        choices: Object.values(VoteChoice),
+        duration: payload.duration,
+        snapshot: payload.snapshot,
+        network: this.network,
+        abi: payload.transfer.abi,
+        sender: this.safeAddress,
+        recipient: payload.transfer.recipient,
+        token: payload.transfer.token,
+        decimals: payload.transfer.decimals,
+        symbol: payload.transfer.symbol,
+        amount: payload.transfer.amount,
+      }
     );
 
     const proposal = await this._snapshotClient.getProposal(proposalId);
-    const instance = new zProposal(
+    const instance = new ProposalClient(
       this,
       this._snapshotClient,
       this._gnosisSafeClient,
-      proposal.id,
-      proposal.type,
-      proposal.author,
-      proposal.title,
-      proposal.body,
-      proposal.ipfs,
-      proposal.choices.map((choice: string) => choice as VoteChoice),
-      proposal.created,
-      proposal.start,
-      proposal.end,
-      proposal.state,
-      proposal.network,
-      proposal.snapshot,
-      proposal.scores,
-      proposal.votes
+      {
+        id: proposal.id,
+        type: proposal.type,
+        author: proposal.author,
+        title: proposal.title,
+        body: proposal.body ?? '',
+        ipfs: proposal.ipfs,
+        choices: proposal.choices.map((choice: string) => choice as VoteChoice),
+        created: proposal.created,
+        start: proposal.start,
+        end: proposal.end,
+        state: proposal.state,
+        network: proposal.network,
+        snapshot: proposal.snapshot,
+        scores: proposal.scores,
+        votes: proposal.votes,
+      }
     );
     await instance.getTokenMetadata();
     return instance;
   }
 }
 
-export default zDAOClient;
+export default DAOClient;

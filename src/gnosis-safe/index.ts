@@ -1,4 +1,3 @@
-import { TransactionResponse } from '@ethersproject/abstract-provider';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
@@ -46,7 +45,7 @@ class GnosisSafeClient {
     signer: ethers.Wallet,
     recipient: string,
     amount: BigNumberish
-  ): Promise<TransactionResponse> {
+  ): Promise<ethers.providers.TransactionResponse> {
     const service = new SafeService(this._config.serviceUri);
     const ethAdapter = new EthersAdapter({
       ethers,
@@ -67,7 +66,7 @@ class GnosisSafeClient {
     token: string,
     recipient: string,
     amount: BigNumberish
-  ): Promise<TransactionResponse> {
+  ): Promise<ethers.providers.TransactionResponse> {
     const service = new SafeService(this._config.serviceUri);
     const ethAdapter = new EthersAdapter({
       ethers,

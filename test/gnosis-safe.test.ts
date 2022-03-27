@@ -2,6 +2,7 @@ import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { ethers } from 'ethers';
 
+import DAOClient from '../src/client/DAOClient';
 import { developmentConfiguration } from '../src/config';
 import GnosisSafeClient from '../src/gnosis-safe';
 import {
@@ -13,7 +14,7 @@ import {
   Transaction,
   zDAO,
 } from '../src/types';
-import zDAOClient from '../src/zDAOClient';
+import { errorMessageForError } from '../src/utilities/messages';
 import { setEnv } from './shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
@@ -35,7 +36,7 @@ describe('Gnosis Safe test', async () => {
     );
     config = developmentConfiguration(env.zDAOCore, provider);
     const pk = process.env.PRIVATE_KEY;
-    if (!pk) throw Error('No private key');
+    if (!pk) throw Error(errorMessageForError('no-private-key'));
     signer = new ethers.Wallet(pk, provider);
 
     const dao = {
@@ -48,17 +49,16 @@ describe('Gnosis Safe test', async () => {
       votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
     };
 
-    daoInstance = new zDAOClient(
-      config,
-      dao.id,
-      dao.zNA,
-      dao.title,
-      dao.creator,
-      undefined,
-      dao.network,
-      dao.safeAddress,
-      dao.votingToken
-    );
+    daoInstance = new DAOClient(config, {
+      id: dao.id,
+      zNA: dao.zNA,
+      title: dao.title,
+      creator: dao.creator,
+      avatar: undefined,
+      network: dao.network,
+      safeAddress: dao.safeAddress,
+      votingToken: dao.votingToken,
+    });
   });
 
   it('should list assets with test tokens', async () => {

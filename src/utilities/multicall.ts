@@ -8,8 +8,7 @@ import { SupportedChainId } from '../types';
 export interface Call {
   address: string; // Address of the contract
   name: string; // Function name on the contract (example: balanceOf)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  params?: any[]; // Function params
+  params?: unknown[]; // Function params
 }
 
 export interface MulticallOptions extends CallOverrides {

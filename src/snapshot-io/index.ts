@@ -4,10 +4,18 @@ import { ethers } from 'ethers';
 import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
 import { cloneDeep } from 'lodash';
 
-import TransferAbi from '../config/constants/abi/transfer.json';
 import { SnapshotConfig } from '../types';
+import { timestamp } from '../utilities/date';
+import { errorMessageForError } from '../utilities/messages';
 import { PROPOSAL_QUERY, PROPOSALS_QUERY, VOTES_QUERY } from './queries';
-import { SnapshotProposal, SnapshotVote } from './types';
+import {
+  CreateProposalParams,
+  ERC20BalanceOfParams,
+  SnapshotProposal,
+  SnapshotProposalResponse,
+  SnapshotVote,
+  VoteProposalParams,
+} from './types';
 
 class SnapshotClient {
   private readonly _config: SnapshotConfig;
@@ -141,23 +149,19 @@ class SnapshotClient {
     }));
   }
 
-  async getERCBalanceOf(
-    spaceId: string,
-    network: string,
-    snapshot: number,
-    token: string,
-    decimals: number,
-    symbol: string,
-    voter: string
-  ): Promise<number> {
-    const strategies = this.generateStrategies(token, decimals, symbol);
+  async getERC20BalanceOf(params: ERC20BalanceOfParams): Promise<number> {
+    const strategies = this.generateStrategies(
+      params.token,
+      params.decimals,
+      params.symbol
+    );
 
     let scores: any = await Client.utils.getScores(
-      spaceId,
+      params.spaceId,
       strategies,
-      network,
-      [voter],
-      snapshot
+      params.network,
+      [params.voter],
+      params.snapshot
     );
     scores = scores.map((score: any) =>
       Object.values(score).reduce((a, b: any) => a + b, 0)
@@ -167,73 +171,61 @@ class SnapshotClient {
 
   async createProposal(
     signer: ethers.Wallet,
-    spaceId: string,
-    title: string,
-    body: string | undefined,
-    choices: string[],
-    duration: number,
-    snapshot: number,
-    network: string,
-    sender: string,
-    recipient: string,
-    token: string,
-    decimals: number,
-    symbol: string,
-    amount: string
-  ): Promise<{
-    id: string;
-    ipfs: string;
-  }> {
+    params: CreateProposalParams
+  ): Promise<SnapshotProposalResponse> {
     const startDateTime = new Date();
     const response: any = await this._clientEIP712.proposal(
       signer,
       signer.address,
       {
         from: signer.address,
-        space: spaceId,
-        timestamp: parseInt((new Date().getTime() / 1e3).toFixed()),
+        space: params.spaceId,
+        timestamp: timestamp(new Date()),
         type: 'single-choice',
-        title,
-        body: body ?? '',
-        choices,
-        start: Math.floor(startDateTime.getTime() / 1e3),
-        end: Math.floor(addSeconds(startDateTime, duration).getTime() / 1e3),
-        snapshot,
-        network,
+        title: params.title,
+        body: params.body,
+        choices: params.choices,
+        start: timestamp(startDateTime),
+        end: timestamp(addSeconds(startDateTime, params.duration)),
+        snapshot: params.snapshot,
+        network: params.network,
         strategies: JSON.stringify(
-          this.generateStrategies(token, decimals, symbol)
+          this.generateStrategies(params.token, params.decimals, params.symbol)
         ),
         plugins: '{}',
         metadata: JSON.stringify({
-          abi: TransferAbi,
-          sender,
-          recipient,
-          token,
-          decimals,
-          amount,
+          abi: params.abi,
+          sender: params.sender,
+          recipient: params.recipient,
+          token: params.token,
+          decimals: params.decimals,
+          amount: params.amount,
         }),
       }
     );
+
+    if (!response.id || !response.ipfs) {
+      throw Error(errorMessageForError('failed-create-proposal'));
+    }
+
     return {
       id: response.id,
-      ipfs: response.ipfsHash,
+      ipfs: response.ipfs,
     };
   }
 
   async voteProposal(
     signer: ethers.Wallet,
-    spaceId: string,
-    proposalId: string,
-    choice: number
+    params: VoteProposalParams
   ): Promise<string> {
     const response: any = await this._clientEIP712.vote(
       signer,
       signer.address,
       {
-        space: spaceId,
-        proposal: proposalId,
+        space: params.spaceId,
+        proposal: params.proposalId,
         type: 'single-choice', // payload.proposalType,
-        choice: choice,
+        choice: params.choice,
         metadata: JSON.stringify({}),
       }
     );

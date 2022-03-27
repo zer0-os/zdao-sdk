@@ -1,23 +1,23 @@
 import shortid from 'shortid';
 
+import DAOClient from './client/DAOClient';
 import { Config, CreateZDAOParams, SDKInstance, zDAO, zNA } from './types';
-import { t } from './utilities/messages';
-import zDAOClient from './zDAOClient';
-import zNAClient from './zNAClient';
+import { errorMessageForError } from './utilities/messages';
+import zDAORegistryClient from './zDAORegistry';
 
-class zSDKClient implements SDKInstance {
+class SDKInstanceClient implements SDKInstance {
   private readonly _config: Config;
-  private readonly _zNAClient: zNAClient;
+  private readonly _zDAORegistryClient: zDAORegistryClient;
   protected _params: CreateZDAOParams[];
 
   constructor(config: Config) {
     this._config = config;
-    this._zNAClient = new zNAClient(config.zNA);
+    this._zDAORegistryClient = new zDAORegistryClient(config.zNA);
     this._params = [];
   }
 
   listZDAOs(): Promise<zNA[]> {
-    // return this._zNAClient.listZDAOs();
+    // return this._zDAORegistryClient.listZDAOs();
     return Promise.resolve(
       this._params.map((param: CreateZDAOParams) => param.zNA)
     );
@@ -26,20 +26,19 @@ class zSDKClient implements SDKInstance {
   getZDAOByZNA(zNA: zNA): Promise<zDAO> {
     const found = this._params.find((dao: CreateZDAOParams) => dao.zNA === zNA);
     if (!found) {
-      throw Error(t('not-found-zdao'));
+      throw Error(errorMessageForError('not-found-zdao'));
     }
     return Promise.resolve(
-      new zDAOClient(
-        this._config,
-        shortid.generate(),
+      new DAOClient(this._config, {
+        id: shortid.generate(),
         zNA,
-        found.title,
-        found.creator,
-        found.avatar,
-        found.network.toString(),
-        found.safeAddress,
-        found.votingToken
-      )
+        title: found.title,
+        creator: found.creator,
+        avatar: found.avatar,
+        network: found.network.toString(),
+        safeAddress: found.safeAddress,
+        votingToken: found.votingToken,
+      })
     );
   }
 
@@ -52,23 +51,23 @@ class zSDKClient implements SDKInstance {
 
   async createZDAOFromParams(param: CreateZDAOParams) {
     if (await this.doesZDAOExist(param.zNA)) {
-      throw Error(t('already-exist-zdao'));
+      throw Error(errorMessageForError('already-exist-zdao'));
     }
     if (param.title.length < 1) {
-      throw Error('empty-zdao-title');
+      throw Error(errorMessageForError('empty-zdao-title'));
     }
     if (param.safeAddress.length < 1) {
-      throw Error('empty-gnosis-address');
+      throw Error(errorMessageForError('empty-gnosis-address'));
     }
     if (param.owners.length < 1) {
-      throw Error(t('empty-gnosis-owners'));
+      throw Error(errorMessageForError('empty-gnosis-owners'));
     }
     if (param.votingToken.length < 1) {
-      throw Error(t('empty-voting-token'));
+      throw Error(errorMessageForError('empty-voting-token'));
     }
 
     this._params.push(param);
   }
 }
 
-export default zSDKClient;
+export default SDKInstanceClient;

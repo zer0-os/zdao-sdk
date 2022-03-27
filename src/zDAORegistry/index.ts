@@ -1,10 +1,10 @@
 import { ethers } from 'ethers';
 
-import zDAOCore from './config/constants/abi/zDAOCore.json';
-import { zDAOId, zNA, zNAConfig } from './types';
-import { t } from './utilities/messages';
+import zDAOCore from '../config/constants/abi/zDAOCore.json';
+import { zDAOId, zNA, zNAConfig } from '../types';
+import { errorMessageForError } from '../utilities/messages';
 
-class zNAClient {
+class zDAORegistryClient {
   private readonly _config: zNAConfig;
   protected readonly _contract: ethers.Contract;
 
@@ -18,20 +18,20 @@ class zNAClient {
   }
 
   listZDAOs(): Promise<zNA[]> {
-    throw Error(t('not-implemented'));
+    throw Error(errorMessageForError('not-implemented'));
   }
 
   getZDAOIdByZNA(_: zNA): Promise<zDAOId> {
-    throw Error(t('not-implemented'));
+    throw Error(errorMessageForError('not-implemented'));
   }
 
   getDAOMetadataUri(_: zDAOId): Promise<string> {
-    throw Error(t('not-implemented'));
+    throw Error(errorMessageForError('not-implemented'));
   }
 
   doesZDAOExist(_: zNA): Promise<boolean> {
-    throw Error(t('not-implemented'));
+    throw Error(errorMessageForError('not-implemented'));
   }
 }
 
-export default zNAClient;
+export default zDAORegistryClient;

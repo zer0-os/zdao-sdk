@@ -2,9 +2,11 @@ import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { BigNumber, ethers } from 'ethers';
 
+import DAOClient from '../src/client/DAOClient';
 import { developmentConfiguration } from '../src/config';
+import TransferAbi from '../src/config/constants/abi/transfer.json';
 import { Config, Proposal, SupportedChainId, zDAO } from '../src/types';
-import zDAOClient from '../src/zDAOClient';
+import { errorMessageForError } from '../src/utilities/messages';
 import { setEnv } from './shared/setupEnv';
 
 use(chaiAsPromised.default);
@@ -24,7 +26,7 @@ describe('Snapshot test', async () => {
     );
     config = developmentConfiguration(env.zDAOCore, provider);
     const pk = process.env.PRIVATE_KEY;
-    if (!pk) throw Error('No private key');
+    if (!pk) throw Error(errorMessageForError('no-private-key'));
     signer = new ethers.Wallet(pk, provider);
 
     const dao = {
@@ -37,17 +39,16 @@ describe('Snapshot test', async () => {
       votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
     };
 
-    daoInstance = new zDAOClient(
-      config,
-      dao.id,
-      dao.zNA,
-      dao.title,
-      dao.creator,
-      undefined,
-      dao.network,
-      dao.safeAddress,
-      dao.votingToken
-    );
+    daoInstance = new DAOClient(config, {
+      id: dao.id,
+      zNA: dao.zNA,
+      title: dao.title,
+      creator: dao.creator,
+      avatar: undefined,
+      network: dao.network,
+      safeAddress: dao.safeAddress,
+      votingToken: dao.votingToken,
+    });
   });
 
   it('should list proposals', async () => {
@@ -110,6 +111,7 @@ describe('Snapshot test', async () => {
       duration: 300, // 5 min
       snapshot: blockNumber,
       transfer: {
+        abi: JSON.stringify(TransferAbi),
         sender: daoInstance.safeAddress,
         recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
         token: daoInstance.votingToken,
