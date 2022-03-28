@@ -31,6 +31,8 @@
     "@snapshot-labs/snapshot.js": "0.3.56",
     "@types/lodash": "4.14.180",
     "@types/shortid": "0.0.29",
+    "@zero-tech/zauction-sdk": "^0.0.44",
+    "@zero-tech/zns-sdk": "^0.1.18",
     "cross-fetch": "3.1.5",
     "date-fns": "2.28.0",
     "dotenv": "16.0.0",
