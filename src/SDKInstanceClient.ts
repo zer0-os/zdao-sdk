@@ -22,30 +22,10 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async listZDAOs(): Promise<zNA[]> {
-    const zNAs: zNA[] = this._params.map(
-      (param: CreateZDAOParams) => param.zNA
-    );
-
-    zNAs.push(...(await this._zDAORegistryClient.listZDAOs()));
-    return zNAs;
+    return await this._zDAORegistryClient.listZDAOs();
   }
 
   async getZDAOByZNA(zNA: zNA): Promise<zDAO> {
-    // find zDAO from param arrays
-    const found = this._params.find((dao: CreateZDAOParams) => dao.zNA === zNA);
-    if (found) {
-      return new DAOClient(this._config, {
-        id: shortid.generate(),
-        ens: zNA,
-        zNA,
-        title: found.title,
-        creator: found.creator,
-        avatar: found.avatar,
-        network: found.network.toString(),
-        safeAddress: found.safeAddress,
-        votingToken: found.votingToken,
-      });
-    }
     // check if zDAO exists
     if (!(await this.doesZDAOExist(zNA))) {
       throw new Error(errorMessageForError('not-found-zdao'));
@@ -88,12 +68,6 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
-    const found = this._params.find(
-      (param: CreateZDAOParams) => param.zNA === zNA
-    );
-    if (found) {
-      return true;
-    }
     return await this._zDAORegistryClient.doesZDAOExist(zNA);
   }
 
@@ -112,6 +86,28 @@ class SDKInstanceClient implements SDKInstance {
     }
 
     this._params.push(param);
+  }
+
+  getZDAOFromParams(zNA: zNA): Promise<zDAO> {
+    const found = this._params.find(
+      (param: CreateZDAOParams) => param.zNA === zNA
+    );
+    if (!found) {
+      throw Error(errorMessageForError('not-found-zdao'));
+    }
+    return Promise.resolve(
+      new DAOClient(this._config, {
+        id: shortid.generate(),
+        ens: found.ens,
+        zNA: found.zNA,
+        title: found.title,
+        creator: found.creator,
+        avatar: found.avatar,
+        network: found.network.toString(),
+        safeAddress: found.safeAddress,
+        votingToken: found.votingToken,
+      })
+    );
   }
 }
 

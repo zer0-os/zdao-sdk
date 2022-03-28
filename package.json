@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc --build --verbose ./tsconfig.build.json",
     "lint": "eslint --fix src",
-    "format": "prettier --write ./src/**/*.ts ./test/**/*.test.ts",
+    "format": "prettier --write ./src/**/*.ts ./test/**/*.test.ts ./src/**/*.json",
     "prepublish": "yarn run build",
     "test": "mocha -r ts-node/register 'test/**/*.test.ts' --exit --timeout 150000",
     "runtime": "ts-node ./test/runtime/main.ts"

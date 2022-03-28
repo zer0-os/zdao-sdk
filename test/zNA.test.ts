@@ -25,6 +25,7 @@ describe('zNA test', async () => {
 
   it('should create successfully', async () => {
     await sdkInstance.createZDAOFromParams({
+      ens: 'joshupgig.eth',
       zNA: 'joshupgig.eth',
       title: 'zDAO',
       creator: 'creator',
@@ -39,6 +40,7 @@ describe('zNA test', async () => {
 
   it('should throw error if create same zNA', async () => {
     await sdkInstance.createZDAOFromParams({
+      ens: 'joshupgig.eth',
       zNA: 'zDAO.eth',
       title: 'zDAO',
       creator: 'creator',
@@ -49,6 +51,7 @@ describe('zNA test', async () => {
 
     await expect(
       sdkInstance.createZDAOFromParams({
+        ens: 'joshupgig.eth',
         zNA: 'zDAO.eth',
         title: 'zDAO1',
         creator: 'creator1',
@@ -61,6 +64,7 @@ describe('zNA test', async () => {
 
   it('should get if created successfully', async () => {
     await sdkInstance.createZDAOFromParams({
+      ens: 'joshupgig.eth',
       zNA: 'zDAO.eth',
       title: 'zDAO',
       creator: 'creator',

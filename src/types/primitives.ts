@@ -1,4 +1,3 @@
-export type ENS = string;
 export type zNA = string;
 export type zNAId = string;
 export type zDAOId = string;
