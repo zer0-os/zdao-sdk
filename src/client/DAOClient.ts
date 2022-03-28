@@ -155,37 +155,53 @@ class DAOClient implements zDAO {
     });
   }
 
-  async listProposals(from = 0, count = 3000): Promise<Proposal[]> {
-    const proposals: SnapshotProposal[] =
-      await this._snapshotClient.listProposals(
-        this.zNA,
-        this.network,
-        from,
-        count
-      );
+  async listProposals(): Promise<Proposal[]> {
+    const count = 3000;
+    let from = 0;
+    let numberOfResults = count;
+    const proposals: Proposal[] = [];
+    while (numberOfResults === count) {
+      const results: SnapshotProposal[] =
+        await this._snapshotClient.listProposals(
+          this.zNA,
+          this.network,
+          from,
+          count
+        );
 
-    return proposals.map(
-      (proposal: SnapshotProposal): Proposal =>
-        new ProposalClient(this, this._snapshotClient, this._gnosisSafeClient, {
-          id: proposal.id,
-          type: proposal.type,
-          author: proposal.author,
-          title: proposal.title,
-          body: proposal.body ?? '',
-          ipfs: proposal.ipfs,
-          choices: proposal.choices.map(
-            (choice: string) => choice as VoteChoice
-          ),
-          created: proposal.created,
-          start: proposal.start,
-          end: proposal.end,
-          state: proposal.state,
-          network: proposal.network,
-          snapshot: proposal.snapshot,
-          scores: proposal.scores,
-          votes: proposal.votes,
-        })
-    );
+      proposals.push(
+        ...results.map(
+          (proposal: SnapshotProposal): Proposal =>
+            new ProposalClient(
+              this,
+              this._snapshotClient,
+              this._gnosisSafeClient,
+              {
+                id: proposal.id,
+                type: proposal.type,
+                author: proposal.author,
+                title: proposal.title,
+                body: proposal.body ?? '',
+                ipfs: proposal.ipfs,
+                choices: proposal.choices.map(
+                  (choice: string) => choice as VoteChoice
+                ),
+                created: proposal.created,
+                start: proposal.start,
+                end: proposal.end,
+                state: proposal.state,
+                network: proposal.network,
+                snapshot: proposal.snapshot,
+                scores: proposal.scores,
+                votes: proposal.votes,
+              }
+            )
+        )
+      );
+      from += results.length;
+      numberOfResults = results.length;
+    }
+    return proposals;
   }
 
   async getProposal(id: ProposalId): Promise<Proposal> {

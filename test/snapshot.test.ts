@@ -31,6 +31,7 @@ describe('Snapshot test', async () => {
 
     const dao = {
       id: defZNA,
+      ens: defZNA,
       zNA: defZNA,
       title: 'zDAO Testing Space 1',
       creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
@@ -41,6 +42,7 @@ describe('Snapshot test', async () => {
 
     daoInstance = new DAOClient(config, {
       id: dao.id,
+      ens: dao.ens,
       zNA: dao.zNA,
       title: dao.title,
       creator: dao.creator,
@@ -52,7 +54,7 @@ describe('Snapshot test', async () => {
   });
 
   it('should list proposals', async () => {
-    const list = await daoInstance.listProposals(0, 30000);
+    const list = await daoInstance.listProposals();
 
     expect(list.length).to.be.gt(0);
 

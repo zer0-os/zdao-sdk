@@ -58,11 +58,9 @@ export interface zDAO extends zDAOProperties {
 
   /**
    * Get the list of the proposals created in the zDAO
-   * @param from start index
-   * @param count number of proposals to fetch
    * @return list of proposals
    */
-  listProposals(from: number, count: number): Promise<Proposal[]>;
+  listProposals(): Promise<Proposal[]>;
 
   /**
    * Get the specific proposal
