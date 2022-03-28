@@ -3,8 +3,10 @@ import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import {
   getBalances,
+  getCollectibles,
   getTransactionHistory,
   SafeBalanceResponse,
+  SafeCollectibleResponse,
   Transaction as Transaction,
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
@@ -105,6 +107,18 @@ class GnosisSafeClient {
         trusted: false,
       }
     );
+  }
+
+  async listCollectibles(
+    safeAddress: string,
+    network: string
+  ): Promise<SafeCollectibleResponse[]> {
+    const address = ethers.utils.getAddress(safeAddress);
+
+    return await getCollectibles(this._config.gateway, network, address, {
+      exclude_spam: true,
+      trusted: false,
+    });
   }
 
   async listTransactions(

@@ -85,9 +85,14 @@ class DAOClient implements zDAO {
       this.network
     );
 
+    const collectibles = await this._gnosisSafeClient.listCollectibles(
+      this.safeAddress,
+      this.network
+    );
+
     return {
       amountInUSD: Number(balances.fiatTotal),
-      assets: balances.items.map((item: any) => ({
+      coins: balances.items.map((item: any) => ({
         type: item.tokenInfo.type as string as AssetType,
         address: item.tokenInfo.address,
         decimals: item.tokenInfo.decimals,
@@ -96,6 +101,13 @@ class DAOClient implements zDAO {
         logoUri: item.tokenInfo.logoUri ?? undefined,
         amount: item.balance,
         amountInUSD: Number(item.fiatBalance),
+      })),
+      collectibles: collectibles.map((item: any) => ({
+        address: item.address,
+        name: item.tokenName,
+        symbol: item.tokenSymbol,
+        id: item.id,
+        logoUri: item.logoUri,
       })),
     };
   }

@@ -6,8 +6,9 @@ import DAOClient from '../src/client/DAOClient';
 import { developmentConfiguration } from '../src/config';
 import GnosisSafeClient from '../src/gnosis-safe';
 import {
-  Asset,
   AssetType,
+  Coin,
+  Collectible,
   Config,
   ERC20Transfer,
   SupportedChainId,
@@ -65,20 +66,28 @@ describe('Gnosis Safe test', async () => {
 
   it('should list assets with test tokens', async () => {
     const assets = await daoInstance.listAssets();
-    expect(assets.assets.length).to.gte(2);
+    expect(assets.coins.length).to.gte(2);
 
     // should contain ether token
-    const nativeToken = assets.assets.find(
-      (item: Asset) => item.type === AssetType.NATIVE_TOKEN
+    const nativeToken = assets.coins.find(
+      (item: Coin) => item.type === AssetType.NATIVE_TOKEN
     );
     expect(nativeToken).to.be.not.equal(undefined);
 
     // should contain zDAOToken
-    const votingToken = assets.assets.find(
-      (item: Asset) => item.type === AssetType.ERC20
+    const votingToken = assets.coins.find(
+      (item: Coin) => item.type === AssetType.ERC20
     );
     expect(votingToken).to.be.not.equal(undefined);
     expect(votingToken?.address).to.be.equal(daoInstance.votingToken);
+
+    // should contain collectibles
+    const collectible = assets.collectibles.find(
+      (item: Collectible) =>
+        item.id ===
+        '82385085784613862901980440101751000042155349045784956518423312851800568596744'
+    );
+    expect(collectible).to.be.not.equal(undefined);
   });
 
   it('should list transactions', async () => {

@@ -12,9 +12,9 @@ export interface Vote {
   power: number; // voting power
 }
 
-export interface Asset {
+export interface Coin {
   type: AssetType;
-  // address to ERC20 token or ERC721 token, or empty if native coin
+  // address to ERC20 token, or empty if native coin
   address: string;
   // token name
   name: string;
@@ -28,6 +28,19 @@ export interface Asset {
   amount: string;
   // token amount in USD
   amountInUSD: number;
+}
+
+export interface Collectible {
+  // address to ERC721 token
+  address: string;
+  // token name
+  name: string;
+  // token symbol
+  symbol: string;
+  // token id
+  id: string;
+  // token logo
+  logoUri?: string;
 }
 
 export interface ERC20Transfer {
@@ -66,10 +79,12 @@ export interface Transaction {
 }
 
 export interface zDAOAssets {
-  // total asset amount in USD
+  // total coin amount in USD
   amountInUSD: number;
   // list of assets in zDAO
-  assets: Asset[];
+  coins: Coin[];
+  // list of collectibles in zDAO
+  collectibles: Collectible[];
 }
 
 export interface TokenMetaData {
