@@ -31,6 +31,7 @@ class SDKInstanceClient implements SDKInstance {
     return Promise.resolve(
       new DAOClient(this._config, {
         id: shortid.generate(),
+        ens: zNA,
         zNA,
         title: found.title,
         creator: found.creator,

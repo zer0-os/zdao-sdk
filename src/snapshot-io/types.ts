@@ -1,5 +1,7 @@
+import { ENS } from '../types';
+
 export interface ERC20BalanceOfParams {
-  spaceId: string;
+  spaceId: ENS;
   network: string;
   snapshot: number;
   token: string;
@@ -9,7 +11,7 @@ export interface ERC20BalanceOfParams {
 }
 
 export interface CreateProposalParams {
-  spaceId: string;
+  spaceId: ENS;
   title: string;
   body: string;
   choices: string[];
@@ -26,7 +28,7 @@ export interface CreateProposalParams {
 }
 
 export interface VoteProposalParams {
-  spaceId: string;
+  spaceId: ENS;
   proposalId: string;
   choice: number;
 }

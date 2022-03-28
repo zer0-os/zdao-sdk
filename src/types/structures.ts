@@ -4,7 +4,7 @@ import {
   TransactionType,
   VoteChoice,
 } from './enumerations';
-import { Choice, ProposalId, zDAOId, zNA } from './primitives';
+import { Choice, ENS, ProposalId, zDAOId, zNA } from './primitives';
 
 export interface Vote {
   voter: string;
@@ -84,6 +84,7 @@ export interface TokenMetaData {
 
 export interface zDAOProperties {
   id: zDAOId; // Global zDAO identifier
+  ens: ENS; // Ethereum Name Service
   zNA: zNA; // Linked zNA
   title: string; // zDAO title, zNA by default
   creator: string; // Creator wallet address

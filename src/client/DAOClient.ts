@@ -47,6 +47,10 @@ class DAOClient implements zDAO {
     return this._properties.id;
   }
 
+  get ens() {
+    return this._properties.ens;
+  }
+
   get zNA() {
     return this._properties.zNA;
   }
@@ -222,7 +226,7 @@ class DAOClient implements zDAO {
     const { id: proposalId } = await this._snapshotClient.createProposal(
       signer,
       {
-        spaceId: this.zNA,
+        spaceId: this.ens,
         title: payload.title,
         body: payload.body ?? '',
         choices: Object.values(VoteChoice),
