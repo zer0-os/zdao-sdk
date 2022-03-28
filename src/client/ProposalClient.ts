@@ -124,19 +124,29 @@ class ProposalClient implements Proposal {
     return this._properties.metadata;
   }
 
-  async listVotes(from = 0, count = 30000, voter = ''): Promise<Vote[]> {
-    const votes = await this._snapshotClient.listVotes(
-      this.id,
-      from,
-      count,
-      voter
-    );
-
-    return votes.map((vote: any) => ({
-      voter: vote.voter,
-      choice: vote.choice as Choice,
-      power: vote.vp,
-    }));
+  async listVotes(): Promise<Vote[]> {
+    const count = 30000;
+    let from = 0;
+    const votes: Vote[] = [];
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const results = await this._snapshotClient.listVotes(
+        this.id,
+        from,
+        count,
+        ''
+      );
+      votes.push(
+        ...results.map((vote: any) => ({
+          voter: vote.voter,
+          choice: vote.choice as Choice,
+          power: vote.power,
+        }))
+      );
+      if (results.length < count) break;
+      from += results.length;
+    }
+    return votes;
   }
 
   async getVotingPowerOfUser(account: string): Promise<number> {

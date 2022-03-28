@@ -15,8 +15,6 @@ export interface CreateZDAOParams {
   network: SupportedChainId;
   // adress to Gnosis Safe
   safeAddress: string;
-  // addresses to Gnosis Safe owners
-  owners: string[];
   // ERC20 token address to cast a vote
   votingToken: string;
 }

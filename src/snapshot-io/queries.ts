@@ -131,7 +131,6 @@ export const VOTES_QUERY = gql`
       voter
       choice
       vp
-      vp_by_strategy
     }
   }
 `;

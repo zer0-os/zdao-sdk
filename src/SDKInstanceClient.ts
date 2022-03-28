@@ -59,9 +59,6 @@ class SDKInstanceClient implements SDKInstance {
     if (param.safeAddress.length < 1) {
       throw Error(errorMessageForError('empty-gnosis-address'));
     }
-    if (param.owners.length < 1) {
-      throw Error(errorMessageForError('empty-gnosis-owners'));
-    }
     if (param.votingToken.length < 1) {
       throw Error(errorMessageForError('empty-voting-token'));
     }

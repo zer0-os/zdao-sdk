@@ -33,14 +33,10 @@ const main = async () => {
     creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
     network: SupportedChainId.RINKEBY,
     safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
-    owners: [
-      '0x0905939Cae1b09287872c5D96a41617fF3Bb777a',
-      '0xa1bD4AaB00f53e7C34bf5fD50DCc885cB918f2dE',
-    ],
     votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
   });
 
-  const dao: zDAO = sdkInstance.getZDAOByZNA(defZNA);
+  const dao: zDAO = await sdkInstance.getZDAOByZNA(defZNA);
 
   const assets = await dao.listAssets();
   assert.equal(assets.assets.length >= 2, true);

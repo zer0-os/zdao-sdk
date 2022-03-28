@@ -93,12 +93,9 @@ export interface Proposal extends ProposalProperties {
 
   /**
    * Get all the votes by proposal id filtering with the function parameter
-   * @param from start index
-   * @param count voting count to fetch
-   * @param voter voter address to filter
    * @returns list of votes
    */
-  listVotes(from: number, count: number, voter: string): Promise<Vote[]>;
+  listVotes(): Promise<Vote[]>;
 
   /**
    * Get voting power of the user in zDAO

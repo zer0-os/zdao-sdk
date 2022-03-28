@@ -83,7 +83,7 @@ describe('Snapshot test', async () => {
       '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989'
     );
 
-    const votes = await proposal.listVotes(0, 3000, '');
+    const votes = await proposal.listVotes();
 
     expect(votes.length).to.be.equal(1);
     expect(votes[0].choice).to.be.equal(1);
