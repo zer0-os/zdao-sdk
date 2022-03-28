@@ -27,7 +27,7 @@ export const developmentConfiguration = (
     contract,
     provider,
   },
-  zNS: configuration.mainnetConfiguration(provider),
+  zNS: configuration.rinkebyConfiguration(provider),
 });
 
 export const productionConfiguration = (
@@ -47,5 +47,5 @@ export const productionConfiguration = (
     contract,
     provider,
   },
-  zNS: configuration.rinkebyConfiguration(provider),
+  zNS: configuration.mainnetConfiguration(provider),
 });

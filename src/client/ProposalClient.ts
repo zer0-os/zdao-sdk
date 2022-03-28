@@ -92,7 +92,7 @@ class ProposalClient implements Proposal {
 
   async getTokenMetadata(): Promise<TokenMetaData> {
     if (!this.ipfs) {
-      throw Error(errorMessageForError('empty-voting-token'));
+      throw new Error(errorMessageForError('empty-voting-token'));
     }
     if (this.metadata) {
       return this.metadata;
@@ -100,7 +100,7 @@ class ProposalClient implements Proposal {
 
     const ipfsData = await this._snapshotClient.ipfsGet(this.ipfs);
     if (!ipfsData.data || !ipfsData.data.message) {
-      throw Error(errorMessageForError('empty-voting-token'));
+      throw new Error(errorMessageForError('empty-voting-token'));
     }
 
     const metadataJson = JSON.parse(ipfsData.data.message.metadata);
@@ -151,10 +151,10 @@ class ProposalClient implements Proposal {
 
   async getVotingPowerOfUser(account: string): Promise<number> {
     if (!this.metadata) {
-      throw Error(errorMessageForError('empty-metadata'));
+      throw new Error(errorMessageForError('empty-metadata'));
     }
     return this._snapshotClient.getERC20BalanceOf({
-      spaceId: this._zDAO.zNA,
+      spaceId: this._zDAO.ens,
       network: this.network,
       snapshot: parseInt(this.snapshot),
       token: this.metadata.token,
@@ -166,7 +166,7 @@ class ProposalClient implements Proposal {
 
   async vote(signer: ethers.Wallet, choice: Choice): Promise<VoteId> {
     return this._snapshotClient.voteProposal(signer, {
-      spaceId: this._zDAO.zNA,
+      spaceId: this._zDAO.ens,
       proposalId: this.id,
       choice,
     });
@@ -177,15 +177,15 @@ class ProposalClient implements Proposal {
   ): Promise<ethers.providers.TransactionResponse> {
     const isOwner = await this._gnosisSafeClient.isOwnerAddress(
       signer,
-      this._zDAO.zNA,
+      this._zDAO.ens,
       signer.address
     );
     if (!isOwner) {
-      throw Error(errorMessageForError('not-gnosis-owner'));
+      throw new Error(errorMessageForError('not-gnosis-owner'));
     }
 
     if (!this.metadata) {
-      throw Error(errorMessageForError('empty-metadata'));
+      throw new Error(errorMessageForError('empty-metadata'));
     }
 
     if (!this.metadata?.token || this.metadata.token.length < 1) {

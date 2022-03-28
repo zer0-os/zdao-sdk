@@ -51,6 +51,10 @@ const ErrorMessages = [
     key: 'not-found-strategy-in-snapshot',
     value: 'Not found any token related strategyies in snapshot',
   },
+  {
+    key: 'invalid-ens',
+    value: 'Invalid ENS',
+  },
 ] as const;
 
 export type ErrorType = typeof ErrorMessages[number]['key'];
@@ -61,5 +65,5 @@ export const errorMessageForError = (error: ErrorType): string => {
 };
 
 export const raiseError = (error: ErrorType): void => {
-  throw Error(errorMessageForError(error));
+  throw new Error(errorMessageForError(error));
 };

@@ -2,7 +2,6 @@ import shortid from 'shortid';
 
 import DAOClient from './client/DAOClient';
 import SnapshotClient from './snapshot-io';
-import { SnapshotSpace } from './snapshot-io/types';
 import { Config, CreateZDAOParams, SDKInstance, zDAO, zNA } from './types';
 import { errorMessageForError } from './utilities/messages';
 import zDAORegistryClient from './zDAORegistry';
@@ -31,24 +30,19 @@ class SDKInstanceClient implements SDKInstance {
       throw new Error(errorMessageForError('not-found-zdao'));
     }
 
-    // load all the spaces
-    const spaces: SnapshotSpace[] = await this._snapshotClient.listSpaces(
-      this._config.snapshot.network
-    );
-
     // get zDAO information associated with zNA
     const zDAORecord: ZDAORecord =
       await this._zDAORegistryClient.getZDAORecordByZNA(zNA);
 
     // should be found by ens in snapshot
-    const space = spaces.find((space) => space.id === zDAORecord.ens);
+    const space = await this._snapshotClient.getSpaceDetails(zDAORecord.ens);
     if (!space) {
       throw new Error(errorMessageForError('not-found-ens-in-snapshot'));
     }
 
     // strategy is used to check if voter holds minimum token amount
     const strategy = space.strategies.find(
-      (strategy) => !strategy.params.address && !strategy.params.decimals
+      (strategy) => strategy.params.address && strategy.params.decimals
     );
     if (!strategy) {
       throw new Error(errorMessageForError('not-found-strategy-in-snapshot'));
@@ -57,7 +51,7 @@ class SDKInstanceClient implements SDKInstance {
     return new DAOClient(this._config, {
       id: zDAORecord.id,
       ens: zDAORecord.ens,
-      zNA,
+      zNAs: zDAORecord.zNAs,
       title: space.name,
       creator: space.admins.length > 0 ? space.admins[0] : zDAORecord.ens,
       avatar: space.avatar,
@@ -76,16 +70,16 @@ class SDKInstanceClient implements SDKInstance {
       (item: CreateZDAOParams) => item.zNA === param.zNA
     );
     if (found) {
-      throw Error(errorMessageForError('already-exist-zdao'));
+      throw new Error(errorMessageForError('already-exist-zdao'));
     }
     if (param.title.length < 1) {
-      throw Error(errorMessageForError('empty-zdao-title'));
+      throw new Error(errorMessageForError('empty-zdao-title'));
     }
     if (param.safeAddress.length < 1) {
-      throw Error(errorMessageForError('empty-gnosis-address'));
+      throw new Error(errorMessageForError('empty-gnosis-address'));
     }
     if (param.votingToken.length < 1) {
-      throw Error(errorMessageForError('empty-voting-token'));
+      throw new Error(errorMessageForError('empty-voting-token'));
     }
 
     this._params.push(param);
@@ -94,7 +88,7 @@ class SDKInstanceClient implements SDKInstance {
       new DAOClient(this._config, {
         id: shortid.generate(),
         ens: param.ens,
-        zNA: param.zNA,
+        zNAs: [param.zNA],
         title: param.title,
         creator: param.creator,
         avatar: param.avatar,

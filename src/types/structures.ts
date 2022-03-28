@@ -100,7 +100,7 @@ export interface TokenMetaData {
 export interface zDAOProperties {
   id: zDAOId; // Global zDAO identifier
   ens: ENS; // Ethereum Name Service
-  zNA: zNA; // Linked zNA
+  zNAs: zNA[]; // Linked zNA
   title: string; // zDAO title, zNA by default
   creator: string; // Creator wallet address
   // avatar uri which starts with https schema

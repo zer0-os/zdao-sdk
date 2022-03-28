@@ -34,7 +34,7 @@ describe('zNA test', async () => {
       votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
     });
 
-    expect(zDAO.zNA).to.be.equal('joshupgig.eth');
+    expect(zDAO.ens).to.be.equal('joshupgig.eth');
   });
 
   it('should throw error if create same zNA', async () => {
@@ -61,7 +61,29 @@ describe('zNA test', async () => {
     ).to.be.rejectedWith('zDAO already exists');
   });
 
-  it('should test with contract integration', async () => {
-    // @todo
+  it('should exist zDAO', async () => {
+    const exist = await sdkInstance.doesZDAOExist('wilder.cats');
+    expect(exist).to.be.eq(true);
+  });
+
+  it('should create zDAO from zNA', async () => {
+    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
+    expect(dao).to.be.not.equal(undefined);
+  });
+
+  it('should associated with zNA', async () => {
+    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
+
+    const found = dao.zNAs.find((zNA) => zNA === 'wilder.cats');
+    expect(found).to.be.not.equal(undefined);
+  });
+
+  it('should associated with multiple zNA', async () => {
+    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
+
+    const found = dao.zNAs.filter(
+      (zNA) => zNA === 'wilder.cats' || zNA === 'wilder.skydao'
+    );
+    expect(found.length).to.be.eq(2);
   });
 });

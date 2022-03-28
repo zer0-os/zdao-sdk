@@ -5,7 +5,7 @@ import { TokenMetaData } from './structures';
 export interface CreateZDAOParams {
   // ENS
   ens: ENS;
-  // zNA
+  // zNA, automatically linked with only one zNA
   zNA: zNA;
   // zDAO title
   title: string;

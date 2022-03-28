@@ -6,10 +6,11 @@ import {
 } from '@zero-tech/zns-sdk';
 import * as zns from '@zero-tech/zns-sdk';
 import { BigNumber, ethers } from 'ethers';
+import { gql, GraphQLClient } from 'graphql-request';
 
 import zDAORegistry from '../config/constants/abi/zDAORegistry.json';
-import { zNA, zNAConfig, zNAId } from '../types';
-import { ensIdToENS } from '../utilities/resolve';
+import { ENS, ENSId, zNA, zNAConfig, zNAId } from '../types';
+import { errorMessageForError } from '../utilities/messages';
 import { ZDAORegistry } from './contracts/ZDAORegistry';
 import { ZDAORecord } from './types';
 
@@ -17,6 +18,7 @@ class zDAORegistryClient {
   private readonly _config: zNAConfig;
   protected readonly _contract: ZDAORegistry;
   private readonly _znsInstance: zNSInstance;
+  private readonly _ensGraphQLClient;
 
   constructor(config: zNAConfig, zNSConfig: zNSConfig) {
     this._config = config;
@@ -26,6 +28,9 @@ class zDAORegistryClient {
       config.provider
     ) as ZDAORegistry;
     this._znsInstance = createZNSInstance(zNSConfig);
+    this._ensGraphQLClient = new GraphQLClient(
+      'https://api.thegraph.com/subgraphs/name/ensdomains/ens'
+    );
   }
 
   private async zNAIdTozNA(zNAId: zNAId): Promise<zNA> {
@@ -38,10 +43,34 @@ class zDAORegistryClient {
     return zns.domains.domainNameToId(zNA);
   }
 
+  private async ensIdToENS(ensId: ENSId): Promise<ENS> {
+    try {
+      const result = await this._ensGraphQLClient.request(
+        gql`
+          query domains($labelhash: String!) {
+            domains(first: 5, where: { labelhash: $labelhash }) {
+              id
+              name
+              labelName
+              labelhash
+            }
+          }
+        `,
+        {
+          labelhash: ensId,
+        }
+      );
+      return result.domains[0].name;
+    } catch (err) {
+      console.log(err);
+      throw new Error(errorMessageForError('invalid-ens'));
+    }
+  }
+
   async listZNAs(): Promise<zNA[]> {
     const count = (await this._contract.numberOfzDAOs()).toNumber();
     const limit = 100;
-    const numberOfReturns = limit;
+    let numberOfReturns = limit;
     const zNAs: string[] = [];
 
     while (numberOfReturns === limit) {
@@ -60,17 +89,25 @@ class zDAORegistryClient {
       }
       const result: zNAId[] = await Promise.all(promises);
       zNAs.push(...result);
+      numberOfReturns = response.length;
     }
     return zNAs;
   }
 
   async getZDAORecordByZNA(zNA: zNA): Promise<ZDAORecord> {
     const zDAORecord = await this._contract.getzDaoByZNA(this.zNATozNAId(zNA));
+    // resolve all the zNAIds
+    const promises: Promise<zNAId>[] = [];
+    for (const zNAId of zDAORecord.associatedzNAs) {
+      promises.push(this.zNAIdTozNA(zNAId.toHexString()));
+    }
+    const zNAs: zNA[] = await Promise.all(promises);
+
     return {
       id: zDAORecord.id.toString(),
-      ens: ensIdToENS(zDAORecord.ensId.toString()),
+      ens: await this.ensIdToENS(zDAORecord.ensId.toHexString()),
       gnosisSafe: zDAORecord.gnosisSafe.toString(),
-      zNA: zNA,
+      zNAs,
     };
   }
 

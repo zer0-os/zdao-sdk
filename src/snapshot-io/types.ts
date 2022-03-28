@@ -38,10 +38,12 @@ export interface SnapshotSpace {
   name: string;
   avatar?: string;
   network: string;
+  followers: number;
+}
+
+export interface SnapshotSpaceDetails extends SnapshotSpace {
   admins: string[];
   strategies: any[];
-  followers: number;
-  score: number;
 }
 
 export interface SnapshotProposal {

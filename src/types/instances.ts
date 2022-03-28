@@ -27,7 +27,7 @@ export interface SDKInstance {
   getZDAOByZNA(zNA: zNA): Promise<zDAO>;
 
   /**
-   * Check if zDAO exists
+   * Check if zDAO exists which associated with given zNA
    * @param zNA zNA address
    * @returns true if zNA exists
    */

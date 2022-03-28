@@ -1,5 +1,6 @@
+import { createInstance as createZNSInstance } from '@zero-tech/zns-sdk';
 import { assert } from 'chai';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
 import { createSDKInstance } from '../../src';
 import { developmentConfiguration } from '../../src/config';
@@ -10,6 +11,7 @@ import {
   SDKInstance,
   SupportedChainId,
   zDAO,
+  zNA,
 } from '../../src/types';
 import { setEnv } from '../shared/setupEnv';
 
@@ -25,6 +27,23 @@ const main = async () => {
   );
   const config: Config = developmentConfiguration(env.zDAOCore, provider);
 
+  // check if convert zNA id
+  const instance = createZNSInstance(config.zNS);
+  const domain1 = await instance.getDomainById(
+    BigNumber.from(
+      '44092086260530189724903220643220410316896517130862781422418816015878523212802'
+    ).toHexString()
+  );
+  assert.equal(domain1.name, 'wilder.cats');
+  const domain2 = await instance.getDomainById(
+    BigNumber.from(
+      '58634624855272567249009899472384509538335070788124240938864121055227270775796'
+    )
+      .toHexString()
+      .toLowerCase()
+  );
+  assert.equal(domain2.name, 'wilder.skydao');
+
   const sdkInstance: SDKInstance = createSDKInstance(config);
 
   await sdkInstance.createZDAOFromParams({
@@ -37,7 +56,13 @@ const main = async () => {
     votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
   });
 
-  const dao: zDAO = await sdkInstance.getZDAOByZNA(defZNA);
+  const zNAs: zNA[] = await sdkInstance.listZNAs();
+  console.log('zNAs', zNAs);
+
+  // create zdao which is associated with `wilder.cats`
+  const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
+  const dao2: zDAO = await sdkInstance.getZDAOByZNA('wilder.skydao');
+  assert.equal(dao.id, dao2.id);
 
   const assets = await dao.listAssets();
   assert.equal(assets.coins.length >= 2, true);

@@ -4,5 +4,5 @@ export interface ZDAORecord {
   id: zDAOId;
   ens: ENS;
   gnosisSafe: string;
-  zNA: zNA;
+  zNAs: zNA[];
 }

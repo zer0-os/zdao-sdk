@@ -1,20 +1,27 @@
 import Client from '@snapshot-labs/snapshot.js';
+import fetch from 'cross-fetch';
 import { addSeconds } from 'date-fns';
 import { ethers } from 'ethers';
 import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
 import { cloneDeep, orderBy } from 'lodash';
 
 import verified from '../config/constants/verified.json';
-import { SnapshotConfig, SupportedChainId } from '../types';
+import { ENS, SnapshotConfig, SupportedChainId } from '../types';
 import { timestamp } from '../utilities/date';
 import { errorMessageForError } from '../utilities/messages';
-import { PROPOSAL_QUERY, PROPOSALS_QUERY, VOTES_QUERY } from './queries';
+import {
+  PROPOSAL_QUERY,
+  PROPOSALS_QUERY,
+  SPACES_QUERY,
+  VOTES_QUERY,
+} from './queries';
 import {
   CreateProposalParams,
   ERC20BalanceOfParams,
   SnapshotProposal,
   SnapshotProposalResponse,
   SnapshotSpace,
+  SnapshotSpaceDetails,
   SnapshotVote,
   VoteProposalParams,
 } from './types';
@@ -53,7 +60,7 @@ class SnapshotClient {
   ): any[] {
     return [
       {
-        name: 'erc20-balance-of',
+        name: 'erc20-with-balance',
         params: {
           address,
           decimals,
@@ -112,13 +119,35 @@ class SnapshotClient {
       admins: item.admins,
       strategies: item.strategies,
       followers: item.followers,
-      score: item.score,
     }));
     return this._spaces;
   }
 
+  async getSpaceDetails(spaceId: ENS): Promise<SnapshotSpaceDetails> {
+    const response = await this.graphQLQuery(
+      SPACES_QUERY,
+      {
+        id_in: [spaceId],
+      },
+      'spaces'
+    );
+    if (response.length < 1) {
+      throw Error(errorMessageForError('not-found-ens-in-snapshot'));
+    }
+    const item = response[0];
+    return {
+      id: item.id,
+      name: item.name,
+      avatar: Client.utils.getUrl(item.avatar, this._config.ipfsGateway),
+      network: item.network,
+      admins: item.admins,
+      strategies: item.strategies,
+      followers: item.followersCount,
+    };
+  }
+
   async listProposals(
-    spaceId: string,
+    spaceId: ENS,
     network: string,
     from = 0,
     count = 30000

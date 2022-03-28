@@ -26,7 +26,7 @@ describe('Snapshot test', async () => {
     );
     config = developmentConfiguration(env.zDAOCore, provider);
     const pk = process.env.PRIVATE_KEY;
-    if (!pk) throw Error(errorMessageForError('no-private-key'));
+    if (!pk) throw new Error(errorMessageForError('no-private-key'));
     signer = new ethers.Wallet(pk, provider);
 
     const dao = {
@@ -43,7 +43,7 @@ describe('Snapshot test', async () => {
     daoInstance = new DAOClient(config, {
       id: dao.id,
       ens: dao.ens,
-      zNA: dao.zNA,
+      zNAs: [dao.zNA],
       title: dao.title,
       creator: dao.creator,
       avatar: undefined,
@@ -105,7 +105,7 @@ describe('Snapshot test', async () => {
     expect(vp).to.be.gt(0);
   });
 
-  it('should create a proposal with `erc20-balance-of` strategy and cast a vote', async () => {
+  it('should create a proposal with `erc20-with-balance` strategy and cast a vote', async () => {
     const blockNumber = await signer.provider.getBlockNumber();
     const proposal = await daoInstance.createProposal(signer, {
       title: 'test proposal',
