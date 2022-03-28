@@ -1,3 +1,4 @@
+import { Config as zNSConfig } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
 export interface SnapshotConfig {
@@ -5,6 +6,8 @@ export interface SnapshotConfig {
   serviceUri: string;
   // ipfs gateway
   ipfsGateway: string;
+  // chain id as string where space created
+  network: string;
 }
 
 export interface GnosisSafeConfig {
@@ -25,4 +28,5 @@ export interface Config {
   snapshot: SnapshotConfig;
   gnosisSafe: GnosisSafeConfig;
   zNA: zNAConfig;
+  zNS: zNSConfig;
 }

@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
 import { createSDKInstance } from '../../src';
 import { developmentConfiguration } from '../../src/config';
@@ -11,6 +11,7 @@ import {
   SupportedChainId,
   zDAO,
 } from '../../src/types';
+import { zNATozNAId } from '../../src/utilities/resolve';
 import { setEnv } from '../shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
@@ -54,7 +55,14 @@ const main = async () => {
   assert.isNotNull(votingToken);
   assert.equal(votingToken?.address, dao.votingToken);
 
+  const zNAId = zNATozNAId(defZNA);
+  console.log('zNAId', zNAId);
+
+  const bigzNA = BigNumber.from(zNAId);
+  console.log('bigzNA', bigzNA.toString());
+
   console.log('Finished successfully');
 };
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 main();

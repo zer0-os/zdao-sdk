@@ -1,12 +1,13 @@
 // import namehash from '@ensdomains/eth-ens-namehash';
-import * as zns from '@zero-tech/zns-sdk';
 
-import { zNA } from '../types';
+import { ENS, ENSId } from '../types';
 
-export const zNATozNAId = (domain: zNA): string => {
-  return zns.domains.domainNameToId(domain);
+export const ensToENSId = (domain: ENS): ENSId => {
+  // @todo
+  return domain;
 };
 
-// export const ensToensId = (domain: string): string => {
-//   return namehash.hash(domain);
-// };
+export const ensIdToENS = (id: ENSId): ENS => {
+  // @todo
+  return id;
+};
