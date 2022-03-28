@@ -1,6 +1,6 @@
 import { Fragment, Interface, JsonFragment } from '@ethersproject/abi';
 import { CallOverrides, Contract } from '@ethersproject/contracts';
-import { JsonRpcProvider } from '@ethersproject/providers';
+import { ethers } from 'ethers';
 
 import { MultiCallAddress } from '../config';
 import { SupportedChainId } from '../types';
@@ -16,7 +16,7 @@ export interface MulticallOptions extends CallOverrides {
 }
 
 export const multicall = async <T = any>(
-  provider: JsonRpcProvider,
+  provider: ethers.providers.JsonRpcProvider,
   network: SupportedChainId,
   abi: string | ReadonlyArray<Fragment | JsonFragment | string>,
   calls: Call[],

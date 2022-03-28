@@ -127,9 +127,9 @@ class ProposalClient implements Proposal {
   async listVotes(): Promise<Vote[]> {
     const count = 30000;
     let from = 0;
+    let numberOfResults = count;
     const votes: Vote[] = [];
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
+    while (numberOfResults === count) {
       const results = await this._snapshotClient.listVotes(
         this.id,
         from,
@@ -143,8 +143,8 @@ class ProposalClient implements Proposal {
           power: vote.power,
         }))
       );
-      if (results.length < count) break;
       from += results.length;
+      numberOfResults = results.length;
     }
     return votes;
   }
