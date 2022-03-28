@@ -15,10 +15,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    "allowJs": true,
+    "isolatedModules": true
   },
   "include": [
     "src/**/*.ts","src/**/*.tsx","src/**/*.json",
-    "test",
+    "test/**/*.ts","test/**/*.tsx","test/**/*.json",
   ],
   "exclude": [
     "node_modules"

@@ -1,0 +1,11 @@
+{
+  "not-found-zdao": "Not found zDAO",
+  "empty-zdao-title": "Empty zDAO title",
+  "empty-gnosis-address": "Empty Gnosis Safe address",
+  "empty-gnosis-owners": "Empty Gnosis Safe owners",
+  "empty-voting-token": "Empty Voting ERC20 Token address",
+  "already-exist-zdao": "zDAO already exists",
+  "empty-metadata": "Not found Token Transfer information",
+  "not-gnosis-owner": "Not a Gnosis Safe owner address",
+  "not-implemented": "Not implemented"
+}

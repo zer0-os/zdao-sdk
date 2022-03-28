@@ -4,6 +4,8 @@
   "plugins": [
     "@typescript-eslint",
     "@typescript-eslint/eslint-plugin",
+    "unused-imports",
+    "simple-import-sort",
     "prettier"
   ],
   "extends": [
@@ -12,17 +14,49 @@
     "plugin:@typescript-eslint/recommended",
     "prettier"
   ],
+  "overrides": [
+    {
+      "files": [
+        "*.ts"
+      ],
+      "parserOptions": {
+        "project": [
+          "./tsconfig.json"
+        ]
+      }
+    }
+  ],
   "rules": {
     "@typescript-eslint/interface-name-prefix": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "off",
-    "prettier/prettier": ["error", {"semi": true, "endOfLine": "auto"}],
+    "prettier/prettier": [
+      "error",
+      {
+        "semi": true,
+        "endOfLine": "auto"
+      }
+    ],
     "max-len": 0,
-    "@typescript-eslint/require-await": "off",
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "unused-imports/no-unused-imports": "error",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ],
     "@typescript-eslint/camelcase": "off",
     "@typescript-eslint/no-misused-promises": "off",
-    "semi": ["error", "always"]
+    "semi": [
+      "error",
+      "always"
+    ],
+    "@typescript-eslint/no-floating-promises": [
+      "error"
+    ],
+    "simple-import-sort/exports": "error",
+    "simple-import-sort/imports": "error"
   }
 }

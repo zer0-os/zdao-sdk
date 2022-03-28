@@ -1,1 +1,8 @@
 node_modules
+lib
+
+*.tsbuildinfo
+
+.env
+
+yarn-error.log
