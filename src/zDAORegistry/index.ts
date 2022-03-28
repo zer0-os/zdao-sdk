@@ -38,7 +38,7 @@ class zDAORegistryClient {
     return zns.domains.domainNameToId(zNA);
   }
 
-  async listZDAOs(): Promise<zNA[]> {
+  async listZNAs(): Promise<zNA[]> {
     const count = (await this._contract.numberOfzDAOs()).toNumber();
     const limit = 100;
     const numberOfReturns = limit;

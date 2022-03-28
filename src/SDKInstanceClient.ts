@@ -21,8 +21,8 @@ class SDKInstanceClient implements SDKInstance {
     this._params = [];
   }
 
-  async listZDAOs(): Promise<zNA[]> {
-    return await this._zDAORegistryClient.listZDAOs();
+  async listZNAs(): Promise<zNA[]> {
+    return await this._zDAORegistryClient.listZNAs();
   }
 
   async getZDAOByZNA(zNA: zNA): Promise<zDAO> {
@@ -71,8 +71,11 @@ class SDKInstanceClient implements SDKInstance {
     return await this._zDAORegistryClient.doesZDAOExist(zNA);
   }
 
-  async createZDAOFromParams(param: CreateZDAOParams) {
-    if (await this.doesZDAOExist(param.zNA)) {
+  async createZDAOFromParams(param: CreateZDAOParams): Promise<zDAO> {
+    const found = this._params.find(
+      (item: CreateZDAOParams) => item.zNA === param.zNA
+    );
+    if (found) {
       throw Error(errorMessageForError('already-exist-zdao'));
     }
     if (param.title.length < 1) {
@@ -86,26 +89,18 @@ class SDKInstanceClient implements SDKInstance {
     }
 
     this._params.push(param);
-  }
 
-  getZDAOFromParams(zNA: zNA): Promise<zDAO> {
-    const found = this._params.find(
-      (param: CreateZDAOParams) => param.zNA === zNA
-    );
-    if (!found) {
-      throw Error(errorMessageForError('not-found-zdao'));
-    }
     return Promise.resolve(
       new DAOClient(this._config, {
         id: shortid.generate(),
-        ens: found.ens,
-        zNA: found.zNA,
-        title: found.title,
-        creator: found.creator,
-        avatar: found.avatar,
-        network: found.network.toString(),
-        safeAddress: found.safeAddress,
-        votingToken: found.votingToken,
+        ens: param.ens,
+        zNA: param.zNA,
+        title: param.title,
+        creator: param.creator,
+        avatar: param.avatar,
+        network: param.network.toString(),
+        safeAddress: param.safeAddress,
+        votingToken: param.votingToken,
       })
     );
   }
