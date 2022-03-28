@@ -25,13 +25,12 @@ describe('zNA test', async () => {
 
   it('should create successfully', async () => {
     await sdkInstance.createZDAOFromParams({
-      zNA: 'zDAO.eth',
+      zNA: 'joshupgig.eth',
       title: 'zDAO',
       creator: 'creator',
       network: env.network,
-      safeAddress: 'safeAddress',
-      owners: ['owner'],
-      votingToken: 'voting token',
+      safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+      votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
     });
 
     const zNAs: zNA[] = await sdkInstance.listZDAOs();
@@ -45,7 +44,6 @@ describe('zNA test', async () => {
       creator: 'creator',
       network: env.network,
       safeAddress: 'safeAddress',
-      owners: ['owner'],
       votingToken: 'voting token',
     });
 
@@ -56,7 +54,6 @@ describe('zNA test', async () => {
         creator: 'creator1',
         network: env.network,
         safeAddress: 'safeAddress1',
-        owners: ['owner1'],
         votingToken: 'voting token1',
       })
     ).to.be.rejectedWith('zDAO already exists');
@@ -69,7 +66,6 @@ describe('zNA test', async () => {
       creator: 'creator',
       network: env.network,
       safeAddress: 'safeAddress',
-      owners: ['owner'],
       votingToken: 'voting token',
     });
 
