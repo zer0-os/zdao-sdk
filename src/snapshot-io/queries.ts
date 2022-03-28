@@ -8,37 +8,15 @@ export const SPACES_QUERY = gql`
       about
       network
       symbol
-      network
       terms
-      skin
       avatar
-      twitter
-      github
       private
       domain
-      members
       admins
-      categories
-      plugins
       followersCount
-      voting {
-        delay
-        period
-        type
-        quorum
-        hideAbstain
-      }
       strategies {
         name
         params
-      }
-      validation {
-        name
-        params
-      }
-      filters {
-        minScore
-        onlyMembers
       }
     }
   }

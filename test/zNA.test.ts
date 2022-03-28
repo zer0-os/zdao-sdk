@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 
 import { createSDKInstance } from '../src';
 import { developmentConfiguration } from '../src/config';
-import { Config, SDKInstance, zNA } from '../src/types';
+import { Config, SDKInstance, zDAO } from '../src/types';
 import { setEnv } from './shared/setupEnv';
 
 use(chaiAsPromised.default);
@@ -24,7 +24,8 @@ describe('zNA test', async () => {
   });
 
   it('should create successfully', async () => {
-    await sdkInstance.createZDAOFromParams({
+    const zDAO: zDAO = await sdkInstance.createZDAOFromParams({
+      ens: 'joshupgig.eth',
       zNA: 'joshupgig.eth',
       title: 'zDAO',
       creator: 'creator',
@@ -33,12 +34,12 @@ describe('zNA test', async () => {
       votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
     });
 
-    const zNAs: zNA[] = await sdkInstance.listZDAOs();
-    expect(zNAs.length).to.be.equal(1);
+    expect(zDAO.ens).to.be.equal('joshupgig.eth');
   });
 
   it('should throw error if create same zNA', async () => {
     await sdkInstance.createZDAOFromParams({
+      ens: 'joshupgig.eth',
       zNA: 'zDAO.eth',
       title: 'zDAO',
       creator: 'creator',
@@ -49,6 +50,7 @@ describe('zNA test', async () => {
 
     await expect(
       sdkInstance.createZDAOFromParams({
+        ens: 'joshupgig.eth',
         zNA: 'zDAO.eth',
         title: 'zDAO1',
         creator: 'creator1',
@@ -59,23 +61,29 @@ describe('zNA test', async () => {
     ).to.be.rejectedWith('zDAO already exists');
   });
 
-  it('should get if created successfully', async () => {
-    await sdkInstance.createZDAOFromParams({
-      zNA: 'zDAO.eth',
-      title: 'zDAO',
-      creator: 'creator',
-      network: env.network,
-      safeAddress: 'safeAddress',
-      votingToken: 'voting token',
-    });
-
-    const zdaoInstance = await expect(sdkInstance.getZDAOByZNA('zDAO.eth')).to
-      .be.not.rejected;
-
-    expect(zdaoInstance.zNA).to.be.equal('zDAO.eth');
+  it('should exist zDAO', async () => {
+    const exist = await sdkInstance.doesZDAOExist('wilder.cats');
+    expect(exist).to.be.eq(true);
   });
 
-  it('should test with contract integration', async () => {
-    // @todo
+  it('should create zDAO from zNA', async () => {
+    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
+    expect(dao).to.be.not.equal(undefined);
+  });
+
+  it('should associated with zNA', async () => {
+    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
+
+    const found = dao.zNAs.find((zNA) => zNA === 'wilder.cats');
+    expect(found).to.be.not.equal(undefined);
+  });
+
+  it('should associated with multiple zNA', async () => {
+    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
+
+    const found = dao.zNAs.filter(
+      (zNA) => zNA === 'wilder.cats' || zNA === 'wilder.skydao'
+    );
+    expect(found.length).to.be.eq(2);
   });
 });

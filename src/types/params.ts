@@ -1,9 +1,11 @@
 import { SupportedChainId } from './enumerations';
-import { Choice, zNA } from './primitives';
+import { Choice, ENS, zNA } from './primitives';
 import { TokenMetaData } from './structures';
 
 export interface CreateZDAOParams {
-  // zNA
+  // ENS
+  ens: ENS;
+  // zNA, automatically linked with only one zNA
   zNA: zNA;
   // zDAO title
   title: string;

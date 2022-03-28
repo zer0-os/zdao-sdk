@@ -51,8 +51,8 @@ class DAOClient implements zDAO {
     return this._properties.ens;
   }
 
-  get zNA() {
-    return this._properties.zNA;
+  get zNAs() {
+    return this._properties.zNAs;
   }
 
   get title() {
@@ -175,7 +175,7 @@ class DAOClient implements zDAO {
     while (numberOfResults === count) {
       const results: SnapshotProposal[] =
         await this._snapshotClient.listProposals(
-          this.zNA,
+          this.ens,
           this.network,
           from,
           count

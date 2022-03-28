@@ -43,6 +43,18 @@ const ErrorMessages = [
     key: 'failed-create-proposal',
     value: 'Failed to create proposal',
   },
+  {
+    key: 'not-found-ens-in-snapshot',
+    value: 'Not found space with given ens in snapshot',
+  },
+  {
+    key: 'not-found-strategy-in-snapshot',
+    value: 'Not found any token related strategyies in snapshot',
+  },
+  {
+    key: 'invalid-ens',
+    value: 'Invalid ENS',
+  },
 ] as const;
 
 export type ErrorType = typeof ErrorMessages[number]['key'];
@@ -53,5 +65,5 @@ export const errorMessageForError = (error: ErrorType): string => {
 };
 
 export const raiseError = (error: ErrorType): void => {
-  throw Error(errorMessageForError(error));
+  throw new Error(errorMessageForError(error));
 };

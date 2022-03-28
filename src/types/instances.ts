@@ -13,10 +13,10 @@ import {
 
 export interface SDKInstance {
   /**
-   * Get all the list of zDAO
+   * Get all the list of zNA
    * @returns list of zNA
    */
-  listZDAOs(): Promise<zNA[]>;
+  listZNAs(): Promise<zNA[]>;
 
   /**
    * Create an zDAO instance by zNA
@@ -27,7 +27,7 @@ export interface SDKInstance {
   getZDAOByZNA(zNA: zNA): Promise<zDAO>;
 
   /**
-   * Check if zDAO exists
+   * Check if zDAO exists which associated with given zNA
    * @param zNA zNA address
    * @returns true if zNA exists
    */
@@ -40,7 +40,7 @@ export interface SDKInstance {
    * @exception throw Error if owners is empty
    * @exception throw Error if title is empty
    */
-  createZDAOFromParams(param: CreateZDAOParams): Promise<void>;
+  createZDAOFromParams(param: CreateZDAOParams): Promise<zDAO>;
 }
 
 export interface zDAO extends zDAOProperties {

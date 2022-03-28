@@ -1,5 +1,5 @@
 export enum SupportedChainId {
-  ETHEREUM = 1,
+  MAINNET = 1,
   ROPSTEN = 3,
   RINKEBY = 4,
 }

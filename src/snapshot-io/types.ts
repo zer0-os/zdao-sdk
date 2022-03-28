@@ -33,6 +33,19 @@ export interface VoteProposalParams {
   choice: number;
 }
 
+export interface SnapshotSpace {
+  id: ENS; // space id(ens)
+  name: string;
+  avatar?: string;
+  network: string;
+  followers: number;
+}
+
+export interface SnapshotSpaceDetails extends SnapshotSpace {
+  admins: string[];
+  strategies: any[];
+}
+
 export interface SnapshotProposal {
   id: string; // proposal id
   type: string; // proposal type (e.g. single-choice)

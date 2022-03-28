@@ -37,7 +37,7 @@ describe('Gnosis Safe test', async () => {
     );
     config = developmentConfiguration(env.zDAOCore, provider);
     const pk = process.env.PRIVATE_KEY;
-    if (!pk) throw Error(errorMessageForError('no-private-key'));
+    if (!pk) throw new Error(errorMessageForError('no-private-key'));
     signer = new ethers.Wallet(pk, provider);
 
     const dao = {
@@ -54,7 +54,7 @@ describe('Gnosis Safe test', async () => {
     daoInstance = new DAOClient(config, {
       id: dao.id,
       ens: dao.ens,
-      zNA: dao.zNA,
+      zNAs: [dao.zNA],
       title: dao.title,
       creator: dao.creator,
       avatar: undefined,
