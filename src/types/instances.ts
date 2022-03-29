@@ -42,10 +42,21 @@ export interface SDKInstance {
    */
   createZDAOFromParams(param: CreateZDAOParams): Promise<zDAO>;
 
+  /**
+   * List all associated zNAs, only used for test
+   */
   listZNAsFromParams(): Promise<zNA[]>;
 
+  /**
+   * Get zDAO by zNA, only used for test
+   * @param zNA
+   */
   getZDAOByZNAFromParams(zNA: zNA): Promise<zDAO>;
 
+  /**
+   * Check if zDAO exists which associated with given zNA, only used for test
+   * @param zNA
+   */
   doesZDAOExistFromParams(zNA: zNA): Promise<boolean>;
 }
 
