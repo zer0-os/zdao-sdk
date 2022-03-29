@@ -20,19 +20,19 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 export declare namespace IZDAORegistry {
   export type ZDAORecordStruct = {
     id: BigNumberish;
-    ensId: BigNumberish;
+    ensSpace: string;
     gnosisSafe: string;
     associatedzNAs: BigNumberish[];
   };
 
   export type ZDAORecordStructOutput = [
     BigNumber,
-    BigNumber,
+    string,
     string,
     BigNumber[]
   ] & {
     id: BigNumber;
-    ensId: BigNumber;
+    ensSpace: string;
     gnosisSafe: string;
     associatedzNAs: BigNumber[];
   };
@@ -41,15 +41,14 @@ export declare namespace IZDAORegistry {
 export interface ZDAORegistryInterface extends utils.Interface {
   contractName: "ZDAORegistry";
   functions: {
-    "addNewDAO(uint256,address)": FunctionFragment;
+    "addNewDAO(string,address)": FunctionFragment;
     "addZNAAssociation(uint256,uint256)": FunctionFragment;
     "doeszDAOExistForzNA(uint256)": FunctionFragment;
-    "ensTozDAO(uint256)": FunctionFragment;
+    "getzDAOByEns(string)": FunctionFragment;
     "getzDAOById(uint256)": FunctionFragment;
     "getzDaoByZNA(uint256)": FunctionFragment;
     "initialize(address)": FunctionFragment;
     "listzDAOs(uint256,uint256)": FunctionFragment;
-    "newDaoIndexTracker()": FunctionFragment;
     "numberOfzDAOs()": FunctionFragment;
     "owner()": FunctionFragment;
     "removeZNAAssociation(uint256,uint256)": FunctionFragment;
@@ -62,7 +61,7 @@ export interface ZDAORegistryInterface extends utils.Interface {
 
   encodeFunctionData(
     functionFragment: "addNewDAO",
-    values: [BigNumberish, string]
+    values: [string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "addZNAAssociation",
@@ -73,8 +72,8 @@ export interface ZDAORegistryInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "ensTozDAO",
-    values: [BigNumberish]
+    functionFragment: "getzDAOByEns",
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "getzDAOById",
@@ -88,10 +87,6 @@ export interface ZDAORegistryInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "listzDAOs",
     values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "newDaoIndexTracker",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "numberOfzDAOs",
@@ -126,7 +121,10 @@ export interface ZDAORegistryInterface extends utils.Interface {
     functionFragment: "doeszDAOExistForzNA",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "ensTozDAO", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getzDAOByEns",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getzDAOById",
     data: BytesLike
@@ -137,10 +135,6 @@ export interface ZDAORegistryInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "listzDAOs", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "newDaoIndexTracker",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "numberOfzDAOs",
     data: BytesLike
@@ -166,7 +160,7 @@ export interface ZDAORegistryInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "znsHub", data: BytesLike): Result;
 
   events: {
-    "DAOCreated(uint256,uint256,address)": EventFragment;
+    "DAOCreated(uint256,string,address)": EventFragment;
     "LinkAdded(uint256,uint256)": EventFragment;
     "LinkRemoved(uint256,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
@@ -179,8 +173,8 @@ export interface ZDAORegistryInterface extends utils.Interface {
 }
 
 export type DAOCreatedEvent = TypedEvent<
-  [BigNumber, BigNumber, string],
-  { daoId: BigNumber; ensId: BigNumber; gnosisSafe: string }
+  [BigNumber, string, string],
+  { daoId: BigNumber; ensSpace: string; gnosisSafe: string }
 >;
 
 export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
@@ -236,7 +230,7 @@ export interface ZDAORegistry extends BaseContract {
 
   functions: {
     addNewDAO(
-      ensId: BigNumberish,
+      ensSpace: string,
       gnosisSafe: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -252,10 +246,10 @@ export interface ZDAORegistry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    ensTozDAO(
-      arg0: BigNumberish,
+    getzDAOByEns(
+      ensSpace: string,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    ): Promise<[IZDAORegistry.ZDAORecordStructOutput]>;
 
     getzDAOById(
       daoId: BigNumberish,
@@ -277,10 +271,6 @@ export interface ZDAORegistry extends BaseContract {
       endIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[IZDAORegistry.ZDAORecordStructOutput[]]>;
-
-    newDaoIndexTracker(
-      overrides?: CallOverrides
-    ): Promise<[BigNumber] & { _value: BigNumber }>;
 
     numberOfzDAOs(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -310,9 +300,9 @@ export interface ZDAORegistry extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, string] & {
+      [BigNumber, string, string] & {
         id: BigNumber;
-        ensId: BigNumber;
+        ensSpace: string;
         gnosisSafe: string;
       }
     >;
@@ -321,7 +311,7 @@ export interface ZDAORegistry extends BaseContract {
   };
 
   addNewDAO(
-    ensId: BigNumberish,
+    ensSpace: string,
     gnosisSafe: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -337,7 +327,10 @@ export interface ZDAORegistry extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  ensTozDAO(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+  getzDAOByEns(
+    ensSpace: string,
+    overrides?: CallOverrides
+  ): Promise<IZDAORegistry.ZDAORecordStructOutput>;
 
   getzDAOById(
     daoId: BigNumberish,
@@ -359,8 +352,6 @@ export interface ZDAORegistry extends BaseContract {
     endIndex: BigNumberish,
     overrides?: CallOverrides
   ): Promise<IZDAORegistry.ZDAORecordStructOutput[]>;
-
-  newDaoIndexTracker(overrides?: CallOverrides): Promise<BigNumber>;
 
   numberOfzDAOs(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -390,9 +381,9 @@ export interface ZDAORegistry extends BaseContract {
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, string] & {
+    [BigNumber, string, string] & {
       id: BigNumber;
-      ensId: BigNumber;
+      ensSpace: string;
       gnosisSafe: string;
     }
   >;
@@ -401,7 +392,7 @@ export interface ZDAORegistry extends BaseContract {
 
   callStatic: {
     addNewDAO(
-      ensId: BigNumberish,
+      ensSpace: string,
       gnosisSafe: string,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -417,10 +408,10 @@ export interface ZDAORegistry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    ensTozDAO(
-      arg0: BigNumberish,
+    getzDAOByEns(
+      ensSpace: string,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<IZDAORegistry.ZDAORecordStructOutput>;
 
     getzDAOById(
       daoId: BigNumberish,
@@ -439,8 +430,6 @@ export interface ZDAORegistry extends BaseContract {
       endIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<IZDAORegistry.ZDAORecordStructOutput[]>;
-
-    newDaoIndexTracker(overrides?: CallOverrides): Promise<BigNumber>;
 
     numberOfzDAOs(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -465,9 +454,9 @@ export interface ZDAORegistry extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, string] & {
+      [BigNumber, string, string] & {
         id: BigNumber;
-        ensId: BigNumber;
+        ensSpace: string;
         gnosisSafe: string;
       }
     >;
@@ -476,14 +465,14 @@ export interface ZDAORegistry extends BaseContract {
   };
 
   filters: {
-    "DAOCreated(uint256,uint256,address)"(
+    "DAOCreated(uint256,string,address)"(
       daoId?: BigNumberish | null,
-      ensId?: null,
+      ensSpace?: null,
       gnosisSafe?: null
     ): DAOCreatedEventFilter;
     DAOCreated(
       daoId?: BigNumberish | null,
-      ensId?: null,
+      ensSpace?: null,
       gnosisSafe?: null
     ): DAOCreatedEventFilter;
 
@@ -517,7 +506,7 @@ export interface ZDAORegistry extends BaseContract {
 
   estimateGas: {
     addNewDAO(
-      ensId: BigNumberish,
+      ensSpace: string,
       gnosisSafe: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -533,8 +522,8 @@ export interface ZDAORegistry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    ensTozDAO(
-      arg0: BigNumberish,
+    getzDAOByEns(
+      ensSpace: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -558,8 +547,6 @@ export interface ZDAORegistry extends BaseContract {
       endIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    newDaoIndexTracker(overrides?: CallOverrides): Promise<BigNumber>;
 
     numberOfzDAOs(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -595,7 +582,7 @@ export interface ZDAORegistry extends BaseContract {
 
   populateTransaction: {
     addNewDAO(
-      ensId: BigNumberish,
+      ensSpace: string,
       gnosisSafe: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -611,8 +598,8 @@ export interface ZDAORegistry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    ensTozDAO(
-      arg0: BigNumberish,
+    getzDAOByEns(
+      ensSpace: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -634,10 +621,6 @@ export interface ZDAORegistry extends BaseContract {
     listzDAOs(
       startIndex: BigNumberish,
       endIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    newDaoIndexTracker(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

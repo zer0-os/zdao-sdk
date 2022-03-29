@@ -79,13 +79,14 @@ class zDAORegistryClient {
         from,
         from + Math.min(limit, count) - 1
       );
+
       const promises: Promise<zNAId>[] = [];
       for (const record of response) {
         const zNAIds: string[] = record.associatedzNAs.map(
           (associated: BigNumber) => associated.toString()
         );
         for (const zNAId of zNAIds) {
-          promises.push(this.zNAIdTozNA(zNAId));
+          promises.push(this.zNAIdTozNA(BigNumber.from(zNAId).toHexString()));
         }
       }
       const result: zNAId[] = await Promise.all(promises);
@@ -98,6 +99,7 @@ class zDAORegistryClient {
 
   async getZDAORecordByZNA(zNA: zNA): Promise<ZDAORecord> {
     const zDAORecord = await this._contract.getzDaoByZNA(this.zNATozNAId(zNA));
+
     // resolve all the zNAIds
     const promises: Promise<zNAId>[] = [];
     for (const zNAId of zDAORecord.associatedzNAs) {
@@ -107,7 +109,7 @@ class zDAORegistryClient {
 
     return {
       id: zDAORecord.id.toString(),
-      ens: await this.ensIdToENS(zDAORecord.ensId.toHexString()),
+      ens: zDAORecord.ensSpace,
       gnosisSafe: zDAORecord.gnosisSafe.toString(),
       zNAs,
     };

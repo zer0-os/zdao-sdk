@@ -10,9 +10,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "ensId",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "ensSpace",
+        "type": "string"
       },
       {
         "indexed": false,
@@ -83,7 +83,7 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "ensId", "type": "uint256" },
+      { "internalType": "string", "name": "ensSpace", "type": "string" },
       { "internalType": "address", "name": "gnosisSafe", "type": "address" }
     ],
     "name": "addNewDAO",
@@ -109,9 +109,31 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "name": "ensTozDAO",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "inputs": [
+      { "internalType": "string", "name": "ensSpace", "type": "string" }
+    ],
+    "name": "getzDAOByEns",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "string", "name": "ensSpace", "type": "string" },
+          {
+            "internalType": "address",
+            "name": "gnosisSafe",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "associatedzNAs",
+            "type": "uint256[]"
+          }
+        ],
+        "internalType": "struct IZDAORegistry.ZDAORecord",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -124,7 +146,7 @@
       {
         "components": [
           { "internalType": "uint256", "name": "id", "type": "uint256" },
-          { "internalType": "uint256", "name": "ensId", "type": "uint256" },
+          { "internalType": "string", "name": "ensSpace", "type": "string" },
           {
             "internalType": "address",
             "name": "gnosisSafe",
@@ -151,7 +173,7 @@
       {
         "components": [
           { "internalType": "uint256", "name": "id", "type": "uint256" },
-          { "internalType": "uint256", "name": "ensId", "type": "uint256" },
+          { "internalType": "string", "name": "ensSpace", "type": "string" },
           {
             "internalType": "address",
             "name": "gnosisSafe",
@@ -190,7 +212,7 @@
       {
         "components": [
           { "internalType": "uint256", "name": "id", "type": "uint256" },
-          { "internalType": "uint256", "name": "ensId", "type": "uint256" },
+          { "internalType": "string", "name": "ensSpace", "type": "string" },
           {
             "internalType": "address",
             "name": "gnosisSafe",
@@ -206,15 +228,6 @@
         "name": "",
         "type": "tuple[]"
       }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "newDaoIndexTracker",
-    "outputs": [
-      { "internalType": "uint256", "name": "_value", "type": "uint256" }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -273,7 +286,7 @@
     "name": "zDAORecords",
     "outputs": [
       { "internalType": "uint256", "name": "id", "type": "uint256" },
-      { "internalType": "uint256", "name": "ensId", "type": "uint256" },
+      { "internalType": "string", "name": "ensSpace", "type": "string" },
       { "internalType": "address", "name": "gnosisSafe", "type": "address" }
     ],
     "stateMutability": "view",
