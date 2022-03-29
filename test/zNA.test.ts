@@ -9,7 +9,7 @@ import { setEnv } from './shared/setupEnv';
 
 use(chaiAsPromised.default);
 
-describe.only('zNA test', async () => {
+describe('zNA test', async () => {
   const env = setEnv();
   let sdkInstance: SDKInstance;
 
