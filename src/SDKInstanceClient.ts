@@ -98,6 +98,38 @@ class SDKInstanceClient implements SDKInstance {
       })
     );
   }
+
+  listZNAsFromParams(): Promise<zNA[]> {
+    return Promise.resolve(this._params.map((param) => param.zNA));
+  }
+
+  getZDAOByZNAFromParams(zNA: zNA): Promise<zDAO> {
+    if (!this.doesZDAOExist(zNA)) {
+      throw new Error(errorMessageForError('not-found-zdao'));
+    }
+
+    const found = this._params.find((param) => param.zNA === zNA);
+    if (!found) throw new Error(errorMessageForError('not-found-zdao'));
+
+    return Promise.resolve(
+      new DAOClient(this._config, {
+        id: shortid.generate(),
+        ens: found.ens,
+        zNAs: [found.zNA],
+        title: found.title,
+        creator: found.creator,
+        avatar: found.avatar,
+        network: found.network.toString(),
+        safeAddress: found.safeAddress,
+        votingToken: found.votingToken,
+      })
+    );
+  }
+
+  doesZDAOExistFromParams(zNA: zNA): Promise<boolean> {
+    const found = this._params.find((param) => param.zNA === zNA);
+    return Promise.resolve(found ? true : false);
+  }
 }
 
 export default SDKInstanceClient;

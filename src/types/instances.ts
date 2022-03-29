@@ -41,6 +41,12 @@ export interface SDKInstance {
    * @exception throw Error if title is empty
    */
   createZDAOFromParams(param: CreateZDAOParams): Promise<zDAO>;
+
+  listZNAsFromParams(): Promise<zNA[]>;
+
+  getZDAOByZNAFromParams(zNA: zNA): Promise<zDAO>;
+
+  doesZDAOExistFromParams(zNA: zNA): Promise<boolean>;
 }
 
 export interface zDAO extends zDAOProperties {
