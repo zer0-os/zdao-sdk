@@ -34,13 +34,21 @@ export interface Collectible {
   // address to ERC721 token
   address: string;
   // token name
-  name: string;
+  tokenName: string;
   // token symbol
-  symbol: string;
+  tokenSymbol: string;
   // token id
   id: string;
   // token logo
   logoUri?: string;
+  // collectible name
+  name: string;
+  // collectible description
+  description: string;
+  // collectible logo
+  imageUri?: string;
+  // metadata, it includes attributes, description, etc...
+  metadata: { [key: string]: string };
 }
 
 export interface ERC20Transfer {

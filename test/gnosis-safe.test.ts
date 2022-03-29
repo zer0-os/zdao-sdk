@@ -76,10 +76,11 @@ describe('Gnosis Safe test', async () => {
 
     // should contain zDAOToken
     const votingToken = assets.coins.find(
-      (item: Coin) => item.type === AssetType.ERC20
+      (item: Coin) =>
+        item.type === AssetType.ERC20 &&
+        item.address === daoInstance.votingToken
     );
     expect(votingToken).to.be.not.equal(undefined);
-    expect(votingToken?.address).to.be.equal(daoInstance.votingToken);
 
     // should contain collectibles
     const collectible = assets.collectibles.find(
@@ -88,6 +89,41 @@ describe('Gnosis Safe test', async () => {
         '82385085784613862901980440101751000042155349045784956518423312851800568596744'
     );
     expect(collectible).to.be.not.equal(undefined);
+  });
+
+  it.only('should have metadata', async () => {
+    const dao = {
+      id: defZNA,
+      ens: defZNA,
+      zNA: defZNA,
+      title: 'zDAO Testing Space 1',
+      creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+      network: SupportedChainId.RINKEBY.toString(),
+      safeAddress: '0xb3b83bf204C458B461de9B0CD2739DB152b4fa5A',
+      votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+    };
+
+    const daoInstance = new DAOClient(config, {
+      id: dao.id,
+      ens: dao.ens,
+      zNAs: [dao.zNA],
+      title: dao.title,
+      creator: dao.creator,
+      avatar: undefined,
+      network: dao.network,
+      safeAddress: dao.safeAddress,
+      votingToken: dao.votingToken,
+    });
+    const assets = await daoInstance.listAssets();
+
+    // should contain collectibles
+    const collectible = assets.collectibles.find(
+      (item: Collectible) =>
+        item.address === '0x0855dd3576DEF97076CADfdD6928E93fa3b05012'
+    );
+    expect(collectible).to.be.not.equal(undefined);
+    // should contain metadata
+    expect(Object.keys(collectible!.metadata).length).to.be.gt(0);
   });
 
   it('should list transactions', async () => {

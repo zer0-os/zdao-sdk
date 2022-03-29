@@ -104,10 +104,14 @@ class DAOClient implements zDAO {
       })),
       collectibles: collectibles.map((item: any) => ({
         address: item.address,
-        name: item.tokenName,
-        symbol: item.tokenSymbol,
+        tokenName: item.tokenName,
+        tokenSymbol: item.tokenSymbol,
         id: item.id,
         logoUri: item.logoUri,
+        name: item.name,
+        description: item.description,
+        imageUri: item.imageUri,
+        metadata: item.metadata,
       })),
     };
   }
