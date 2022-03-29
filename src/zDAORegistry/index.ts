@@ -70,13 +70,14 @@ class zDAORegistryClient {
   async listZNAs(): Promise<zNA[]> {
     const count = (await this._contract.numberOfzDAOs()).toNumber();
     const limit = 100;
+    let from = 1;
     let numberOfReturns = limit;
     const zNAs: string[] = [];
 
     while (numberOfReturns === limit) {
       const response = await this._contract.listzDAOs(
-        0,
-        Math.min(limit, count)
+        from,
+        from + Math.min(limit, count) - 1
       );
       const promises: Promise<zNAId>[] = [];
       for (const record of response) {
@@ -90,6 +91,7 @@ class zDAORegistryClient {
       const result: zNAId[] = await Promise.all(promises);
       zNAs.push(...result);
       numberOfReturns = response.length;
+      from += response.length;
     }
     return zNAs;
   }
