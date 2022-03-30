@@ -24,7 +24,7 @@ zDAO has multiple associated zNA, this association is defined in `ZDAORegistry` 
 ## Functionality Requirements
 
 - [x] Create zDAO from parameters
-- [ ] List all the associated zNAs
+- [x] List all the associated zNAs
 - [x] Get zDAO by associated zNA
 - [x] List all the assets(coin, collectibles) of zDAO from associated Gnosis Safe
 - [x] List all the transactions of zDAO from associated Gnosis Safe
