@@ -66,9 +66,15 @@ describe('zNA test', async () => {
     expect(exist).to.be.eq(true);
   });
 
+  it('should list all the zDAOs', async () => {
+    const zNAs = await sdkInstance.listZNAs();
+    expect(zNAs.length).to.be.gt(0);
+  });
+
   it('should create zDAO from zNA', async () => {
     const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
     expect(dao).to.be.not.equal(undefined);
+    expect(dao.ens).to.be.equal('zdao-sky.eth');
   });
 
   it('should associated with zNA', async () => {
