@@ -35,7 +35,7 @@ workflows:
       - test:
           filters:
             branches:
-              ignore: master
+              ignore: main
   production:
     jobs:
       - test:
