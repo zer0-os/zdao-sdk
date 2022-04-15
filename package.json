@@ -44,7 +44,7 @@
   },
   "peerDependencies": {
     "@zero-tech/zauction-sdk": ">=0.0.44",
-    "@zero-tech/zns-sdk": ">=0.1.18",
+    "@zero-tech/zns-sdk": ">=0.1.18"
   },
   "devDependencies": {
     "@types/chai": "4.3.0",
