@@ -22,6 +22,7 @@ export const developmentConfiguration = (
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.rinkeby.gnosis.io',
     gateway: 'https://safe-client.staging.gnosisdev.com',
+    ipfsGateway: 'cloudflare-ipfs.com',
   },
   zNA: {
     contract,
@@ -42,6 +43,7 @@ export const productionConfiguration = (
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
+    ipfsGateway: 'cloudflare-ipfs.com',
   },
   zNA: {
     contract,

@@ -91,7 +91,7 @@ describe('Gnosis Safe test', async () => {
     expect(collectible).to.be.not.equal(undefined);
   });
 
-  it.only('should have metadata', async () => {
+  it('should have metadata for `Zer0 Name Service` token', async () => {
     const dao = {
       id: defZNA,
       ens: defZNA,
@@ -99,7 +99,7 @@ describe('Gnosis Safe test', async () => {
       title: 'zDAO Testing Space 1',
       creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
       network: SupportedChainId.RINKEBY.toString(),
-      safeAddress: '0xb3b83bf204C458B461de9B0CD2739DB152b4fa5A',
+      safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
       votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
     };
 
@@ -119,11 +119,43 @@ describe('Gnosis Safe test', async () => {
     // should contain collectibles
     const collectible = assets.collectibles.find(
       (item: Collectible) =>
-        item.address === '0x0855dd3576DEF97076CADfdD6928E93fa3b05012'
+        item.address === '0xa4F6C921f914ff7972D7C55c15f015419326e0Ca'
     );
     expect(collectible).to.be.not.equal(undefined);
     // should contain metadata
     expect(Object.keys(collectible!.metadata).length).to.be.gt(0);
+  });
+
+  it('should not have empty metadata for `Zer0 Name Service` token in Beasts Gnosis Safe', async () => {
+    const dao = {
+      id: defZNA,
+      ens: defZNA,
+      zNA: defZNA,
+      title: 'zDAO Testing Space 1',
+      creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+      network: SupportedChainId.MAINNET.toString(),
+      safeAddress: '0x766A9b866930D0C7f673EB8Fc9655D5f782b2B21',
+      votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+    };
+
+    const daoInstance = new DAOClient(config, {
+      id: dao.id,
+      ens: dao.ens,
+      zNAs: [dao.zNA],
+      title: dao.title,
+      creator: dao.creator,
+      avatar: undefined,
+      network: dao.network,
+      safeAddress: dao.safeAddress,
+      votingToken: dao.votingToken,
+    });
+    const assets = await daoInstance.listAssets();
+
+    // looking for empty meta data
+    const patches = assets.collectibles.filter(
+      (collectible) => Object.keys(collectible.metadata).length < 1
+    );
+    expect(patches.length).to.be.equal(0);
   });
 
   it('should list transactions', async () => {
