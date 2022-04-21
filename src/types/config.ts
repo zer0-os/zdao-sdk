@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 export interface SnapshotConfig {
   // uri to Snaphost Hub
   serviceUri: string;
-  // ipfs gateway
+  // ipfs gateway without schemes
   ipfsGateway: string;
   // chain id as string where space created
   network: string;
@@ -15,6 +15,8 @@ export interface GnosisSafeConfig {
   serviceUri: string;
   // uri to Gnosis Safe gateway
   gateway: string;
+  // ipfs gateway without schemes
+  ipfsGateway: string;
 }
 
 export interface zNAConfig {

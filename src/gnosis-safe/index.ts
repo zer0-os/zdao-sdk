@@ -14,6 +14,7 @@ import { BigNumberish, ethers } from 'ethers';
 
 import TransferAbi from '../config/constants/abi/transfer.json';
 import { GnosisSafeConfig } from '../types';
+import { ipfsJson } from '../utilities/ipfs';
 
 class GnosisSafeClient {
   private readonly _config: GnosisSafeConfig;
@@ -115,10 +116,40 @@ class GnosisSafeClient {
   ): Promise<SafeCollectibleResponse[]> {
     const address = ethers.utils.getAddress(safeAddress);
 
-    return await getCollectibles(this._config.gateway, network, address, {
-      exclude_spam: true,
-      trusted: false,
-    });
+    const collectibles = await getCollectibles(
+      this._config.gateway,
+      network,
+      address,
+      {
+        exclude_spam: true,
+        trusted: false,
+      }
+    );
+
+    // todo, if empty uri, then should integrate with smart contract and get token uri
+
+    // if not empty uri, then should fetch data from ipfs uri
+    const needToPatch = collectibles.filter(
+      (collectible) =>
+        Object.keys(collectible.metadata).length < 1 &&
+        collectible.uri.length > 0
+    );
+
+    const promises: Promise<{ [key: string]: string }>[] = [];
+    for (const collectible of needToPatch) {
+      promises.push(ipfsJson(collectible.uri, this._config.ipfsGateway));
+    }
+    const result: { [key: string]: string }[] = await Promise.all(promises);
+    for (const index in needToPatch) {
+      const patch = collectibles.find(
+        (collectible) => collectible.uri === needToPatch[index].uri
+      );
+      if (patch) {
+        patch.metadata = result[index];
+      }
+    }
+
+    return collectibles;
   }
 
   async listTransactions(
