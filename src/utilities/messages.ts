@@ -12,6 +12,10 @@ const ErrorMessages = [
     value: 'Empty zDAO title',
   },
   {
+    key: 'empty-zdao-creator',
+    value: 'Empty zDAO creator',
+  },
+  {
     key: 'empty-gnosis-address',
     value: 'Empty Gnosis Safe address',
   },
@@ -20,8 +24,16 @@ const ErrorMessages = [
     value: 'Empty Gnosis Safe owners',
   },
   {
-    key: 'empty-voting-token',
-    value: 'Empty Voting ERC20 Token address',
+    key: 'empty-proposal-token',
+    value: 'Empty ERC20 Token address to become proposal creator',
+  },
+  {
+    key: 'invalid-proposal-token-amount',
+    value: 'Invalid Token amount to become proposal creator',
+  },
+  {
+    key: 'invalid-quorum-amount',
+    value: 'Invalid Quorum votes',
   },
   {
     key: 'already-exist-zdao',
@@ -44,16 +56,12 @@ const ErrorMessages = [
     value: 'Failed to create proposal',
   },
   {
-    key: 'not-found-ens-in-snapshot',
-    value: 'Not found space with given ens in snapshot',
+    key: 'not-sync-state',
+    value: 'Please wait more time to sync state into Polygon network',
   },
   {
-    key: 'not-found-strategy-in-snapshot',
-    value: 'Not found any token related strategyies in snapshot',
-  },
-  {
-    key: 'invalid-ens',
-    value: 'Invalid ENS',
+    key: 'not-found-proposal',
+    value: 'Not Found a proposal',
   },
 ] as const;
 

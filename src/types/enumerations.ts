@@ -1,7 +1,10 @@
 export enum SupportedChainId {
   MAINNET = 1,
-  ROPSTEN = 3,
+  // ROPSTEN = 3,
   RINKEBY = 4,
+  GOERLI = 5,
+  MUMBAI = 80001,
+  POLYGON = 137,
 }
 
 export enum VoteChoice {

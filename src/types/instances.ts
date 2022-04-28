@@ -1,10 +1,9 @@
 import { ethers } from 'ethers';
 
 import { CreateProposalParams, CreateZDAOParams } from './params';
-import { Choice, ProposalId, VoteId, zNA } from './primitives';
+import { Choice, ProposalId, zNA } from './primitives';
 import {
   ProposalProperties,
-  TokenMetaData,
   Transaction,
   Vote,
   zDAOAssets,
@@ -100,11 +99,11 @@ export interface zDAO extends zDAOProperties {
 }
 
 export interface Proposal extends ProposalProperties {
-  /**
-   * Get token meta data from ipfs
-   * @returns transaction meta data
-   */
-  getTokenMetadata(): Promise<TokenMetaData>;
+  // /**
+  //  * Get token meta data from ipfs
+  //  * @returns transaction meta data
+  //  */
+  // getTokenMetadata(): Promise<TokenMetaData>;
 
   /**
    * Get all the votes by proposal id filtering with the function parameter
@@ -125,7 +124,7 @@ export interface Proposal extends ProposalProperties {
    * @param choice voter's choice
    * @returns vote id if successfully cast a vote
    */
-  vote(signer: ethers.Wallet, choice: Choice): Promise<VoteId>;
+  vote(signer: ethers.Wallet, choice: Choice): Promise<void>;
 
   /**
    * Execute a proposal in zDAO

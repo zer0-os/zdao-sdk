@@ -1,19 +1,24 @@
 import * as dotenv from 'dotenv';
 
-import { SupportedChainId } from '../../src/types';
-
 dotenv.config();
 
 export const setEnv = () => {
-  const rpcUrl = process.env.INFURA_URL ?? '';
-  const network =
-    (Number(process.env.INFURA_NETWORK) as SupportedChainId) ??
-    SupportedChainId.RINKEBY;
-  const zDAOCore = process.env.ZDAO_CORE ?? '';
-
   return {
-    rpcUrl,
-    network,
-    zDAOCore,
+    rpc: {
+      rinkeby: process.env.RINKEBY_RPC_URL!,
+      goerli: process.env.GOERLI_RPC_URL!,
+      mumbai: process.env.MUMBAI_RPC_URL!,
+      mainnet: process.env.MAINNET_RPC_URL!,
+      polygon: process.env.POLYGON_RPC_URL!,
+    },
+    contract: {
+      zDAOChef: {
+        goerli: process.env.GOERLI_ZDAOCHEF_ADDRESS!,
+        mumbai: process.env.MUMBAI_ZDAOCHEF_ADDRESS!,
+      },
+    },
+    wallet: {
+      privateKey: process.env.PRIVATE_KEY!,
+    },
   };
 };

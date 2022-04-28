@@ -1,174 +1,134 @@
-import {
-  Erc20Transfer as GnosisErc20Transfer,
-  Erc721Transfer as GnosisErc721Transfer,
-  NativeCoinTransfer as GnosisNativeCoinTransfer,
-  Transaction as GnosisTransaction,
-  Transfer as GnosisTransfer,
-  TransferInfo as GnosisTransferInfo,
-} from '@gnosis.pm/safe-react-gateway-sdk';
-import { ethers } from 'ethers';
-import { cloneDeep } from 'lodash';
+import { BigNumber, ethers } from 'ethers';
 
-import GnosisSafeClient from '../gnosis-safe';
-import SnapshotClient from '../snapshot-io';
-import { SnapshotProposal } from '../snapshot-io/types';
+import { IPFSGatway } from '../config';
+import { EtherZDAO, IEtherZDAO } from '../config/types/EtherZDAO';
+import { PolyZDAO } from '../config/types/PolyZDAO';
+import { EtherZDAOChefClient } from '../ethereum';
+import { GnosisSafeClient } from '../gnosis-safe';
+import { PolyZDAOChefClient } from '../polygon';
 import {
-  AssetType,
   Config,
   CreateProposalParams,
   Proposal,
   ProposalId,
-  Transaction,
-  TransactionStatus,
-  TransactionType,
-  TransferInfo,
+  ProposalProperties,
+  ProposalState,
   VoteChoice,
-  zDAO,
-  zDAOAssets,
   zDAOProperties,
+  zNA,
 } from '../types';
+import { ipfsJson } from '../utilities/ipfs';
+import { errorMessageForError } from '../utilities/messages';
+import AbstractDAOClient from './AbstractDAOClient';
 import ProposalClient from './ProposalClient';
 
-class DAOClient implements zDAO {
-  private readonly _config: Config;
-  protected readonly _snapshotClient: SnapshotClient;
-  protected readonly _gnosisSafeClient: GnosisSafeClient;
-  protected readonly _properties: zDAOProperties;
+class DAOClient extends AbstractDAOClient {
+  protected _etherZDAOChef!: EtherZDAOChefClient;
+  protected _polyZDAOChef!: PolyZDAOChefClient;
+  protected _etherZDAO!: EtherZDAO;
+  protected _polyZDAO: PolyZDAO | null = null;
 
-  constructor(config: Config, properties: zDAOProperties) {
-    this._config = config;
-    this._properties = cloneDeep(properties);
+  private constructor(
+    properties: zDAOProperties,
+    gnosisSafeClient: GnosisSafeClient,
+    etherZDAOChef: EtherZDAOChefClient,
+    polyZDAOChef: PolyZDAOChefClient
+  ) {
+    super(properties, gnosisSafeClient);
+    this._etherZDAOChef = etherZDAOChef;
+    this._polyZDAOChef = polyZDAOChef;
 
-    this._snapshotClient = new SnapshotClient(config.snapshot);
-    this._gnosisSafeClient = new GnosisSafeClient(config.gnosisSafe);
+    return (async () => {
+      this._etherZDAO = await this._etherZDAOChef.getZDAOById(
+        this._properties.id
+      );
+      this._polyZDAO = await this.getPolyZDAO();
+      return this;
+    })() as unknown as DAOClient;
   }
 
-  get id() {
-    return this._properties.id;
+  get etherZDAOChef() {
+    return this._etherZDAOChef;
   }
 
-  get ens() {
-    return this._properties.ens;
+  get polyZDAOChef() {
+    return this._polyZDAOChef;
   }
 
-  get zNAs() {
-    return this._properties.zNAs;
+  get etherZDAO() {
+    return this._etherZDAO;
   }
 
-  get title() {
-    return this._properties.title;
-  }
+  static async createInstance(config: Config, zNA: zNA): Promise<DAOClient> {
+    const etherZDAOChef = new EtherZDAOChefClient(config.ethereum);
+    const polyZDAOChef = new PolyZDAOChefClient(config.polygon);
+    const zDAOProperties = await etherZDAOChef.getZDAOProperties(zNA);
 
-  get creator() {
-    return this._properties.creator;
-  }
-
-  get avatar() {
-    return this._properties.avatar;
-  }
-
-  get network() {
-    return this._properties.network;
-  }
-
-  get safeAddress() {
-    return this._properties.safeAddress;
-  }
-
-  get votingToken() {
-    return this._properties.votingToken;
-  }
-
-  async listAssets(): Promise<zDAOAssets> {
-    const balances = await this._gnosisSafeClient.listAssets(
-      this.safeAddress,
-      this.network
+    return await new DAOClient(
+      zDAOProperties as zDAOProperties,
+      new GnosisSafeClient(config.gnosisSafe),
+      etherZDAOChef,
+      polyZDAOChef
     );
+  }
 
-    const collectibles = await this._gnosisSafeClient.listCollectibles(
-      this.safeAddress,
-      this.network
-    );
+  async getPolyZDAO(): Promise<PolyZDAO | null> {
+    if (this._polyZDAO) return this._polyZDAO;
+    this._polyZDAO = await this._polyZDAOChef.getZDAOById(this._properties.id);
+    return this._polyZDAO;
+  }
+
+  private async mapToProperties(
+    raw: IEtherZDAO.ProposalStruct
+  ): Promise<ProposalProperties> {
+    const start = new Date(Number(raw.startTimestamp) * 1000),
+      end = new Date(Number(raw.endTimestamp) * 1000),
+      now = new Date();
+
+    const mapState = (raw: IEtherZDAO.ProposalStruct): ProposalState => {
+      if (raw.canceled) {
+        return 'canceled';
+      } else if (now <= start) {
+        return 'pending';
+      } else if (now <= end) {
+        return 'active';
+      } else if (
+        BigNumber.from(raw.yes) <= BigNumber.from(raw.no) ||
+        BigNumber.from(raw.yes) < BigNumber.from(this.quorumVotes)
+      ) {
+        return 'failed';
+      } else if (raw.executed) {
+        return 'executed';
+      }
+      return 'succeeded';
+    };
+
+    const ipfsData = await ipfsJson(raw.ipfs.toString(), IPFSGatway);
+    const metadataJson = JSON.parse(ipfsData.data.message.metadata);
 
     return {
-      amountInUSD: Number(balances.fiatTotal),
-      coins: balances.items.map((item: any) => ({
-        type: item.tokenInfo.type as string as AssetType,
-        address: item.tokenInfo.address,
-        decimals: item.tokenInfo.decimals,
-        symbol: item.tokenInfo.symbol,
-        name: item.tokenInfo.name,
-        logoUri: item.tokenInfo.logoUri ?? undefined,
-        amount: item.balance,
-        amountInUSD: Number(item.fiatBalance),
-      })),
-      collectibles: collectibles.map((item: any) => ({
-        address: item.address,
-        tokenName: item.tokenName,
-        tokenSymbol: item.tokenSymbol,
-        id: item.id,
-        logoUri: item.logoUri,
-        name: item.name,
-        description: item.description,
-        imageUri: item.imageUri,
-        metadata: item.metadata,
-      })),
+      id: raw.proposalId.toString(),
+      createdBy: raw.createdBy,
+      title: ipfsData.data.message.title,
+      body: ipfsData.data.message.body,
+      ipfs: raw.ipfs.toString(),
+      choices: Object.values(VoteChoice),
+      start,
+      end,
+      state: mapState(raw),
+      snapshot: Number(raw.snapshot),
+      scores: undefined, // todo, pull from Polygon chain
+      voters: undefined, // todo
+      metadata: {
+        abi: metadataJson.abi,
+        sender: metadataJson.sender,
+        recipient: metadataJson.recipient,
+        token: metadataJson.token,
+        decimals: metadataJson.decimals ?? 18,
+        symbol: metadataJson.symbol ?? 'zToken',
+        amount: metadataJson.amount,
+      },
     };
-  }
-
-  async listTransactions(): Promise<Transaction[]> {
-    const transactions: GnosisTransaction[] =
-      await this._gnosisSafeClient.listTransactions(
-        this.safeAddress,
-        this.network
-      );
-
-    const mapToTransferInfo = (info: GnosisTransferInfo): TransferInfo => {
-      if ((info.type as string) === AssetType.ERC20) {
-        const typedInfo = info as GnosisErc20Transfer;
-        return {
-          type: AssetType.ERC20,
-          tokenAddress: typedInfo.tokenAddress,
-          tokenName: typedInfo.tokenName ?? undefined,
-          tokenSymbol: typedInfo.tokenSymbol ?? undefined,
-          logoUri: typedInfo.logoUri ?? undefined,
-          decimals: typedInfo.decimals ?? undefined,
-          value: typedInfo.value,
-        };
-      } else if ((info.type as string) === AssetType.ERC721) {
-        const typedInfo = info as GnosisErc721Transfer;
-        return {
-          type: AssetType.ERC721,
-          tokenAddress: typedInfo.tokenAddress,
-          tokenId: typedInfo.tokenId,
-          tokenName: typedInfo.tokenName ?? undefined,
-          tokenSymbol: typedInfo.tokenSymbol ?? undefined,
-          logoUri: typedInfo.logoUri ?? undefined,
-        };
-      } else {
-        // AssetType.NATIVE_COIN
-        const typedInfo = info as GnosisNativeCoinTransfer;
-        return {
-          type: AssetType.NATIVE_TOKEN,
-          value: typedInfo.value,
-        };
-      }
-    };
-
-    return transactions.map((tx: GnosisTransaction) => {
-      const txInfo = tx.transaction.txInfo as GnosisTransfer;
-      return {
-        type:
-          txInfo.direction === 'INCOMING'
-            ? TransactionType.RECEIVED
-            : TransactionType.SENT,
-        asset: mapToTransferInfo(txInfo.transferInfo),
-        from: txInfo.sender.value,
-        to: txInfo.recipient.value,
-        created: new Date(tx.transaction.timestamp),
-        status: tx.transaction.txStatus as string as TransactionStatus,
-      };
-    });
   }
 
   async listProposals(): Promise<Proposal[]> {
@@ -177,43 +137,21 @@ class DAOClient implements zDAO {
     let numberOfResults = count;
     const proposals: Proposal[] = [];
     while (numberOfResults === count) {
-      const results: SnapshotProposal[] =
-        await this._snapshotClient.listProposals(
-          this.ens,
-          this.network,
-          from,
-          count
-        );
+      const results: IEtherZDAO.ProposalStructOutput[] =
+        await this._etherZDAO.listProposals(from, count);
 
+      const promises: Promise<ProposalProperties>[] = [];
+      promises.push(
+        ...results.map((proposal) => this.mapToProperties(proposal))
+      );
+
+      const propertiesAll: ProposalProperties[] = await Promise.all(promises);
       proposals.push(
-        ...results.map(
-          (proposal: SnapshotProposal): Proposal =>
-            new ProposalClient(
-              this,
-              this._snapshotClient,
-              this._gnosisSafeClient,
-              {
-                id: proposal.id,
-                type: proposal.type,
-                author: proposal.author,
-                title: proposal.title,
-                body: proposal.body ?? '',
-                ipfs: proposal.ipfs,
-                choices: proposal.choices.map(
-                  (choice: string) => choice as VoteChoice
-                ),
-                created: proposal.created,
-                start: proposal.start,
-                end: proposal.end,
-                state: proposal.state,
-                network: proposal.network,
-                snapshot: proposal.snapshot,
-                scores: proposal.scores,
-                votes: proposal.votes,
-              }
-            )
+        ...propertiesAll.map(
+          (properties) => new ProposalClient(properties, this)
         )
       );
+
       from += results.length;
       numberOfResults = results.length;
     }
@@ -221,85 +159,29 @@ class DAOClient implements zDAO {
   }
 
   async getProposal(id: ProposalId): Promise<Proposal> {
-    const proposal: SnapshotProposal = await this._snapshotClient.getProposal(
-      id
-    );
+    const proposal = await this._etherZDAO.proposals(id);
+    if (proposal.proposalId.toString() !== id) {
+      throw new Error(errorMessageForError('not-found-proposal'));
+    }
 
-    const instance = new ProposalClient(
-      this,
-      this._snapshotClient,
-      this._gnosisSafeClient,
-      {
-        id: proposal.id,
-        type: proposal.type,
-        author: proposal.author,
-        title: proposal.title,
-        body: proposal.body ?? '',
-        ipfs: proposal.ipfs,
-        choices: proposal.choices.map((choice: string) => choice as VoteChoice),
-        created: proposal.created,
-        start: proposal.start,
-        end: proposal.end,
-        state: proposal.state,
-        network: proposal.network,
-        snapshot: proposal.snapshot,
-        scores: proposal.scores,
-        votes: proposal.votes,
-      }
-    );
-    await instance.getTokenMetadata();
-    return instance;
+    return new ProposalClient(await this.mapToProperties(proposal), this);
   }
 
   async createProposal(
     signer: ethers.Wallet,
     payload: CreateProposalParams
-  ): Promise<ProposalClient> {
-    const { id: proposalId } = await this._snapshotClient.createProposal(
+  ): Promise<Proposal> {
+    const tx = await this._etherZDAOChef.createProposal(
       signer,
-      {
-        spaceId: this.ens,
-        title: payload.title,
-        body: payload.body ?? '',
-        choices: Object.values(VoteChoice),
-        duration: payload.duration,
-        snapshot: payload.snapshot,
-        network: this.network,
-        abi: payload.transfer.abi,
-        sender: this.safeAddress,
-        recipient: payload.transfer.recipient,
-        token: payload.transfer.token,
-        decimals: payload.transfer.decimals,
-        symbol: payload.transfer.symbol,
-        amount: payload.transfer.amount,
-      }
+      this.id,
+      payload
     );
+    await tx.wait();
 
-    const proposal = await this._snapshotClient.getProposal(proposalId);
-    const instance = new ProposalClient(
-      this,
-      this._snapshotClient,
-      this._gnosisSafeClient,
-      {
-        id: proposal.id,
-        type: proposal.type,
-        author: proposal.author,
-        title: proposal.title,
-        body: proposal.body ?? '',
-        ipfs: proposal.ipfs,
-        choices: proposal.choices.map((choice: string) => choice as VoteChoice),
-        created: proposal.created,
-        start: proposal.start,
-        end: proposal.end,
-        state: proposal.state,
-        network: proposal.network,
-        snapshot: proposal.snapshot,
-        scores: proposal.scores,
-        votes: proposal.votes,
-      }
-    );
-    await instance.getTokenMetadata();
-    return instance;
+    // created proposal id
+    const lastProposalId = (await this._etherZDAO.lastProposalId()).toString();
+
+    return await this.getProposal(lastProposalId);
   }
 }
 
