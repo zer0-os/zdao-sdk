@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
 import { CreateProposalParams, CreateZDAOParams } from './params';
-import { Choice, ProposalId, zNA } from './primitives';
+import { Choice, ProposalId, zDAOId, zNA } from './primitives';
 import {
   ProposalProperties,
   Transaction,
@@ -12,10 +12,30 @@ import {
 
 export interface SDKInstance {
   /**
+   * Create zDAO
+   * @param signer
+   * @param params
+   */
+  createZDAO(signer: ethers.Wallet, params: CreateZDAOParams): Promise<void>;
+
+  /**
+   * Delete zDAO
+   * @param signer
+   * @param zDAOId
+   */
+  deleteZDAO(signer: ethers.Wallet, zDAOId: zDAOId): Promise<void>;
+
+  /**
    * Get all the list of zNA
    * @returns list of zNA
    */
   listZNAs(): Promise<zNA[]>;
+
+  /**
+   * Get all the list of zDAO instance
+   * @returns list of zDAO
+   */
+  listZDAOs(): Promise<zDAO[]>;
 
   /**
    * Create an zDAO instance by zNA
@@ -34,12 +54,12 @@ export interface SDKInstance {
 
   /**
    * Create zDAO from parameters for test
-   * @param packaged parameters of zDAO
+   * @params packaged parameters of zDAO
    * @exception throw Error if zNA already exists
    * @exception throw Error if owners is empty
    * @exception throw Error if title is empty
    */
-  createZDAOFromParams(param: CreateZDAOParams): Promise<zDAO>;
+  createZDAOFromParams(params: CreateZDAOParams): Promise<zDAO>;
 
   /**
    * List all associated zNAs, only used for test

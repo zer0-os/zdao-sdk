@@ -14,9 +14,10 @@ import {
   ProposalProperties,
   ProposalState,
   VoteChoice,
+  zDAOId,
   zDAOProperties,
-  zNA,
 } from '../types';
+import { NotFoundError } from '../types/error';
 import { ipfsJson } from '../utilities/ipfs';
 import { errorMessageForError } from '../utilities/messages';
 import AbstractDAOClient from './AbstractDAOClient';
@@ -38,7 +39,7 @@ class DAOClient extends AbstractDAOClient {
     this._etherZDAOChef = etherZDAOChef;
     this._polyZDAOChef = polyZDAOChef;
 
-    return (async () => {
+    return (async (): Promise<DAOClient> => {
       this._etherZDAO = await this._etherZDAOChef.getZDAOById(
         this._properties.id
       );
@@ -59,10 +60,13 @@ class DAOClient extends AbstractDAOClient {
     return this._etherZDAO;
   }
 
-  static async createInstance(config: Config, zNA: zNA): Promise<DAOClient> {
+  static async createInstance(
+    config: Config,
+    zDAOId: zDAOId
+  ): Promise<DAOClient> {
     const etherZDAOChef = new EtherZDAOChefClient(config.ethereum);
     const polyZDAOChef = new PolyZDAOChefClient(config.polygon);
-    const zDAOProperties = await etherZDAOChef.getZDAOProperties(zNA);
+    const zDAOProperties = await etherZDAOChef.getZDAOPropertiesById(zDAOId);
 
     return await new DAOClient(
       zDAOProperties as zDAOProperties,
@@ -161,7 +165,7 @@ class DAOClient extends AbstractDAOClient {
   async getProposal(id: ProposalId): Promise<Proposal> {
     const proposal = await this._etherZDAO.proposals(id);
     if (proposal.proposalId.toString() !== id) {
-      throw new Error(errorMessageForError('not-found-proposal'));
+      throw new NotFoundError(errorMessageForError('not-found-proposal'));
     }
 
     return new ProposalClient(await this.mapToProperties(proposal), this);

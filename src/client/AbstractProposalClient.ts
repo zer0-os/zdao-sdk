@@ -3,7 +3,7 @@ import { cloneDeep } from 'lodash';
 
 import { ProposalProperties } from '../types';
 import { Choice, Proposal, Vote } from '../types';
-import { errorMessageForError } from '../utilities/messages';
+import { NotImplementedError } from '../types/error';
 
 class AbstractProposalClient implements Proposal {
   protected readonly _properties: ProposalProperties;
@@ -65,19 +65,19 @@ class AbstractProposalClient implements Proposal {
   }
 
   listVotes(): Promise<Vote[]> {
-    throw new Error(errorMessageForError('not-implemented'));
+    throw new NotImplementedError();
   }
 
   getVotingPowerOfUser(_: string): Promise<number> {
-    throw new Error(errorMessageForError('not-implemented'));
+    throw new NotImplementedError();
   }
 
   vote(_: ethers.Wallet, _2: Choice): Promise<void> {
-    throw new Error(errorMessageForError('not-implemented'));
+    throw new NotImplementedError();
   }
 
   execute(_: ethers.Wallet): Promise<ethers.providers.TransactionResponse> {
-    throw new Error(errorMessageForError('not-implemented'));
+    throw new NotImplementedError();
   }
 }
 

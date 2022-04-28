@@ -47,7 +47,7 @@ describe.only('zNA test', async () => {
 
   it('should create successfully', async () => {
     const params: CreateZDAOParams = {
-      zNA: 'joshupgig.eth',
+      zNA: 'zDAO.eth',
       title: 'zDAO Testing Space 1',
       createdBy: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
       network: SupportedChainId.RINKEBY,
@@ -59,7 +59,7 @@ describe.only('zNA test', async () => {
     };
     const zDAO: zDAO = await sdkInstance.createZDAOFromParams(params);
 
-    expect(zDAO.zNAs[0]).to.be.equal('joshupgig.eth');
+    expect(zDAO.zNAs[0]).to.be.equal('zDAO.eth');
   });
 
   it('should throw error if create same zNA', async () => {

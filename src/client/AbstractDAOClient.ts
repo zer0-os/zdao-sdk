@@ -23,7 +23,7 @@ import {
   zDAOAssets,
   zDAOProperties,
 } from '../types';
-import { errorMessageForError } from '../utilities/messages';
+import { NotImplementedError } from '../types/error';
 
 class AbstractDAOClient implements zDAO {
   protected readonly _properties: zDAOProperties;
@@ -179,18 +179,18 @@ class AbstractDAOClient implements zDAO {
   }
 
   listProposals(): Promise<Proposal[]> {
-    throw new Error(errorMessageForError('not-implemented'));
+    throw new NotImplementedError();
   }
 
   getProposal(_: ProposalId): Promise<Proposal> {
-    throw new Error(errorMessageForError('not-implemented'));
+    throw new NotImplementedError();
   }
 
   createProposal(
     _: ethers.Wallet,
     _2: CreateProposalParams
   ): Promise<Proposal> {
-    throw new Error(errorMessageForError('not-implemented'));
+    throw new NotImplementedError();
   }
 }
 

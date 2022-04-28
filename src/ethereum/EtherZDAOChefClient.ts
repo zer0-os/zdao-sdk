@@ -39,10 +39,8 @@ class EtherZDAOChefClient {
     return (await this._contract.numberOfzDAOs()).toNumber();
   }
 
-  async getZDAORecordByZNA(zNA: zNA): Promise<ZDAORecord> {
-    const zDAORecord = await this._contract.getzDaoByZNA(
-      ZNAClient.zNATozNAId(zNA)
-    );
+  async getZDAORecordById(zDAOId: zDAOId): Promise<ZDAORecord> {
+    const zDAORecord = await this._contract.getzDAOById(zDAOId);
 
     // resolve all the zNAIds
     const promises: Promise<zNAId>[] = [];
@@ -113,8 +111,8 @@ class EtherZDAOChefClient {
     ) as EtherZDAO;
   }
 
-  async getZDAOById(daoId: zDAOId): Promise<EtherZDAO> {
-    const zDAORecord = await this._contract.getzDAOById(daoId);
+  async getZDAOById(zDAOId: zDAOId): Promise<EtherZDAO> {
+    const zDAORecord = await this._contract.getzDAOById(zDAOId);
 
     return new ethers.Contract(
       zDAORecord.zDAO,
@@ -123,8 +121,8 @@ class EtherZDAOChefClient {
     ) as EtherZDAO;
   }
 
-  async getZDAOProperties(zNA: zNA): Promise<EtherZDAOProperties> {
-    const zDAORecord = await this.getZDAORecordByZNA(zNA);
+  async getZDAOPropertiesById(zDAOId: zDAOId): Promise<EtherZDAOProperties> {
+    const zDAORecord = await this.getZDAORecordById(zDAOId);
 
     const etherZDAO = new ethers.Contract(
       zDAORecord.zDAO,
@@ -164,13 +162,13 @@ class EtherZDAOChefClient {
     });
   }
 
-  removeDAO(signer: ethers.Wallet, daoId: zDAOId) {
-    return this._contract.connect(signer).removeDAO(daoId);
+  removeDAO(signer: ethers.Wallet, zDAOId: zDAOId) {
+    return this._contract.connect(signer).removeDAO(zDAOId);
   }
 
   createProposal(
     signer: ethers.Wallet,
-    daoId: zDAOId,
+    zDAOId: zDAOId,
     payload: CreateProposalParams
   ) {
     // todo, submit proposal meta data to ipfs and compact into byte32
@@ -180,7 +178,7 @@ class EtherZDAOChefClient {
     const startDateTime = new Date();
 
     return this._contract.connect(signer).createProposal(
-      daoId,
+      zDAOId,
       timestamp(startDateTime),
       timestamp(addSeconds(startDateTime, payload.duration)),
       payload.transfer.token, // target
@@ -190,16 +188,20 @@ class EtherZDAOChefClient {
     );
   }
 
-  cancelProposal(signer: ethers.Wallet, daoId: zDAOId, proposalId: ProposalId) {
-    return this._contract.connect(signer).cancelProposal(daoId, proposalId);
+  cancelProposal(
+    signer: ethers.Wallet,
+    zDAOId: zDAOId,
+    proposalId: ProposalId
+  ) {
+    return this._contract.connect(signer).cancelProposal(zDAOId, proposalId);
   }
 
   executeProposal(
     signer: ethers.Wallet,
-    daoId: zDAOId,
+    zDAOId: zDAOId,
     proposalId: ProposalId
   ) {
-    return this._contract.connect(signer).executeProposal(daoId, proposalId);
+    return this._contract.connect(signer).executeProposal(zDAOId, proposalId);
   }
 }
 

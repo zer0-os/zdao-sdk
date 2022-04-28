@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
 import { Choice, ProposalProperties, Vote } from '../types';
-import { errorMessageForError } from '../utilities/messages';
+import { NotImplementedError } from '../types/error';
 import AbstractProposalClient from './AbstractProposalClient';
 
 class MockProposalClient extends AbstractProposalClient {
@@ -34,7 +34,7 @@ class MockProposalClient extends AbstractProposalClient {
   }
 
   execute(_: ethers.Wallet): Promise<ethers.providers.TransactionResponse> {
-    throw new Error(errorMessageForError('not-implemented'));
+    throw new NotImplementedError();
   }
 }
 

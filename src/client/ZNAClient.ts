@@ -13,7 +13,7 @@ class ZNAClient {
   private static _initialized = false;
   private static _znsInstance: zNSInstance;
 
-  initialize(config: zNSConfig) {
+  static initialize(config: zNSConfig) {
     ZNAClient._znsInstance = createZNSInstance(config);
     ZNAClient._initialized = true;
   }

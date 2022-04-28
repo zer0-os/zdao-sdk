@@ -52,6 +52,10 @@ const ErrorMessages = [
     value: 'Not implemented',
   },
   {
+    key: 'failed-create-zdao',
+    value: 'Failed to create zDAO',
+  },
+  {
     key: 'failed-create-proposal',
     value: 'Failed to create proposal',
   },
@@ -70,8 +74,4 @@ export type ErrorType = typeof ErrorMessages[number]['key'];
 export const errorMessageForError = (error: ErrorType): string => {
   const found = ErrorMessages.find((item) => item.key === error);
   return found ? found.value : 'Unknown Error';
-};
-
-export const raiseError = (error: ErrorType): void => {
-  throw new Error(errorMessageForError(error));
 };

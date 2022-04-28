@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 
 import { ProposalProperties } from '../types';
 import { Choice, Vote } from '../types';
+import { ZDAOError } from '../types/error';
 import { errorMessageForError } from '../utilities/messages';
 import AbstractProposalClient from './AbstractProposalClient';
 import DAOClient from './DAOClient';
@@ -16,7 +17,7 @@ class ProposalClient extends AbstractProposalClient {
 
   async listVotes(): Promise<Vote[]> {
     const polyZDAO = await this._zDAO.getPolyZDAO();
-    if (!polyZDAO) throw new Error(errorMessageForError('not-sync-state'));
+    if (!polyZDAO) throw new ZDAOError(errorMessageForError('not-sync-state'));
 
     const count = 30000;
     let from = 0;
@@ -39,7 +40,7 @@ class ProposalClient extends AbstractProposalClient {
 
   async getVotingPowerOfUser(account: string): Promise<number> {
     const polyZDAO = await this._zDAO.getPolyZDAO();
-    if (!polyZDAO) throw new Error(errorMessageForError('not-sync-state'));
+    if (!polyZDAO) throw new ZDAOError(errorMessageForError('not-sync-state'));
 
     return (await polyZDAO.votingPowerOfVoter(account)).toNumber();
   }
@@ -59,11 +60,11 @@ class ProposalClient extends AbstractProposalClient {
       signer.address
     );
     if (!isOwner) {
-      throw new Error(errorMessageForError('not-gnosis-owner'));
+      throw new ZDAOError(errorMessageForError('not-gnosis-owner'));
     }
 
     if (!this.metadata) {
-      throw new Error(errorMessageForError('empty-metadata'));
+      throw new ZDAOError(errorMessageForError('empty-metadata'));
     }
 
     if (!this.metadata?.token || this.metadata.token.length < 1) {

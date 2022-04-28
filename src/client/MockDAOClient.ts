@@ -12,6 +12,7 @@ import {
   VoteChoice,
   zDAOProperties,
 } from '../types';
+import { NotFoundError } from '../types/error';
 import { timestamp } from '../utilities/date';
 import { errorMessageForError } from '../utilities/messages';
 import AbstractDAOClient from './AbstractDAOClient';
@@ -61,7 +62,7 @@ class MockDAOClient extends AbstractDAOClient {
       (proposal) => proposal.id === proposalId
     );
     if (!found) {
-      throw new Error(errorMessageForError('not-found-proposal'));
+      throw new NotFoundError(errorMessageForError('not-found-proposal'));
     }
 
     return Promise.resolve(found);
