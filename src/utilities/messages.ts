@@ -61,7 +61,7 @@ const ErrorMessages = [
   },
   {
     key: 'not-sync-state',
-    value: 'Please wait more time to sync state into Polygon network',
+    value: 'Pending for state sync into Polygon network',
   },
   {
     key: 'not-found-proposal',

@@ -14,13 +14,13 @@ import {
   ProposalProperties,
   ProposalState,
   VoteChoice,
-  zDAOId,
   zDAOProperties,
+  zNA,
 } from '../types';
-import { NotFoundError } from '../types/error';
-import { ipfsJson } from '../utilities/ipfs';
+import { NotFoundError, NotSyncStateError } from '../types/error';
 import { errorMessageForError } from '../utilities/messages';
 import AbstractDAOClient from './AbstractDAOClient';
+import IPFSClient from './IPFSClient';
 import ProposalClient from './ProposalClient';
 
 class DAOClient extends AbstractDAOClient {
@@ -60,13 +60,10 @@ class DAOClient extends AbstractDAOClient {
     return this._etherZDAO;
   }
 
-  static async createInstance(
-    config: Config,
-    zDAOId: zDAOId
-  ): Promise<DAOClient> {
+  static async createInstance(config: Config, zNA: zNA): Promise<DAOClient> {
     const etherZDAOChef = new EtherZDAOChefClient(config.ethereum);
     const polyZDAOChef = new PolyZDAOChefClient(config.polygon);
-    const zDAOProperties = await etherZDAOChef.getZDAOPropertiesById(zDAOId);
+    const zDAOProperties = await etherZDAOChef.getZDAOPropertiesByZNA(zNA);
 
     return await new DAOClient(
       zDAOProperties as zDAOProperties,
@@ -85,14 +82,36 @@ class DAOClient extends AbstractDAOClient {
   private async mapToProperties(
     raw: IEtherZDAO.ProposalStruct
   ): Promise<ProposalProperties> {
-    const start = new Date(Number(raw.startTimestamp) * 1000),
-      end = new Date(Number(raw.endTimestamp) * 1000),
+    const polyZDAO = await this.getPolyZDAO();
+    const polyProposal = polyZDAO
+      ? await polyZDAO.proposals(raw.proposalId)
+      : null;
+    const isSyncedProposal = polyProposal
+      ? polyProposal.proposalId.eq(raw.proposalId)
+      : false;
+
+    const start =
+        polyZDAO && polyProposal && isSyncedProposal
+          ? new Date(Number(polyProposal.startTimestamp) * 1000)
+          : undefined,
+      end =
+        polyZDAO && polyProposal && isSyncedProposal
+          ? new Date(Number(polyProposal.endTimestamp) * 1000)
+          : undefined,
       now = new Date();
+    const scores =
+      polyZDAO && polyProposal && isSyncedProposal
+        ? [polyProposal.yes.toNumber(), polyProposal.no.toNumber()]
+        : undefined;
+    const voters =
+      polyZDAO && polyProposal && isSyncedProposal
+        ? polyProposal.voters.toNumber()
+        : undefined;
 
     const mapState = (raw: IEtherZDAO.ProposalStruct): ProposalState => {
       if (raw.canceled) {
         return 'canceled';
-      } else if (now <= start) {
+      } else if (!start || !end) {
         return 'pending';
       } else if (now <= end) {
         return 'active';
@@ -107,7 +126,7 @@ class DAOClient extends AbstractDAOClient {
       return 'succeeded';
     };
 
-    const ipfsData = await ipfsJson(raw.ipfs.toString(), IPFSGatway);
+    const ipfsData = await IPFSClient.getJson(raw.ipfs.toString(), IPFSGatway);
     const metadataJson = JSON.parse(ipfsData.data.message.metadata);
 
     return {
@@ -121,8 +140,8 @@ class DAOClient extends AbstractDAOClient {
       end,
       state: mapState(raw),
       snapshot: Number(raw.snapshot),
-      scores: undefined, // todo, pull from Polygon chain
-      voters: undefined, // todo
+      scores,
+      voters,
       metadata: {
         abi: metadataJson.abi,
         sender: metadataJson.sender,
@@ -136,13 +155,18 @@ class DAOClient extends AbstractDAOClient {
   }
 
   async listProposals(): Promise<Proposal[]> {
-    const count = 3000;
-    let from = 0;
-    let numberOfResults = count;
+    const count = (await this._etherZDAO.numberOfProposals()).toNumber();
+    const limit = 100;
+    let from = 1;
+    let numberOfResults = limit;
     const proposals: Proposal[] = [];
-    while (numberOfResults === count) {
+
+    while (numberOfResults === limit) {
       const results: IEtherZDAO.ProposalStructOutput[] =
-        await this._etherZDAO.listProposals(from, count);
+        await this._etherZDAO.listProposals(
+          from,
+          Math.min(from + limit - 1, count)
+        );
 
       const promises: Promise<ProposalProperties>[] = [];
       promises.push(
@@ -175,12 +199,18 @@ class DAOClient extends AbstractDAOClient {
     signer: ethers.Wallet,
     payload: CreateProposalParams
   ): Promise<Proposal> {
-    const tx = await this._etherZDAOChef.createProposal(
+    const polyZDAO = await this.getPolyZDAO();
+    if (!polyZDAO) {
+      throw new NotSyncStateError();
+    }
+
+    const ipfs = await this.uploadToIPFS(
       signer,
-      this.id,
-      payload
+      payload,
+      this.polyZDAOChef.config.zDAOChef
     );
-    await tx.wait();
+
+    await this._etherZDAOChef.createProposal(signer, this.id, payload, ipfs);
 
     // created proposal id
     const lastProposalId = (await this._etherZDAO.lastProposalId()).toString();

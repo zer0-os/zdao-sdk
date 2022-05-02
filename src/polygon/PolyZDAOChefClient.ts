@@ -1,3 +1,4 @@
+import { AddressZero } from '@ethersproject/constants';
 import { ethers } from 'ethers';
 
 import PolyZDAOAbi from '../config/abi/PolyZDAO.json';
@@ -30,7 +31,7 @@ class PolyZDAOChefClient {
 
   async getZDAOById(daoId: zDAOId): Promise<PolyZDAO | null> {
     const iPolyZDAO = await this._contract.getzDAOById(daoId);
-    if (!iPolyZDAO) return null;
+    if (!iPolyZDAO || iPolyZDAO === AddressZero) return null;
 
     return new ethers.Contract(
       iPolyZDAO,
@@ -62,17 +63,27 @@ class PolyZDAOChefClient {
     };
   }
 
-  vote(
+  async vote(
     signer: ethers.Wallet,
     daoId: zDAOId,
     proposalId: ProposalId,
     choice: Choice
   ) {
-    return this._contract.connect(signer).vote(daoId, proposalId, choice);
+    const tx = await this._contract
+      .connect(signer)
+      .vote(daoId, proposalId, choice);
+    return await tx.wait();
   }
 
-  collectResult(signer: ethers.Wallet, daoId: zDAOId, proposalId: ProposalId) {
-    return this._contract.connect(signer).collectResult(daoId, proposalId);
+  async collectResult(
+    signer: ethers.Wallet,
+    daoId: zDAOId,
+    proposalId: ProposalId
+  ) {
+    const tx = await this._contract
+      .connect(signer)
+      .collectResult(daoId, proposalId);
+    return await tx.wait();
   }
 }
 

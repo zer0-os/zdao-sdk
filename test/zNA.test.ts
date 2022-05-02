@@ -18,8 +18,17 @@ use(chaiAsPromised.default);
 describe.only('zNA test', async () => {
   const env = setEnv();
   let sdkInstance: SDKInstance;
+  let signer: ethers.Wallet;
 
   beforeEach('setup', async () => {
+    signer = new ethers.Wallet(
+      env.wallet.privateKey,
+      new ethers.providers.JsonRpcProvider(
+        env.rpc.goerli,
+        SupportedChainId.GOERLI
+      )
+    );
+
     const rinkebyProvider = new ethers.providers.JsonRpcProvider(
       env.rpc.rinkeby,
       SupportedChainId.RINKEBY
@@ -49,15 +58,13 @@ describe.only('zNA test', async () => {
     const params: CreateZDAOParams = {
       zNA: 'zDAO.eth',
       title: 'zDAO Testing Space 1',
-      createdBy: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-      network: SupportedChainId.RINKEBY,
       gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
       token: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
       amount: BigNumber.from(10000).toString(),
       isRelativeMajority: true,
       quorumVotes: BigNumber.from(10000).toString(),
     };
-    const zDAO: zDAO = await sdkInstance.createZDAOFromParams(params);
+    const zDAO: zDAO = await sdkInstance.createZDAOFromParams(signer, params);
 
     expect(zDAO.zNAs[0]).to.be.equal('zDAO.eth');
   });
@@ -66,19 +73,17 @@ describe.only('zNA test', async () => {
     const params: CreateZDAOParams = {
       zNA: 'zDAO.eth',
       title: 'zDAO',
-      createdBy: 'createdBy',
-      network: SupportedChainId.RINKEBY,
       gnosisSafe: 'gnosisSafe',
       token: 'token',
       amount: BigNumber.from(10000).toString(),
       isRelativeMajority: true,
       quorumVotes: BigNumber.from(10000).toString(),
     };
-    await sdkInstance.createZDAOFromParams(params);
+    await sdkInstance.createZDAOFromParams(signer, params);
 
-    await expect(sdkInstance.createZDAOFromParams(params)).to.be.rejectedWith(
-      errorMessageForError('already-exist-zdao')
-    );
+    await expect(
+      sdkInstance.createZDAOFromParams(signer, params)
+    ).to.be.rejectedWith(errorMessageForError('already-exist-zdao'));
   });
 
   it('should exist zDAO', async () => {

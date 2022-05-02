@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 
 import { ProposalProperties } from '../types';
 import { Choice, Vote } from '../types';
-import { ZDAOError } from '../types/error';
+import { NotSyncStateError, ZDAOError } from '../types/error';
 import { errorMessageForError } from '../utilities/messages';
 import AbstractProposalClient from './AbstractProposalClient';
 import DAOClient from './DAOClient';
@@ -17,14 +17,24 @@ class ProposalClient extends AbstractProposalClient {
 
   async listVotes(): Promise<Vote[]> {
     const polyZDAO = await this._zDAO.getPolyZDAO();
-    if (!polyZDAO) throw new ZDAOError(errorMessageForError('not-sync-state'));
+    if (!polyZDAO) {
+      throw new NotSyncStateError();
+    }
 
-    const count = 30000;
-    let from = 0;
-    let numberOfResults = count;
+    const { voters } = await polyZDAO.votesResultOfProposal(this.id);
+
+    const count = voters.toNumber();
+    const limit = 30000;
+    let from = 1;
+    let numberOfResults = limit;
     const votes: Vote[] = [];
-    while (numberOfResults === count) {
-      const results = await polyZDAO.listVoters(this.id, from, from + count);
+
+    while (numberOfResults === limit) {
+      const results = await polyZDAO.listVoters(
+        this.id,
+        from,
+        Math.min(from + limit - 1, count)
+      );
       votes.push(
         ...[...Array(results.voters.length).keys()].map((index: number) => ({
           voter: results.voters[index],
@@ -40,20 +50,36 @@ class ProposalClient extends AbstractProposalClient {
 
   async getVotingPowerOfUser(account: string): Promise<number> {
     const polyZDAO = await this._zDAO.getPolyZDAO();
-    if (!polyZDAO) throw new ZDAOError(errorMessageForError('not-sync-state'));
+    if (!polyZDAO) {
+      throw new NotSyncStateError();
+    }
 
-    return (await polyZDAO.votingPowerOfVoter(account)).toNumber();
+    return (await polyZDAO.votingPowerOfVoter(this.id, account)).toNumber();
   }
 
   async vote(signer: ethers.Wallet, choice: Choice) {
     const daoId = this._zDAO.id;
     const proposalId = this.id;
-    await this._zDAO.polyZDAOChef.vote(signer, daoId, proposalId, choice);
+    return await this._zDAO.polyZDAOChef.vote(
+      signer,
+      daoId,
+      proposalId,
+      choice
+    );
   }
 
-  async execute(
-    signer: ethers.Wallet
-  ): Promise<ethers.providers.TransactionResponse> {
+  async collect(signer: ethers.Wallet) {
+    const daoId = this._zDAO.id;
+    const proposalId = this.id;
+
+    return await this._zDAO.polyZDAOChef.collectResult(
+      signer,
+      daoId,
+      proposalId
+    );
+  }
+
+  async execute(signer: ethers.Wallet) {
     const isOwner = await this._zDAO.gnosisSafeClient.isOwnerAddress(
       signer,
       this._zDAO.gnosisSafe,

@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { ContractReceipt, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import { ProposalProperties } from '../types';
@@ -72,11 +72,15 @@ class AbstractProposalClient implements Proposal {
     throw new NotImplementedError();
   }
 
-  vote(_: ethers.Wallet, _2: Choice): Promise<void> {
+  vote(_: ethers.Wallet, _2: Choice): Promise<ContractReceipt> {
     throw new NotImplementedError();
   }
 
-  execute(_: ethers.Wallet): Promise<ethers.providers.TransactionResponse> {
+  collect(_: ethers.Wallet): Promise<ContractReceipt> {
+    throw new NotImplementedError();
+  }
+
+  execute(_: ethers.Wallet): Promise<ContractReceipt> {
     throw new NotImplementedError();
   }
 }

@@ -13,8 +13,8 @@ import {
   zDAOProperties,
 } from '../types';
 import { NotFoundError } from '../types/error';
-import { timestamp } from '../utilities/date';
 import { errorMessageForError } from '../utilities/messages';
+import { timestamp } from '../utilities/tx';
 import AbstractDAOClient from './AbstractDAOClient';
 import MockProposalClient from './MockProposalClient';
 
@@ -30,14 +30,17 @@ class MockDAOClient extends AbstractDAOClient {
 
   static async createInstance(
     config: Config,
+    signer: ethers.Wallet,
     param: CreateZDAOParams
   ): Promise<MockDAOClient> {
+    const { chainId } = await signer.provider.getNetwork();
+
     const properties: zDAOProperties = {
       id: shortid.generate(),
       zNAs: [param.zNA],
       title: param.title,
-      createdBy: param.createdBy,
-      network: param.network,
+      createdBy: signer.address,
+      network: chainId,
       gnosisSafe: param.gnosisSafe,
       token: param.token,
       amount: param.amount,
@@ -70,7 +73,7 @@ class MockDAOClient extends AbstractDAOClient {
 
   createProposal(
     signer: ethers.Wallet,
-    param: CreateProposalParams
+    params: CreateProposalParams
   ): Promise<Proposal> {
     // todo, should upload proposal information to IPFS
     const ipfs =

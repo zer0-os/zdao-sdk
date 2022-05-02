@@ -17,6 +17,14 @@ export interface DAOConfig {
   provider: ethers.providers.Provider;
 }
 
+export interface FleekConfig {
+  // API Key to Fleek
+  apiKey: string;
+
+  // API Secret to Fleek
+  apiSecret: string;
+}
+
 export interface Config {
   // Gnosis Safe configuration
   gnosisSafe: GnosisSafeConfig;
@@ -26,6 +34,9 @@ export interface Config {
 
   // Polygon DAO configuration
   polygon: DAOConfig;
+
+  // Fleek configuration to upload to IPFS
+  fleek: FleekConfig;
 
   // zNS configuration, can be different network from Ethereum DAO configuration
   zNS: zNSConfig;

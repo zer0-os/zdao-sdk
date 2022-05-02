@@ -10,12 +10,12 @@ import {
   Transaction as Transaction,
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
-import { BigNumberish, ethers } from 'ethers';
+import { BigNumberish, ContractReceipt, ethers } from 'ethers';
 
+import IPFSClient from '../client/IPFSClient';
 import { IPFSGatway } from '../config';
 import TransferAbi from '../config/abi/transfer.json';
 import { GnosisSafeConfig } from '../types';
-import { ipfsJson } from '../utilities/ipfs';
 
 class GnosisSafeClient {
   private readonly _config: GnosisSafeConfig;
@@ -53,7 +53,7 @@ class GnosisSafeClient {
     signer: ethers.Wallet,
     recipient: string,
     amount: BigNumberish
-  ): Promise<ethers.providers.TransactionResponse> {
+  ): Promise<ContractReceipt> {
     const service = new SafeService(this._config.serviceUri);
     const ethAdapter = new EthersAdapter({
       ethers,
@@ -65,7 +65,11 @@ class GnosisSafeClient {
     });
 
     const safeSigner = new SafeEthersSigner(safe, service, signer.provider);
-    return safeSigner.sendTransaction({ to: recipient, value: amount });
+    const tx = await safeSigner.sendTransaction({
+      to: recipient,
+      value: amount,
+    });
+    return await tx.wait();
   }
 
   async transferERC20(
@@ -74,7 +78,7 @@ class GnosisSafeClient {
     token: string,
     recipient: string,
     amount: BigNumberish
-  ): Promise<ethers.providers.TransactionResponse> {
+  ): Promise<ContractReceipt> {
     const service = new SafeService(this._config.serviceUri);
     const ethAdapter = new EthersAdapter({
       ethers,
@@ -91,9 +95,10 @@ class GnosisSafeClient {
       TransferAbi,
       safeSigner
     );
-    return await transferContract
+    const tx = await transferContract
       .connect(safeSigner)
       .transfer(recipient, amount);
+    return await tx.wait();
   }
 
   async listAssets(
@@ -142,7 +147,7 @@ class GnosisSafeClient {
 
     const promises: Promise<{ [key: string]: string }>[] = [];
     for (const collectible of needToPatch) {
-      promises.push(ipfsJson(collectible.uri, IPFSGatway));
+      promises.push(IPFSClient.getJson(collectible.uri, IPFSGatway));
     }
     const result: { [key: string]: string }[] = await Promise.all(promises);
     for (const index in needToPatch) {

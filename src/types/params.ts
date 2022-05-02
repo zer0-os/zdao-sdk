@@ -1,4 +1,3 @@
-import { SupportedChainId } from './enumerations';
 import { Choice, ProposalId, zNA } from './primitives';
 import { TokenMetaData } from './structures';
 
@@ -9,12 +8,12 @@ export interface CreateZDAOParams {
   // zDAO title
   title: string;
 
-  // Address who created zDAO, is the first zDAO owner
-  createdBy: string;
+  // // Address who created zDAO, is the first zDAO owner
+  // createdBy: string;
 
-  // network id where zDAO was created
-  // This network can be not Goerli or Mainnet
-  network: SupportedChainId;
+  // // network id where zDAO was created
+  // // This network can be not Goerli or Mainnet
+  // network: SupportedChainId;
 
   // Gnosis safe address where collected treasuries are stored
   gnosisSafe: string;

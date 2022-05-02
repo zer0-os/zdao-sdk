@@ -65,7 +65,7 @@ export interface EtherZDAOChefInterface extends utils.Interface {
     "addNewDAO(uint256,(string,address,address,uint256,bool,uint256))": FunctionFragment;
     "addZNAAssociation(uint256,uint256)": FunctionFragment;
     "cancelProposal(uint256,uint256)": FunctionFragment;
-    "createProposal(uint256,uint256,uint256,address,uint256,bytes,bytes32)": FunctionFragment;
+    "createProposal(uint256,uint256,address,uint256,bytes,string)": FunctionFragment;
     "doeszDAOExistForzNA(uint256)": FunctionFragment;
     "executeProposal(uint256,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -124,11 +124,10 @@ export interface EtherZDAOChefInterface extends utils.Interface {
     values: [
       BigNumberish,
       BigNumberish,
-      BigNumberish,
       string,
       BigNumberish,
       BytesLike,
-      BytesLike
+      string
     ]
   ): string;
   encodeFunctionData(
@@ -468,8 +467,8 @@ export type ProposalCreatedEvent = TypedEvent<
     _zDAOId: BigNumber;
     _proposalId: BigNumber;
     _createdBy: string;
-    _startTimestamp: BigNumber;
-    _endTimestamp: BigNumber;
+    _duration: BigNumber;
+    _snapshot: BigNumber;
   }
 >;
 
@@ -570,12 +569,11 @@ export interface EtherZDAOChef extends BaseContract {
 
     createProposal(
       _daoId: BigNumberish,
-      _startTimestamp: BigNumberish,
-      _endTimestamp: BigNumberish,
+      _duration: BigNumberish,
       _target: string,
       _value: BigNumberish,
       _data: BytesLike,
-      _ipfs: BytesLike,
+      _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -747,12 +745,11 @@ export interface EtherZDAOChef extends BaseContract {
 
   createProposal(
     _daoId: BigNumberish,
-    _startTimestamp: BigNumberish,
-    _endTimestamp: BigNumberish,
+    _duration: BigNumberish,
     _target: string,
     _value: BigNumberish,
     _data: BytesLike,
-    _ipfs: BytesLike,
+    _ipfs: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -924,12 +921,11 @@ export interface EtherZDAOChef extends BaseContract {
 
     createProposal(
       _daoId: BigNumberish,
-      _startTimestamp: BigNumberish,
-      _endTimestamp: BigNumberish,
+      _duration: BigNumberish,
       _target: string,
       _value: BigNumberish,
       _data: BytesLike,
-      _ipfs: BytesLike,
+      _ipfs: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1170,15 +1166,15 @@ export interface EtherZDAOChef extends BaseContract {
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
       _createdBy?: string | null,
-      _startTimestamp?: null,
-      _endTimestamp?: null
+      _duration?: null,
+      _snapshot?: null
     ): ProposalCreatedEventFilter;
     ProposalCreated(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
       _createdBy?: string | null,
-      _startTimestamp?: null,
-      _endTimestamp?: null
+      _duration?: null,
+      _snapshot?: null
     ): ProposalCreatedEventFilter;
 
     "ProposalExecuted(uint256,uint256,address)"(
@@ -1262,12 +1258,11 @@ export interface EtherZDAOChef extends BaseContract {
 
     createProposal(
       _daoId: BigNumberish,
-      _startTimestamp: BigNumberish,
-      _endTimestamp: BigNumberish,
+      _duration: BigNumberish,
       _target: string,
       _value: BigNumberish,
       _data: BytesLike,
-      _ipfs: BytesLike,
+      _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1445,12 +1440,11 @@ export interface EtherZDAOChef extends BaseContract {
 
     createProposal(
       _daoId: BigNumberish,
-      _startTimestamp: BigNumberish,
-      _endTimestamp: BigNumberish,
+      _duration: BigNumberish,
       _target: string,
       _value: BigNumberish,
       _data: BytesLike,
-      _ipfs: BytesLike,
+      _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

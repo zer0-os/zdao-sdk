@@ -20,5 +20,9 @@ export const setEnv = () => {
     wallet: {
       privateKey: process.env.PRIVATE_KEY!,
     },
+    fleek: {
+      apiKey: process.env.FLEEK_API_KEY!,
+      apiSecret: process.env.FLEEK_API_SECRET!,
+    },
   };
 };

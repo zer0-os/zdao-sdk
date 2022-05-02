@@ -210,10 +210,12 @@ export interface ProposalProperties {
   choices: VoteChoice[];
 
   // Proposal start time
-  start: Date;
+  // undefined if not synchronzed state to Polygon network
+  start?: Date;
 
   // Proposal end time
-  end: Date;
+  // undefined if not synchronzed state to Polygon network
+  end?: Date;
 
   // Proposal state
   state: ProposalState;
@@ -222,9 +224,11 @@ export interface ProposalProperties {
   snapshot: number;
 
   // All the casted votes per choices, this should be matched with `choices`
+  // undefined if not synchronzed state to Polygon network
   scores?: number[];
 
   // Number of voters who casted votes
+  // undefined if not synchronzed state to Polygon network
   voters?: number;
 
   // Token meta data is stored in ipfs, should be initialized after the

@@ -1,7 +1,7 @@
 import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
-import { Config, DAOConfig, SupportedChainId } from '../types';
+import { Config, DAOConfig, FleekConfig, SupportedChainId } from '../types';
 
 type AddressMap = { [chainId in SupportedChainId]: string };
 export const MultiCallAddress: AddressMap = {
@@ -13,6 +13,12 @@ export const MultiCallAddress: AddressMap = {
 };
 
 export const IPFSGatway = 'cloudflare-ipfs.com';
+
+export const EIP712Domain = {
+  // todo, should sync with package.json
+  name: 'zDAO-sdk',
+  version: '0.0.6',
+};
 
 interface ConfigParams {
   /**
@@ -27,6 +33,9 @@ interface ConfigParams {
    */
   polygon: DAOConfig;
 
+  // Fleek configuration to upload to IPFS
+  fleek: FleekConfig;
+
   /**
    * Only used for development mode, should be rinkeby provider on development
    */
@@ -36,6 +45,7 @@ interface ConfigParams {
 export const developmentConfiguration = ({
   ethereum,
   polygon,
+  fleek,
   zNSProvider,
 }: ConfigParams): Config => ({
   gnosisSafe: {
@@ -44,12 +54,14 @@ export const developmentConfiguration = ({
   },
   ethereum,
   polygon,
+  fleek,
   zNS: configuration.rinkebyConfiguration(zNSProvider!),
 });
 
 export const productionConfiguration = ({
   ethereum,
   polygon,
+  fleek,
 }: ConfigParams): Config => ({
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
@@ -57,5 +69,6 @@ export const productionConfiguration = ({
   },
   ethereum,
   polygon,
+  fleek,
   zNS: configuration.mainnetConfiguration(ethereum.provider),
 });

@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/zer0-os/zdao-sdk#readme",
   "dependencies": {
+    "@fleekhq/fleek-storage-js": "1.0.21",
     "@gnosis.pm/safe-core-sdk": "2.0.0",
     "@gnosis.pm/safe-ethers-adapters": "0.1.0-alpha.8",
     "@gnosis.pm/safe-ethers-lib": "1.0.0",

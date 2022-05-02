@@ -1,4 +1,3 @@
-import { addSeconds } from 'date-fns';
 import { BigNumber, ethers } from 'ethers';
 
 import ZNAClient from '../client/ZNAClient';
@@ -15,7 +14,7 @@ import {
   zNA,
   zNAId,
 } from '../types';
-import { timestamp } from '../utilities/date';
+import { calculateGasMargin } from '../utilities/tx';
 import { EtherZDAOProperties, ZDAORecord } from './types';
 
 class EtherZDAOChefClient {
@@ -39,8 +38,8 @@ class EtherZDAOChefClient {
     return (await this._contract.numberOfzDAOs()).toNumber();
   }
 
-  async getZDAORecordById(zDAOId: zDAOId): Promise<ZDAORecord> {
-    const zDAORecord = await this._contract.getzDAOById(zDAOId);
+  async getZDAORecordByZNA(zNA: zNA): Promise<ZDAORecord> {
+    const zDAORecord = await this._contract.getzDaoByZNA(zNA);
 
     // resolve all the zNAIds
     const promises: Promise<zNAId>[] = [];
@@ -66,7 +65,7 @@ class EtherZDAOChefClient {
     while (numberOfReturns === limit) {
       const response = await this._contract.listzDAOs(
         from,
-        from + Math.min(limit, count) - 1
+        Math.min(from + limit - 1, count)
       );
 
       for (const record of response) {
@@ -121,8 +120,8 @@ class EtherZDAOChefClient {
     ) as EtherZDAO;
   }
 
-  async getZDAOPropertiesById(zDAOId: zDAOId): Promise<EtherZDAOProperties> {
-    const zDAORecord = await this.getZDAORecordById(zDAOId);
+  async getZDAOPropertiesByZNA(zNA: zNA): Promise<EtherZDAOProperties> {
+    const zDAORecord = await this.getZDAORecordByZNA(ZNAClient.zNATozNAId(zNA));
 
     const etherZDAO = new ethers.Contract(
       zDAORecord.zDAO,
@@ -151,57 +150,91 @@ class EtherZDAOChefClient {
     };
   }
 
-  addNewDAO(signer: ethers.Wallet, payload: CreateZDAOParams) {
-    return this._contract.connect(signer).addNewDAO(payload.zNA, {
-      title: payload.title,
-      gnosisSafe: payload.gnosisSafe,
-      token: payload.token,
-      amount: payload.amount,
-      isRelativeMajority: payload.isRelativeMajority,
-      quorumVotes: payload.quorumVotes,
-    });
-  }
+  async addNewDAO(signer: ethers.Wallet, payload: CreateZDAOParams) {
+    const gasEstimated = await this._contract
+      .connect(signer)
+      .estimateGas.addNewDAO(payload.zNA, {
+        title: payload.title,
+        gnosisSafe: payload.gnosisSafe,
+        token: payload.token,
+        amount: payload.amount,
+        isRelativeMajority: payload.isRelativeMajority,
+        quorumVotes: payload.quorumVotes,
+      });
 
-  removeDAO(signer: ethers.Wallet, zDAOId: zDAOId) {
-    return this._contract.connect(signer).removeDAO(zDAOId);
-  }
-
-  createProposal(
-    signer: ethers.Wallet,
-    zDAOId: zDAOId,
-    payload: CreateProposalParams
-  ) {
-    // todo, submit proposal meta data to ipfs and compact into byte32
-    const ipfs =
-      '0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486';
-
-    const startDateTime = new Date();
-
-    return this._contract.connect(signer).createProposal(
-      zDAOId,
-      timestamp(startDateTime),
-      timestamp(addSeconds(startDateTime, payload.duration)),
-      payload.transfer.token, // target
-      payload.transfer.amount, // value
-      '', // data
-      ipfs
+    const tx = await this._contract.connect(signer).addNewDAO(
+      payload.zNA,
+      {
+        title: payload.title,
+        gnosisSafe: payload.gnosisSafe,
+        token: payload.token,
+        amount: payload.amount,
+        isRelativeMajority: payload.isRelativeMajority,
+        quorumVotes: payload.quorumVotes,
+      },
+      {
+        gasLimit: calculateGasMargin(gasEstimated),
+      }
     );
+    return await tx.wait();
   }
 
-  cancelProposal(
+  async removeDAO(signer: ethers.Wallet, zDAOId: zDAOId) {
+    const tx = await this._contract.connect(signer).removeDAO(zDAOId);
+    return await tx.wait();
+  }
+
+  async createProposal(
+    signer: ethers.Wallet,
+    zDAOId: zDAOId,
+    payload: CreateProposalParams,
+    ipfs: string
+  ) {
+    const gasEstimated = await this._contract
+      .connect(signer)
+      .estimateGas.createProposal(
+        zDAOId,
+        payload.duration,
+        payload.transfer.sender, // target
+        '0', // value
+        '0x00', // data
+        ipfs
+      );
+
+    const tx = await this._contract.connect(signer).createProposal(
+      zDAOId,
+      payload.duration,
+      payload.transfer.sender, // target
+      '0', // value
+      '0x00', // data
+      ipfs,
+      {
+        gasLimit: calculateGasMargin(gasEstimated),
+      }
+    );
+    return await tx.wait();
+  }
+
+  async cancelProposal(
     signer: ethers.Wallet,
     zDAOId: zDAOId,
     proposalId: ProposalId
   ) {
-    return this._contract.connect(signer).cancelProposal(zDAOId, proposalId);
+    const tx = await this._contract
+      .connect(signer)
+      .cancelProposal(zDAOId, proposalId);
+    return await tx.wait();
   }
 
-  executeProposal(
+  async executeProposal(
     signer: ethers.Wallet,
     zDAOId: zDAOId,
     proposalId: ProposalId
   ) {
-    return this._contract.connect(signer).executeProposal(zDAOId, proposalId);
+    const tx = await this._contract
+      .connect(signer)
+      .executeProposal(zDAOId, proposalId);
+    return await tx.wait();
   }
 }
 

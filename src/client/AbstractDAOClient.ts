@@ -9,6 +9,7 @@ import {
 import { ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
+import { EIP712Domain } from '../config';
 import { GnosisSafeClient } from '../gnosis-safe';
 import {
   AssetType,
@@ -19,11 +20,14 @@ import {
   TransactionStatus,
   TransactionType,
   TransferInfo,
+  VoteChoice,
   zDAO,
   zDAOAssets,
   zDAOProperties,
 } from '../types';
 import { NotImplementedError } from '../types/error';
+import { sign, timestamp } from '../utilities/tx';
+import IPFSClient from './IPFSClient';
 
 class AbstractDAOClient implements zDAO {
   protected readonly _properties: zDAOProperties;
@@ -184,6 +188,110 @@ class AbstractDAOClient implements zDAO {
 
   getProposal(_: ProposalId): Promise<Proposal> {
     throw new NotImplementedError();
+  }
+
+  protected async uploadToIPFS(
+    signer: ethers.Wallet,
+    payload: CreateProposalParams,
+    verifyingContract: string
+  ): Promise<string> {
+    const now = new Date();
+
+    const makeHash = () => {
+      // keccak256("createProposal(address createdBy,uint256 timestamp,string title,string body,uint256 duration,address target,uint256 value,bytes data)"
+      const typeHash =
+        '0xad04bcfa28cf23e25e43b0c7773c020a122daaf9361d1e215755fbb8c0f31c6b';
+
+      return ethers.utils.keccak256(
+        ethers.utils.defaultAbiCoder.encode(
+          [
+            'bytes32',
+            'address',
+            'uint256',
+            'string',
+            'string',
+            'uint256',
+            'address',
+            'uint256',
+            'bytes',
+          ],
+          [
+            typeHash,
+            signer.address, // signer
+            timestamp(now), // timestamp
+            payload.title, // title
+            payload.body, // body
+            payload.duration, // duration
+            payload.transfer.recipient, // target
+            '0', // value
+            '0x00', // data
+          ]
+        )
+      );
+    };
+
+    const hash = makeHash();
+    const { chainId } = await signer.provider.getNetwork();
+    const signature = sign(chainId, signer.privateKey, verifyingContract, hash);
+
+    const ipfsHash = await IPFSClient.upload(`zDAO/${hash}`, {
+      address: signer.address,
+      verifyingContract,
+      signature: {
+        r: signature.r,
+        s: signature.s,
+        v: signature.v,
+      },
+      data: {
+        domain: EIP712Domain,
+        types: [
+          {
+            type: 'address',
+            name: 'signer',
+          },
+          {
+            type: 'uint256',
+            name: 'timestamp',
+          },
+          {
+            type: 'string',
+            name: 'title',
+          },
+          {
+            type: 'string',
+            name: 'body',
+          },
+          {
+            type: 'uint256',
+            name: 'duration',
+          },
+          {
+            type: 'address',
+            name: 'target',
+          },
+          {
+            type: 'uint256',
+            name: 'value',
+          },
+          {
+            type: 'bytes',
+            name: 'data',
+          },
+        ],
+        message: {
+          createdBy: signer.address,
+          createdAt: timestamp(now),
+          title: payload.title,
+          body: payload.body,
+          duration: payload.duration,
+          choices: Object.values(VoteChoice),
+          network: chainId,
+          metadata: JSON.stringify(payload.transfer),
+        },
+      },
+    });
+
+    return ipfsHash;
   }
 
   createProposal(

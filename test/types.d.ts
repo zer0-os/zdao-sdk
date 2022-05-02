@@ -11,6 +11,9 @@ declare global {
       MUMBAI_ZDAOCHEF_ADDRESS: string;
 
       PRIVATE_KEY: string;
+
+      FLEEK_API_KEY: string;
+      FLEEK_API_SECRET: string;
     }
   }
 }

@@ -2,16 +2,23 @@ import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
 import { BigNumber, Wallet } from 'ethers';
 
 import DAOClient from './client/DAOClient';
+import IPFSClient from './client/IPFSClient';
 import MockDAOClient from './client/MockDAOClient';
 import ZNAClient from './client/ZNAClient';
 import { EtherZDAOChefClient } from './ethereum';
-import { ZDAORecord } from './ethereum/types';
-import { Config, CreateZDAOParams, SDKInstance, zDAO, zNA } from './types';
 import {
+  Config,
+  CreateZDAOParams,
+  SDKInstance,
+  zDAO,
+  zNA,
+  zNAId,
+} from './types';
+import {
+  AlreadyExistError,
   FailedTxError,
   InvalidError,
   NotFoundError,
-  ZDAOError,
 } from './types/error';
 import { errorMessageForError } from './utilities/messages';
 
@@ -25,11 +32,20 @@ class SDKInstanceClient implements SDKInstance {
     this._etherZDAOChef = new EtherZDAOChefClient(config.ethereum);
 
     ZNAClient.initialize(this._config.zNS);
+    IPFSClient.initialize(this._config.fleek);
   }
 
   async createZDAO(signer: Wallet, params: CreateZDAOParams): Promise<void> {
+    if (await this.doesZDAOExist(params.zNA)) {
+      throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
+    }
+
     try {
-      await this._etherZDAOChef.addNewDAO(signer, params);
+      const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
+      await this._etherZDAOChef.addNewDAO(signer, {
+        ...params,
+        zNA: zNAId,
+      });
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -59,11 +75,11 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async listZDAOs(): Promise<zDAO[]> {
-    const zDAORecords: ZDAORecord[] = await this._etherZDAOChef.listzDAOs();
+    const zNAs: zNA[] = await this.listZNAs();
 
     const zDAOs: zDAO[] = [];
-    for (const zDAORecord of zDAORecords) {
-      zDAOs.push(await DAOClient.createInstance(this._config, zDAORecord.id));
+    for (const zNA of zNAs) {
+      zDAOs.push(await DAOClient.createInstance(this._config, zNA));
     }
 
     return zDAOs;
@@ -82,13 +98,16 @@ class SDKInstanceClient implements SDKInstance {
     return await this._etherZDAOChef.doeszDAOExistForzNA(zNA);
   }
 
-  async createZDAOFromParams(params: CreateZDAOParams): Promise<zDAO> {
+  async createZDAOFromParams(
+    signer: Wallet,
+    params: CreateZDAOParams
+  ): Promise<zDAO> {
     if (params.title.length < 1) {
       throw new InvalidError(errorMessageForError('empty-zdao-title'));
     }
-    if (params.createdBy.length < 1) {
-      throw new InvalidError(errorMessageForError('empty-zdao-creator'));
-    }
+    // if (params.createdBy.length < 1) {
+    //   throw new InvalidError(errorMessageForError('empty-zdao-creator'));
+    // }
     if (params.gnosisSafe.length < 1) {
       throw new InvalidError(errorMessageForError('empty-gnosis-address'));
     }
@@ -112,10 +131,14 @@ class SDKInstanceClient implements SDKInstance {
 
     const exist = await this.doesZDAOExistFromParams(params.zNA);
     if (exist) {
-      throw new ZDAOError(errorMessageForError('already-exist-zdao'));
+      throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
     }
 
-    const zDAOClient = await MockDAOClient.createInstance(this._config, params);
+    const zDAOClient = await MockDAOClient.createInstance(
+      this._config,
+      signer,
+      params
+    );
 
     this._mockZDAOClients.push(zDAOClient);
     return zDAOClient;

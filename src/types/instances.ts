@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { ContractReceipt, ethers } from 'ethers';
 
 import { CreateProposalParams, CreateZDAOParams } from './params';
 import { Choice, ProposalId, zDAOId, zNA } from './primitives';
@@ -59,7 +59,10 @@ export interface SDKInstance {
    * @exception throw Error if owners is empty
    * @exception throw Error if title is empty
    */
-  createZDAOFromParams(params: CreateZDAOParams): Promise<zDAO>;
+  createZDAOFromParams(
+    signer: ethers.Wallet,
+    params: CreateZDAOParams
+  ): Promise<zDAO>;
 
   /**
    * List all associated zNAs, only used for test
@@ -144,7 +147,13 @@ export interface Proposal extends ProposalProperties {
    * @param choice voter's choice
    * @returns vote id if successfully cast a vote
    */
-  vote(signer: ethers.Wallet, choice: Choice): Promise<void>;
+  vote(signer: ethers.Wallet, choice: Choice): Promise<ContractReceipt>;
+
+  /**
+   * Collect voting result and sync to ethereum
+   * @param signer signer wallet
+   */
+  collect(signer: ethers.Wallet): Promise<ContractReceipt>;
 
   /**
    * Execute a proposal in zDAO
@@ -153,5 +162,5 @@ export interface Proposal extends ProposalProperties {
    * @exception throw Error if signer is not Gnosis Safe owner
    * @exception throw Error if proposal does not conain meta data to transfer tokens
    */
-  execute(signer: ethers.Wallet): Promise<ethers.providers.TransactionResponse>;
+  execute(signer: ethers.Wallet): Promise<ContractReceipt>;
 }

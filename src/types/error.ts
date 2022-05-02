@@ -15,6 +15,12 @@ class NotImplementedError extends ZDAOError {
   }
 }
 
+class NotSyncStateError extends ZDAOError {
+  constructor() {
+    super(errorMessageForError('not-sync-state'), 'NotStateSyncError');
+  }
+}
+
 class FailedTxError extends ZDAOError {
   constructor(message: string) {
     super(message, 'FailedTxError');
@@ -27,6 +33,12 @@ class NotFoundError extends ZDAOError {
   }
 }
 
+class AlreadyExistError extends ZDAOError {
+  constructor(message: string) {
+    super(message, 'AlreadyExistError');
+  }
+}
+
 class InvalidError extends ZDAOError {
   constructor(message: string) {
     super(message, 'InvalidError');
@@ -34,9 +46,11 @@ class InvalidError extends ZDAOError {
 }
 
 export {
+  AlreadyExistError,
   FailedTxError,
   InvalidError,
   NotFoundError,
   NotImplementedError,
+  NotSyncStateError,
   ZDAOError,
 };
