@@ -101,7 +101,20 @@ class DAOClient extends AbstractDAOClient {
       now = new Date();
     const scores =
       polyZDAO && polyProposal && isSyncedProposal
-        ? [polyProposal.yes.toNumber(), polyProposal.no.toNumber()]
+        ? !this.isRelativeMajority
+          ? [polyProposal.yes.toNumber(), polyProposal.no.toNumber()]
+          : polyProposal.yes.add(polyProposal.no).eq(0)
+          ? [0, 0]
+          : [
+              polyProposal.yes
+                .mul(100)
+                .div(polyProposal.yes.add(polyProposal.no))
+                .toNumber(),
+              polyProposal.no
+                .mul(100)
+                .div(polyProposal.yes.add(polyProposal.no))
+                .toNumber(),
+            ]
         : undefined;
     const voters =
       polyZDAO && polyProposal && isSyncedProposal

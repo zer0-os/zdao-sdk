@@ -71,25 +71,23 @@ class MockDAOClient extends AbstractDAOClient {
     return Promise.resolve(found);
   }
 
-  createProposal(
+  async createProposal(
     signer: ethers.Wallet,
-    params: CreateProposalParams
+    payload: CreateProposalParams
   ): Promise<Proposal> {
-    // todo, should upload proposal information to IPFS
-    const ipfs =
-      '0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486';
+    const ipfs = await this.uploadToIPFS(signer, payload, signer.address);
 
     const now = new Date();
 
     const properties: ProposalProperties = {
       id: (this._proposals.length + 1).toString(),
       createdBy: signer.address,
-      title: param.title,
-      body: param.body,
+      title: payload.title,
+      body: payload.body,
       ipfs,
       choices: Object.values(VoteChoice),
       start: now,
-      end: new Date(now.getTime() + param.duration * 1000),
+      end: new Date(now.getTime() + payload.duration * 1000),
       state: 'active',
       snapshot: timestamp(now),
       scores: [0, 0],

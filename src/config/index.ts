@@ -49,8 +49,8 @@ export const developmentConfiguration = ({
   zNSProvider,
 }: ConfigParams): Config => ({
   gnosisSafe: {
-    serviceUri: 'https://safe-transaction.goerli.gnosis.io',
-    gateway: 'https://safe-client.staging.gnosisdev.com',
+    serviceUri: 'https://safe-transaction.gnosis.io',
+    gateway: 'https://safe-client.gnosis.io',
   },
   ethereum,
   polygon,
