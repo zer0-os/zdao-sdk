@@ -13,7 +13,7 @@ import {
   VoteChoice,
   zDAOProperties,
 } from '../types';
-import { NotFoundError } from '../types/error';
+import { NotFoundError, NotImplementedError } from '../types/error';
 import { errorMessageForError } from '../utilities/messages';
 import { timestamp } from '../utilities/tx';
 import AbstractDAOClient from './AbstractDAOClient';
@@ -63,7 +63,10 @@ class MockDAOClient extends AbstractDAOClient {
     const tokenContract = new ethers.Contract(
       params.token,
       IERC20UpgradeableAbi.abi,
-      config.ethereum.provider
+      new ethers.providers.JsonRpcProvider(
+        config.ethereum.rpcUrl,
+        config.ethereum.network
+      )
     );
 
     const totalSupply = await tokenContract.totalSupply();
@@ -116,6 +119,14 @@ class MockDAOClient extends AbstractDAOClient {
     this._proposals.push(new MockProposalClient(properties, this));
 
     return Promise.resolve(this._proposals[this._proposals.length - 1]);
+  }
+
+  isCheckPointed(_: string): Promise<boolean> {
+    return Promise.resolve(true);
+  }
+
+  syncState(_: ethers.Wallet, _2: string): Promise<ethers.ContractReceipt> {
+    throw new NotImplementedError();
   }
 }
 

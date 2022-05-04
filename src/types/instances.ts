@@ -119,6 +119,19 @@ export interface zDAO extends zDAOProperties {
     signer: ethers.Wallet,
     payload: CreateProposalParams
   ): Promise<Proposal>;
+
+  /**
+   * Check if transaction has been verified by Matic validators
+   * @param txHash transaction hash which happened on Polygon to send data to Ethereum
+   */
+  isCheckPointed(txHash: string): Promise<boolean>;
+
+  /**
+   * If tx is successfully check pointed, create a transaction to receive message
+   * @param signer
+   * @param txHash
+   */
+  syncState(signer: ethers.Wallet, txHash: string): Promise<ContractReceipt>;
 }
 
 export interface Proposal extends ProposalProperties {

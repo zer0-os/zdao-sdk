@@ -19,7 +19,7 @@ class ZNAClient {
   }
 
   static async zNAIdTozNA(zNAId: zNAId): Promise<zNA> {
-  	// todo, temporary code only for testing on Goerli network
+    // todo, temporary code only for testing on Goerli network
     if (
       zNAId ===
       '0x7445164548beaf364109b55d8948f056d6e4f1fd26aff998c9156b0b05f1641f'
@@ -37,7 +37,7 @@ class ZNAClient {
   }
 
   static zNATozNAId(zNA: zNA): zNAId {
-  	// todo, temporary code only for testing on Goerli network
+    // todo, temporary code only for testing on Goerli network
     if (zNA === 'wilder.wheels')
       return '0x7445164548beaf364109b55d8948f056d6e4f1fd26aff998c9156b0b05f1641f';
     if (zNA === 'wilder.kicks')

@@ -30,13 +30,14 @@ class SDKInstanceClient implements SDKInstance {
 
   constructor(config: Config) {
     this._config = config;
-    this._etherZDAOChef = new EtherZDAOChefClient(config.ethereum);
 
     ZNAClient.initialize(this._config.zNS);
     IPFSClient.initialize(this._config.fleek);
 
     return (async (config: Config): Promise<SDKInstanceClient> => {
+      this._etherZDAOChef = await new EtherZDAOChefClient(config.ethereum);
       await ProofClient.initialize(config);
+
       return this;
     })(config) as unknown as SDKInstanceClient;
   }

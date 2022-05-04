@@ -308,6 +308,14 @@ class AbstractDAOClient implements zDAO {
   ): Promise<Proposal> {
     throw new NotImplementedError();
   }
+
+  isCheckPointed(_: string): Promise<boolean> {
+    throw new NotImplementedError();
+  }
+
+  syncState(_: ethers.Wallet, _2: string): Promise<ethers.ContractReceipt> {
+    throw new NotImplementedError();
+  }
 }
 
 export default AbstractDAOClient;

@@ -71,6 +71,7 @@ export const developmentConfiguration = ({
   proof,
   fleek,
   zNS: configuration.rinkebyConfiguration(zNSProvider!),
+  isProd: false,
 });
 
 export const productionConfiguration = ({
@@ -87,5 +88,8 @@ export const productionConfiguration = ({
   polygon,
   proof,
   fleek,
-  zNS: configuration.mainnetConfiguration(ethereum.provider),
+  zNS: configuration.mainnetConfiguration(
+    new ethers.providers.JsonRpcProvider(ethereum.rpcUrl, ethereum.network)
+  ),
+  isProd: true,
 });

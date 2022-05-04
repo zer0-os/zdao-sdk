@@ -17,7 +17,10 @@ class PolyZDAOChefClient {
     this._contract = new ethers.Contract(
       config.zDAOChef,
       PolyZDAOChefAbi.abi,
-      config.provider
+      new ethers.providers.JsonRpcProvider(
+        this._config.rpcUrl,
+        this._config.network
+      )
     ) as PolyZDAOChef;
   }
 
@@ -36,7 +39,10 @@ class PolyZDAOChefClient {
     return new ethers.Contract(
       iPolyZDAO,
       PolyZDAOAbi.abi,
-      this._config.provider
+      new ethers.providers.JsonRpcProvider(
+        this._config.rpcUrl,
+        this._config.network
+      )
     ) as PolyZDAO;
   }
 
@@ -45,7 +51,10 @@ class PolyZDAOChefClient {
     const polyZDAO = new ethers.Contract(
       address,
       PolyZDAOAbi.abi,
-      this._config.provider
+      new ethers.providers.JsonRpcProvider(
+        this._config.rpcUrl,
+        this._config.network
+      )
     ) as PolyZDAO;
 
     const zDAOInfo = await polyZDAO.zDAOInfo();
@@ -85,7 +94,7 @@ class PolyZDAOChefClient {
     daoId: zDAOId,
     proposalId: ProposalId
   ): Promise<string[]> {
-    const currentBlock = await this._config.provider.getBlockNumber();
+    const currentBlock = await this._contract.provider.getBlockNumber();
     console.log('currentBlock', currentBlock);
 
     const creationBlock = this._config.blockNumber;

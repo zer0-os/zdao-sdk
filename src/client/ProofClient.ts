@@ -16,22 +16,34 @@ class ProofClient {
 
     ProofClient._posClient = new POSClient();
 
-    // await ProofClient._posClient.init({
-    //   network: 'testnet',
-    //   version: 'mumbai',
-    //   parent: {
-    //     provider: process.env.GOERLI_RPC_URL as string,
-    //     defaultConfig: {
-    //       from: config.proof.from,
-    //     },
-    //   },
-    //   child: {
-    //     provider: process.env.MUMBAI_RPC_URL as string,
-    //     defaultConfig: {
-    //       from: config.proof.from,
-    //     },
-    //   },
-    // });
+    await ProofClient._posClient.init({
+      network: 'testnet',
+      version: 'mumbai',
+      parent: {
+        provider: process.env.GOERLI_RPC_URL as string,
+        defaultConfig: {
+          from: config.proof.from,
+        },
+      },
+      child: {
+        provider: process.env.MUMBAI_RPC_URL as string,
+        defaultConfig: {
+          from: config.proof.from,
+        },
+      },
+    });
+  }
+
+  static isCheckPointed(txHash: string): Promise<boolean> {
+    return ProofClient._posClient.isCheckPointed(txHash);
+  }
+
+  static generate(txHash: string): Promise<string> {
+    return ProofClient._posClient.exitUtil.buildPayloadForExit(
+      txHash,
+      ProofClient.SEND_MESSAGE_EVENT_SIG,
+      true
+    );
   }
 }
 

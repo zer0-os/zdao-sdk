@@ -22,6 +22,7 @@ import { NotFoundError, NotSyncStateError } from '../types/error';
 import { errorMessageForError } from '../utilities/messages';
 import AbstractDAOClient from './AbstractDAOClient';
 import IPFSClient from './IPFSClient';
+import ProofClient from './ProofClient';
 import ProposalClient from './ProposalClient';
 
 class DAOClient extends AbstractDAOClient {
@@ -69,14 +70,17 @@ class DAOClient extends AbstractDAOClient {
   }
 
   static async createInstance(config: Config, zNA: zNA): Promise<DAOClient> {
-    const etherZDAOChef = new EtherZDAOChefClient(config.ethereum);
+    const etherZDAOChef = await new EtherZDAOChefClient(config.ethereum);
     const polyZDAOChef = new PolyZDAOChefClient(config.polygon);
     const zDAOProperties = await etherZDAOChef.getZDAOPropertiesByZNA(zNA);
 
     const tokenContract = new ethers.Contract(
       zDAOProperties.token,
       IERC20UpgradeableAbi.abi,
-      config.ethereum.provider
+      new ethers.providers.JsonRpcProvider(
+        config.ethereum.rpcUrl,
+        config.ethereum.network
+      )
     );
 
     const totalSupply = await tokenContract.totalSupply();
@@ -231,6 +235,15 @@ class DAOClient extends AbstractDAOClient {
     const lastProposalId = (await this._etherZDAO.lastProposalId()).toString();
 
     return await this.getProposal(lastProposalId);
+  }
+
+  async isCheckPointed(txHash: string) {
+    return ProofClient.isCheckPointed(txHash);
+  }
+
+  async syncState(signer: ethers.Wallet, txHash: string) {
+    const proof = await ProofClient.generate(txHash);
+    return await this._etherZDAOChef.receiveMessage(signer, proof);
   }
 }
 

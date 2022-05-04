@@ -3,8 +3,10 @@ import { BigNumber, ethers } from 'ethers';
 import ZNAClient from '../client/ZNAClient';
 import EtherZDAOAbi from '../config/abi/EtherZDAO.json';
 import EtherZDAOChefAbi from '../config/abi/EtherZDAOChef.json';
+import FxStateRootTunnelAbi from '../config/abi/FxStateRootTunnel.json';
 import { EtherZDAO } from '../config/types/EtherZDAO';
 import { EtherZDAOChef } from '../config/types/EtherZDAOChef';
+import { FxStateRootTunnel } from '../config/types/FxStateRootTunnel';
 import {
   CreateProposalParams,
   CreateZDAOParams,
@@ -19,19 +21,36 @@ import { EtherZDAOProperties, ZDAORecord } from './types';
 
 class EtherZDAOChefClient {
   private readonly _config: DAOConfig;
-  protected readonly _contract: EtherZDAOChef;
+  protected _contract!: EtherZDAOChef;
+  protected _rootStateSender!: FxStateRootTunnel;
 
   constructor(config: DAOConfig) {
     this._config = config;
-    this._contract = new ethers.Contract(
-      config.zDAOChef,
-      EtherZDAOChefAbi.abi,
-      config.provider
-    ) as EtherZDAOChef;
+
+    return (async (): Promise<EtherZDAOChefClient> => {
+      this._contract = new ethers.Contract(
+        config.zDAOChef,
+        EtherZDAOChefAbi.abi,
+        new ethers.providers.JsonRpcProvider(config.rpcUrl, config.network)
+      ) as EtherZDAOChef;
+
+      const address = await this._contract.rootStateSender();
+      this._rootStateSender = new ethers.Contract(
+        address,
+        FxStateRootTunnelAbi.abi,
+        new ethers.providers.JsonRpcProvider(config.rpcUrl, config.network)
+      ) as FxStateRootTunnel;
+
+      return this;
+    })() as unknown as EtherZDAOChefClient;
   }
 
   get config(): DAOConfig {
     return this._config;
+  }
+
+  stateSender(): Promise<string> {
+    return this._contract.rootStateSender();
   }
 
   async numberOfzDAOs(): Promise<number> {
@@ -102,7 +121,10 @@ class EtherZDAOChefClient {
     return new ethers.Contract(
       zDAORecord.zDAO,
       EtherZDAOAbi.abi,
-      this._config.provider
+      new ethers.providers.JsonRpcProvider(
+        this._config.rpcUrl,
+        this._config.network
+      )
     ) as EtherZDAO;
   }
 
@@ -112,7 +134,10 @@ class EtherZDAOChefClient {
     return new ethers.Contract(
       zDAORecord.zDAO,
       EtherZDAOAbi.abi,
-      this._config.provider
+      new ethers.providers.JsonRpcProvider(
+        this._config.rpcUrl,
+        this._config.network
+      )
     ) as EtherZDAO;
   }
 
@@ -122,10 +147,11 @@ class EtherZDAOChefClient {
     const etherZDAO = new ethers.Contract(
       zDAORecord.zDAO,
       EtherZDAOAbi.abi,
-      this._config.provider
+      new ethers.providers.JsonRpcProvider(
+        this._config.rpcUrl,
+        this._config.network
+      )
     ) as EtherZDAO;
-
-    const { chainId } = await this._config.provider.getNetwork();
 
     const zDAOInfo = await etherZDAO.zDAOInfo();
 
@@ -135,7 +161,7 @@ class EtherZDAOChefClient {
       zNAs: zDAORecord.zNAs,
       title: zDAOInfo.title,
       createdBy: zDAOInfo.createdBy,
-      network: chainId,
+      network: this._config.network,
       gnosisSafe: zDAOInfo.gnosisSafe,
       token: zDAOInfo.token,
       amount: zDAOInfo.amount.toString(),
@@ -236,6 +262,13 @@ class EtherZDAOChefClient {
     const tx = await this._contract
       .connect(signer)
       .executeProposal(zDAOId, proposalId);
+    return await tx.wait();
+  }
+
+  async receiveMessage(signer: ethers.Wallet, proof: string) {
+    const tx = await this._rootStateSender
+      .connect(signer)
+      .receiveMessage(proof);
     return await tx.wait();
   }
 }

@@ -4,6 +4,8 @@ import { EIP712Domain } from '../config';
 
 export const timestamp = (d: Date) => parseInt((d.getTime() / 1e3).toFixed());
 
+export const sleep = (m: number) => new Promise((r) => setTimeout(r, m));
+
 // add 10%
 export const calculateGasMargin = (value: BigNumber): BigNumber => {
   return value

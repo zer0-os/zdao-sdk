@@ -36,22 +36,24 @@ describe.only('zNA test', async () => {
     const config = developmentConfiguration({
       ethereum: {
         zDAOChef: env.contract.zDAOChef.goerli,
-        provider: new ethers.providers.JsonRpcProvider(
-          env.rpc.goerli,
-          SupportedChainId.GOERLI
-        ),
+        rpcUrl: env.rpc.goerli,
+        network: SupportedChainId.GOERLI,
+        blockNumber: 6828764,
       },
       polygon: {
         zDAOChef: env.contract.zDAOChef.mumbai,
-        provider: new ethers.providers.JsonRpcProvider(
-          env.rpc.mumbai,
-          SupportedChainId.MUMBAI
-        ),
+        rpcUrl: env.rpc.mumbai,
+        network: SupportedChainId.MUMBAI,
+        blockNumber: 26198777,
       },
+      proof: {
+        from: signer.address,
+      },
+      fleek: env.fleek,
       zNSProvider: rinkebyProvider,
     });
 
-    sdkInstance = createSDKInstance(config);
+    sdkInstance = await createSDKInstance(config);
   });
 
   it('should create successfully', async () => {

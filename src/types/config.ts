@@ -1,5 +1,6 @@
 import { Config as zNSConfig } from '@zero-tech/zns-sdk';
-import { ethers } from 'ethers';
+
+import { SupportedChainId } from './enumerations';
 
 export interface GnosisSafeConfig {
   // uri to Gnosis Safe service
@@ -16,8 +17,11 @@ export interface DAOConfig {
   // Contract Creation block number
   blockNumber: number;
 
-  // web3 provider
-  provider: ethers.providers.Provider;
+  // RPC url for Web3 provider
+  rpcUrl: string;
+
+  // ChainId
+  network: SupportedChainId;
 }
 
 export interface ProofConfig {
@@ -51,4 +55,7 @@ export interface Config {
 
   // zNS configuration, can be different network from Ethereum DAO configuration
   zNS: zNSConfig;
+
+  // True for production mode, false for development mode
+  isProd: boolean;
 }

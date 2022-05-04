@@ -5,6 +5,7 @@ import { createSDKInstance } from '../../src';
 import ZNAClient from '../../src/client/ZNAClient';
 import { developmentConfiguration } from '../../src/config';
 import { SupportedChainId } from '../../src/types';
+import { sleep } from '../../src/utilities/tx';
 import { setEnv } from '../shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
@@ -27,18 +28,14 @@ const main = async () => {
   const config = developmentConfiguration({
     ethereum: {
       zDAOChef: env.contract.zDAOChef.goerli,
-      provider: new ethers.providers.JsonRpcProvider(
-        env.rpc.goerli,
-        SupportedChainId.GOERLI
-      ),
+      rpcUrl: env.rpc.goerli,
+      network: SupportedChainId.GOERLI,
       blockNumber: 6828764,
     },
     polygon: {
       zDAOChef: env.contract.zDAOChef.mumbai,
-      provider: new ethers.providers.JsonRpcProvider(
-        env.rpc.mumbai,
-        SupportedChainId.MUMBAI
-      ),
+      rpcUrl: env.rpc.mumbai,
+      network: SupportedChainId.MUMBAI,
       blockNumber: 26198777,
     },
     proof: {
@@ -160,6 +157,15 @@ const main = async () => {
     } else if (proposal.state === 'collected') {
       const hashes = await proposal.collectTxHash();
       console.log('tx hashes', hashes);
+
+      for (const hash of hashes) {
+        while (!(await zDAO.isCheckPointed(hash))) {
+          await sleep(1000);
+        }
+        console.log('tx hash was checkpointed', hash);
+        const tx = await zDAO.syncState(goerliSigner, hash);
+        console.log('sync state', tx.transactionHash);
+      }
     }
   }
 
