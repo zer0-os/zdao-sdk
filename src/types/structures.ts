@@ -176,8 +176,12 @@ export interface zDAOProperties {
   // The minimum number of tokens required to become proposal creator
   amount: string;
 
-  // True if relative majority to calculate voting result
-  isRelativeMajority: boolean;
+  // Threshold in 100% as 10000 required to check if proposal is succeeded
+  threshold: number;
+
+  // The number of voters in support of a proposal required in order
+  // for a vote to succeed
+  quorumParticipants: number;
 
   // The number of votes in support of a proposal required in order
   // for a vote to succeed
@@ -185,6 +189,9 @@ export interface zDAOProperties {
 
   // Snapshot block number on which zDAO has been created
   snapshot: number;
+
+  // True if relative majority to calculate voting result
+  isRelativeMajority: boolean;
 
   // Flag marking whether the zDAO has been destroyed
   destroyed: boolean;
@@ -225,7 +232,7 @@ export interface ProposalProperties {
 
   // All the casted votes per choices, this should be matched with `choices`
   // undefined if not synchronzed state to Polygon network
-  scores?: number[];
+  scores?: string[];
 
   // Number of voters who casted votes
   // undefined if not synchronzed state to Polygon network

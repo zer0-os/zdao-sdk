@@ -31,22 +31,24 @@ class MockDAOClient extends AbstractDAOClient {
   static async createInstance(
     config: Config,
     signer: ethers.Wallet,
-    param: CreateZDAOParams
+    params: CreateZDAOParams
   ): Promise<MockDAOClient> {
     const { chainId } = await signer.provider.getNetwork();
 
     const properties: zDAOProperties = {
       id: shortid.generate(),
-      zNAs: [param.zNA],
-      title: param.title,
+      zNAs: [params.zNA],
+      title: params.title,
       createdBy: signer.address,
       network: chainId,
-      gnosisSafe: param.gnosisSafe,
-      token: param.token,
-      amount: param.amount,
-      isRelativeMajority: param.isRelativeMajority,
-      quorumVotes: param.quorumVotes,
+      gnosisSafe: params.gnosisSafe,
+      token: params.token,
+      amount: params.amount,
+      threshold: params.threshold,
+      quorumParticipants: params.quorumParticipants,
+      quorumVotes: params.quorumVotes,
       snapshot: timestamp(new Date()),
+      isRelativeMajority: params.isRelativeMajority,
       destroyed: false,
     };
 
@@ -90,7 +92,7 @@ class MockDAOClient extends AbstractDAOClient {
       end: new Date(now.getTime() + payload.duration * 1000),
       state: 'active',
       snapshot: timestamp(now),
-      scores: [0, 0],
+      scores: ['0', '0'],
       voters: 0,
       metadata: undefined,
     };

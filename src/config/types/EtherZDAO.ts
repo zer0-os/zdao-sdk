@@ -24,8 +24,10 @@ export declare namespace IEtherZDAOChef {
     gnosisSafe: string;
     token: string;
     amount: BigNumberish;
-    isRelativeMajority: boolean;
+    threshold: BigNumberish;
+    quorumParticipants: BigNumberish;
     quorumVotes: BigNumberish;
+    isRelativeMajority: boolean;
   };
 
   export type ZDAOConfigStructOutput = [
@@ -33,15 +35,19 @@ export declare namespace IEtherZDAOChef {
     string,
     string,
     BigNumber,
-    boolean,
-    BigNumber
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    boolean
   ] & {
     title: string;
     gnosisSafe: string;
     token: string;
     amount: BigNumber;
-    isRelativeMajority: boolean;
+    threshold: BigNumber;
+    quorumParticipants: BigNumber;
     quorumVotes: BigNumber;
+    isRelativeMajority: boolean;
   };
 }
 
@@ -52,12 +58,13 @@ export declare namespace IEtherZDAO {
     duration: BigNumberish;
     yes: BigNumberish;
     no: BigNumberish;
-    reserved: BigNumberish;
+    voters: BigNumberish;
     ipfs: string;
     target: string;
     value: BigNumberish;
     data: BytesLike;
     snapshot: BigNumberish;
+    collected: boolean;
     executed: boolean;
     canceled: boolean;
   };
@@ -75,6 +82,7 @@ export declare namespace IEtherZDAO {
     string,
     BigNumber,
     boolean,
+    boolean,
     boolean
   ] & {
     proposalId: BigNumber;
@@ -82,12 +90,13 @@ export declare namespace IEtherZDAO {
     duration: BigNumber;
     yes: BigNumber;
     no: BigNumber;
-    reserved: BigNumber;
+    voters: BigNumber;
     ipfs: string;
     target: string;
     value: BigNumber;
     data: string;
     snapshot: BigNumber;
+    collected: boolean;
     executed: boolean;
     canceled: boolean;
   };
@@ -97,8 +106,9 @@ export interface EtherZDAOInterface extends utils.Interface {
   contractName: "EtherZDAO";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "__ZDAO_init(address,uint256,address,(string,address,address,uint256,bool,uint256))": FunctionFragment;
+    "__ZDAO_init(address,uint256,address,(string,address,address,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
     "cancelProposal(address,uint256)": FunctionFragment;
+    "collectProposal(uint256,uint256,uint256,uint256)": FunctionFragment;
     "createProposal(address,uint256,address,uint256,bytes,string)": FunctionFragment;
     "destroyed()": FunctionFragment;
     "executeProposal(address,uint256)": FunctionFragment;
@@ -117,7 +127,6 @@ export interface EtherZDAOInterface extends utils.Interface {
     "revokeRole(bytes32,address)": FunctionFragment;
     "setDestroyed(bool)": FunctionFragment;
     "setGnosisSafe(address)": FunctionFragment;
-    "setVoteResult(uint256,uint256,uint256)": FunctionFragment;
     "setVotingToken(address,uint256)": FunctionFragment;
     "state(uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
@@ -141,6 +150,10 @@ export interface EtherZDAOInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "cancelProposal",
     values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "collectProposal",
+    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "createProposal",
@@ -206,10 +219,6 @@ export interface EtherZDAOInterface extends utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "setVoteResult",
-    values: [BigNumberish, BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setVotingToken",
     values: [string, BigNumberish]
   ): string;
@@ -242,6 +251,10 @@ export interface EtherZDAOInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "cancelProposal",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "collectProposal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -293,10 +306,6 @@ export interface EtherZDAOInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setGnosisSafe",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setVoteResult",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -442,6 +451,14 @@ export interface EtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    collectProposal(
+      _proposalId: BigNumberish,
+      _voters: BigNumberish,
+      _yes: BigNumberish,
+      _no: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     createProposal(
       _createdBy: string,
       _duration: BigNumberish,
@@ -510,6 +527,7 @@ export interface EtherZDAO extends BaseContract {
         string,
         BigNumber,
         boolean,
+        boolean,
         boolean
       ] & {
         proposalId: BigNumber;
@@ -517,12 +535,13 @@ export interface EtherZDAO extends BaseContract {
         duration: BigNumber;
         yes: BigNumber;
         no: BigNumber;
-        reserved: BigNumber;
+        voters: BigNumber;
         ipfs: string;
         target: string;
         value: BigNumber;
         data: string;
         snapshot: BigNumber;
+        collected: boolean;
         executed: boolean;
         canceled: boolean;
       }
@@ -551,13 +570,6 @@ export interface EtherZDAO extends BaseContract {
 
     setGnosisSafe(
       _gnosisSafe: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setVoteResult(
-      _proposalId: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -607,9 +619,11 @@ export interface EtherZDAO extends BaseContract {
         string,
         string,
         BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
         boolean,
-        BigNumber,
-        BigNumber,
         boolean
       ] & {
         zDAOId: BigNumber;
@@ -618,9 +632,11 @@ export interface EtherZDAO extends BaseContract {
         gnosisSafe: string;
         token: string;
         amount: BigNumber;
-        isRelativeMajority: boolean;
+        threshold: BigNumber;
+        quorumParticipants: BigNumber;
         quorumVotes: BigNumber;
         snapshot: BigNumber;
+        isRelativeMajority: boolean;
         destroyed: boolean;
       }
     >;
@@ -641,6 +657,14 @@ export interface EtherZDAO extends BaseContract {
   cancelProposal(
     arg0: string,
     _proposalId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  collectProposal(
+    _proposalId: BigNumberish,
+    _voters: BigNumberish,
+    _yes: BigNumberish,
+    _no: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -712,6 +736,7 @@ export interface EtherZDAO extends BaseContract {
       string,
       BigNumber,
       boolean,
+      boolean,
       boolean
     ] & {
       proposalId: BigNumber;
@@ -719,12 +744,13 @@ export interface EtherZDAO extends BaseContract {
       duration: BigNumber;
       yes: BigNumber;
       no: BigNumber;
-      reserved: BigNumber;
+      voters: BigNumber;
       ipfs: string;
       target: string;
       value: BigNumber;
       data: string;
       snapshot: BigNumber;
+      collected: boolean;
       executed: boolean;
       canceled: boolean;
     }
@@ -753,13 +779,6 @@ export interface EtherZDAO extends BaseContract {
 
   setGnosisSafe(
     _gnosisSafe: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setVoteResult(
-    _proposalId: BigNumberish,
-    _yes: BigNumberish,
-    _no: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -806,9 +825,11 @@ export interface EtherZDAO extends BaseContract {
       string,
       string,
       BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
       boolean,
-      BigNumber,
-      BigNumber,
       boolean
     ] & {
       zDAOId: BigNumber;
@@ -817,9 +838,11 @@ export interface EtherZDAO extends BaseContract {
       gnosisSafe: string;
       token: string;
       amount: BigNumber;
-      isRelativeMajority: boolean;
+      threshold: BigNumber;
+      quorumParticipants: BigNumber;
       quorumVotes: BigNumber;
       snapshot: BigNumber;
+      isRelativeMajority: boolean;
       destroyed: boolean;
     }
   >;
@@ -840,6 +863,14 @@ export interface EtherZDAO extends BaseContract {
     cancelProposal(
       arg0: string,
       _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    collectProposal(
+      _proposalId: BigNumberish,
+      _voters: BigNumberish,
+      _yes: BigNumberish,
+      _no: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -911,6 +942,7 @@ export interface EtherZDAO extends BaseContract {
         string,
         BigNumber,
         boolean,
+        boolean,
         boolean
       ] & {
         proposalId: BigNumber;
@@ -918,12 +950,13 @@ export interface EtherZDAO extends BaseContract {
         duration: BigNumber;
         yes: BigNumber;
         no: BigNumber;
-        reserved: BigNumber;
+        voters: BigNumber;
         ipfs: string;
         target: string;
         value: BigNumber;
         data: string;
         snapshot: BigNumber;
+        collected: boolean;
         executed: boolean;
         canceled: boolean;
       }
@@ -947,13 +980,6 @@ export interface EtherZDAO extends BaseContract {
 
     setGnosisSafe(
       _gnosisSafe: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setVoteResult(
-      _proposalId: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1003,9 +1029,11 @@ export interface EtherZDAO extends BaseContract {
         string,
         string,
         BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
         boolean,
-        BigNumber,
-        BigNumber,
         boolean
       ] & {
         zDAOId: BigNumber;
@@ -1014,9 +1042,11 @@ export interface EtherZDAO extends BaseContract {
         gnosisSafe: string;
         token: string;
         amount: BigNumber;
-        isRelativeMajority: boolean;
+        threshold: BigNumber;
+        quorumParticipants: BigNumber;
         quorumVotes: BigNumber;
         snapshot: BigNumber;
+        isRelativeMajority: boolean;
         destroyed: boolean;
       }
     >;
@@ -1108,6 +1138,14 @@ export interface EtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    collectProposal(
+      _proposalId: BigNumberish,
+      _voters: BigNumberish,
+      _yes: BigNumberish,
+      _no: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     createProposal(
       _createdBy: string,
       _duration: BigNumberish,
@@ -1193,13 +1231,6 @@ export interface EtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setVoteResult(
-      _proposalId: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     setVotingToken(
       _token: string,
       _amount: BigNumberish,
@@ -1257,6 +1288,14 @@ export interface EtherZDAO extends BaseContract {
     cancelProposal(
       arg0: string,
       _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    collectProposal(
+      _proposalId: BigNumberish,
+      _voters: BigNumberish,
+      _yes: BigNumberish,
+      _no: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1342,13 +1381,6 @@ export interface EtherZDAO extends BaseContract {
 
     setGnosisSafe(
       _gnosisSafe: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setVoteResult(
-      _proposalId: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

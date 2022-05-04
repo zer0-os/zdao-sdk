@@ -24,7 +24,7 @@ export interface PolyZDAOChefInterface extends utils.Interface {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "__ZDAOChef_init(address,address,address)": FunctionFragment;
     "childStateSender()": FunctionFragment;
-    "collectResult(uint256,uint256)": FunctionFragment;
+    "collectProposal(uint256,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getzDAOById(uint256)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
@@ -64,7 +64,7 @@ export interface PolyZDAOChefInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "collectResult",
+    functionFragment: "collectProposal",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
@@ -150,7 +150,7 @@ export interface PolyZDAOChefInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "collectResult",
+    functionFragment: "collectProposal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -212,12 +212,12 @@ export interface PolyZDAOChefInterface extends utils.Interface {
     "AdminChanged(address,address)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
     "CastVote(uint256,uint256,address,uint256)": EventFragment;
-    "CollectResult(uint256,uint256,bool,uint256,uint256)": EventFragment;
-    "DAOCreated(address,uint256,bool,uint256)": EventFragment;
+    "DAOCreated(address,uint256)": EventFragment;
     "DAODestroyed(uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
     "ProposalCanceled(uint256,uint256)": EventFragment;
+    "ProposalCollected(uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "ProposalCreated(uint256,uint256,uint256,uint256)": EventFragment;
     "ProposalExecuted(uint256,uint256)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
@@ -230,12 +230,12 @@ export interface PolyZDAOChefInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "CastVote"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "CollectResult"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAODestroyed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalCanceled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCollected"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
@@ -268,27 +268,9 @@ export type CastVoteEvent = TypedEvent<
 
 export type CastVoteEventFilter = TypedEventFilter<CastVoteEvent>;
 
-export type CollectResultEvent = TypedEvent<
-  [BigNumber, BigNumber, boolean, BigNumber, BigNumber],
-  {
-    _zDAOId: BigNumber;
-    _proposalId: BigNumber;
-    _isRelativeMajority: boolean;
-    _yes: BigNumber;
-    _no: BigNumber;
-  }
->;
-
-export type CollectResultEventFilter = TypedEventFilter<CollectResultEvent>;
-
 export type DAOCreatedEvent = TypedEvent<
-  [string, BigNumber, boolean, BigNumber],
-  {
-    _zDAO: string;
-    _daoId: BigNumber;
-    _isRelativeMajority: boolean;
-    _quorumVotes: BigNumber;
-  }
+  [string, BigNumber],
+  { _zDAO: string; _daoId: BigNumber }
 >;
 
 export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
@@ -316,6 +298,20 @@ export type ProposalCanceledEvent = TypedEvent<
 
 export type ProposalCanceledEventFilter =
   TypedEventFilter<ProposalCanceledEvent>;
+
+export type ProposalCollectedEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber],
+  {
+    _zDAOId: BigNumber;
+    _proposalId: BigNumber;
+    _voters: BigNumber;
+    _yes: BigNumber;
+    _no: BigNumber;
+  }
+>;
+
+export type ProposalCollectedEventFilter =
+  TypedEventFilter<ProposalCollectedEvent>;
 
 export type ProposalCreatedEvent = TypedEvent<
   [BigNumber, BigNumber, BigNumber, BigNumber],
@@ -406,7 +402,7 @@ export interface PolyZDAOChef extends BaseContract {
 
     childStateSender(overrides?: CallOverrides): Promise<[string]>;
 
-    collectResult(
+    collectProposal(
       _daoId: BigNumberish,
       _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -527,7 +523,7 @@ export interface PolyZDAOChef extends BaseContract {
 
   childStateSender(overrides?: CallOverrides): Promise<string>;
 
-  collectResult(
+  collectProposal(
     _daoId: BigNumberish,
     _proposalId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -642,7 +638,7 @@ export interface PolyZDAOChef extends BaseContract {
 
     childStateSender(overrides?: CallOverrides): Promise<string>;
 
-    collectResult(
+    collectProposal(
       _daoId: BigNumberish,
       _proposalId: BigNumberish,
       overrides?: CallOverrides
@@ -769,32 +765,13 @@ export interface PolyZDAOChef extends BaseContract {
       _choice?: null
     ): CastVoteEventFilter;
 
-    "CollectResult(uint256,uint256,bool,uint256,uint256)"(
-      _zDAOId?: BigNumberish | null,
-      _proposalId?: BigNumberish | null,
-      _isRelativeMajority?: boolean | null,
-      _yes?: null,
-      _no?: null
-    ): CollectResultEventFilter;
-    CollectResult(
-      _zDAOId?: BigNumberish | null,
-      _proposalId?: BigNumberish | null,
-      _isRelativeMajority?: boolean | null,
-      _yes?: null,
-      _no?: null
-    ): CollectResultEventFilter;
-
-    "DAOCreated(address,uint256,bool,uint256)"(
+    "DAOCreated(address,uint256)"(
       _zDAO?: string | null,
-      _daoId?: BigNumberish | null,
-      _isRelativeMajority?: null,
-      _quorumVotes?: null
+      _daoId?: BigNumberish | null
     ): DAOCreatedEventFilter;
     DAOCreated(
       _zDAO?: string | null,
-      _daoId?: BigNumberish | null,
-      _isRelativeMajority?: null,
-      _quorumVotes?: null
+      _daoId?: BigNumberish | null
     ): DAOCreatedEventFilter;
 
     "DAODestroyed(uint256)"(
@@ -822,6 +799,21 @@ export interface PolyZDAOChef extends BaseContract {
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null
     ): ProposalCanceledEventFilter;
+
+    "ProposalCollected(uint256,uint256,uint256,uint256,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _voters?: null,
+      _yes?: null,
+      _no?: null
+    ): ProposalCollectedEventFilter;
+    ProposalCollected(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _voters?: null,
+      _yes?: null,
+      _no?: null
+    ): ProposalCollectedEventFilter;
 
     "ProposalCreated(uint256,uint256,uint256,uint256)"(
       _zDAOId?: BigNumberish | null,
@@ -897,7 +889,7 @@ export interface PolyZDAOChef extends BaseContract {
 
     childStateSender(overrides?: CallOverrides): Promise<BigNumber>;
 
-    collectResult(
+    collectProposal(
       _daoId: BigNumberish,
       _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1021,7 +1013,7 @@ export interface PolyZDAOChef extends BaseContract {
 
     childStateSender(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    collectResult(
+    collectProposal(
       _daoId: BigNumberish,
       _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }

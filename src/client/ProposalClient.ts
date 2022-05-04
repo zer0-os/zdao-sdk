@@ -72,7 +72,7 @@ class ProposalClient extends AbstractProposalClient {
     const daoId = this._zDAO.id;
     const proposalId = this.id;
 
-    return await this._zDAO.polyZDAOChef.collectResult(
+    return await this._zDAO.polyZDAOChef.collectProposal(
       signer,
       daoId,
       proposalId

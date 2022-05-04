@@ -24,8 +24,10 @@ export declare namespace IEtherZDAOChef {
     gnosisSafe: string;
     token: string;
     amount: BigNumberish;
-    isRelativeMajority: boolean;
+    threshold: BigNumberish;
+    quorumParticipants: BigNumberish;
     quorumVotes: BigNumberish;
+    isRelativeMajority: boolean;
   };
 
   export type ZDAOConfigStructOutput = [
@@ -33,15 +35,19 @@ export declare namespace IEtherZDAOChef {
     string,
     string,
     BigNumber,
-    boolean,
-    BigNumber
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    boolean
   ] & {
     title: string;
     gnosisSafe: string;
     token: string;
     amount: BigNumber;
-    isRelativeMajority: boolean;
+    threshold: BigNumber;
+    quorumParticipants: BigNumber;
     quorumVotes: BigNumber;
+    isRelativeMajority: boolean;
   };
 
   export type ZDAORecordStruct = {
@@ -62,7 +68,7 @@ export interface EtherZDAOChefInterface extends utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "__ZDAOChef_init(address,address,address)": FunctionFragment;
-    "addNewDAO(uint256,(string,address,address,uint256,bool,uint256))": FunctionFragment;
+    "addNewDAO(uint256,(string,address,address,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
     "addZNAAssociation(uint256,uint256)": FunctionFragment;
     "cancelProposal(uint256,uint256)": FunctionFragment;
     "createProposal(uint256,uint256,address,uint256,bytes,string)": FunctionFragment;
@@ -350,7 +356,7 @@ export interface EtherZDAOChefInterface extends utils.Interface {
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
     "ProposalCanceled(uint256,uint256,address)": EventFragment;
-    "ProposalCollected(uint256,uint256,uint256,uint256)": EventFragment;
+    "ProposalCollected(uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "ProposalCreated(uint256,uint256,address,uint256,uint256)": EventFragment;
     "ProposalExecuted(uint256,uint256,address)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
@@ -454,8 +460,14 @@ export type ProposalCanceledEventFilter =
   TypedEventFilter<ProposalCanceledEvent>;
 
 export type ProposalCollectedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber, BigNumber],
-  { _zDAOId: BigNumber; _propoalId: BigNumber; yes: BigNumber; no: BigNumber }
+  [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber],
+  {
+    _zDAOId: BigNumber;
+    _propoalId: BigNumber;
+    _voters: BigNumber;
+    _yes: BigNumber;
+    _no: BigNumber;
+  }
 >;
 
 export type ProposalCollectedEventFilter =
@@ -1149,17 +1161,19 @@ export interface EtherZDAOChef extends BaseContract {
       _cancelBy?: string | null
     ): ProposalCanceledEventFilter;
 
-    "ProposalCollected(uint256,uint256,uint256,uint256)"(
+    "ProposalCollected(uint256,uint256,uint256,uint256,uint256)"(
       _zDAOId?: BigNumberish | null,
       _propoalId?: BigNumberish | null,
-      yes?: null,
-      no?: null
+      _voters?: null,
+      _yes?: null,
+      _no?: null
     ): ProposalCollectedEventFilter;
     ProposalCollected(
       _zDAOId?: BigNumberish | null,
       _propoalId?: BigNumberish | null,
-      yes?: null,
-      no?: null
+      _voters?: null,
+      _yes?: null,
+      _no?: null
     ): ProposalCollectedEventFilter;
 
     "ProposalCreated(uint256,uint256,address,uint256,uint256)"(

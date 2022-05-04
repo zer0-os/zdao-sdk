@@ -1,10 +1,15 @@
-import { zDAOProperties } from '../types';
+import { zDAOId } from '../types';
 
-export interface PolyZDAOProperties
-  extends Omit<
-    zDAOProperties,
-    'zNAs' | 'title' | 'createdBy' | 'gnosisSafe' | 'token' | 'amount'
-  > {
+export interface PolyZDAOProperties {
+  // Unique id for looking up zDAO
+  id: zDAOId;
+
+  // Snapshot block number on which zDAO has been created
+  snapshot: number;
+
+  // Flag marking whether the zDAO has been destroyed
+  destroyed: boolean;
+
   // Address to ZDAO contract
   address: string;
 }

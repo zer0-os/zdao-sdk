@@ -74,8 +74,12 @@ class AbstractDAOClient implements zDAO {
     return this._properties.amount;
   }
 
-  get isRelativeMajority() {
-    return this._properties.isRelativeMajority;
+  get threshold() {
+    return this._properties.threshold;
+  }
+
+  get quorumParticipants() {
+    return this._properties.quorumParticipants;
   }
 
   get quorumVotes() {
@@ -84,6 +88,10 @@ class AbstractDAOClient implements zDAO {
 
   get snapshot() {
     return this._properties.snapshot;
+  }
+
+  get isRelativeMajority() {
+    return this._properties.isRelativeMajority;
   }
 
   get destroyed() {

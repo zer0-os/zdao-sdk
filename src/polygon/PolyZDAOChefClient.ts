@@ -46,18 +46,13 @@ class PolyZDAOChefClient {
       address,
       PolyZDAOAbi.abi,
       this._config.provider
-    );
-
-    const { chainId } = await this._config.provider.getNetwork();
+    ) as PolyZDAO;
 
     const zDAOInfo = await polyZDAO.zDAOInfo();
 
     return {
       id: zDAOInfo.zDAOId.toString(),
       address: polyZDAO.address,
-      network: chainId,
-      isRelativeMajority: zDAOInfo.isRelativeMajority,
-      quorumVotes: zDAOInfo.quorumVotes.toString(),
       snapshot: zDAOInfo.snapshot.toNumber(),
       destroyed: zDAOInfo.destroyed,
     };
@@ -75,14 +70,14 @@ class PolyZDAOChefClient {
     return await tx.wait();
   }
 
-  async collectResult(
+  async collectProposal(
     signer: ethers.Wallet,
     daoId: zDAOId,
     proposalId: ProposalId
   ) {
     const tx = await this._contract
       .connect(signer)
-      .collectResult(daoId, proposalId);
+      .collectProposal(daoId, proposalId);
     return await tx.wait();
   }
 }

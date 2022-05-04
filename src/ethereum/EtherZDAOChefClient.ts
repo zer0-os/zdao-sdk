@@ -143,9 +143,11 @@ class EtherZDAOChefClient {
       gnosisSafe: zDAOInfo.gnosisSafe,
       token: zDAOInfo.token,
       amount: zDAOInfo.amount.toString(),
-      isRelativeMajority: zDAOInfo.isRelativeMajority,
+      threshold: zDAOInfo.threshold.toNumber(),
+      quorumParticipants: zDAOInfo.quorumParticipants.toNumber(),
       quorumVotes: zDAOInfo.quorumVotes.toString(),
       snapshot: zDAOInfo.snapshot.toNumber(),
+      isRelativeMajority: zDAOInfo.isRelativeMajority,
       destroyed: zDAOInfo.destroyed,
     };
   }
@@ -158,8 +160,10 @@ class EtherZDAOChefClient {
         gnosisSafe: payload.gnosisSafe,
         token: payload.token,
         amount: payload.amount,
-        isRelativeMajority: payload.isRelativeMajority,
+        threshold: payload.threshold,
+        quorumParticipants: payload.quorumParticipants,
         quorumVotes: payload.quorumVotes,
+        isRelativeMajority: payload.isRelativeMajority,
       });
 
     const tx = await this._contract.connect(signer).addNewDAO(
@@ -169,8 +173,10 @@ class EtherZDAOChefClient {
         gnosisSafe: payload.gnosisSafe,
         token: payload.token,
         amount: payload.amount,
-        isRelativeMajority: payload.isRelativeMajority,
+        threshold: payload.threshold,
+        quorumParticipants: payload.quorumParticipants,
         quorumVotes: payload.quorumVotes,
+        isRelativeMajority: payload.isRelativeMajority,
       },
       {
         gasLimit: calculateGasMargin(gasEstimated),

@@ -8,13 +8,6 @@ export interface CreateZDAOParams {
   // zDAO title
   title: string;
 
-  // // Address who created zDAO, is the first zDAO owner
-  // createdBy: string;
-
-  // // network id where zDAO was created
-  // // This network can be not Goerli or Mainnet
-  // network: SupportedChainId;
-
   // Gnosis safe address where collected treasuries are stored
   gnosisSafe: string;
 
@@ -25,8 +18,15 @@ export interface CreateZDAOParams {
   // The minimum number of tokens required to become proposal creator
   amount: string;
 
+  // Threshold in 100% as 10000 required to check if proposal is succeeded
+  threshold: number;
+
   // True if relative majority to calculate voting result
   isRelativeMajority: boolean;
+
+  // The number of voters in support of a proposal required in order
+  // for a vote to succeed
+  quorumParticipants: number;
 
   // The number of votes in support of a proposal required in order
   // for a vote to succeed

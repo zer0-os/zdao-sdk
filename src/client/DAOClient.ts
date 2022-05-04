@@ -1,6 +1,7 @@
 import { BigNumber, ethers } from 'ethers';
 
 import { IPFSGatway } from '../config';
+import IERC20UpgradeableAbi from '../config/abi/IERC20Upgradeable.json';
 import { EtherZDAO, IEtherZDAO } from '../config/types/EtherZDAO';
 import { PolyZDAO } from '../config/types/PolyZDAO';
 import { EtherZDAOChefClient } from '../ethereum';
@@ -28,16 +29,19 @@ class DAOClient extends AbstractDAOClient {
   protected _polyZDAOChef!: PolyZDAOChefClient;
   protected _etherZDAO!: EtherZDAO;
   protected _polyZDAO: PolyZDAO | null = null;
+  protected _totalSupply: BigNumber;
 
   private constructor(
     properties: zDAOProperties,
     gnosisSafeClient: GnosisSafeClient,
     etherZDAOChef: EtherZDAOChefClient,
-    polyZDAOChef: PolyZDAOChefClient
+    polyZDAOChef: PolyZDAOChefClient,
+    totalSupply: BigNumber
   ) {
     super(properties, gnosisSafeClient);
     this._etherZDAOChef = etherZDAOChef;
     this._polyZDAOChef = polyZDAOChef;
+    this._totalSupply = totalSupply;
 
     return (async (): Promise<DAOClient> => {
       this._etherZDAO = await this._etherZDAOChef.getZDAOById(
@@ -65,11 +69,20 @@ class DAOClient extends AbstractDAOClient {
     const polyZDAOChef = new PolyZDAOChefClient(config.polygon);
     const zDAOProperties = await etherZDAOChef.getZDAOPropertiesByZNA(zNA);
 
+    const tokenContract = new ethers.Contract(
+      zDAOProperties.token,
+      IERC20UpgradeableAbi.abi,
+      config.ethereum.provider
+    );
+
+    const totalSupply = await tokenContract.totalSupply();
+
     return await new DAOClient(
       zDAOProperties as zDAOProperties,
       new GnosisSafeClient(config.gnosisSafe),
       etherZDAOChef,
-      polyZDAOChef
+      polyZDAOChef,
+      totalSupply
     );
   }
 
@@ -101,20 +114,7 @@ class DAOClient extends AbstractDAOClient {
       now = new Date();
     const scores =
       polyZDAO && polyProposal && isSyncedProposal
-        ? !this.isRelativeMajority
-          ? [polyProposal.yes.toNumber(), polyProposal.no.toNumber()]
-          : polyProposal.yes.add(polyProposal.no).eq(0)
-          ? [0, 0]
-          : [
-              polyProposal.yes
-                .mul(100)
-                .div(polyProposal.yes.add(polyProposal.no))
-                .toNumber(),
-              polyProposal.no
-                .mul(100)
-                .div(polyProposal.yes.add(polyProposal.no))
-                .toNumber(),
-            ]
+        ? [polyProposal.yes.toString(), polyProposal.no.toString()]
         : undefined;
     const voters =
       polyZDAO && polyProposal && isSyncedProposal
@@ -124,19 +124,48 @@ class DAOClient extends AbstractDAOClient {
     const mapState = (raw: IEtherZDAO.ProposalStruct): ProposalState => {
       if (raw.canceled) {
         return 'canceled';
-      } else if (!start || !end) {
+      } else if (!start || !end || !scores || !voters) {
         return 'pending';
       } else if (now <= end) {
         return 'active';
-      } else if (
-        BigNumber.from(raw.yes) <= BigNumber.from(raw.no) ||
-        BigNumber.from(raw.yes) < BigNumber.from(this.quorumVotes)
-      ) {
-        return 'failed';
       } else if (raw.executed) {
         return 'executed';
       }
-      return 'succeeded';
+
+      const yes = BigNumber.from(scores[0]),
+        no = BigNumber.from(scores[1]),
+        zero = BigNumber.from(0);
+      if (
+        voters < this._properties.quorumParticipants ||
+        yes.add(no).lt(BigNumber.from(this._properties.quorumVotes)) // <
+      ) {
+        return 'failed';
+      }
+
+      // if relative majority, the denominator should be sum of yes and no votes
+      if (
+        this._properties.isRelativeMajority &&
+        yes.add(no).gt(zero) &&
+        yes
+          .mul(BigNumber.from(10000))
+          .div(yes.add(no))
+          .gte(BigNumber.from(this._properties.threshold))
+      ) {
+        return 'succeeded';
+      }
+
+      // if absolute majority, the denominator should be total supply
+      if (
+        !this._properties.isRelativeMajority &&
+        this._totalSupply.gt(zero) &&
+        yes
+          .mul(10000)
+          .div(this._totalSupply)
+          .gte(BigNumber.from(this._properties.threshold))
+      ) {
+        return 'succeeded';
+      }
+      return 'failed';
     };
 
     const ipfsData = await IPFSClient.getJson(raw.ipfs.toString(), IPFSGatway);
