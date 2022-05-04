@@ -628,9 +628,13 @@ export interface EtherZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[IEtherZDAOChef.ZDAORecordStructOutput[]]>;
+    ): Promise<
+      [IEtherZDAOChef.ZDAORecordStructOutput[]] & {
+        records: IEtherZDAOChef.ZDAORecordStructOutput[];
+      }
+    >;
 
     numberOfzDAOs(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -804,7 +808,7 @@ export interface EtherZDAOChef extends BaseContract {
 
   listzDAOs(
     _startIndex: BigNumberish,
-    _endIndex: BigNumberish,
+    _count: BigNumberish,
     overrides?: CallOverrides
   ): Promise<IEtherZDAOChef.ZDAORecordStructOutput[]>;
 
@@ -980,7 +984,7 @@ export interface EtherZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<IEtherZDAOChef.ZDAORecordStructOutput[]>;
 
@@ -1322,7 +1326,7 @@ export interface EtherZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1504,7 +1508,7 @@ export interface EtherZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

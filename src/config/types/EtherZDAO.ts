@@ -495,9 +495,13 @@ export interface EtherZDAO extends BaseContract {
 
     listProposals(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[IEtherZDAO.ProposalStructOutput[]]>;
+    ): Promise<
+      [IEtherZDAO.ProposalStructOutput[]] & {
+        records: IEtherZDAO.ProposalStructOutput[];
+      }
+    >;
 
     numberOfProposals(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -704,7 +708,7 @@ export interface EtherZDAO extends BaseContract {
 
   listProposals(
     _startIndex: BigNumberish,
-    _endIndex: BigNumberish,
+    _count: BigNumberish,
     overrides?: CallOverrides
   ): Promise<IEtherZDAO.ProposalStructOutput[]>;
 
@@ -910,7 +914,7 @@ export interface EtherZDAO extends BaseContract {
 
     listProposals(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<IEtherZDAO.ProposalStructOutput[]>;
 
@@ -1185,7 +1189,7 @@ export interface EtherZDAO extends BaseContract {
 
     listProposals(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1338,7 +1342,7 @@ export interface EtherZDAO extends BaseContract {
 
     listProposals(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

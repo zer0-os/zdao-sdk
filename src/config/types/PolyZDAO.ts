@@ -486,14 +486,18 @@ export interface PolyZDAO extends BaseContract {
 
     listProposals(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[IPolyZDAO.ProposalStructOutput[]]>;
+    ): Promise<
+      [IPolyZDAO.ProposalStructOutput[]] & {
+        records: IPolyZDAO.ProposalStructOutput[];
+      }
+    >;
 
     listVoters(
       _proposalId: BigNumberish,
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
       [string[], BigNumber[], BigNumber[]] & {
@@ -699,14 +703,14 @@ export interface PolyZDAO extends BaseContract {
 
   listProposals(
     _startIndex: BigNumberish,
-    _endIndex: BigNumberish,
+    _count: BigNumberish,
     overrides?: CallOverrides
   ): Promise<IPolyZDAO.ProposalStructOutput[]>;
 
   listVoters(
     _proposalId: BigNumberish,
     _startIndex: BigNumberish,
-    _endIndex: BigNumberish,
+    _count: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
     [string[], BigNumber[], BigNumber[]] & {
@@ -915,14 +919,14 @@ export interface PolyZDAO extends BaseContract {
 
     listProposals(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<IPolyZDAO.ProposalStructOutput[]>;
 
     listVoters(
       _proposalId: BigNumberish,
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
       [string[], BigNumber[], BigNumber[]] & {
@@ -1194,14 +1198,14 @@ export interface PolyZDAO extends BaseContract {
 
     listProposals(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     listVoters(
       _proposalId: BigNumberish,
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1369,14 +1373,14 @@ export interface PolyZDAO extends BaseContract {
 
     listProposals(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     listVoters(
       _proposalId: BigNumberish,
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

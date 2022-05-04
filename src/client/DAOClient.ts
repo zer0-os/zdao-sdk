@@ -124,7 +124,12 @@ class DAOClient extends AbstractDAOClient {
     const mapState = (raw: IEtherZDAO.ProposalStruct): ProposalState => {
       if (raw.canceled) {
         return 'canceled';
-      } else if (!start || !end || !scores || !voters) {
+      } else if (
+        start === undefined ||
+        end === undefined ||
+        scores === undefined ||
+        voters === undefined
+      ) {
         return 'pending';
       } else if (now <= end) {
         return 'active';
@@ -197,18 +202,14 @@ class DAOClient extends AbstractDAOClient {
   }
 
   async listProposals(): Promise<Proposal[]> {
-    const count = (await this._etherZDAO.numberOfProposals()).toNumber();
-    const limit = 100;
-    let from = 1;
-    let numberOfResults = limit;
+    const count = 100;
+    let from = 0;
+    let numberOfResults = count;
     const proposals: Proposal[] = [];
 
-    while (numberOfResults === limit) {
+    while (numberOfResults === count) {
       const results: IEtherZDAO.ProposalStructOutput[] =
-        await this._etherZDAO.listProposals(
-          from,
-          Math.min(from + limit - 1, count)
-        );
+        await this._etherZDAO.listProposals(from, count);
 
       const promises: Promise<ProposalProperties>[] = [];
       promises.push(

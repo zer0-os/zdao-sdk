@@ -429,9 +429,9 @@ export interface PolyZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[string[]]>;
+    ): Promise<[string[]] & { records: string[] }>;
 
     numberOfzDAOs(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -547,7 +547,7 @@ export interface PolyZDAOChef extends BaseContract {
 
   listzDAOs(
     _startIndex: BigNumberish,
-    _endIndex: BigNumberish,
+    _count: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string[]>;
 
@@ -665,7 +665,7 @@ export interface PolyZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string[]>;
 
@@ -919,7 +919,7 @@ export interface PolyZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1043,7 +1043,7 @@ export interface PolyZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

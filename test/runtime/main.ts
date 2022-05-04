@@ -4,7 +4,6 @@ import { BigNumber, ethers } from 'ethers';
 import { createSDKInstance } from '../../src';
 import ZNAClient from '../../src/client/ZNAClient';
 import { developmentConfiguration } from '../../src/config';
-import TransferAbi from '../../src/config/abi/transfer.json';
 import { SupportedChainId } from '../../src/types';
 import { setEnv } from '../shared/setupEnv';
 
@@ -53,7 +52,20 @@ const main = async () => {
   console.log('config', config);
   console.log('signer.address', goerliSigner.address);
 
-  ZNAClient.initialize(config.zNS);
+  // // create MockZDAOClient
+  // const zDAO = await MockDAOClient.createInstance(config, goerliSigner, {
+  //   zNA: 'wilder.wheels',
+  //   title: 'wilder.dao',
+  //   gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
+  //   token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
+  //   amount: BigNumber.from(10).pow(18).toString(),
+  //   isRelativeMajority: false,
+  //   quorumVotes: BigNumber.from(10).pow(18).toString(),
+  // });
+  // console.log('zDAO', zDAO);
+
+  // const assets = await zDAO.listAssets();
+  // console.log('assets', assets);
 
   const zNAId1 = ZNAClient.zNATozNAId('wilder.wheels');
   console.log('zNAId1', zNAId1);
@@ -62,15 +74,17 @@ const main = async () => {
 
   const instance = createSDKInstance(config);
 
-  await instance.createZDAO(goerliSigner, {
-    zNA: 'wilder.kicks',
-    title: 'wilder.kicks',
-    gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
-    token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
-    amount: BigNumber.from(10).pow(18).toString(),
-    isRelativeMajority: false,
-    quorumVotes: BigNumber.from(10).pow(18).toString(),
-  });
+  // await instance.createZDAO(goerliSigner, {
+  //   zNA: 'wilder.wheels',
+  //   title: 'wilder.wheels',
+  //   gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
+  //   token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
+  //   amount: BigNumber.from(10).pow(18).toString(),
+  //   threshold: 5001, // 50.01%
+  //   quorumParticipants: 1,
+  //   quorumVotes: BigNumber.from(10).pow(18).toString(),
+  //   isRelativeMajority: false,
+  // });
 
   const zNAs = await instance.listZNAs();
   console.log('zNAs', zNAs);
@@ -86,20 +100,21 @@ const main = async () => {
   const assets = await zDAO.listAssets();
   console.log('assets', assets);
 
-  await zDAO.createProposal(goerliSigner, {
-    title: 'First 5 min',
-    body: 'Hello World',
-    duration: 300,
-    transfer: {
-      abi: JSON.stringify(TransferAbi),
-      sender: zDAO.gnosisSafe,
-      recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-      token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
-      decimals: 18,
-      symbol: 'wilder.goerli',
-      amount: BigNumber.from(10).pow(18).mul(50).toString(),
-    },
-  });
+  // await zDAO.createProposal(goerliSigner, {
+  //   title: 'First 50 min',
+  //   body: 'Hello World',
+  //   duration: 3000,
+  //   transfer: {
+  //     abi: JSON.stringify(TransferAbi),
+  //     sender: zDAO.gnosisSafe,
+  //     recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+  //     token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
+  //     decimals: 18,
+  //     symbol: 'wilder.goerli',
+  //     amount: BigNumber.from(10).pow(18).mul(50).toString(),
+  //   },
+  // });
+  // console.log('created proposal');
 
   const proposals = await zDAO.listProposals();
   proposals.forEach((proposal) => {
@@ -117,8 +132,26 @@ const main = async () => {
   });
   assert.equal(proposals.length > 0, true);
 
-  const proposal = proposals[0];
-  await proposal.collect(mumbaiSigner);
+  for (const proposal of proposals) {
+    console.log('> proposal.id', proposal.id, proposal.state);
+
+    if (proposal.state === 'active') {
+      const votingPower = await proposal.getVotingPowerOfUser(
+        mumbaiSigner.address
+      );
+      console.log('votingPower', votingPower);
+      if (BigNumber.from(votingPower).gt(BigNumber.from(0))) {
+        await proposal.vote(mumbaiSigner, 2);
+        console.log('successfully voted');
+      }
+
+      const votes = await proposal.listVotes();
+      console.log('votes', votes);
+    } else if (proposal.state === 'succeeded' || proposal.state === 'failed') {
+      const tx = await proposal.collect(mumbaiSigner);
+      console.log('successfully collected', tx.transactionHash);
+    }
+  }
 
   console.log('Finished successfully');
 };

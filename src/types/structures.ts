@@ -14,7 +14,7 @@ export interface Vote {
   choice: Choice;
 
   // The number of votes which the voter casted
-  votes: number;
+  votes: string; // BigNumber
 }
 
 export interface Coin {

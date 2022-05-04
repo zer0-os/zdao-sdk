@@ -68,7 +68,7 @@ class AbstractProposalClient implements Proposal {
     throw new NotImplementedError();
   }
 
-  getVotingPowerOfUser(_: string): Promise<number> {
+  getVotingPowerOfUser(_: string): Promise<string> {
     throw new NotImplementedError();
   }
 

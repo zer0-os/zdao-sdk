@@ -15,8 +15,8 @@ class MockProposalClient extends AbstractProposalClient {
     return Promise.resolve(this._votes);
   }
 
-  getVotingPowerOfUser(_: string): Promise<number> {
-    return Promise.resolve(1);
+  getVotingPowerOfUser(_: string): Promise<string> {
+    return Promise.resolve('1');
   }
 
   private makeContractReceipt(): ContractReceipt {
@@ -46,7 +46,7 @@ class MockProposalClient extends AbstractProposalClient {
       this._votes.push({
         voter: signer.address,
         choice,
-        votes: 1,
+        votes: '1',
       });
       return Promise.resolve(this.makeContractReceipt());
     }

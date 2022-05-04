@@ -21,25 +21,19 @@ class ProposalClient extends AbstractProposalClient {
       throw new NotSyncStateError();
     }
 
-    const { voters } = await polyZDAO.votesResultOfProposal(this.id);
-
-    const count = voters.toNumber();
-    const limit = 30000;
-    let from = 1;
-    let numberOfResults = limit;
+    const count = 30000;
+    let from = 0;
+    let numberOfResults = count;
     const votes: Vote[] = [];
 
-    while (numberOfResults === limit) {
-      const results = await polyZDAO.listVoters(
-        this.id,
-        from,
-        Math.min(from + limit - 1, count)
-      );
+    while (numberOfResults === count) {
+      const results = await polyZDAO.listVoters(this.id, from, count);
+
       votes.push(
         ...[...Array(results.voters.length).keys()].map((index: number) => ({
           voter: results.voters[index],
           choice: results.choices[index].toNumber() as Choice,
-          votes: results.votes[index].toNumber(),
+          votes: results.votes[index].toString(),
         }))
       );
       from += results.length;
@@ -48,16 +42,21 @@ class ProposalClient extends AbstractProposalClient {
     return votes;
   }
 
-  async getVotingPowerOfUser(account: string): Promise<number> {
+  async getVotingPowerOfUser(account: string): Promise<string> {
     const polyZDAO = await this._zDAO.getPolyZDAO();
     if (!polyZDAO) {
       throw new NotSyncStateError();
     }
 
-    return (await polyZDAO.votingPowerOfVoter(this.id, account)).toNumber();
+    return (await polyZDAO.votingPowerOfVoter(this.id, account)).toString();
   }
 
   async vote(signer: ethers.Wallet, choice: Choice) {
+    const polyZDAO = await this._zDAO.getPolyZDAO();
+    if (!polyZDAO) {
+      throw new NotSyncStateError();
+    }
+
     const daoId = this._zDAO.id;
     const proposalId = this.id;
     return await this._zDAO.polyZDAOChef.vote(

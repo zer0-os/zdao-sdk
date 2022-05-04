@@ -137,9 +137,9 @@ export interface Proposal extends ProposalProperties {
   /**
    * Get voting power of the user in zDAO
    * @param account account address
-   * @returns voting power as number
+   * @returns voting power as BigNumber
    */
-  getVotingPowerOfUser(account: string): Promise<number>;
+  getVotingPowerOfUser(account: string): Promise<string>;
 
   /**
    * Cast a vote on proposal

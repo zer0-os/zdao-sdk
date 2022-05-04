@@ -56,17 +56,13 @@ class EtherZDAOChefClient {
   }
 
   async listzDAOs(): Promise<ZDAORecord[]> {
-    const count = await this.numberOfzDAOs();
-    const limit = 100;
-    let from = 1;
-    let numberOfReturns = limit;
+    const count = 100;
+    let from = 0;
+    let numberOfReturns = count;
     const zDAORecord: ZDAORecord[] = [];
 
-    while (numberOfReturns === limit) {
-      const response = await this._contract.listzDAOs(
-        from,
-        Math.min(from + limit - 1, count)
-      );
+    while (numberOfReturns === count) {
+      const response = await this._contract.listzDAOs(from, count);
 
       for (const record of response) {
         const zNAs: string[] = [];
