@@ -1,6 +1,7 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import shortid from 'shortid';
 
+import IERC20UpgradeableAbi from '../config/abi/IERC20Upgradeable.json';
 import { GnosisSafeClient } from '../gnosis-safe';
 import {
   Config,
@@ -20,12 +21,19 @@ import MockProposalClient from './MockProposalClient';
 
 class MockDAOClient extends AbstractDAOClient {
   private _proposals: MockProposalClient[] = [];
+  protected _totalSupply: BigNumber;
 
   private constructor(
     properties: zDAOProperties,
-    gnosisSafeClient: GnosisSafeClient
+    gnosisSafeClient: GnosisSafeClient,
+    totalSupply: BigNumber
   ) {
     super(properties, gnosisSafeClient);
+    this._totalSupply = totalSupply;
+  }
+
+  get totalSupply() {
+    return this._totalSupply;
   }
 
   static async createInstance(
@@ -52,9 +60,18 @@ class MockDAOClient extends AbstractDAOClient {
       destroyed: false,
     };
 
+    const tokenContract = new ethers.Contract(
+      params.token,
+      IERC20UpgradeableAbi.abi,
+      config.ethereum.provider
+    );
+
+    const totalSupply = await tokenContract.totalSupply();
+
     return new MockDAOClient(
       properties,
-      new GnosisSafeClient(config.gnosisSafe)
+      new GnosisSafeClient(config.gnosisSafe),
+      totalSupply
     );
   }
 
@@ -96,7 +113,7 @@ class MockDAOClient extends AbstractDAOClient {
       voters: 0,
       metadata: undefined,
     };
-    this._proposals.push(new MockProposalClient(properties));
+    this._proposals.push(new MockProposalClient(properties, this));
 
     return Promise.resolve(this._proposals[this._proposals.length - 1]);
   }

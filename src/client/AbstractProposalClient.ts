@@ -83,6 +83,14 @@ class AbstractProposalClient implements Proposal {
   execute(_: ethers.Wallet): Promise<ContractReceipt> {
     throw new NotImplementedError();
   }
+
+  canExecute(): boolean {
+    throw new NotImplementedError();
+  }
+
+  collectTxHash(): Promise<string[]> {
+    throw new NotImplementedError();
+  }
 }
 
 export default AbstractProposalClient;

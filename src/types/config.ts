@@ -13,8 +13,16 @@ export interface DAOConfig {
   // address to zDAOChef contract
   zDAOChef: string;
 
+  // Contract Creation block number
+  blockNumber: number;
+
   // web3 provider
   provider: ethers.providers.Provider;
+}
+
+export interface ProofConfig {
+  // From address
+  from: string;
 }
 
 export interface FleekConfig {
@@ -34,6 +42,9 @@ export interface Config {
 
   // Polygon DAO configuration
   polygon: DAOConfig;
+
+  // Proof configuration
+  proof: ProofConfig;
 
   // Fleek configuration to upload to IPFS
   fleek: FleekConfig;

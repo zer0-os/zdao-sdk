@@ -4,6 +4,7 @@ import { BigNumber, Wallet } from 'ethers';
 import DAOClient from './client/DAOClient';
 import IPFSClient from './client/IPFSClient';
 import MockDAOClient from './client/MockDAOClient';
+import ProofClient from './client/ProofClient';
 import ZNAClient from './client/ZNAClient';
 import { EtherZDAOChefClient } from './ethereum';
 import {
@@ -33,6 +34,11 @@ class SDKInstanceClient implements SDKInstance {
 
     ZNAClient.initialize(this._config.zNS);
     IPFSClient.initialize(this._config.fleek);
+
+    return (async (config: Config): Promise<SDKInstanceClient> => {
+      await ProofClient.initialize(config);
+      return this;
+    })(config) as unknown as SDKInstanceClient;
   }
 
   async createZDAO(signer: Wallet, params: CreateZDAOParams): Promise<void> {

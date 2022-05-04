@@ -64,6 +64,10 @@ class DAOClient extends AbstractDAOClient {
     return this._etherZDAO;
   }
 
+  get totalSupply() {
+    return this._totalSupply;
+  }
+
   static async createInstance(config: Config, zNA: zNA): Promise<DAOClient> {
     const etherZDAOChef = new EtherZDAOChefClient(config.ethereum);
     const polyZDAOChef = new PolyZDAOChefClient(config.polygon);
@@ -135,42 +139,10 @@ class DAOClient extends AbstractDAOClient {
         return 'active';
       } else if (raw.executed) {
         return 'executed';
+      } else if (polyProposal?.collected) {
+        return 'collected';
       }
-
-      const yes = BigNumber.from(scores[0]),
-        no = BigNumber.from(scores[1]),
-        zero = BigNumber.from(0);
-      if (
-        voters < this._properties.quorumParticipants ||
-        yes.add(no).lt(BigNumber.from(this._properties.quorumVotes)) // <
-      ) {
-        return 'failed';
-      }
-
-      // if relative majority, the denominator should be sum of yes and no votes
-      if (
-        this._properties.isRelativeMajority &&
-        yes.add(no).gt(zero) &&
-        yes
-          .mul(BigNumber.from(10000))
-          .div(yes.add(no))
-          .gte(BigNumber.from(this._properties.threshold))
-      ) {
-        return 'succeeded';
-      }
-
-      // if absolute majority, the denominator should be total supply
-      if (
-        !this._properties.isRelativeMajority &&
-        this._totalSupply.gt(zero) &&
-        yes
-          .mul(10000)
-          .div(this._totalSupply)
-          .gte(BigNumber.from(this._properties.threshold))
-      ) {
-        return 'succeeded';
-      }
-      return 'failed';
+      return 'queueing';
     };
 
     const ipfsData = await IPFSClient.getJson(raw.ipfs.toString(), IPFSGatway);

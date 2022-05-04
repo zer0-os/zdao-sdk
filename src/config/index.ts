@@ -1,7 +1,13 @@
 import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
-import { Config, DAOConfig, FleekConfig, SupportedChainId } from '../types';
+import {
+  Config,
+  DAOConfig,
+  FleekConfig,
+  ProofConfig,
+  SupportedChainId,
+} from '../types';
 
 type AddressMap = { [chainId in SupportedChainId]: string };
 export const MultiCallAddress: AddressMap = {
@@ -33,7 +39,14 @@ interface ConfigParams {
    */
   polygon: DAOConfig;
 
-  // Fleek configuration to upload to IPFS
+  /**
+   * Proof configuration for @maticnetwork/maticjs
+   */
+  proof: ProofConfig;
+
+  /**
+   * Fleek configuration to upload to IPFS
+   */
   fleek: FleekConfig;
 
   /**
@@ -45,6 +58,7 @@ interface ConfigParams {
 export const developmentConfiguration = ({
   ethereum,
   polygon,
+  proof,
   fleek,
   zNSProvider,
 }: ConfigParams): Config => ({
@@ -54,6 +68,7 @@ export const developmentConfiguration = ({
   },
   ethereum,
   polygon,
+  proof,
   fleek,
   zNS: configuration.rinkebyConfiguration(zNSProvider!),
 });
@@ -61,6 +76,7 @@ export const developmentConfiguration = ({
 export const productionConfiguration = ({
   ethereum,
   polygon,
+  proof,
   fleek,
 }: ConfigParams): Config => ({
   gnosisSafe: {
@@ -69,6 +85,7 @@ export const productionConfiguration = ({
   },
   ethereum,
   polygon,
+  proof,
   fleek,
   zNS: configuration.mainnetConfiguration(ethereum.provider),
 });

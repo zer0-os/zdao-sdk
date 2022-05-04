@@ -5,9 +5,9 @@ export type ProposalId = string;
 export type VoteId = string;
 export type Choice = 1 | 2; // 0: None, 1: Yes, 2: No
 export type ProposalState =
-  | 'pending'
+  | 'pending' // If not sync to Polygon network
   | 'canceled'
   | 'active'
-  | 'failed'
-  | 'succeeded'
+  | 'queueing' // The proposal ends and is waiting to collect
+  | 'collected'
   | 'executed';

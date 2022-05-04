@@ -1,5 +1,5 @@
 import { AddressZero } from '@ethersproject/constants';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
 import PolyZDAOAbi from '../config/abi/PolyZDAO.json';
 import PolyZDAOChefAbi from '../config/abi/PolyZDAOChef.json';
@@ -79,6 +79,37 @@ class PolyZDAOChefClient {
       .connect(signer)
       .collectProposal(daoId, proposalId);
     return await tx.wait();
+  }
+
+  async collectTxHash(
+    daoId: zDAOId,
+    proposalId: ProposalId
+  ): Promise<string[]> {
+    const currentBlock = await this._config.provider.getBlockNumber();
+    console.log('currentBlock', currentBlock);
+
+    const creationBlock = this._config.blockNumber;
+    console.log('creationBlock', creationBlock);
+
+    // event ProposalCollected(
+    //   uint256 indexed _zDAOId,
+    //   uint256 indexed _proposalId,
+    //   uint256 _voters,
+    //   uint256 _yes,
+    //   uint256 _no
+    // )
+
+    const filter = this._contract.filters.ProposalCollected(
+      BigNumber.from(daoId),
+      BigNumber.from(proposalId)
+    );
+    const events = await this._contract.queryFilter(
+      filter,
+      creationBlock,
+      currentBlock
+    );
+
+    return events.map((event) => event.transactionHash);
   }
 }
 

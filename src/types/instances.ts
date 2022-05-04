@@ -122,12 +122,6 @@ export interface zDAO extends zDAOProperties {
 }
 
 export interface Proposal extends ProposalProperties {
-  // /**
-  //  * Get token meta data from ipfs
-  //  * @returns transaction meta data
-  //  */
-  // getTokenMetadata(): Promise<TokenMetaData>;
-
   /**
    * Get all the votes by proposal id filtering with the function parameter
    * @returns list of votes
@@ -163,4 +157,16 @@ export interface Proposal extends ProposalProperties {
    * @exception throw Error if proposal does not conain meta data to transfer tokens
    */
   execute(signer: ethers.Wallet): Promise<ContractReceipt>;
+
+  /**
+   * Returns if this proposal can execute
+   * If already executed, returns False
+   * @returns True only when the state is `collected` and succeeded
+   */
+  canExecute(): boolean;
+
+  /**
+   * Find all the transaction hashes which collected proposal
+   */
+  collectTxHash(): Promise<string[]>;
 }

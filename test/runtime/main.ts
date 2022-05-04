@@ -12,6 +12,14 @@ import { setEnv } from '../shared/setupEnv';
 const main = async () => {
   const env = setEnv();
 
+  const goerliSigner = new ethers.Wallet(
+    env.wallet.privateKey,
+    new ethers.providers.JsonRpcProvider(
+      env.rpc.goerli,
+      SupportedChainId.GOERLI
+    )
+  );
+
   const rinkebyProvider = new ethers.providers.JsonRpcProvider(
     env.rpc.rinkeby,
     SupportedChainId.RINKEBY
@@ -23,6 +31,7 @@ const main = async () => {
         env.rpc.goerli,
         SupportedChainId.GOERLI
       ),
+      blockNumber: 6828764,
     },
     polygon: {
       zDAOChef: env.contract.zDAOChef.mumbai,
@@ -30,17 +39,14 @@ const main = async () => {
         env.rpc.mumbai,
         SupportedChainId.MUMBAI
       ),
+      blockNumber: 26198777,
+    },
+    proof: {
+      from: goerliSigner.address,
     },
     fleek: env.fleek,
     zNSProvider: rinkebyProvider,
   });
-  const goerliSigner = new ethers.Wallet(
-    env.wallet.privateKey,
-    new ethers.providers.JsonRpcProvider(
-      env.rpc.goerli,
-      SupportedChainId.GOERLI
-    )
-  );
   const mumbaiSigner = new ethers.Wallet(
     env.wallet.privateKey,
     new ethers.providers.JsonRpcProvider(
@@ -72,7 +78,7 @@ const main = async () => {
   const zNAId2 = ZNAClient.zNATozNAId('wilder.kicks');
   console.log('zNAId2', zNAId2);
 
-  const instance = createSDKInstance(config);
+  const instance = await createSDKInstance(config);
 
   // await instance.createZDAO(goerliSigner, {
   //   zNA: 'wilder.wheels',
@@ -127,7 +133,8 @@ const main = async () => {
       proposal.start,
       proposal.end,
       proposal.scores,
-      proposal.voters
+      proposal.voters,
+      proposal.canExecute()
     );
   });
   assert.equal(proposals.length > 0, true);
@@ -147,9 +154,12 @@ const main = async () => {
 
       const votes = await proposal.listVotes();
       console.log('votes', votes);
-    } else if (proposal.state === 'succeeded' || proposal.state === 'failed') {
+    } else if (proposal.state === 'queueing') {
       const tx = await proposal.collect(mumbaiSigner);
       console.log('successfully collected', tx.transactionHash);
+    } else if (proposal.state === 'collected') {
+      const hashes = await proposal.collectTxHash();
+      console.log('tx hashes', hashes);
     }
   }
 
