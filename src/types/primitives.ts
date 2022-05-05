@@ -9,5 +9,6 @@ export type ProposalState =
   | 'canceled'
   | 'active'
   | 'queueing' // The proposal ends and is waiting to collect
-  | 'collected'
+  | 'collecting' // The proposal has been colleted on Polygon, waiting sync to Ethereum
+  | 'collected' // The proposal has been synced to Ethereum
   | 'executed';

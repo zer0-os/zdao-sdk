@@ -153,18 +153,22 @@ const main = async () => {
       console.log('votes', votes);
     } else if (proposal.state === 'queueing') {
       const tx = await proposal.collect(mumbaiSigner);
-      console.log('successfully collected', tx.transactionHash);
-    } else if (proposal.state === 'collected') {
+      console.log('successfully collected on polygon', tx.transactionHash);
+    } else if (proposal.state === 'collecting') {
       const hashes = await proposal.collectTxHash();
       console.log('tx hashes', hashes);
 
       for (const hash of hashes) {
-        while (!(await zDAO.isCheckPointed(hash))) {
-          await sleep(1000);
+        try {
+          while (!(await zDAO.isCheckPointed(hash))) {
+            await sleep(1000);
+          }
+          console.log('tx hash was checkpointed', hash);
+          const tx = await zDAO.syncState(goerliSigner, hash);
+          console.log('sync state', tx.transactionHash);
+        } catch (error) {
+          console.error(error);
         }
-        console.log('tx hash was checkpointed', hash);
-        const tx = await zDAO.syncState(goerliSigner, hash);
-        console.log('sync state', tx.transactionHash);
       }
     }
   }

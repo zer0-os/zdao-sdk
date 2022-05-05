@@ -143,8 +143,10 @@ class DAOClient extends AbstractDAOClient {
         return 'active';
       } else if (raw.executed) {
         return 'executed';
-      } else if (polyProposal?.collected) {
+      } else if (raw.collected) {
         return 'collected';
+      } else if (polyProposal?.collected) {
+        return 'collecting';
       }
       return 'queueing';
     };
