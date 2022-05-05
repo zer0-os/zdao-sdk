@@ -70,6 +70,7 @@ export const developmentConfiguration = ({
   polygon,
   proof,
   fleek,
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   zNS: configuration.rinkebyConfiguration(zNSProvider!),
   isProd: false,
 });

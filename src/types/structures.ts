@@ -1,9 +1,5 @@
-import {
-  AssetType,
-  TransactionStatus,
-  TransactionType,
-  VoteChoice,
-} from './enumerations';
+import { VoteChoice } from '.';
+import { AssetType, TransactionStatus, TransactionType } from './enums';
 import { Choice, ProposalId, ProposalState, zDAOId, zNA } from './primitives';
 
 export interface Vote {

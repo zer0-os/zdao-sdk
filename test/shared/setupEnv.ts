@@ -19,6 +19,7 @@ export const setEnv = () => {
     },
     wallet: {
       privateKey: process.env.PRIVATE_KEY!,
+      gnosisSafeOwner: process.env.GNOSIS_OWNER_PRIVATE_KEY!,
     },
     fleek: {
       apiKey: process.env.FLEEK_API_KEY!,

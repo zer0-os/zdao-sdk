@@ -15,7 +15,7 @@ import { setEnv } from './shared/setupEnv';
 
 use(chaiAsPromised.default);
 
-describe.only('zNA test', async () => {
+describe('zNA test', async () => {
   const env = setEnv();
   let sdkInstance: SDKInstance;
   let signer: ethers.Wallet;
@@ -103,24 +103,24 @@ describe.only('zNA test', async () => {
   });
 
   it('should create zDAO from zNA', async () => {
-    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
+    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.wheels');
     expect(dao).to.be.not.equal(undefined);
     const found = dao.zNAs.find((zNA) => zNA === 'wilder.cats');
     expect(found).to.be.not.undefined;
   });
 
   it('should associated with zNA', async () => {
-    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
+    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.wheels');
 
-    const found = dao.zNAs.find((zNA) => zNA === 'wilder.cats');
+    const found = dao.zNAs.find((zNA) => zNA === 'wilder.wheels');
     expect(found).to.be.not.undefined;
   });
 
   it('should associated with multiple zNA', async () => {
-    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
+    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.wheels');
 
     const found = dao.zNAs.filter(
-      (zNA) => zNA === 'wilder.cats' || zNA === 'wilder.skydao'
+      (zNA) => zNA === 'wilder.kicks' || zNA === 'wilder.wheels'
     );
     expect(found.length).to.be.eq(2);
   });

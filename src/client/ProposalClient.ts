@@ -94,7 +94,7 @@ class ProposalClient extends AbstractProposalClient {
 
     if (!this.metadata?.token || this.metadata.token.length < 1) {
       // Ether transfer
-      return await this._zDAO.gnosisSafeClient.transferEther(
+      await this._zDAO.gnosisSafeClient.transferEther(
         this._zDAO.gnosisSafe,
         signer,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -104,7 +104,7 @@ class ProposalClient extends AbstractProposalClient {
       );
     } else {
       // ERC20 transfer
-      return await this._zDAO.gnosisSafeClient.transferERC20(
+      await this._zDAO.gnosisSafeClient.transferERC20(
         this._zDAO.gnosisSafe,
         signer,
         this.metadata.token,
@@ -112,6 +112,14 @@ class ProposalClient extends AbstractProposalClient {
         this.metadata.amount.toString()
       );
     }
+
+    const daoId = this._zDAO.id;
+    const proposalId = this.id;
+    return await this._zDAO.etherZDAOChef.executeProposal(
+      signer,
+      daoId,
+      proposalId
+    );
   }
 
   canExecute(): boolean {

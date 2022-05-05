@@ -1,6 +1,6 @@
 import { Config as zNSConfig } from '@zero-tech/zns-sdk';
 
-import { SupportedChainId } from './enumerations';
+import { SupportedChainId } from './enums';
 
 export interface GnosisSafeConfig {
   // uri to Gnosis Safe service

@@ -1,5 +1,5 @@
 export * from './config';
-export * from './enumerations';
+export * from './enums';
 export * from './instances';
 export * from './params';
 export * from './primitives';
