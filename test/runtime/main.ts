@@ -4,6 +4,7 @@ import { BigNumber, ethers } from 'ethers';
 import { createSDKInstance } from '../../src';
 import ZNAClient from '../../src/client/ZNAClient';
 import { developmentConfiguration } from '../../src/config';
+import TransferAbi from '../../src/config/abi/transfer.json';
 import { SupportedChainId } from '../../src/types';
 import { sleep } from '../../src/utilities/tx';
 import { setEnv } from '../shared/setupEnv';
@@ -76,18 +77,19 @@ const main = async () => {
   console.log('zNAId2', zNAId2);
 
   const instance = await createSDKInstance(config);
+  console.log('instance created');
 
-  // await instance.createZDAO(goerliSigner, {
-  //   zNA: 'wilder.wheels',
-  //   title: 'wilder.wheels',
-  //   gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
-  //   token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
-  //   amount: BigNumber.from(10).pow(18).toString(),
-  //   threshold: 5001, // 50.01%
-  //   quorumParticipants: 1,
-  //   quorumVotes: BigNumber.from(10).pow(18).toString(),
-  //   isRelativeMajority: false,
-  // });
+  await instance.createZDAO(goerliSigner, {
+    zNA: 'wilder.kicks',
+    title: 'wilder.kicks',
+    gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
+    token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
+    amount: BigNumber.from(10).pow(18).toString(),
+    threshold: 5001, // 50.01%
+    quorumParticipants: 1,
+    quorumVotes: BigNumber.from(10).pow(18).toString(),
+    isRelativeMajority: true,
+  });
 
   const zNAs = await instance.listZNAs();
   console.log('zNAs', zNAs);
@@ -97,27 +99,27 @@ const main = async () => {
   console.log('zDAOs.length', zDAOs.length);
   assert.equal(zDAOs.length > 0, true);
 
-  const zDAO = await instance.getZDAOByZNA('wilder.wheels');
+  const zDAO = await instance.getZDAOByZNA('wilder.kicks');
   console.log('zDAO', zDAO.id, zDAO.title);
 
   const assets = await zDAO.listAssets();
   console.log('assets', assets);
 
-  // await zDAO.createProposal(goerliSigner, {
-  //   title: 'First 50 min',
-  //   body: 'Hello World',
-  //   duration: 3000,
-  //   transfer: {
-  //     abi: JSON.stringify(TransferAbi),
-  //     sender: zDAO.gnosisSafe,
-  //     recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-  //     token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
-  //     decimals: 18,
-  //     symbol: 'wilder.goerli',
-  //     amount: BigNumber.from(10).pow(18).mul(50).toString(),
-  //   },
-  // });
-  // console.log('created proposal');
+  await zDAO.createProposal(goerliSigner, {
+    title: 'First 50 min',
+    body: 'Hello World',
+    duration: 3000,
+    transfer: {
+      abi: JSON.stringify(TransferAbi),
+      sender: zDAO.gnosisSafe,
+      recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+      token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
+      decimals: 18,
+      symbol: 'wilder.goerli',
+      amount: BigNumber.from(10).pow(18).mul(50).toString(),
+    },
+  });
+  console.log('created proposal');
 
   const proposals = await zDAO.listProposals();
   proposals.forEach((proposal) => {
@@ -169,6 +171,12 @@ const main = async () => {
         } catch (error) {
           console.error(error);
         }
+      }
+    } else if (proposal.state === 'collected') {
+      if (proposal.canExecute()) {
+        console.log('executing', proposal.id);
+        await proposal.execute(goerliSigner);
+        console.log('executed', proposal.id);
       }
     }
   }

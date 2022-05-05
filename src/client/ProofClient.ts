@@ -17,8 +17,8 @@ class ProofClient {
     ProofClient._posClient = new POSClient();
 
     await ProofClient._posClient.init({
-      network: 'testnet',
-      version: 'mumbai',
+      network: config.isProd ? 'mainnet' : 'testnet',
+      version: config.isProd ? 'v1' : 'mumbai',
       parent: {
         provider: process.env.GOERLI_RPC_URL as string,
         defaultConfig: {
