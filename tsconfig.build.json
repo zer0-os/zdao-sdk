@@ -13,15 +13,25 @@
     "sourceMap": true,
     "composite": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
     "resolveJsonModule": true,
     "outDir": "lib",
-    "rootDir": "src"
+    "rootDir": "src",
+    "typeRoots": ["./@types", "./node_modules/@types"]
   },
   "include": [
     "src/**/*.ts","src/**/*.tsx","src/**/*.json"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "build",
+    "dist",
+    "lib",
+    "__mocks__",
+    "__tests__",
+    "coverage",
+    "*.config.js",
+    "*.babel.js",
+    "*.test.ts",
+    "specs"
   ]
 }
