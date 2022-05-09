@@ -13,6 +13,7 @@
     "sourceMap": true,
     "composite": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "resolveJsonModule": true,
     "outDir": "lib",
     "rootDir": "src"
