@@ -20,18 +20,19 @@ class ProofClient {
       network: config.isProd ? 'mainnet' : 'testnet',
       version: config.isProd ? 'v1' : 'mumbai',
       parent: {
-        provider: process.env.GOERLI_RPC_URL as string,
+        provider: config.ethereum.rpcUrl,
         defaultConfig: {
           from: config.proof.from,
         },
       },
       child: {
-        provider: process.env.MUMBAI_RPC_URL as string,
+        provider: config.polygon.rpcUrl,
         defaultConfig: {
           from: config.proof.from,
         },
       },
     });
+    console.log('ProofClient initialized');
   }
 
   static isCheckPointed(txHash: string): Promise<boolean> {

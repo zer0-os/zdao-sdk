@@ -108,15 +108,23 @@ class PolyZDAOChefClient {
     //   uint256 _no
     // )
 
+    const blockCount = 3490;
+
     const filter = this._contract.filters.ProposalCollected(
       BigNumber.from(daoId),
       BigNumber.from(proposalId)
     );
-    const events = await this._contract.queryFilter(
-      filter,
-      creationBlock,
-      currentBlock
-    );
+    const events = [];
+    let fromBlock = creationBlock;
+    while (fromBlock < currentBlock) {
+      const filtered = await this._contract.queryFilter(
+        filter,
+        fromBlock,
+        Math.min(fromBlock + blockCount, currentBlock)
+      );
+      events.push(...filtered);
+      fromBlock += blockCount;
+    }
 
     return events.map((event) => event.transactionHash);
   }
