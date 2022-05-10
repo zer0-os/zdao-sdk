@@ -108,7 +108,7 @@ class MockDAOClient extends AbstractDAOClient {
       title: payload.title,
       body: payload.body,
       ipfs,
-      choices: Object.values(VoteChoice),
+      choices: [VoteChoice.YES, VoteChoice.NO],
       start: now,
       end: new Date(now.getTime() + payload.duration * 1000),
       state: 'active',

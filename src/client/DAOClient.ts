@@ -196,7 +196,7 @@ class DAOClient extends AbstractDAOClient {
       title: ipfsData.data.message.title,
       body: ipfsData.data.message.body,
       ipfs: raw.ipfs.toString(),
-      choices: Object.values(VoteChoice),
+      choices: [VoteChoice.YES, VoteChoice.NO],
       start,
       end,
       state: mapState(raw),

@@ -8,8 +8,8 @@ export enum SupportedChainId {
 }
 
 export enum VoteChoice {
-  YES = 'Yes',
-  NO = 'No',
+  YES = 1,
+  NO = 2,
 }
 
 export enum AssetType {
