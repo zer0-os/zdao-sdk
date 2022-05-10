@@ -1,5 +1,5 @@
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
-import { BigNumber, Wallet } from 'ethers';
+import { BigNumber, Signer } from 'ethers';
 
 import DAOClient from './client/DAOClient';
 import IPFSClient from './client/IPFSClient';
@@ -42,7 +42,7 @@ class SDKInstanceClient implements SDKInstance {
     })(config) as unknown as SDKInstanceClient;
   }
 
-  async createZDAO(signer: Wallet, params: CreateZDAOParams): Promise<void> {
+  async createZDAO(signer: Signer, params: CreateZDAOParams): Promise<void> {
     if (await this.doesZDAOExist(params.zNA)) {
       throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
     }
@@ -59,7 +59,7 @@ class SDKInstanceClient implements SDKInstance {
     }
   }
 
-  async deleteZDAO(signer: Wallet, zDAOId: string): Promise<void> {
+  async deleteZDAO(signer: Signer, zDAOId: string): Promise<void> {
     try {
       await this._etherZDAOChef.removeDAO(signer, zDAOId);
     } catch (error: any) {
@@ -106,7 +106,7 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async createZDAOFromParams(
-    signer: Wallet,
+    signer: Signer,
     params: CreateZDAOParams
   ): Promise<zDAO> {
     if (params.title.length < 1) {

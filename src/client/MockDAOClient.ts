@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber, ethers, Signer } from 'ethers';
 import shortid from 'shortid';
 
 import IERC20UpgradeableAbi from '../config/abi/IERC20Upgradeable.json';
@@ -38,16 +38,16 @@ class MockDAOClient extends AbstractDAOClient {
 
   static async createInstance(
     config: Config,
-    signer: ethers.Wallet,
+    signer: Signer,
     params: CreateZDAOParams
   ): Promise<MockDAOClient> {
-    const { chainId } = await signer.provider.getNetwork();
+    const chainId = await signer.getChainId();
 
     const properties: zDAOProperties = {
       id: shortid.generate(),
       zNAs: [params.zNA],
       title: params.title,
-      createdBy: signer.address,
+      createdBy: await signer.getAddress(),
       network: chainId,
       gnosisSafe: params.gnosisSafe,
       token: params.token,
@@ -94,16 +94,17 @@ class MockDAOClient extends AbstractDAOClient {
   }
 
   async createProposal(
-    signer: ethers.Wallet,
+    signer: Signer,
     payload: CreateProposalParams
   ): Promise<Proposal> {
-    const ipfs = await this.uploadToIPFS(signer, payload, signer.address);
+    const address = await signer.getAddress();
+    const ipfs = await this.uploadToIPFS(signer, payload);
 
     const now = new Date();
 
     const properties: ProposalProperties = {
       id: (this._proposals.length + 1).toString(),
-      createdBy: signer.address,
+      createdBy: address,
       title: payload.title,
       body: payload.body,
       ipfs,
@@ -125,7 +126,7 @@ class MockDAOClient extends AbstractDAOClient {
     return Promise.resolve(true);
   }
 
-  syncState(_: ethers.Wallet, _2: string): Promise<ethers.ContractReceipt> {
+  syncState(_: Signer, _2: string): Promise<ethers.ContractReceipt> {
     throw new NotImplementedError();
   }
 }

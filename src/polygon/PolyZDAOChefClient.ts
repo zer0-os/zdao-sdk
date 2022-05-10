@@ -1,5 +1,5 @@
 import { AddressZero } from '@ethersproject/constants';
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber, ethers, Signer } from 'ethers';
 
 import PolyZDAOAbi from '../config/abi/PolyZDAO.json';
 import PolyZDAOChefAbi from '../config/abi/PolyZDAOChef.json';
@@ -68,7 +68,7 @@ class PolyZDAOChefClient {
   }
 
   async vote(
-    signer: ethers.Wallet,
+    signer: Signer,
     daoId: zDAOId,
     proposalId: ProposalId,
     choice: Choice
@@ -79,11 +79,7 @@ class PolyZDAOChefClient {
     return await tx.wait();
   }
 
-  async collectProposal(
-    signer: ethers.Wallet,
-    daoId: zDAOId,
-    proposalId: ProposalId
-  ) {
+  async collectProposal(signer: Signer, daoId: zDAOId, proposalId: ProposalId) {
     const tx = await this._contract
       .connect(signer)
       .collectProposal(daoId, proposalId);

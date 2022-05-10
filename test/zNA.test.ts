@@ -61,7 +61,7 @@ describe('zNA test', async () => {
       zNA: 'zDAO.eth',
       title: 'zDAO Testing Space 1',
       gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
-      token: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+      token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
       amount: BigNumber.from(10000).toString(),
       threshold: 5001,
       quorumParticipants: 1,
@@ -78,7 +78,7 @@ describe('zNA test', async () => {
       zNA: 'zDAO.eth',
       title: 'zDAO',
       gnosisSafe: 'gnosisSafe',
-      token: 'token',
+      token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
       amount: BigNumber.from(10000).toString(),
       threshold: 5001,
       quorumParticipants: 1,
@@ -93,7 +93,7 @@ describe('zNA test', async () => {
   });
 
   it('should exist zDAO', async () => {
-    const exist = await sdkInstance.doesZDAOExist('wilder.cats');
+    const exist = await sdkInstance.doesZDAOExist('wilder.wheels');
     expect(exist).to.be.eq(true);
   });
 

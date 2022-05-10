@@ -1,4 +1,4 @@
-import { ContractReceipt, ethers } from 'ethers';
+import { ContractReceipt, Signer } from 'ethers';
 
 import { CreateProposalParams, CreateZDAOParams } from './params';
 import { Choice, ProposalId, zDAOId, zNA } from './primitives';
@@ -16,14 +16,14 @@ export interface SDKInstance {
    * @param signer
    * @param params
    */
-  createZDAO(signer: ethers.Wallet, params: CreateZDAOParams): Promise<void>;
+  createZDAO(signer: Signer, params: CreateZDAOParams): Promise<void>;
 
   /**
    * Delete zDAO
    * @param signer
    * @param zDAOId
    */
-  deleteZDAO(signer: ethers.Wallet, zDAOId: zDAOId): Promise<void>;
+  deleteZDAO(signer: Signer, zDAOId: zDAOId): Promise<void>;
 
   /**
    * Get all the list of zNA
@@ -59,10 +59,7 @@ export interface SDKInstance {
    * @exception throw Error if owners is empty
    * @exception throw Error if title is empty
    */
-  createZDAOFromParams(
-    signer: ethers.Wallet,
-    params: CreateZDAOParams
-  ): Promise<zDAO>;
+  createZDAOFromParams(signer: Signer, params: CreateZDAOParams): Promise<zDAO>;
 
   /**
    * List all associated zNAs, only used for test
@@ -116,7 +113,7 @@ export interface zDAO extends zDAOProperties {
    * @returns proposal id if success
    */
   createProposal(
-    signer: ethers.Wallet,
+    signer: Signer,
     payload: CreateProposalParams
   ): Promise<Proposal>;
 
@@ -131,7 +128,7 @@ export interface zDAO extends zDAOProperties {
    * @param signer
    * @param txHash
    */
-  syncState(signer: ethers.Wallet, txHash: string): Promise<ContractReceipt>;
+  syncState(signer: Signer, txHash: string): Promise<ContractReceipt>;
 }
 
 export interface Proposal extends ProposalProperties {
@@ -154,13 +151,13 @@ export interface Proposal extends ProposalProperties {
    * @param choice voter's choice
    * @returns vote id if successfully cast a vote
    */
-  vote(signer: ethers.Wallet, choice: Choice): Promise<ContractReceipt>;
+  vote(signer: Signer, choice: Choice): Promise<ContractReceipt>;
 
   /**
    * Collect voting result and sync to ethereum
    * @param signer signer wallet
    */
-  collect(signer: ethers.Wallet): Promise<ContractReceipt>;
+  collect(signer: Signer): Promise<ContractReceipt>;
 
   /**
    * Execute a proposal in zDAO
@@ -169,7 +166,7 @@ export interface Proposal extends ProposalProperties {
    * @exception throw Error if signer is not Gnosis Safe owner
    * @exception throw Error if proposal does not conain meta data to transfer tokens
    */
-  execute(signer: ethers.Wallet): Promise<ContractReceipt>;
+  execute(signer: Signer): Promise<ContractReceipt>;
 
   /**
    * Find all the transaction hashes which collected proposal

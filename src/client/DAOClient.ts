@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber, ethers, Signer } from 'ethers';
 
 import { IPFSGatway } from '../config';
 import IERC20UpgradeableAbi from '../config/abi/IERC20Upgradeable.json';
@@ -253,7 +253,7 @@ class DAOClient extends AbstractDAOClient {
   }
 
   async createProposal(
-    signer: ethers.Wallet,
+    signer: Signer,
     payload: CreateProposalParams
   ): Promise<Proposal> {
     const polyZDAO = await this.getPolyZDAO();
@@ -261,11 +261,7 @@ class DAOClient extends AbstractDAOClient {
       throw new NotSyncStateError();
     }
 
-    const ipfs = await this.uploadToIPFS(
-      signer,
-      payload,
-      this.polyZDAOChef.config.zDAOChef
-    );
+    const ipfs = await this.uploadToIPFS(signer, payload);
 
     await this._etherZDAOChef.createProposal(signer, this.id, payload, ipfs);
 
@@ -279,7 +275,7 @@ class DAOClient extends AbstractDAOClient {
     return ProofClient.isCheckPointed(txHash);
   }
 
-  async syncState(signer: ethers.Wallet, txHash: string) {
+  async syncState(signer: Signer, txHash: string) {
     const proof = await ProofClient.generate(txHash);
     return await this._etherZDAOChef.receiveMessage(signer, proof);
   }

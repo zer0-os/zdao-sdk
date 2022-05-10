@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { Signer } from 'ethers';
 
 import { ProposalProperties } from '../types';
 import { Choice, Vote } from '../types';
@@ -51,7 +51,7 @@ class ProposalClient extends AbstractProposalClient {
     return (await polyZDAO.votingPowerOfVoter(this.id, account)).toString();
   }
 
-  async vote(signer: ethers.Wallet, choice: Choice) {
+  async vote(signer: Signer, choice: Choice) {
     const polyZDAO = await this._zDAO.getPolyZDAO();
     if (!polyZDAO) {
       throw new NotSyncStateError();
@@ -67,7 +67,7 @@ class ProposalClient extends AbstractProposalClient {
     );
   }
 
-  async collect(signer: ethers.Wallet) {
+  async collect(signer: Signer) {
     const daoId = this._zDAO.id;
     const proposalId = this.id;
 
@@ -78,11 +78,12 @@ class ProposalClient extends AbstractProposalClient {
     );
   }
 
-  async execute(signer: ethers.Wallet) {
+  async execute(signer: Signer) {
+    const address = await signer.getAddress();
     const isOwner = await this._zDAO.gnosisSafeClient.isOwnerAddress(
       signer,
       this._zDAO.gnosisSafe,
-      signer.address
+      address
     );
     if (!isOwner) {
       throw new ZDAOError(errorMessageForError('not-gnosis-owner'));

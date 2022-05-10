@@ -32,7 +32,6 @@ class ProofClient {
         },
       },
     });
-    console.log('ProofClient initialized');
   }
 
   static isCheckPointed(txHash: string): Promise<boolean> {

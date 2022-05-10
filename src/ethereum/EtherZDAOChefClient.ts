@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber, ethers, Signer } from 'ethers';
 
 import ZNAClient from '../client/ZNAClient';
 import EtherZDAOAbi from '../config/abi/EtherZDAO.json';
@@ -174,7 +174,7 @@ class EtherZDAOChefClient {
     };
   }
 
-  async addNewDAO(signer: ethers.Wallet, payload: CreateZDAOParams) {
+  async addNewDAO(signer: Signer, payload: CreateZDAOParams) {
     const gasEstimated = await this._contract
       .connect(signer)
       .estimateGas.addNewDAO(payload.zNA, {
@@ -207,13 +207,13 @@ class EtherZDAOChefClient {
     return await tx.wait();
   }
 
-  async removeDAO(signer: ethers.Wallet, zDAOId: zDAOId) {
+  async removeDAO(signer: Signer, zDAOId: zDAOId) {
     const tx = await this._contract.connect(signer).removeDAO(zDAOId);
     return await tx.wait();
   }
 
   async createProposal(
-    signer: ethers.Wallet,
+    signer: Signer,
     zDAOId: zDAOId,
     payload: CreateProposalParams,
     ipfs: string
@@ -243,11 +243,7 @@ class EtherZDAOChefClient {
     return await tx.wait();
   }
 
-  async cancelProposal(
-    signer: ethers.Wallet,
-    zDAOId: zDAOId,
-    proposalId: ProposalId
-  ) {
+  async cancelProposal(signer: Signer, zDAOId: zDAOId, proposalId: ProposalId) {
     const tx = await this._contract
       .connect(signer)
       .cancelProposal(zDAOId, proposalId);
@@ -255,7 +251,7 @@ class EtherZDAOChefClient {
   }
 
   async executeProposal(
-    signer: ethers.Wallet,
+    signer: Signer,
     zDAOId: zDAOId,
     proposalId: ProposalId
   ) {
@@ -265,7 +261,7 @@ class EtherZDAOChefClient {
     return await tx.wait();
   }
 
-  async receiveMessage(signer: ethers.Wallet, proof: string) {
+  async receiveMessage(signer: Signer, proof: string) {
     const tx = await this._rootStateSender
       .connect(signer)
       .receiveMessage(proof);

@@ -10,7 +10,7 @@ import {
   Transaction as Transaction,
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
-import { BigNumberish, ContractReceipt, ethers } from 'ethers';
+import { BigNumberish, ContractReceipt, ethers, Signer } from 'ethers';
 
 import IPFSClient from '../client/IPFSClient';
 import { IPFSGatway } from '../config';
@@ -29,7 +29,7 @@ class GnosisSafeClient {
   }
 
   async isOwnerAddress(
-    signer: ethers.Wallet,
+    signer: Signer,
     gnosisSafe: string,
     address: string
   ): Promise<boolean> {
@@ -50,7 +50,7 @@ class GnosisSafeClient {
 
   async transferEther(
     gnosisSafe: string,
-    signer: ethers.Wallet,
+    signer: Signer,
     recipient: string,
     amount: BigNumberish
   ): Promise<ContractReceipt> {
@@ -74,7 +74,7 @@ class GnosisSafeClient {
 
   async transferERC20(
     gnosisSafe: string,
-    signer: ethers.Wallet,
+    signer: Signer,
     token: string,
     recipient: string,
     amount: BigNumberish

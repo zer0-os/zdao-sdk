@@ -1,4 +1,4 @@
-import { BigNumber, ContractReceipt, ethers } from 'ethers';
+import { BigNumber, ContractReceipt, Signer } from 'ethers';
 
 import { Choice, ProposalProperties, Vote } from '../types';
 import { NotImplementedError } from '../types/error';
@@ -43,11 +43,12 @@ class MockProposalClient extends AbstractProposalClient {
     };
   }
 
-  vote(signer: ethers.Wallet, choice: Choice): Promise<ContractReceipt> {
-    const found = this._votes.find((item) => item.voter == signer.address);
+  async vote(signer: Signer, choice: Choice): Promise<ContractReceipt> {
+    const address = await signer.getAddress();
+    const found = this._votes.find((item) => item.voter == address);
     if (!found) {
       this._votes.push({
-        voter: signer.address,
+        voter: address,
         choice,
         votes: '1',
       });
@@ -57,11 +58,11 @@ class MockProposalClient extends AbstractProposalClient {
     return Promise.resolve(this.makeContractReceipt());
   }
 
-  collect(_: ethers.Wallet): Promise<ContractReceipt> {
+  collect(_: Signer): Promise<ContractReceipt> {
     throw new NotImplementedError();
   }
 
-  execute(_: ethers.Wallet): Promise<ContractReceipt> {
+  execute(_: Signer): Promise<ContractReceipt> {
     throw new NotImplementedError();
   }
 
