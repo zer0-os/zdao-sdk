@@ -172,13 +172,6 @@ export interface Proposal extends ProposalProperties {
   execute(signer: ethers.Wallet): Promise<ContractReceipt>;
 
   /**
-   * Returns if this proposal can execute
-   * If already executed, returns False
-   * @returns True only when the state is `collected` and succeeded
-   */
-  canExecute(): boolean;
-
-  /**
    * Find all the transaction hashes which collected proposal
    */
   collectTxHash(): Promise<string[]>;

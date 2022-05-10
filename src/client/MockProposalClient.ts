@@ -65,45 +65,6 @@ class MockProposalClient extends AbstractProposalClient {
     throw new NotImplementedError();
   }
 
-  canExecute(): boolean {
-    if (!this.scores || !this.voters) return false;
-
-    const yes = BigNumber.from(this.scores[0]),
-      no = BigNumber.from(this.scores[1]),
-      zero = BigNumber.from(0);
-    if (
-      this.voters < this._zDAO.quorumParticipants ||
-      yes.add(no).lt(BigNumber.from(this._zDAO.quorumVotes)) // <
-    ) {
-      return false;
-    }
-
-    // if relative majority, the denominator should be sum of yes and no votes
-    if (
-      this._zDAO.isRelativeMajority &&
-      yes.add(no).gt(zero) &&
-      yes
-        .mul(BigNumber.from(10000))
-        .div(yes.add(no))
-        .gte(BigNumber.from(this._zDAO.threshold))
-    ) {
-      return true;
-    }
-
-    // if absolute majority, the denominator should be total supply
-    if (
-      !this._zDAO.isRelativeMajority &&
-      this._zDAO.totalSupply.gt(zero) &&
-      yes
-        .mul(10000)
-        .div(this._zDAO.totalSupply)
-        .gte(BigNumber.from(this._zDAO.threshold))
-    ) {
-      return true;
-    }
-    return false;
-  }
-
   collectTxHash(): Promise<string[]> {
     throw new NotImplementedError();
   }

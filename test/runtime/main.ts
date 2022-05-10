@@ -140,8 +140,7 @@ const main = async () => {
       proposal.start,
       proposal.end,
       proposal.scores,
-      proposal.voters,
-      proposal.canExecute()
+      proposal.voters
     );
   });
   assert.equal(proposals.length > 0, true);
@@ -180,12 +179,10 @@ const main = async () => {
           console.error(error);
         }
       }
-    } else if (proposal.state === 'collected') {
-      if (proposal.canExecute()) {
-        console.log('executing', proposal.id);
-        await proposal.execute(goerliGnosisOwnerSigner);
-        console.log('executed', proposal.id);
-      }
+    } else if (proposal.state === 'succeeded') {
+      console.log('executing', proposal.id);
+      await proposal.execute(goerliGnosisOwnerSigner);
+      console.log('executed', proposal.id);
     }
   }
 

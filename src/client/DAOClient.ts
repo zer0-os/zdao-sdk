@@ -129,6 +129,42 @@ class DAOClient extends AbstractDAOClient {
         ? polyProposal.voters.toNumber()
         : undefined;
 
+    const canExecute = (): boolean => {
+      if (!scores || !voters) return false;
+
+      const yes = BigNumber.from(scores[0]),
+        no = BigNumber.from(scores[1]),
+        zero = BigNumber.from(0);
+      if (
+        voters < this.quorumParticipants ||
+        yes.add(no).lt(BigNumber.from(this.quorumVotes)) // <
+      ) {
+        return false;
+      }
+
+      // if relative majority, the denominator should be sum of yes and no votes
+      if (
+        this.isRelativeMajority &&
+        yes.add(no).gt(zero) &&
+        yes
+          .mul(BigNumber.from(10000))
+          .div(yes.add(no))
+          .gte(BigNumber.from(this.threshold))
+      ) {
+        return true;
+      }
+
+      // if absolute majority, the denominator should be total supply
+      if (
+        !this.isRelativeMajority &&
+        this.totalSupply.gt(zero) &&
+        yes.mul(10000).div(this.totalSupply).gte(BigNumber.from(this.threshold))
+      ) {
+        return true;
+      }
+      return false;
+    };
+
     const mapState = (raw: IEtherZDAO.ProposalStruct): ProposalState => {
       if (raw.canceled) {
         return 'canceled';
@@ -144,7 +180,7 @@ class DAOClient extends AbstractDAOClient {
       } else if (raw.executed) {
         return 'executed';
       } else if (raw.collected) {
-        return 'collected';
+        return canExecute() ? 'succeeded' : 'failed';
       } else if (polyProposal?.collected) {
         return 'collecting';
       }

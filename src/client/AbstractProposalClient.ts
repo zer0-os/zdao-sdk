@@ -84,10 +84,6 @@ class AbstractProposalClient implements Proposal {
     throw new NotImplementedError();
   }
 
-  canExecute(): boolean {
-    throw new NotImplementedError();
-  }
-
   collectTxHash(): Promise<string[]> {
     throw new NotImplementedError();
   }
