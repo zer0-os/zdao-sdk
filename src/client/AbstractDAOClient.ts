@@ -7,6 +7,7 @@ import {
   TransferInfo as GnosisTransferInfo,
 } from '@gnosis.pm/safe-react-gateway-sdk';
 import { ethers, Signer } from 'ethers';
+import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { cloneDeep } from 'lodash';
 
 import { EIP712Domain } from '../config';
@@ -206,40 +207,6 @@ class AbstractDAOClient implements zDAO {
     const address = await signer.getAddress();
     const chainId = await signer.getChainId();
 
-    const makeHash = () => {
-      // keccak256("createProposal(address createdBy,uint256 timestamp,string title,string body,uint256 duration,address target,uint256 value,bytes data)"
-      const typeHash =
-        '0xad04bcfa28cf23e25e43b0c7773c020a122daaf9361d1e215755fbb8c0f31c6b';
-
-      return ethers.utils.keccak256(
-        ethers.utils.defaultAbiCoder.encode(
-          [
-            'bytes32',
-            'address',
-            'uint256',
-            'string',
-            'string',
-            'uint256',
-            'address',
-            'uint256',
-            'bytes',
-          ],
-          [
-            typeHash,
-            address, // signer
-            timestamp(now), // timestamp
-            payload.title, // title
-            payload.body, // body
-            payload.duration, // duration
-            payload.transfer.recipient, // target
-            '0', // value
-            '0x00', // data
-          ]
-        )
-      );
-    };
-    const hash = makeHash();
-
     const proposal = JSON.stringify({
       domain: EIP712Domain,
       payload: {
@@ -254,11 +221,11 @@ class AbstractDAOClient implements zDAO {
       },
     });
 
-    const signature = await signer.signMessage(proposal);
+    const hash = keccak256(toUtf8Bytes(proposal));
 
     const ipfsHash = await IPFSClient.upload(`zDAO/${hash}`, {
       address: address,
-      signature,
+      hash,
       data: {
         domain: EIP712Domain,
         types: [
