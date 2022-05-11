@@ -18,7 +18,7 @@ describe('zNA test', async () => {
       env.rpcUrl,
       env.network
     );
-    const config: Config = developmentConfiguration(env.zDAOCore, provider);
+    const config: Config = developmentConfiguration(env.zDAORegistry, provider);
 
     sdkInstance = createSDKInstance(config);
   });

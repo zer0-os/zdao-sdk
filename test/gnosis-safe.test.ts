@@ -35,7 +35,7 @@ describe('Gnosis Safe test', async () => {
       env.rpcUrl,
       env.network
     );
-    config = developmentConfiguration(env.zDAOCore, provider);
+    config = developmentConfiguration(env.zDAORegistry, provider);
     const pk = process.env.PRIVATE_KEY;
     if (!pk) throw new Error(errorMessageForError('no-private-key'));
     signer = new ethers.Wallet(pk, provider);
