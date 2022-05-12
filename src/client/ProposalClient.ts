@@ -2,7 +2,7 @@ import { Signer } from 'ethers';
 
 import { ProposalProperties } from '../types';
 import { Choice, Vote } from '../types';
-import { NotSyncStateError, ZDAOError } from '../types/error';
+import { FailedTxError, NotSyncStateError, ZDAOError } from '../types/error';
 import { errorMessageForError } from '../utilities/messages';
 import AbstractProposalClient from './AbstractProposalClient';
 import DAOClient from './DAOClient';
@@ -57,25 +57,35 @@ class ProposalClient extends AbstractProposalClient {
       throw new NotSyncStateError();
     }
 
-    const daoId = this._zDAO.id;
-    const proposalId = this.id;
-    return await this._zDAO.polyZDAOChef.vote(
-      signer,
-      daoId,
-      proposalId,
-      choice
-    );
+    try {
+      const daoId = this._zDAO.id;
+      const proposalId = this.id;
+      return await this._zDAO.polyZDAOChef.vote(
+        signer,
+        daoId,
+        proposalId,
+        choice
+      );
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 
   async collect(signer: Signer) {
     const daoId = this._zDAO.id;
     const proposalId = this.id;
 
-    return await this._zDAO.polyZDAOChef.collectProposal(
-      signer,
-      daoId,
-      proposalId
-    );
+    try {
+      return await this._zDAO.polyZDAOChef.collectProposal(
+        signer,
+        daoId,
+        proposalId
+      );
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 
   async execute(signer: Signer) {
@@ -93,40 +103,50 @@ class ProposalClient extends AbstractProposalClient {
       throw new ZDAOError(errorMessageForError('empty-metadata'));
     }
 
-    if (!this.metadata?.token || this.metadata.token.length < 1) {
-      // Ether transfer
-      await this._zDAO.gnosisSafeClient.transferEther(
-        this._zDAO.gnosisSafe,
-        signer,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.metadata!.recipient,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.metadata!.amount.toString()
-      );
-    } else {
-      // ERC20 transfer
-      await this._zDAO.gnosisSafeClient.transferERC20(
-        this._zDAO.gnosisSafe,
-        signer,
-        this.metadata.token,
-        this.metadata.recipient,
-        this.metadata.amount.toString()
-      );
-    }
+    try {
+      if (!this.metadata?.token || this.metadata.token.length < 1) {
+        // Ether transfer
+        await this._zDAO.gnosisSafeClient.transferEther(
+          this._zDAO.gnosisSafe,
+          signer,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          this.metadata!.recipient,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          this.metadata!.amount.toString()
+        );
+      } else {
+        // ERC20 transfer
+        await this._zDAO.gnosisSafeClient.transferERC20(
+          this._zDAO.gnosisSafe,
+          signer,
+          this.metadata.token,
+          this.metadata.recipient,
+          this.metadata.amount.toString()
+        );
+      }
 
-    const daoId = this._zDAO.id;
-    const proposalId = this.id;
-    return await this._zDAO.etherZDAOChef.executeProposal(
-      signer,
-      daoId,
-      proposalId
-    );
+      const daoId = this._zDAO.id;
+      const proposalId = this.id;
+      return await this._zDAO.etherZDAOChef.executeProposal(
+        signer,
+        daoId,
+        proposalId
+      );
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 
   collectTxHash(): Promise<string[]> {
-    if (this.state === 'collecting')
-      return this._zDAO.polyZDAOChef.collectTxHash(this._zDAO.id, this.id);
-    return Promise.resolve([]);
+    try {
+      if (this.state === 'collecting')
+        return this._zDAO.polyZDAOChef.collectTxHash(this._zDAO.id, this.id);
+      return Promise.resolve([]);
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 }
 

@@ -18,7 +18,11 @@ import {
   zDAOProperties,
   zNA,
 } from '../types';
-import { NotFoundError, NotSyncStateError } from '../types/error';
+import {
+  FailedTxError,
+  NotFoundError,
+  NotSyncStateError,
+} from '../types/error';
 import { errorMessageForError } from '../utilities/messages';
 import AbstractDAOClient from './AbstractDAOClient';
 import IPFSClient from './IPFSClient';
@@ -261,14 +265,21 @@ class DAOClient extends AbstractDAOClient {
       throw new NotSyncStateError();
     }
 
-    const ipfs = await this.uploadToIPFS(signer, payload);
+    try {
+      const ipfs = await this.uploadToIPFS(signer, payload);
 
-    await this._etherZDAOChef.createProposal(signer, this.id, payload, ipfs);
+      await this._etherZDAOChef.createProposal(signer, this.id, payload, ipfs);
 
-    // created proposal id
-    const lastProposalId = (await this._etherZDAO.lastProposalId()).toString();
+      // created proposal id
+      const lastProposalId = (
+        await this._etherZDAO.lastProposalId()
+      ).toString();
 
-    return await this.getProposal(lastProposalId);
+      return await this.getProposal(lastProposalId);
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 
   async isCheckPointed(txHash: string) {
@@ -276,8 +287,13 @@ class DAOClient extends AbstractDAOClient {
   }
 
   async syncState(signer: Signer, txHash: string) {
-    const proof = await ProofClient.generate(txHash);
-    return await this._etherZDAOChef.receiveMessage(signer, proof);
+    try {
+      const proof = await ProofClient.generate(txHash);
+      return await this._etherZDAOChef.receiveMessage(signer, proof);
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 }
 
