@@ -58,7 +58,26 @@ class EtherZDAOChefClient {
   }
 
   async getZDAORecordByZNA(zNA: zNA): Promise<ZDAORecord> {
-    const zDAORecord = await this._contract.getzDaoByZNA(zNA);
+    const zDAORecord = await this._contract.getzDaoByZNA(
+      ZNAClient.zNATozNAId(zNA)
+    );
+
+    // resolve all the zNAIds
+    const promises: Promise<zNAId>[] = [];
+    for (const zNAId of zDAORecord.associatedzNAs) {
+      promises.push(ZNAClient.zNAIdTozNA(zNAId.toHexString()));
+    }
+    const zNAs: zNA[] = await Promise.all(promises);
+
+    return {
+      id: zDAORecord.id.toString(),
+      zDAO: zDAORecord.zDAO,
+      zNAs,
+    };
+  }
+
+  async getZDAORecordById(zDAOId: zDAOId): Promise<ZDAORecord> {
+    const zDAORecord = await this._contract.getzDAOById(zDAOId);
 
     // resolve all the zNAIds
     const promises: Promise<zNAId>[] = [];
@@ -141,8 +160,8 @@ class EtherZDAOChefClient {
     ) as EtherZDAO;
   }
 
-  async getZDAOPropertiesByZNA(zNA: zNA): Promise<EtherZDAOProperties> {
-    const zDAORecord = await this.getZDAORecordByZNA(ZNAClient.zNATozNAId(zNA));
+  async getZDAOPropertiesById(zDAOId: zDAOId): Promise<EtherZDAOProperties> {
+    const zDAORecord = await this.getZDAORecordById(zDAOId);
 
     const etherZDAO = new ethers.Contract(
       zDAORecord.zDAO,

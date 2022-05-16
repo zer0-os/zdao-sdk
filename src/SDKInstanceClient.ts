@@ -82,14 +82,14 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async listZDAOs(): Promise<zDAO[]> {
-    const zNAs: zNA[] = await this.listZNAs();
+    const zDAORecords = await this._etherZDAOChef.listzDAOs();
 
-    const zDAOs: zDAO[] = [];
-    for (const zNA of zNAs) {
-      zDAOs.push(await DAOClient.createInstance(this._config, zNA));
+    const promises: Promise<zDAO>[] = [];
+    for (const zDAORecord of zDAORecords) {
+      promises.push(DAOClient.createInstance(this._config, zDAORecord.id));
     }
 
-    return zDAOs;
+    return await Promise.all(promises);
   }
 
   async getZDAOByZNA(zNA: zNA): Promise<zDAO> {
@@ -98,7 +98,8 @@ class SDKInstanceClient implements SDKInstance {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 
-    return await DAOClient.createInstance(this._config, zNA);
+    const zDAORecord = await this._etherZDAOChef.getZDAORecordByZNA(zNA);
+    return await DAOClient.createInstance(this._config, zDAORecord.id);
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {

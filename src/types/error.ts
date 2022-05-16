@@ -15,6 +15,12 @@ class NotImplementedError extends ZDAOError {
   }
 }
 
+class NotInitializedError extends ZDAOError {
+  constructor() {
+    super(errorMessageForError('not-initialized'), 'NotInitializedError');
+  }
+}
+
 class NotSyncStateError extends ZDAOError {
   constructor() {
     super(errorMessageForError('not-sync-state'), 'NotStateSyncError');
@@ -51,6 +57,7 @@ export {
   InvalidError,
   NotFoundError,
   NotImplementedError,
+  NotInitializedError,
   NotSyncStateError,
   ZDAOError,
 };

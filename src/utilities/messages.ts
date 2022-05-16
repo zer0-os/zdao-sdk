@@ -52,6 +52,10 @@ const ErrorMessages = [
     value: 'Not implemented',
   },
   {
+    key: 'not-initialized',
+    value: 'Not initialized',
+  },
+  {
     key: 'failed-create-zdao',
     value: 'Failed to create zDAO',
   },

@@ -115,7 +115,7 @@ export interface zDAO extends zDAOProperties {
   createProposal(
     signer: Signer,
     payload: CreateProposalParams
-  ): Promise<Proposal>;
+  ): Promise<ProposalId>;
 
   /**
    * Check if transaction has been verified by Matic validators

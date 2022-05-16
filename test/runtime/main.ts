@@ -4,7 +4,7 @@ import { BigNumber, ethers } from 'ethers';
 import { createSDKInstance } from '../../src';
 import ZNAClient from '../../src/client/ZNAClient';
 import { developmentConfiguration } from '../../src/config';
-// import TransferAbi from '../../src/config/abi/transfer.json';
+import TransferAbi from '../../src/config/abi/transfer.json';
 import { SupportedChainId } from '../../src/types';
 import { sleep } from '../../src/utilities/tx';
 import { setEnv } from '../shared/setupEnv';
@@ -79,13 +79,20 @@ const main = async () => {
   // const assets = await zDAO.listAssets();
   // console.log('assets', assets);
 
+  const instance = await createSDKInstance(config);
+  console.log('instance created');
+
   const zNAId1 = ZNAClient.zNATozNAId('wilder.wheels');
   console.log('zNAId1', zNAId1);
   const zNAId2 = ZNAClient.zNATozNAId('wilder.kicks');
   console.log('zNAId2', zNAId2);
+  const zNAId3 = ZNAClient.zNATozNAId('wilder.cats');
+  console.log('zNAId3', zNAId3);
+  const zNAId4 = ZNAClient.zNATozNAId('wilder.breasts');
+  console.log('zNAId4', zNAId4);
 
-  const instance = await createSDKInstance(config);
-  console.log('instance created');
+  // const zNAsRegistered = await ZNAClient.getAllzNAs();
+  // console.log('all zNAs', zNAsRegistered);
 
   // await instance.createZDAO(goerliSigner, {
   //   zNA: 'wilder.kicks',
@@ -93,7 +100,7 @@ const main = async () => {
   //   gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
   //   token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
   //   amount: BigNumber.from(10).pow(18).toString(),
-  //   duration: 86400,
+  //   duration: 600, // 15 mins
   //   votingThreshold: 5001, // 50.01%
   //   minimumVotingParticipants: 1,
   //   minimumTotalVotingTokens: BigNumber.from(10).pow(18).toString(),
@@ -108,26 +115,26 @@ const main = async () => {
   console.log('zDAOs.length', zDAOs.length);
   assert.equal(zDAOs.length > 0, true);
 
-  const zDAO = await instance.getZDAOByZNA('wilder.wheels');
+  const zDAO = await instance.getZDAOByZNA('wilder.kicks');
   console.log('zDAO', zDAO.id, zDAO.title);
 
   const assets = await zDAO.listAssets();
   console.log('assets', assets);
 
-  // await zDAO.createProposal(goerliSigner, {
-  //   title: 'First 50 min',
-  //   body: 'Hello World',
-  //   transfer: {
-  //     abi: JSON.stringify(TransferAbi),
-  //     sender: zDAO.gnosisSafe,
-  //     recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-  //     token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
-  //     decimals: 18,
-  //     symbol: 'wilder.goerli',
-  //     amount: BigNumber.from(10).pow(18).mul(50).toString(),
-  //   },
-  // });
-  // console.log('proposal created');
+  await zDAO.createProposal(goerliSigner, {
+    title: 'Hello Proposal',
+    body: 'Hello World',
+    transfer: {
+      abi: JSON.stringify(TransferAbi),
+      sender: zDAO.gnosisSafe,
+      recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+      token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
+      decimals: 18,
+      symbol: 'wilder.goerli',
+      amount: BigNumber.from(10).pow(18).mul(50).toString(),
+    },
+  });
+  console.log('proposal created');
 
   const proposals = await zDAO.listProposals();
   proposals.forEach((proposal) => {

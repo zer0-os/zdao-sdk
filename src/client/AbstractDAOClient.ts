@@ -276,7 +276,7 @@ class AbstractDAOClient implements zDAO {
     return ipfsHash;
   }
 
-  createProposal(_: Signer, _2: CreateProposalParams): Promise<Proposal> {
+  createProposal(_: Signer, _2: CreateProposalParams): Promise<ProposalId> {
     throw new NotImplementedError();
   }
 

@@ -15,8 +15,8 @@ import {
   ProposalProperties,
   ProposalState,
   VoteChoice,
+  zDAOId,
   zDAOProperties,
-  zNA,
 } from '../types';
 import {
   FailedTxError,
@@ -73,10 +73,13 @@ class DAOClient extends AbstractDAOClient {
     return this._totalSupply;
   }
 
-  static async createInstance(config: Config, zNA: zNA): Promise<DAOClient> {
+  static async createInstance(
+    config: Config,
+    zDAOId: zDAOId
+  ): Promise<DAOClient> {
     const etherZDAOChef = await new EtherZDAOChefClient(config.ethereum);
     const polyZDAOChef = new PolyZDAOChefClient(config.polygon);
-    const zDAOProperties = await etherZDAOChef.getZDAOPropertiesByZNA(zNA);
+    const zDAOProperties = await etherZDAOChef.getZDAOPropertiesById(zDAOId);
 
     const tokenContract = new ethers.Contract(
       zDAOProperties.token,
@@ -262,7 +265,7 @@ class DAOClient extends AbstractDAOClient {
   async createProposal(
     signer: Signer,
     payload: CreateProposalParams
-  ): Promise<Proposal> {
+  ): Promise<ProposalId> {
     const polyZDAO = await this.getPolyZDAO();
     if (!polyZDAO) {
       throw new NotSyncStateError();
@@ -278,7 +281,7 @@ class DAOClient extends AbstractDAOClient {
         await this._etherZDAO.lastProposalId()
       ).toString();
 
-      return await this.getProposal(lastProposalId);
+      return lastProposalId;
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);

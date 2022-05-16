@@ -97,7 +97,7 @@ class MockDAOClient extends AbstractDAOClient {
   async createProposal(
     signer: Signer,
     payload: CreateProposalParams
-  ): Promise<Proposal> {
+  ): Promise<ProposalId> {
     const address = await signer.getAddress();
     const ipfs = await this.uploadToIPFS(signer, payload);
 
@@ -120,7 +120,7 @@ class MockDAOClient extends AbstractDAOClient {
     };
     this._proposals.push(new MockProposalClient(properties, this));
 
-    return Promise.resolve(this._proposals[this._proposals.length - 1]);
+    return Promise.resolve(properties.id);
   }
 
   isCheckPointed(_: string): Promise<boolean> {
