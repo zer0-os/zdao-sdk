@@ -140,7 +140,7 @@ class ProposalClient extends AbstractProposalClient {
 
   collectTxHash(): Promise<string[]> {
     try {
-      if (this.state === 'collecting')
+      if (this.state === 'calculating')
         return this._zDAO.polyZDAOChef.collectTxHash(this._zDAO.id, this.id);
       return Promise.resolve([]);
     } catch (error: any) {

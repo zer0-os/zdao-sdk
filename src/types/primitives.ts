@@ -8,10 +8,8 @@ export type ProposalState =
   | 'pending' // If not sync to Polygon network
   | 'canceled'
   | 'active'
-  | 'queueing' // The proposal ends and is waiting to collect
-  | 'collecting' // The proposal has been colleted on Polygon, waiting sync to Ethereum
+  | 'calculating' // The proposal ends and is waiting to collect
+  | 'finalizing' // The proposal has been colleted on Polygon, waiting sync to Ethereum
   | 'succeeded' // The proposal has been synced to Ethereum and succeeded
   | 'failed' // The proposal has been synced to Ethereum and failed
   | 'executed';
-
-// collecting => calculating

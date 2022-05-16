@@ -167,10 +167,10 @@ const main = async () => {
 
       const votes = await proposal.listVotes();
       console.log('votes', votes);
-    } else if (proposal.state === 'queueing') {
+    } else if (proposal.state === 'calculating') {
       const tx = await proposal.collect(mumbaiSigner);
       console.log('successfully collected on polygon', tx.transactionHash);
-    } else if (proposal.state === 'collecting') {
+    } else if (proposal.state === 'finalizing') {
       const hashes = await proposal.collectTxHash();
       console.log('tx hashes', hashes);
 

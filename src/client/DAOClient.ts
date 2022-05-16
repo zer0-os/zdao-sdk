@@ -192,9 +192,9 @@ class DAOClient extends AbstractDAOClient {
       } else if (raw.collected) {
         return canExecute() ? 'succeeded' : 'failed';
       } else if (polyProposal?.collected) {
-        return 'collecting';
+        return 'finalizing';
       }
-      return 'queueing';
+      return 'calculating';
     };
 
     const ipfsData = await IPFSClient.getJson(raw.ipfs.toString(), IPFSGatway);
