@@ -140,8 +140,8 @@ class DAOClient extends AbstractDAOClient {
         no = BigNumber.from(scores[1]),
         zero = BigNumber.from(0);
       if (
-        voters < this.quorumParticipants ||
-        yes.add(no).lt(BigNumber.from(this.quorumVotes)) // <
+        voters < this.minimumVotingParticipants ||
+        yes.add(no).lt(BigNumber.from(this.minimumTotalVotingTokens)) // <
       ) {
         return false;
       }
@@ -153,7 +153,7 @@ class DAOClient extends AbstractDAOClient {
         yes
           .mul(BigNumber.from(10000))
           .div(yes.add(no))
-          .gte(BigNumber.from(this.threshold))
+          .gte(BigNumber.from(this.votingThreshold))
       ) {
         return true;
       }
@@ -162,7 +162,10 @@ class DAOClient extends AbstractDAOClient {
       if (
         !this.isRelativeMajority &&
         this.totalSupply.gt(zero) &&
-        yes.mul(10000).div(this.totalSupply).gte(BigNumber.from(this.threshold))
+        yes
+          .mul(10000)
+          .div(this.totalSupply)
+          .gte(BigNumber.from(this.votingThreshold))
       ) {
         return true;
       }

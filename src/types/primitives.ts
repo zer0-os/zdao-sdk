@@ -13,3 +13,5 @@ export type ProposalState =
   | 'succeeded' // The proposal has been synced to Ethereum and succeeded
   | 'failed' // The proposal has been synced to Ethereum and failed
   | 'executed';
+
+// collecting => calculating

@@ -130,7 +130,7 @@ class SDKInstanceClient implements SDKInstance {
       );
     }
     if (
-      !isBigNumberish(params.quorumVotes) ||
+      !isBigNumberish(params.minimumTotalVotingTokens) ||
       BigNumber.from(params.amount).eq(BigNumber.from(0))
     ) {
       throw new InvalidError(errorMessageForError('invalid-quorum-amount'));

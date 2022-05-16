@@ -172,16 +172,19 @@ export interface zDAOProperties {
   // The minimum number of tokens required to become proposal creator
   amount: string;
 
+  // Time duration of this proposal in seconds
+  duration: number;
+
   // Threshold in 100% as 10000 required to check if proposal is succeeded
-  threshold: number;
+  votingThreshold: number;
 
   // The number of voters in support of a proposal required in order
   // for a vote to succeed
-  quorumParticipants: number;
+  minimumVotingParticipants: number;
 
   // The number of votes in support of a proposal required in order
   // for a vote to succeed
-  quorumVotes: string;
+  minimumTotalVotingTokens: string;
 
   // Snapshot block number on which zDAO has been created
   snapshot: number;

@@ -63,9 +63,10 @@ describe('zNA test', async () => {
       gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
       token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
       amount: BigNumber.from(10000).toString(),
-      threshold: 5001,
-      quorumParticipants: 1,
-      quorumVotes: BigNumber.from(10000).toString(),
+      duration: 3000,
+      votingThreshold: 5001,
+      minimumVotingParticipants: 1,
+      minimumTotalVotingTokens: BigNumber.from(10000).toString(),
       isRelativeMajority: true,
     };
     const zDAO: zDAO = await sdkInstance.createZDAOFromParams(signer, params);
@@ -80,9 +81,10 @@ describe('zNA test', async () => {
       gnosisSafe: 'gnosisSafe',
       token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
       amount: BigNumber.from(10000).toString(),
-      threshold: 5001,
-      quorumParticipants: 1,
-      quorumVotes: BigNumber.from(10000).toString(),
+      duration: 3000,
+      votingThreshold: 5001,
+      minimumVotingParticipants: 1,
+      minimumTotalVotingTokens: BigNumber.from(10000).toString(),
       isRelativeMajority: true,
     };
     await sdkInstance.createZDAOFromParams(signer, params);

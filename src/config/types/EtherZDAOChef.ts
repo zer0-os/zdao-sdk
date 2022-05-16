@@ -24,9 +24,10 @@ export declare namespace IEtherZDAOChef {
     gnosisSafe: string;
     token: string;
     amount: BigNumberish;
-    threshold: BigNumberish;
-    quorumParticipants: BigNumberish;
-    quorumVotes: BigNumberish;
+    duration: BigNumberish;
+    votingThreshold: BigNumberish;
+    minimumVotingParticipants: BigNumberish;
+    minimumTotalVotingTokens: BigNumberish;
     isRelativeMajority: boolean;
   };
 
@@ -38,15 +39,17 @@ export declare namespace IEtherZDAOChef {
     BigNumber,
     BigNumber,
     BigNumber,
+    BigNumber,
     boolean
   ] & {
     title: string;
     gnosisSafe: string;
     token: string;
     amount: BigNumber;
-    threshold: BigNumber;
-    quorumParticipants: BigNumber;
-    quorumVotes: BigNumber;
+    duration: BigNumber;
+    votingThreshold: BigNumber;
+    minimumVotingParticipants: BigNumber;
+    minimumTotalVotingTokens: BigNumber;
     isRelativeMajority: boolean;
   };
 
@@ -68,10 +71,10 @@ export interface EtherZDAOChefInterface extends utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "__ZDAOChef_init(address,address,address)": FunctionFragment;
-    "addNewDAO(uint256,(string,address,address,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
+    "addNewDAO(uint256,(string,address,address,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
     "addZNAAssociation(uint256,uint256)": FunctionFragment;
     "cancelProposal(uint256,uint256)": FunctionFragment;
-    "createProposal(uint256,uint256,address,uint256,bytes,string)": FunctionFragment;
+    "createProposal(uint256,address,uint256,bytes,string)": FunctionFragment;
     "doeszDAOExistForzNA(uint256)": FunctionFragment;
     "executeProposal(uint256,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -127,14 +130,7 @@ export interface EtherZDAOChefInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createProposal",
-    values: [
-      BigNumberish,
-      BigNumberish,
-      string,
-      BigNumberish,
-      BytesLike,
-      string
-    ]
+    values: [BigNumberish, string, BigNumberish, BytesLike, string]
   ): string;
   encodeFunctionData(
     functionFragment: "doeszDAOExistForzNA",
@@ -357,7 +353,7 @@ export interface EtherZDAOChefInterface extends utils.Interface {
     "Paused(address)": EventFragment;
     "ProposalCanceled(uint256,uint256,address)": EventFragment;
     "ProposalCollected(uint256,uint256,uint256,uint256,uint256)": EventFragment;
-    "ProposalCreated(uint256,uint256,address,uint256,uint256)": EventFragment;
+    "ProposalCreated(uint256,uint256,address,uint256)": EventFragment;
     "ProposalExecuted(uint256,uint256,address)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
@@ -474,12 +470,11 @@ export type ProposalCollectedEventFilter =
   TypedEventFilter<ProposalCollectedEvent>;
 
 export type ProposalCreatedEvent = TypedEvent<
-  [BigNumber, BigNumber, string, BigNumber, BigNumber],
+  [BigNumber, BigNumber, string, BigNumber],
   {
     _zDAOId: BigNumber;
     _proposalId: BigNumber;
     _createdBy: string;
-    _duration: BigNumber;
     _snapshot: BigNumber;
   }
 >;
@@ -581,7 +576,6 @@ export interface EtherZDAOChef extends BaseContract {
 
     createProposal(
       _daoId: BigNumberish,
-      _duration: BigNumberish,
       _target: string,
       _value: BigNumberish,
       _data: BytesLike,
@@ -761,7 +755,6 @@ export interface EtherZDAOChef extends BaseContract {
 
   createProposal(
     _daoId: BigNumberish,
-    _duration: BigNumberish,
     _target: string,
     _value: BigNumberish,
     _data: BytesLike,
@@ -937,7 +930,6 @@ export interface EtherZDAOChef extends BaseContract {
 
     createProposal(
       _daoId: BigNumberish,
-      _duration: BigNumberish,
       _target: string,
       _value: BigNumberish,
       _data: BytesLike,
@@ -1180,18 +1172,16 @@ export interface EtherZDAOChef extends BaseContract {
       _no?: null
     ): ProposalCollectedEventFilter;
 
-    "ProposalCreated(uint256,uint256,address,uint256,uint256)"(
+    "ProposalCreated(uint256,uint256,address,uint256)"(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
       _createdBy?: string | null,
-      _duration?: null,
       _snapshot?: null
     ): ProposalCreatedEventFilter;
     ProposalCreated(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
       _createdBy?: string | null,
-      _duration?: null,
       _snapshot?: null
     ): ProposalCreatedEventFilter;
 
@@ -1276,7 +1266,6 @@ export interface EtherZDAOChef extends BaseContract {
 
     createProposal(
       _daoId: BigNumberish,
-      _duration: BigNumberish,
       _target: string,
       _value: BigNumberish,
       _data: BytesLike,
@@ -1458,7 +1447,6 @@ export interface EtherZDAOChef extends BaseContract {
 
     createProposal(
       _daoId: BigNumberish,
-      _duration: BigNumberish,
       _target: string,
       _value: BigNumberish,
       _data: BytesLike,

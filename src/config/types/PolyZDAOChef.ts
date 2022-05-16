@@ -212,13 +212,13 @@ export interface PolyZDAOChefInterface extends utils.Interface {
     "AdminChanged(address,address)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
     "CastVote(uint256,uint256,address,uint256)": EventFragment;
-    "DAOCreated(address,uint256)": EventFragment;
+    "DAOCreated(address,uint256,uint256)": EventFragment;
     "DAODestroyed(uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
     "ProposalCanceled(uint256,uint256)": EventFragment;
     "ProposalCollected(uint256,uint256,uint256,uint256,uint256)": EventFragment;
-    "ProposalCreated(uint256,uint256,uint256,uint256)": EventFragment;
+    "ProposalCreated(uint256,uint256,uint256)": EventFragment;
     "ProposalExecuted(uint256,uint256)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
@@ -269,8 +269,8 @@ export type CastVoteEvent = TypedEvent<
 export type CastVoteEventFilter = TypedEventFilter<CastVoteEvent>;
 
 export type DAOCreatedEvent = TypedEvent<
-  [string, BigNumber],
-  { _zDAO: string; _daoId: BigNumber }
+  [string, BigNumber, BigNumber],
+  { _zDAO: string; _daoId: BigNumber; _duration: BigNumber }
 >;
 
 export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
@@ -314,13 +314,8 @@ export type ProposalCollectedEventFilter =
   TypedEventFilter<ProposalCollectedEvent>;
 
 export type ProposalCreatedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber, BigNumber],
-  {
-    _zDAOId: BigNumber;
-    _proposalId: BigNumber;
-    _startTimestamp: BigNumber;
-    _endTimestamp: BigNumber;
-  }
+  [BigNumber, BigNumber, BigNumber],
+  { _zDAOId: BigNumber; _proposalId: BigNumber; _startTimestamp: BigNumber }
 >;
 
 export type ProposalCreatedEventFilter = TypedEventFilter<ProposalCreatedEvent>;
@@ -765,13 +760,15 @@ export interface PolyZDAOChef extends BaseContract {
       _choice?: null
     ): CastVoteEventFilter;
 
-    "DAOCreated(address,uint256)"(
+    "DAOCreated(address,uint256,uint256)"(
       _zDAO?: string | null,
-      _daoId?: BigNumberish | null
+      _daoId?: BigNumberish | null,
+      _duration?: null
     ): DAOCreatedEventFilter;
     DAOCreated(
       _zDAO?: string | null,
-      _daoId?: BigNumberish | null
+      _daoId?: BigNumberish | null,
+      _duration?: null
     ): DAOCreatedEventFilter;
 
     "DAODestroyed(uint256)"(
@@ -815,17 +812,15 @@ export interface PolyZDAOChef extends BaseContract {
       _no?: null
     ): ProposalCollectedEventFilter;
 
-    "ProposalCreated(uint256,uint256,uint256,uint256)"(
+    "ProposalCreated(uint256,uint256,uint256)"(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
-      _startTimestamp?: null,
-      _endTimestamp?: null
+      _startTimestamp?: null
     ): ProposalCreatedEventFilter;
     ProposalCreated(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
-      _startTimestamp?: null,
-      _endTimestamp?: null
+      _startTimestamp?: null
     ): ProposalCreatedEventFilter;
 
     "ProposalExecuted(uint256,uint256)"(

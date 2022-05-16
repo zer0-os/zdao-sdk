@@ -72,7 +72,7 @@ const main = async () => {
   //   token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
   //   amount: BigNumber.from(10).pow(18).toString(),
   //   isRelativeMajority: false,
-  //   quorumVotes: BigNumber.from(10).pow(18).toString(),
+  //   minimumTotalVotingTokens: BigNumber.from(10).pow(18).toString(),
   // });
   // console.log('zDAO', zDAO);
 
@@ -93,9 +93,10 @@ const main = async () => {
   //   gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
   //   token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
   //   amount: BigNumber.from(10).pow(18).toString(),
-  //   threshold: 5001, // 50.01%
-  //   quorumParticipants: 1,
-  //   quorumVotes: BigNumber.from(10).pow(18).toString(),
+  //   duration: 86400,
+  //   votingThreshold: 5001, // 50.01%
+  //   minimumVotingParticipants: 1,
+  //   minimumTotalVotingTokens: BigNumber.from(10).pow(18).toString(),
   //   isRelativeMajority: true,
   // });
 
@@ -116,7 +117,6 @@ const main = async () => {
   // await zDAO.createProposal(goerliSigner, {
   //   title: 'First 50 min',
   //   body: 'Hello World',
-  //   duration: 3000,
   //   transfer: {
   //     abi: JSON.stringify(TransferAbi),
   //     sender: zDAO.gnosisSafe,

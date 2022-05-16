@@ -24,9 +24,10 @@ export declare namespace IEtherZDAOChef {
     gnosisSafe: string;
     token: string;
     amount: BigNumberish;
-    threshold: BigNumberish;
-    quorumParticipants: BigNumberish;
-    quorumVotes: BigNumberish;
+    duration: BigNumberish;
+    votingThreshold: BigNumberish;
+    minimumVotingParticipants: BigNumberish;
+    minimumTotalVotingTokens: BigNumberish;
     isRelativeMajority: boolean;
   };
 
@@ -38,15 +39,17 @@ export declare namespace IEtherZDAOChef {
     BigNumber,
     BigNumber,
     BigNumber,
+    BigNumber,
     boolean
   ] & {
     title: string;
     gnosisSafe: string;
     token: string;
     amount: BigNumber;
-    threshold: BigNumber;
-    quorumParticipants: BigNumber;
-    quorumVotes: BigNumber;
+    duration: BigNumber;
+    votingThreshold: BigNumber;
+    minimumVotingParticipants: BigNumber;
+    minimumTotalVotingTokens: BigNumber;
     isRelativeMajority: boolean;
   };
 }
@@ -55,7 +58,6 @@ export declare namespace IEtherZDAO {
   export type ProposalStruct = {
     proposalId: BigNumberish;
     createdBy: string;
-    duration: BigNumberish;
     yes: BigNumberish;
     no: BigNumberish;
     voters: BigNumberish;
@@ -75,7 +77,6 @@ export declare namespace IEtherZDAO {
     BigNumber,
     BigNumber,
     BigNumber,
-    BigNumber,
     string,
     string,
     BigNumber,
@@ -87,7 +88,6 @@ export declare namespace IEtherZDAO {
   ] & {
     proposalId: BigNumber;
     createdBy: string;
-    duration: BigNumber;
     yes: BigNumber;
     no: BigNumber;
     voters: BigNumber;
@@ -106,10 +106,10 @@ export interface EtherZDAOInterface extends utils.Interface {
   contractName: "EtherZDAO";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "__ZDAO_init(address,uint256,address,(string,address,address,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
+    "__ZDAO_init(address,uint256,address,(string,address,address,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
     "cancelProposal(address,uint256)": FunctionFragment;
     "collectProposal(uint256,uint256,uint256,uint256)": FunctionFragment;
-    "createProposal(address,uint256,address,uint256,bytes,string)": FunctionFragment;
+    "createProposal(address,address,uint256,bytes,string)": FunctionFragment;
     "destroyed()": FunctionFragment;
     "executeProposal(address,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -157,7 +157,7 @@ export interface EtherZDAOInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createProposal",
-    values: [string, BigNumberish, string, BigNumberish, BytesLike, string]
+    values: [string, string, BigNumberish, BytesLike, string]
   ): string;
   encodeFunctionData(functionFragment: "destroyed", values?: undefined): string;
   encodeFunctionData(
@@ -461,7 +461,6 @@ export interface EtherZDAO extends BaseContract {
 
     createProposal(
       _createdBy: string,
-      _duration: BigNumberish,
       _target: string,
       _value: BigNumberish,
       _data: BytesLike,
@@ -524,7 +523,6 @@ export interface EtherZDAO extends BaseContract {
         BigNumber,
         BigNumber,
         BigNumber,
-        BigNumber,
         string,
         string,
         BigNumber,
@@ -536,7 +534,6 @@ export interface EtherZDAO extends BaseContract {
       ] & {
         proposalId: BigNumber;
         createdBy: string;
-        duration: BigNumber;
         yes: BigNumber;
         no: BigNumber;
         voters: BigNumber;
@@ -627,6 +624,7 @@ export interface EtherZDAO extends BaseContract {
         BigNumber,
         BigNumber,
         BigNumber,
+        BigNumber,
         boolean,
         boolean
       ] & {
@@ -636,9 +634,10 @@ export interface EtherZDAO extends BaseContract {
         gnosisSafe: string;
         token: string;
         amount: BigNumber;
-        threshold: BigNumber;
-        quorumParticipants: BigNumber;
-        quorumVotes: BigNumber;
+        duration: BigNumber;
+        votingThreshold: BigNumber;
+        minimumVotingParticipants: BigNumber;
+        minimumTotalVotingTokens: BigNumber;
         snapshot: BigNumber;
         isRelativeMajority: boolean;
         destroyed: boolean;
@@ -674,7 +673,6 @@ export interface EtherZDAO extends BaseContract {
 
   createProposal(
     _createdBy: string,
-    _duration: BigNumberish,
     _target: string,
     _value: BigNumberish,
     _data: BytesLike,
@@ -733,7 +731,6 @@ export interface EtherZDAO extends BaseContract {
       BigNumber,
       BigNumber,
       BigNumber,
-      BigNumber,
       string,
       string,
       BigNumber,
@@ -745,7 +742,6 @@ export interface EtherZDAO extends BaseContract {
     ] & {
       proposalId: BigNumber;
       createdBy: string;
-      duration: BigNumber;
       yes: BigNumber;
       no: BigNumber;
       voters: BigNumber;
@@ -833,6 +829,7 @@ export interface EtherZDAO extends BaseContract {
       BigNumber,
       BigNumber,
       BigNumber,
+      BigNumber,
       boolean,
       boolean
     ] & {
@@ -842,9 +839,10 @@ export interface EtherZDAO extends BaseContract {
       gnosisSafe: string;
       token: string;
       amount: BigNumber;
-      threshold: BigNumber;
-      quorumParticipants: BigNumber;
-      quorumVotes: BigNumber;
+      duration: BigNumber;
+      votingThreshold: BigNumber;
+      minimumVotingParticipants: BigNumber;
+      minimumTotalVotingTokens: BigNumber;
       snapshot: BigNumber;
       isRelativeMajority: boolean;
       destroyed: boolean;
@@ -880,7 +878,6 @@ export interface EtherZDAO extends BaseContract {
 
     createProposal(
       _createdBy: string,
-      _duration: BigNumberish,
       _target: string,
       _value: BigNumberish,
       _data: BytesLike,
@@ -939,7 +936,6 @@ export interface EtherZDAO extends BaseContract {
         BigNumber,
         BigNumber,
         BigNumber,
-        BigNumber,
         string,
         string,
         BigNumber,
@@ -951,7 +947,6 @@ export interface EtherZDAO extends BaseContract {
       ] & {
         proposalId: BigNumber;
         createdBy: string;
-        duration: BigNumber;
         yes: BigNumber;
         no: BigNumber;
         voters: BigNumber;
@@ -1037,6 +1032,7 @@ export interface EtherZDAO extends BaseContract {
         BigNumber,
         BigNumber,
         BigNumber,
+        BigNumber,
         boolean,
         boolean
       ] & {
@@ -1046,9 +1042,10 @@ export interface EtherZDAO extends BaseContract {
         gnosisSafe: string;
         token: string;
         amount: BigNumber;
-        threshold: BigNumber;
-        quorumParticipants: BigNumber;
-        quorumVotes: BigNumber;
+        duration: BigNumber;
+        votingThreshold: BigNumber;
+        minimumVotingParticipants: BigNumber;
+        minimumTotalVotingTokens: BigNumber;
         snapshot: BigNumber;
         isRelativeMajority: boolean;
         destroyed: boolean;
@@ -1152,7 +1149,6 @@ export interface EtherZDAO extends BaseContract {
 
     createProposal(
       _createdBy: string,
-      _duration: BigNumberish,
       _target: string,
       _value: BigNumberish,
       _data: BytesLike,
@@ -1305,7 +1301,6 @@ export interface EtherZDAO extends BaseContract {
 
     createProposal(
       _createdBy: string,
-      _duration: BigNumberish,
       _target: string,
       _value: BigNumberish,
       _data: BytesLike,

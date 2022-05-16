@@ -75,16 +75,20 @@ class AbstractDAOClient implements zDAO {
     return this._properties.amount;
   }
 
-  get threshold() {
-    return this._properties.threshold;
+  get duration() {
+    return this._properties.duration;
   }
 
-  get quorumParticipants() {
-    return this._properties.quorumParticipants;
+  get votingThreshold() {
+    return this._properties.votingThreshold;
   }
 
-  get quorumVotes() {
-    return this._properties.quorumVotes;
+  get minimumVotingParticipants() {
+    return this._properties.minimumVotingParticipants;
+  }
+
+  get minimumTotalVotingTokens() {
+    return this._properties.minimumTotalVotingTokens;
   }
 
   get snapshot() {
@@ -214,7 +218,6 @@ class AbstractDAOClient implements zDAO {
         createdAt: timestamp(now),
         title: payload.title,
         body: payload.body,
-        duration: payload.duration,
         choices: [VoteChoice.YES, VoteChoice.NO],
         network: chainId,
         metadata: JSON.stringify(payload.transfer),
@@ -246,10 +249,6 @@ class AbstractDAOClient implements zDAO {
             name: 'body',
           },
           {
-            type: 'uint256',
-            name: 'duration',
-          },
-          {
             type: 'address',
             name: 'target',
           },
@@ -267,7 +266,6 @@ class AbstractDAOClient implements zDAO {
           createdAt: timestamp(now),
           title: payload.title,
           body: payload.body,
-          duration: payload.duration,
           choices: [VoteChoice.YES, VoteChoice.NO],
           network: chainId,
           metadata: JSON.stringify(payload.transfer),

@@ -165,9 +165,10 @@ class EtherZDAOChefClient {
       gnosisSafe: zDAOInfo.gnosisSafe,
       token: zDAOInfo.token,
       amount: zDAOInfo.amount.toString(),
-      threshold: zDAOInfo.threshold.toNumber(),
-      quorumParticipants: zDAOInfo.quorumParticipants.toNumber(),
-      quorumVotes: zDAOInfo.quorumVotes.toString(),
+      duration: zDAOInfo.duration.toNumber(),
+      votingThreshold: zDAOInfo.votingThreshold.toNumber(),
+      minimumVotingParticipants: zDAOInfo.minimumVotingParticipants.toNumber(),
+      minimumTotalVotingTokens: zDAOInfo.minimumTotalVotingTokens.toString(),
       snapshot: zDAOInfo.snapshot.toNumber(),
       isRelativeMajority: zDAOInfo.isRelativeMajority,
       destroyed: zDAOInfo.destroyed,
@@ -182,9 +183,10 @@ class EtherZDAOChefClient {
         gnosisSafe: payload.gnosisSafe,
         token: payload.token,
         amount: payload.amount,
-        threshold: payload.threshold,
-        quorumParticipants: payload.quorumParticipants,
-        quorumVotes: payload.quorumVotes,
+        duration: payload.duration,
+        votingThreshold: payload.votingThreshold,
+        minimumVotingParticipants: payload.minimumVotingParticipants,
+        minimumTotalVotingTokens: payload.minimumTotalVotingTokens,
         isRelativeMajority: payload.isRelativeMajority,
       });
 
@@ -195,9 +197,10 @@ class EtherZDAOChefClient {
         gnosisSafe: payload.gnosisSafe,
         token: payload.token,
         amount: payload.amount,
-        threshold: payload.threshold,
-        quorumParticipants: payload.quorumParticipants,
-        quorumVotes: payload.quorumVotes,
+        duration: payload.duration,
+        votingThreshold: payload.votingThreshold,
+        minimumVotingParticipants: payload.minimumVotingParticipants,
+        minimumTotalVotingTokens: payload.minimumTotalVotingTokens,
         isRelativeMajority: payload.isRelativeMajority,
       },
       {
@@ -222,7 +225,6 @@ class EtherZDAOChefClient {
       .connect(signer)
       .estimateGas.createProposal(
         zDAOId,
-        payload.duration,
         payload.transfer.sender, // target
         '0', // value
         '0x00', // data
@@ -231,7 +233,6 @@ class EtherZDAOChefClient {
 
     const tx = await this._contract.connect(signer).createProposal(
       zDAOId,
-      payload.duration,
       payload.transfer.sender, // target
       '0', // value
       '0x00', // data
