@@ -11,7 +11,7 @@ import { setEnv } from './shared/setupEnv';
 
 use(chaiAsPromised.default);
 
-describe('Snapshot test', async () => {
+describe.only('Snapshot test', async () => {
   const env = setEnv();
   const defZNA = 'joshupgig.eth';
 
@@ -24,7 +24,7 @@ describe('Snapshot test', async () => {
       env.rpcUrl,
       env.network
     );
-    config = developmentConfiguration(env.zDAOCore, provider);
+    config = developmentConfiguration(env.zDAORegistry, provider);
     const pk = process.env.PRIVATE_KEY;
     if (!pk) throw new Error(errorMessageForError('no-private-key'));
     signer = new ethers.Wallet(pk, provider);
