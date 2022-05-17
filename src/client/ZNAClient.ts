@@ -8,7 +8,6 @@ import {
 
 // import * as zns from '@zero-tech/zns-sdk';
 import { zNA, zNAId } from '../types';
-import { FailedTxError, NotInitializedError } from '../types/error';
 
 class ZNAClient {
   private static _initialized = false;
@@ -59,22 +58,6 @@ class ZNAClient {
       return '0x857f504928e4b0dc98c5e3c04a033d1adc7bc06b1522da2ef5e412b4d223ce0f';
 
     return domains.domainNameToId(zNA);
-  }
-
-  static async getAllzNAs(): Promise<zNA[]> {
-    if (!this._initialized) {
-      throw new NotInitializedError();
-    }
-    try {
-      const domains = await ZNAClient._znsInstance.getAllDomains();
-      const promises: Promise<string>[] = domains.map((domain) =>
-        this.zNAIdTozNA(domain.id)
-      );
-      return await Promise.all(promises);
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
-    }
   }
 }
 

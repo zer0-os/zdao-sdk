@@ -91,9 +91,6 @@ const main = async () => {
   const zNAId4 = ZNAClient.zNATozNAId('wilder.breasts');
   console.log('zNAId4', zNAId4);
 
-  // const zNAsRegistered = await ZNAClient.getAllzNAs();
-  // console.log('all zNAs', zNAsRegistered);
-
   // await instance.createZDAO(goerliSigner, {
   //   zNA: 'wilder.kicks',
   //   title: 'wilder.kicks',
