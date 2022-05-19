@@ -12,17 +12,18 @@ export const MultiCallAddress: AddressMap = {
 
 export const developmentConfiguration = (
   contract: string,
-  provider: ethers.providers.Provider
+  provider: ethers.providers.Provider,
+  ipfsGateway = 'cloudflare-ipfs.com'
 ): Config => ({
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
-    ipfsGateway: 'cloudflare-ipfs.com',
+    ipfsGateway,
     network: SupportedChainId.RINKEBY.toString(),
   },
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.rinkeby.gnosis.io',
     gateway: 'https://safe-client.staging.gnosisdev.com',
-    ipfsGateway: 'cloudflare-ipfs.com',
+    ipfsGateway,
   },
   zNA: {
     contract,
@@ -33,17 +34,18 @@ export const developmentConfiguration = (
 
 export const productionConfiguration = (
   contract: string,
-  provider: ethers.providers.Provider
+  provider: ethers.providers.Provider,
+  ipfsGateway = 'cloudflare-ipfs.com'
 ): Config => ({
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
-    ipfsGateway: 'cloudflare-ipfs.com',
+    ipfsGateway,
     network: SupportedChainId.MAINNET.toString(),
   },
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
-    ipfsGateway: 'cloudflare-ipfs.com',
+    ipfsGateway,
   },
   zNA: {
     contract,
