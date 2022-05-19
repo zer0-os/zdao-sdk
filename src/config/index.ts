@@ -55,6 +55,8 @@ interface ConfigParams {
   zNSProvider?: ethers.providers.Provider;
 }
 
+// todo, should be able to configure ipfs gateways as configuration parameter
+
 export const developmentConfiguration = ({
   ethereum,
   polygon,
@@ -63,7 +65,7 @@ export const developmentConfiguration = ({
   zNSProvider,
 }: ConfigParams): Config => ({
   gnosisSafe: {
-    serviceUri: 'https://safe-transaction.gnosis.io',
+    serviceUri: 'https://safe-transaction.goerli.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
   },
   ethereum,

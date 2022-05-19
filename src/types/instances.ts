@@ -4,6 +4,7 @@ import { CreateProposalParams, CreateZDAOParams } from './params';
 import { Choice, ProposalId, zDAOId, zNA } from './primitives';
 import {
   ProposalProperties,
+  StakingProperties,
   Transaction,
   Vote,
   zDAOAssets,
@@ -11,6 +12,8 @@ import {
 } from './structures';
 
 export interface SDKInstance {
+  staking: Staking;
+
   /**
    * Create zDAO
    * @param signer
@@ -172,4 +175,36 @@ export interface Proposal extends ProposalProperties {
    * Find all the transaction hashes which collected proposal
    */
   collectTxHash(): Promise<string[]>;
+}
+
+export interface Staking extends StakingProperties {
+  stakeERC20(
+    signer: Signer,
+    token: string,
+    amount: string
+  ): Promise<ContractReceipt>;
+
+  stakeERC721(
+    signer: Signer,
+    token: string,
+    tokenId: string
+  ): Promise<ContractReceipt>;
+
+  unstakeERC20(
+    signer: Signer,
+    token: string,
+    amount: string
+  ): Promise<ContractReceipt>;
+
+  unstakeERC721(
+    signer: Signer,
+    token: string,
+    tokenId: string
+  ): Promise<ContractReceipt>;
+
+  stakingPower(account: string): Promise<string>;
+
+  pastStakingPower(account: string, blockNumber: number): Promise<string>;
+
+  userStaked(account: string, token: string): Promise<string>;
 }

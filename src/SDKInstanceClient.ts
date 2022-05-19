@@ -5,8 +5,11 @@ import DAOClient from './client/DAOClient';
 import IPFSClient from './client/IPFSClient';
 import MockDAOClient from './client/MockDAOClient';
 import ProofClient from './client/ProofClient';
+import StakingClient from './client/StakingClient';
 import ZNAClient from './client/ZNAClient';
 import { EtherZDAOChefClient } from './ethereum';
+import { PolyZDAOChefClient } from './polygon';
+import PolyStakingClient from './polygon/PolyStakingClient';
 import {
   Config,
   CreateZDAOParams,
@@ -27,6 +30,7 @@ class SDKInstanceClient implements SDKInstance {
   private readonly _config: Config;
   protected _etherZDAOChef!: EtherZDAOChefClient;
   protected _mockZDAOClients: MockDAOClient[] = [];
+  protected _staking!: StakingClient;
 
   constructor(config: Config) {
     this._config = config;
@@ -38,8 +42,20 @@ class SDKInstanceClient implements SDKInstance {
       this._etherZDAOChef = await new EtherZDAOChefClient(config.ethereum);
       await ProofClient.initialize(config);
 
+      const polyZDAOChef = new PolyZDAOChefClient(config.polygon);
+      const stakingProperties = await polyZDAOChef.getStakingProperties();
+      const polyStakingClient = new PolyStakingClient(
+        config.polygon,
+        stakingProperties.address
+      );
+      this._staking = new StakingClient(stakingProperties, polyStakingClient);
+
       return this;
     })(config) as unknown as SDKInstanceClient;
+  }
+
+  get staking() {
+    return this._staking;
   }
 
   async createZDAO(signer: Signer, params: CreateZDAOParams): Promise<void> {

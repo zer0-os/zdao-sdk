@@ -5,7 +5,13 @@ import PolyZDAOAbi from '../config/abi/PolyZDAO.json';
 import PolyZDAOChefAbi from '../config/abi/PolyZDAOChef.json';
 import { PolyZDAO } from '../config/types/PolyZDAO';
 import { PolyZDAOChef } from '../config/types/PolyZDAOChef';
-import { Choice, DAOConfig, ProposalId, zDAOId } from '../types';
+import {
+  Choice,
+  DAOConfig,
+  ProposalId,
+  StakingProperties,
+  zDAOId,
+} from '../types';
 import { PolyZDAOProperties } from './types';
 
 class PolyZDAOChefClient {
@@ -64,6 +70,14 @@ class PolyZDAOChefClient {
       address: polyZDAO.address,
       snapshot: zDAOInfo.snapshot.toNumber(),
       destroyed: zDAOInfo.destroyed,
+    };
+  }
+
+  async getStakingProperties(): Promise<StakingProperties> {
+    const address = await this._contract.staking();
+    return {
+      network: this._config.network,
+      address,
     };
   }
 

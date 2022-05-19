@@ -241,3 +241,11 @@ export interface ProposalProperties {
   // creation of proposal instance
   metadata?: TokenMetaData;
 }
+
+export interface StakingProperties {
+  // Chain Id
+  network: number;
+
+  // Address to Staking contract
+  address: string;
+}
