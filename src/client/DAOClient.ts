@@ -127,6 +127,10 @@ class DAOClient extends AbstractDAOClient {
           ? new Date(Number(polyProposal.endTimestamp) * 1000)
           : undefined,
       now = new Date();
+    const snapshot =
+      polyZDAO && polyProposal && isSyncedProposal
+        ? polyProposal.snapshot.toNumber()
+        : undefined;
     const scores =
       polyZDAO && polyProposal && isSyncedProposal
         ? [polyProposal.yes.toString(), polyProposal.no.toString()]
@@ -210,7 +214,7 @@ class DAOClient extends AbstractDAOClient {
       start,
       end,
       state: mapState(raw),
-      snapshot: Number(raw.snapshot),
+      snapshot,
       scores,
       voters,
       metadata: {

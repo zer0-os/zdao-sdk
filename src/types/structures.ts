@@ -226,8 +226,8 @@ export interface ProposalProperties {
   // Proposal state
   state: ProposalState;
 
-  // Snapshot block number on which proposal has been created
-  snapshot: number;
+  // Snapshot block number on Polygon when proposal has been created
+  snapshot?: number;
 
   // All the casted votes per choices, this should be matched with `choices`
   // undefined if not synchronzed state to Polygon network

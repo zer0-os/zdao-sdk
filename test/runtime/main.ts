@@ -4,7 +4,9 @@ import { BigNumber, ethers } from 'ethers';
 import { createSDKInstance } from '../../src';
 import ZNAClient from '../../src/client/ZNAClient';
 import { developmentConfiguration } from '../../src/config';
+import TransferAbi from '../../src/config/abi/transfer.json';
 import { SupportedChainId } from '../../src/types';
+import { sleep } from '../../src/utilities/tx';
 import { setEnv } from '../shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
@@ -90,8 +92,9 @@ const main = async () => {
   console.log('zNAId4', zNAId4);
 
   const staking = instance.staking;
+  const stakingAddress = instance.staking.address;
   const power = await staking.stakingPower(goerliSigner.address);
-  console.log('staking power', power);
+  console.log('staking power', stakingAddress, power);
 
   // await instance.createZDAO(goerliSigner, {
   //   zNA: 'wilder.kicks',
