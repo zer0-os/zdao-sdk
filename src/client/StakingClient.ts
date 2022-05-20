@@ -73,16 +73,16 @@ class StakingClient implements Staking {
     }
   }
 
-  stakingPower(account: string): Promise<string> {
-    return this._polyStaking.stakingPower(account);
+  stakingPower(account: string, token: string): Promise<string> {
+    return this._polyStaking.stakingPower(account, token);
   }
 
-  pastStakingPower(account: string, blockNumber: number): Promise<string> {
-    return this._polyStaking.pastStakingPower(account, blockNumber);
-  }
-
-  userStaked(account: string, token: string): Promise<string> {
-    return this._polyStaking.userStaked(account, token);
+  pastStakingPower(
+    account: string,
+    token: string,
+    blockNumber: number
+  ): Promise<string> {
+    return this._polyStaking.pastStakingPower(account, token, blockNumber);
   }
 }
 

@@ -6,7 +6,8 @@ export interface ZDAORecord {
   zNAs: zNA[];
 }
 
-export interface EtherZDAOProperties extends zDAOProperties {
+export interface EtherZDAOProperties
+  extends Omit<zDAOProperties, 'childToken'> {
   // Address to ZDAO contract
   address: string;
 

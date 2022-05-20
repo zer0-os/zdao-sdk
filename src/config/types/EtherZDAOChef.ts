@@ -74,7 +74,7 @@ export interface EtherZDAOChefInterface extends utils.Interface {
     "addNewDAO(uint256,(string,address,address,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
     "addZNAAssociation(uint256,uint256)": FunctionFragment;
     "cancelProposal(uint256,uint256)": FunctionFragment;
-    "createProposal(uint256,address,uint256,bytes,string)": FunctionFragment;
+    "createProposal(uint256,string)": FunctionFragment;
     "doeszDAOExistForzNA(uint256)": FunctionFragment;
     "executeProposal(uint256,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -130,7 +130,7 @@ export interface EtherZDAOChefInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createProposal",
-    values: [BigNumberish, string, BigNumberish, BytesLike, string]
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "doeszDAOExistForzNA",
@@ -576,9 +576,6 @@ export interface EtherZDAOChef extends BaseContract {
 
     createProposal(
       _daoId: BigNumberish,
-      _target: string,
-      _value: BigNumberish,
-      _data: BytesLike,
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -755,9 +752,6 @@ export interface EtherZDAOChef extends BaseContract {
 
   createProposal(
     _daoId: BigNumberish,
-    _target: string,
-    _value: BigNumberish,
-    _data: BytesLike,
     _ipfs: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -930,9 +924,6 @@ export interface EtherZDAOChef extends BaseContract {
 
     createProposal(
       _daoId: BigNumberish,
-      _target: string,
-      _value: BigNumberish,
-      _data: BytesLike,
       _ipfs: string,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1266,9 +1257,6 @@ export interface EtherZDAOChef extends BaseContract {
 
     createProposal(
       _daoId: BigNumberish,
-      _target: string,
-      _value: BigNumberish,
-      _data: BytesLike,
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1447,9 +1435,6 @@ export interface EtherZDAOChef extends BaseContract {
 
     createProposal(
       _daoId: BigNumberish,
-      _target: string,
-      _value: BigNumberish,
-      _data: BytesLike,
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

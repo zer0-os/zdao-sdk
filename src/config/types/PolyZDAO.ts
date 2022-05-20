@@ -61,7 +61,7 @@ export interface PolyZDAOInterface extends utils.Interface {
   contractName: "PolyZDAO";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "__ZDAO_init(address,address,uint256,uint256)": FunctionFragment;
+    "__ZDAO_init(address,address,uint256,uint256,address)": FunctionFragment;
     "canCollectProposal(uint256)": FunctionFragment;
     "canVote(uint256,address)": FunctionFragment;
     "cancelProposal(uint256)": FunctionFragment;
@@ -105,7 +105,7 @@ export interface PolyZDAOInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "__ZDAO_init",
-    values: [string, string, BigNumberish, BigNumberish]
+    values: [string, string, BigNumberish, BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "canCollectProposal",
@@ -427,6 +427,7 @@ export interface PolyZDAO extends BaseContract {
       _staking: string,
       _zDAOId: BigNumberish,
       _duration: BigNumberish,
+      _token: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -629,9 +630,10 @@ export interface PolyZDAO extends BaseContract {
     zDAOInfo(
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, boolean] & {
+      [BigNumber, BigNumber, string, BigNumber, boolean] & {
         zDAOId: BigNumber;
         duration: BigNumber;
+        token: string;
         snapshot: BigNumber;
         destroyed: boolean;
       }
@@ -645,6 +647,7 @@ export interface PolyZDAO extends BaseContract {
     _staking: string,
     _zDAOId: BigNumberish,
     _duration: BigNumberish,
+    _token: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -840,9 +843,10 @@ export interface PolyZDAO extends BaseContract {
   zDAOInfo(
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, boolean] & {
+    [BigNumber, BigNumber, string, BigNumber, boolean] & {
       zDAOId: BigNumber;
       duration: BigNumber;
+      token: string;
       snapshot: BigNumber;
       destroyed: boolean;
     }
@@ -856,6 +860,7 @@ export interface PolyZDAO extends BaseContract {
       _staking: string,
       _zDAOId: BigNumberish,
       _duration: BigNumberish,
+      _token: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1055,9 +1060,10 @@ export interface PolyZDAO extends BaseContract {
     zDAOInfo(
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, boolean] & {
+      [BigNumber, BigNumber, string, BigNumber, boolean] & {
         zDAOId: BigNumber;
         duration: BigNumber;
+        token: string;
         snapshot: BigNumber;
         destroyed: boolean;
       }
@@ -1139,6 +1145,7 @@ export interface PolyZDAO extends BaseContract {
       _staking: string,
       _zDAOId: BigNumberish,
       _duration: BigNumberish,
+      _token: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1314,6 +1321,7 @@ export interface PolyZDAO extends BaseContract {
       _staking: string,
       _zDAOId: BigNumberish,
       _duration: BigNumberish,
+      _token: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

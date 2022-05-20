@@ -67,12 +67,16 @@ class AbstractDAOClient implements zDAO {
     return this._properties.gnosisSafe;
   }
 
-  get token() {
-    return this._properties.token;
+  get rootToken() {
+    return this._properties.rootToken;
   }
 
   get amount() {
     return this._properties.amount;
+  }
+
+  get childToken() {
+    return this._properties.childToken;
   }
 
   get duration() {

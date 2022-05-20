@@ -10,6 +10,7 @@ import {
   Proposal,
   ProposalId,
   ProposalProperties,
+  Registry,
   VoteChoice,
   zDAOProperties,
 } from '../types';
@@ -39,7 +40,8 @@ class MockDAOClient extends AbstractDAOClient {
   static async createInstance(
     config: Config,
     signer: Signer,
-    params: CreateZDAOParams
+    params: CreateZDAOParams,
+    registry: Registry
   ): Promise<MockDAOClient> {
     const chainId = await signer.getChainId();
 
@@ -50,8 +52,9 @@ class MockDAOClient extends AbstractDAOClient {
       createdBy: await signer.getAddress(),
       network: chainId,
       gnosisSafe: params.gnosisSafe,
-      token: params.token,
+      rootToken: params.token,
       amount: params.amount,
+      childToken: await registry.rootToChildToken(params.token),
       duration: params.duration,
       votingThreshold: params.votingThreshold,
       minimumVotingParticipants: params.minimumVotingParticipants,

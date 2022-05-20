@@ -167,10 +167,12 @@ export interface zDAOProperties {
 
   // Voting token (ERC20 or ERC721) on Ethereum, only token holders
   // can create a proposal
-  token: string;
+  rootToken: string;
 
-  // The minimum number of tokens required to become proposal creator
+  // The minimum number of tokens required on Ethereum to become proposal creator
   amount: string;
+
+  childToken: string;
 
   // Time duration of this proposal in seconds
   duration: number;

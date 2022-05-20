@@ -22,7 +22,8 @@ export interface PolyZDAOChefInterface extends utils.Interface {
   contractName: "PolyZDAOChef";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "__ZDAOChef_init(address,address,address)": FunctionFragment;
+    "__ZDAOChef_init(address,address,address,address)": FunctionFragment;
+    "childChainManager()": FunctionFragment;
     "childStateSender()": FunctionFragment;
     "collectProposal(uint256,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -57,7 +58,11 @@ export interface PolyZDAOChefInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "__ZDAOChef_init",
-    values: [string, string, string]
+    values: [string, string, string, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "childChainManager",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "childStateSender",
@@ -143,6 +148,10 @@ export interface PolyZDAOChefInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "__ZDAOChef_init",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "childChainManager",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -392,8 +401,11 @@ export interface PolyZDAOChef extends BaseContract {
       _stakingBase: string,
       _childStateSender: string,
       _zDAOBase: string,
+      _childChainManager: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    childChainManager(overrides?: CallOverrides): Promise<[string]>;
 
     childStateSender(overrides?: CallOverrides): Promise<[string]>;
 
@@ -513,8 +525,11 @@ export interface PolyZDAOChef extends BaseContract {
     _stakingBase: string,
     _childStateSender: string,
     _zDAOBase: string,
+    _childChainManager: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  childChainManager(overrides?: CallOverrides): Promise<string>;
 
   childStateSender(overrides?: CallOverrides): Promise<string>;
 
@@ -628,8 +643,11 @@ export interface PolyZDAOChef extends BaseContract {
       _stakingBase: string,
       _childStateSender: string,
       _zDAOBase: string,
+      _childChainManager: string,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    childChainManager(overrides?: CallOverrides): Promise<string>;
 
     childStateSender(overrides?: CallOverrides): Promise<string>;
 
@@ -879,8 +897,11 @@ export interface PolyZDAOChef extends BaseContract {
       _stakingBase: string,
       _childStateSender: string,
       _zDAOBase: string,
+      _childChainManager: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    childChainManager(overrides?: CallOverrides): Promise<BigNumber>;
 
     childStateSender(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1003,8 +1024,11 @@ export interface PolyZDAOChef extends BaseContract {
       _stakingBase: string,
       _childStateSender: string,
       _zDAOBase: string,
+      _childChainManager: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
+
+    childChainManager(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     childStateSender(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

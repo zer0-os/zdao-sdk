@@ -62,9 +62,6 @@ export declare namespace IEtherZDAO {
     no: BigNumberish;
     voters: BigNumberish;
     ipfs: string;
-    target: string;
-    value: BigNumberish;
-    data: BytesLike;
     snapshot: BigNumberish;
     collected: boolean;
     executed: boolean;
@@ -78,9 +75,6 @@ export declare namespace IEtherZDAO {
     BigNumber,
     BigNumber,
     string,
-    string,
-    BigNumber,
-    string,
     BigNumber,
     boolean,
     boolean,
@@ -92,9 +86,6 @@ export declare namespace IEtherZDAO {
     no: BigNumber;
     voters: BigNumber;
     ipfs: string;
-    target: string;
-    value: BigNumber;
-    data: string;
     snapshot: BigNumber;
     collected: boolean;
     executed: boolean;
@@ -109,7 +100,7 @@ export interface EtherZDAOInterface extends utils.Interface {
     "__ZDAO_init(address,uint256,address,(string,address,address,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
     "cancelProposal(address,uint256)": FunctionFragment;
     "collectProposal(uint256,uint256,uint256,uint256)": FunctionFragment;
-    "createProposal(address,address,uint256,bytes,string)": FunctionFragment;
+    "createProposal(address,string)": FunctionFragment;
     "destroyed()": FunctionFragment;
     "executeProposal(address,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -157,7 +148,7 @@ export interface EtherZDAOInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createProposal",
-    values: [string, string, BigNumberish, BytesLike, string]
+    values: [string, string]
   ): string;
   encodeFunctionData(functionFragment: "destroyed", values?: undefined): string;
   encodeFunctionData(
@@ -461,9 +452,6 @@ export interface EtherZDAO extends BaseContract {
 
     createProposal(
       _createdBy: string,
-      _target: string,
-      _value: BigNumberish,
-      _data: BytesLike,
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -524,9 +512,6 @@ export interface EtherZDAO extends BaseContract {
         BigNumber,
         BigNumber,
         string,
-        string,
-        BigNumber,
-        string,
         BigNumber,
         boolean,
         boolean,
@@ -538,9 +523,6 @@ export interface EtherZDAO extends BaseContract {
         no: BigNumber;
         voters: BigNumber;
         ipfs: string;
-        target: string;
-        value: BigNumber;
-        data: string;
         snapshot: BigNumber;
         collected: boolean;
         executed: boolean;
@@ -673,9 +655,6 @@ export interface EtherZDAO extends BaseContract {
 
   createProposal(
     _createdBy: string,
-    _target: string,
-    _value: BigNumberish,
-    _data: BytesLike,
     _ipfs: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -732,9 +711,6 @@ export interface EtherZDAO extends BaseContract {
       BigNumber,
       BigNumber,
       string,
-      string,
-      BigNumber,
-      string,
       BigNumber,
       boolean,
       boolean,
@@ -746,9 +722,6 @@ export interface EtherZDAO extends BaseContract {
       no: BigNumber;
       voters: BigNumber;
       ipfs: string;
-      target: string;
-      value: BigNumber;
-      data: string;
       snapshot: BigNumber;
       collected: boolean;
       executed: boolean;
@@ -878,9 +851,6 @@ export interface EtherZDAO extends BaseContract {
 
     createProposal(
       _createdBy: string,
-      _target: string,
-      _value: BigNumberish,
-      _data: BytesLike,
       _ipfs: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -937,9 +907,6 @@ export interface EtherZDAO extends BaseContract {
         BigNumber,
         BigNumber,
         string,
-        string,
-        BigNumber,
-        string,
         BigNumber,
         boolean,
         boolean,
@@ -951,9 +918,6 @@ export interface EtherZDAO extends BaseContract {
         no: BigNumber;
         voters: BigNumber;
         ipfs: string;
-        target: string;
-        value: BigNumber;
-        data: string;
         snapshot: BigNumber;
         collected: boolean;
         executed: boolean;
@@ -1149,9 +1113,6 @@ export interface EtherZDAO extends BaseContract {
 
     createProposal(
       _createdBy: string,
-      _target: string,
-      _value: BigNumberish,
-      _data: BytesLike,
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1301,9 +1262,6 @@ export interface EtherZDAO extends BaseContract {
 
     createProposal(
       _createdBy: string,
-      _target: string,
-      _value: BigNumberish,
-      _data: BytesLike,
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

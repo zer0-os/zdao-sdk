@@ -182,7 +182,7 @@ class EtherZDAOChefClient {
       createdBy: zDAOInfo.createdBy,
       network: this._config.network,
       gnosisSafe: zDAOInfo.gnosisSafe,
-      token: zDAOInfo.token,
+      rootToken: zDAOInfo.token,
       amount: zDAOInfo.amount.toString(),
       duration: zDAOInfo.duration.toNumber(),
       votingThreshold: zDAOInfo.votingThreshold.toNumber(),
@@ -242,24 +242,13 @@ class EtherZDAOChefClient {
   ) {
     const gasEstimated = await this._contract
       .connect(signer)
-      .estimateGas.createProposal(
-        zDAOId,
-        payload.transfer.sender, // target
-        '0', // value
-        '0x00', // data
-        ipfs
-      );
+      .estimateGas.createProposal(zDAOId, ipfs);
 
-    const tx = await this._contract.connect(signer).createProposal(
-      zDAOId,
-      payload.transfer.sender, // target
-      '0', // value
-      '0x00', // data
-      ipfs,
-      {
+    const tx = await this._contract
+      .connect(signer)
+      .createProposal(zDAOId, ipfs, {
         gasLimit: calculateGasMargin(gasEstimated),
-      }
-    );
+      });
     return await tx.wait();
   }
 

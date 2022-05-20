@@ -14,6 +14,7 @@ import {
   ProposalId,
   ProposalProperties,
   ProposalState,
+  Registry,
   VoteChoice,
   zDAOId,
   zDAOProperties,
@@ -75,14 +76,15 @@ class DAOClient extends AbstractDAOClient {
 
   static async createInstance(
     config: Config,
-    zDAOId: zDAOId
+    zDAOId: zDAOId,
+    registry: Registry
   ): Promise<DAOClient> {
     const etherZDAOChef = await new EtherZDAOChefClient(config.ethereum);
     const polyZDAOChef = new PolyZDAOChefClient(config.polygon);
     const zDAOProperties = await etherZDAOChef.getZDAOPropertiesById(zDAOId);
 
     const tokenContract = new ethers.Contract(
-      zDAOProperties.token,
+      zDAOProperties.rootToken,
       IERC20UpgradeableAbi.abi,
       new ethers.providers.JsonRpcProvider(
         config.ethereum.rpcUrl,
@@ -90,10 +92,17 @@ class DAOClient extends AbstractDAOClient {
       )
     );
 
+    const childToken = await registry.rootToChildToken(
+      zDAOProperties.rootToken
+    );
+
     const totalSupply = await tokenContract.totalSupply();
 
     return await new DAOClient(
-      zDAOProperties as zDAOProperties,
+      {
+        ...zDAOProperties,
+        childToken,
+      },
       new GnosisSafeClient(config.gnosisSafe),
       etherZDAOChef,
       polyZDAOChef,
