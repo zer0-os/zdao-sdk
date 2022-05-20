@@ -115,6 +115,7 @@ export interface zDAOProperties {
   // The frontend should use default avatar image if not defined
   avatar?: string; // Avatar uri (https link)
   network: string; // Chain id
+  duration?: number; // Proposal duration if DAO has fixed duration
   safeAddress: string; // Gnosis Safe address
   votingToken: string; // Voting token address
 }

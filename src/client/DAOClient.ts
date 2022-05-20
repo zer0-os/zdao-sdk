@@ -27,6 +27,7 @@ import {
   zDAOAssets,
   zDAOProperties,
 } from '../types';
+import { errorMessageForError } from '../utilities/messages';
 import ProposalClient from './ProposalClient';
 
 class DAOClient implements zDAO {
@@ -69,6 +70,10 @@ class DAOClient implements zDAO {
 
   get network() {
     return this._properties.network;
+  }
+
+  get duration() {
+    return this._properties.duration;
   }
 
   get safeAddress() {
@@ -255,6 +260,10 @@ class DAOClient implements zDAO {
     signer: ethers.Wallet,
     payload: CreateProposalParams
   ): Promise<ProposalClient> {
+    if (!this.duration && !payload.duration) {
+      throw new Error(errorMessageForError('invalid-proposal-duration'));
+    }
+    const duration = this.duration ?? payload.duration;
     const { id: proposalId } = await this._snapshotClient.createProposal(
       signer,
       {
@@ -262,7 +271,7 @@ class DAOClient implements zDAO {
         title: payload.title,
         body: payload.body ?? '',
         choices: Object.values(VoteChoice),
-        duration: payload.duration,
+        duration: duration!,
         snapshot: payload.snapshot,
         network: this.network,
         abi: payload.transfer.abi,

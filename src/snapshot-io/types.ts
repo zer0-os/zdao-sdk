@@ -38,6 +38,7 @@ export interface SnapshotSpace {
   name: string;
   avatar?: string;
   network: string;
+  duration?: number;
   followers: number;
 }
 
