@@ -2,22 +2,29 @@ import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { BigNumber, ethers } from 'ethers';
 
+import { createSDKInstance } from '../src';
 import DAOClient from '../src/client/DAOClient';
 import { developmentConfiguration } from '../src/config';
 import TransferAbi from '../src/config/constants/abi/transfer.json';
-import { Config, Proposal, SupportedChainId, zDAO } from '../src/types';
+import {
+  Config,
+  Proposal,
+  SDKInstance,
+  SupportedChainId,
+  zDAO,
+} from '../src/types';
 import { errorMessageForError } from '../src/utilities/messages';
 import { setEnv } from './shared/setupEnv';
 
 use(chaiAsPromised.default);
 
-describe.only('Snapshot test', async () => {
+describe('Snapshot test', async () => {
   const env = setEnv();
   const defZNA = 'joshupgig.eth';
 
   let config: Config;
   let signer: ethers.Wallet;
-  let daoInstance: zDAO;
+  let daoInstance: zDAO, sdkInstance: SDKInstance;
 
   before('setup', async () => {
     const provider = new ethers.providers.JsonRpcProvider(
@@ -28,6 +35,8 @@ describe.only('Snapshot test', async () => {
     const pk = process.env.PRIVATE_KEY;
     if (!pk) throw new Error(errorMessageForError('no-private-key'));
     signer = new ethers.Wallet(pk, provider);
+
+    sdkInstance = createSDKInstance(config);
 
     const dao = {
       id: defZNA,
@@ -126,5 +135,29 @@ describe.only('Snapshot test', async () => {
 
     const vote = await proposal.vote(signer, 1);
     expect(vote.length).to.be.gt(0);
+  });
+
+  it('should create the proposal of fixed duration', async () => {
+    const blockNumber = await signer.provider.getBlockNumber();
+
+    // 'zdao-sky.eth' ENS name is associated with 'wilder.cats', 'wilder.skydao'
+    const daoInstance2 = await sdkInstance.getZDAOByZNA('wilder.cats');
+    expect(daoInstance2.ens).to.be.equal('zdao-sky.eth');
+
+    const proposal = await daoInstance2.createProposal(signer, {
+      title: 'test proposal',
+      body: 'body',
+      snapshot: blockNumber,
+      transfer: {
+        abi: JSON.stringify(TransferAbi),
+        sender: daoInstance.safeAddress,
+        recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
+        token: daoInstance.votingToken,
+        decimals: 18,
+        symbol: 'zDAOToken',
+        amount: BigNumber.from(10).pow(18).mul(3000).toString(),
+      },
+    });
+    expect(proposal.title).to.be.eq('test proposal');
   });
 });

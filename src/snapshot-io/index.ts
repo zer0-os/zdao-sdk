@@ -117,6 +117,7 @@ class SnapshotClient {
       avatar: item.avatarUri,
       network: item.network,
       admins: item.admins,
+      period: item.voting.period ? item.voting.period : undefined,
       strategies: item.strategies,
       followers: item.followers,
     }));
@@ -140,6 +141,7 @@ class SnapshotClient {
       name: item.name,
       avatar: Client.utils.getUrl(item.avatar, this._config.ipfsGateway),
       network: item.network,
+      duration: item.voting.period,
       admins: item.admins,
       strategies: item.strategies,
       followers: item.followersCount,
@@ -260,6 +262,7 @@ class SnapshotClient {
     params: CreateProposalParams
   ): Promise<SnapshotProposalResponse> {
     const startDateTime = new Date();
+
     const response: any = await this._clientEIP712.proposal(
       signer,
       signer.address,

@@ -56,6 +56,7 @@ class SDKInstanceClient implements SDKInstance {
       creator: space.admins.length > 0 ? space.admins[0] : zDAORecord.ens,
       avatar: space.avatar,
       network: space.network,
+      duration: space.duration,
       safeAddress: zDAORecord.gnosisSafe,
       votingToken: strategy.params.address,
     });
@@ -93,6 +94,7 @@ class SDKInstanceClient implements SDKInstance {
         creator: param.creator,
         avatar: param.avatar,
         network: param.network.toString(),
+        duration: param.duration,
         safeAddress: param.safeAddress,
         votingToken: param.votingToken,
       })
@@ -120,6 +122,7 @@ class SDKInstanceClient implements SDKInstance {
         creator: found.creator,
         avatar: found.avatar,
         network: found.network.toString(),
+        duration: found.duration,
         safeAddress: found.safeAddress,
         votingToken: found.votingToken,
       })

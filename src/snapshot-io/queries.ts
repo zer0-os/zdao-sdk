@@ -14,6 +14,9 @@ export const SPACES_QUERY = gql`
       domain
       admins
       followersCount
+      voting {
+        period
+      }
       strategies {
         name
         params

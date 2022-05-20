@@ -55,6 +55,10 @@ const ErrorMessages = [
     key: 'invalid-ens',
     value: 'Invalid ENS',
   },
+  {
+    key: 'invalid-proposal-duration',
+    value: 'Not found proposal duration',
+  },
 ] as const;
 
 export type ErrorType = typeof ErrorMessages[number]['key'];

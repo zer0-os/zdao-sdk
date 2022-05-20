@@ -15,6 +15,8 @@ export interface CreateZDAOParams {
   avatar?: string;
   // network id where zDAO was created
   network: SupportedChainId;
+  // proposal duration if DAO has fixed proposal
+  duration?: number;
   // adress to Gnosis Safe
   safeAddress: string;
   // ERC20 token address to cast a vote
@@ -24,7 +26,7 @@ export interface CreateZDAOParams {
 export interface CreateProposalParams {
   title: string;
   body: string;
-  duration: number; // time duration from start to end in seconds
+  duration?: number; // time duration from start to end in seconds
   snapshot: number; // block number
   transfer: TokenMetaData;
 }
