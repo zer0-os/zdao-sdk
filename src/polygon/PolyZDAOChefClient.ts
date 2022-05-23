@@ -81,6 +81,10 @@ class PolyZDAOChefClient {
     };
   }
 
+  getRegistryAddress(): Promise<string> {
+    return this._contract.childChainManager();
+  }
+
   async vote(
     signer: Signer,
     daoId: zDAOId,

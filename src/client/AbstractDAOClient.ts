@@ -67,12 +67,16 @@ class AbstractDAOClient implements zDAO {
     return this._properties.gnosisSafe;
   }
 
-  get token() {
-    return this._properties.token;
+  get rootToken() {
+    return this._properties.rootToken;
   }
 
   get amount() {
     return this._properties.amount;
+  }
+
+  get childToken() {
+    return this._properties.childToken;
   }
 
   get duration() {
@@ -91,12 +95,16 @@ class AbstractDAOClient implements zDAO {
     return this._properties.minimumTotalVotingTokens;
   }
 
-  get snapshot() {
-    return this._properties.snapshot;
-  }
-
   get isRelativeMajority() {
     return this._properties.isRelativeMajority;
+  }
+
+  get state() {
+    return this._properties.state;
+  }
+
+  get snapshot() {
+    return this._properties.snapshot;
   }
 
   get destroyed() {

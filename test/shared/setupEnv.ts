@@ -25,5 +25,9 @@ export const setEnv = () => {
       apiKey: process.env.FLEEK_API_KEY!,
       apiSecret: process.env.FLEEK_API_SECRET!,
     },
+    token: {
+      goerli: process.env.GOERLI_VOTING_TOKEN!,
+      mumbai: process.env.MUMBAI_VOTING_TOKEN!,
+    },
   };
 };

@@ -58,24 +58,19 @@ class PolyStakingClient {
     return await tx.wait();
   }
 
-  async stakingPower(account: string): Promise<string> {
+  async stakingPower(account: string, token: string): Promise<string> {
     return this._contract
-      .stakingPower(account)
+      .stakingPower(account, token)
       .then((value) => value.toString());
   }
 
   async pastStakingPower(
     account: string,
+    token: string,
     blockNumber: number
   ): Promise<string> {
     return this._contract
-      .pastStakingPower(account, blockNumber)
-      .then((value) => value.toString());
-  }
-
-  async userStaked(account: string, token: string): Promise<string> {
-    return this._contract
-      .userStaked(account, token)
+      .pastStakingPower(account, token, blockNumber)
       .then((value) => value.toString());
   }
 }

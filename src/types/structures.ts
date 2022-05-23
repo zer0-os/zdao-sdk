@@ -1,6 +1,13 @@
 import { VoteChoice } from '.';
 import { AssetType, TransactionStatus, TransactionType } from './enums';
-import { Choice, ProposalId, ProposalState, zDAOId, zNA } from './primitives';
+import {
+  Choice,
+  ProposalId,
+  ProposalState,
+  zDAOId,
+  zDAOState,
+  zNA,
+} from './primitives';
 
 export interface Vote {
   // Voter address
@@ -167,10 +174,12 @@ export interface zDAOProperties {
 
   // Voting token (ERC20 or ERC721) on Ethereum, only token holders
   // can create a proposal
-  token: string;
+  rootToken: string;
 
-  // The minimum number of tokens required to become proposal creator
+  // The minimum number of tokens required on Ethereum to become proposal creator
   amount: string;
+
+  childToken: string;
 
   // Time duration of this proposal in seconds
   duration: number;
@@ -186,11 +195,14 @@ export interface zDAOProperties {
   // for a vote to succeed
   minimumTotalVotingTokens: string;
 
-  // Snapshot block number on which zDAO has been created
-  snapshot: number;
-
   // True if relative majority to calculate voting result
   isRelativeMajority: boolean;
+
+  // zDAO state
+  state: zDAOState;
+
+  // Snapshot block number on which zDAO has been created on Ethereum
+  snapshot: number;
 
   // Flag marking whether the zDAO has been destroyed
   destroyed: boolean;

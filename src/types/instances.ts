@@ -14,6 +14,8 @@ import {
 export interface SDKInstance {
   staking: Staking;
 
+  registry: Registry;
+
   /**
    * Create zDAO
    * @param signer
@@ -202,9 +204,17 @@ export interface Staking extends StakingProperties {
     tokenId: string
   ): Promise<ContractReceipt>;
 
-  stakingPower(account: string): Promise<string>;
+  stakingPower(account: string, token: string): Promise<string>;
 
-  pastStakingPower(account: string, blockNumber: number): Promise<string>;
+  pastStakingPower(
+    account: string,
+    token: string,
+    blockNumber: number
+  ): Promise<string>;
+}
 
-  userStaked(account: string, token: string): Promise<string>;
+export interface Registry {
+  rootToChildToken(rootToken: string): Promise<string>;
+
+  childToRootToken(childToken: string): Promise<string>;
 }

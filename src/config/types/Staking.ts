@@ -23,29 +23,25 @@ export interface StakingInterface extends utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "__Staking_init()": FunctionFragment;
-    "accounts(address)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
     "owner()": FunctionFragment;
-    "pastStakingPower(address,uint256)": FunctionFragment;
-    "pastTotalStaked(uint256)": FunctionFragment;
+    "pastStakingPower(address,address,uint256)": FunctionFragment;
     "paused()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "stakeERC20(address,uint256)": FunctionFragment;
     "stakeERC721(address,uint256)": FunctionFragment;
-    "stakingPower(address)": FunctionFragment;
+    "stakingPower(address,address)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
-    "totalStaked()": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "unstakeERC20(address,uint256)": FunctionFragment;
     "unstakeERC721(address,uint256)": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
     "upgradeToAndCall(address,bytes)": FunctionFragment;
-    "userStaked(address,address)": FunctionFragment;
     "version()": FunctionFragment;
   };
 
@@ -57,7 +53,6 @@ export interface StakingInterface extends utils.Interface {
     functionFragment: "__Staking_init",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "accounts", values: [string]): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [BytesLike]
@@ -77,11 +72,7 @@ export interface StakingInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "pastStakingPower",
-    values: [string, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "pastTotalStaked",
-    values: [BigNumberish]
+    values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
@@ -106,15 +97,11 @@ export interface StakingInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "stakingPower",
-    values: [string]
+    values: [string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "totalStaked",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
@@ -133,10 +120,6 @@ export interface StakingInterface extends utils.Interface {
     functionFragment: "upgradeToAndCall",
     values: [string, BytesLike]
   ): string;
-  encodeFunctionData(
-    functionFragment: "userStaked",
-    values: [string, string]
-  ): string;
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
 
   decodeFunctionResult(
@@ -147,7 +130,6 @@ export interface StakingInterface extends utils.Interface {
     functionFragment: "__Staking_init",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "accounts", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getRoleAdmin",
     data: BytesLike
@@ -161,10 +143,6 @@ export interface StakingInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "pastStakingPower",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "pastTotalStaked",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
@@ -191,10 +169,6 @@ export interface StakingInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "totalStaked",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
@@ -211,7 +185,6 @@ export interface StakingInterface extends utils.Interface {
     functionFragment: "upgradeToAndCall",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "userStaked", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
 
   events: {
@@ -222,12 +195,12 @@ export interface StakingInterface extends utils.Interface {
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
-    "StakedERC20(address,address,uint256,uint256)": EventFragment;
-    "StakedERC721(address,address,uint256,uint256)": EventFragment;
-    "StakingPowerChanged(address,uint256,uint256)": EventFragment;
+    "StakedERC20(address,address,uint256)": EventFragment;
+    "StakedERC721(address,address,uint256)": EventFragment;
+    "StakingPowerChanged(address,address,uint256,uint256)": EventFragment;
     "Unpaused(address)": EventFragment;
-    "UnstakedERC20(address,address,uint256,uint256)": EventFragment;
-    "UnstakedERC721(address,address,uint256,uint256)": EventFragment;
+    "UnstakedERC20(address,address,uint256)": EventFragment;
+    "UnstakedERC721(address,address,uint256)": EventFragment;
     "Upgraded(address)": EventFragment;
   };
 
@@ -293,32 +266,27 @@ export type RoleRevokedEvent = TypedEvent<
 export type RoleRevokedEventFilter = TypedEventFilter<RoleRevokedEvent>;
 
 export type StakedERC20Event = TypedEvent<
-  [string, string, BigNumber, BigNumber],
-  {
-    _user: string;
-    _token: string;
-    _amount: BigNumber;
-    _totalPerUser: BigNumber;
-  }
+  [string, string, BigNumber],
+  { _user: string; _token: string; _amount: BigNumber }
 >;
 
 export type StakedERC20EventFilter = TypedEventFilter<StakedERC20Event>;
 
 export type StakedERC721Event = TypedEvent<
-  [string, string, BigNumber, BigNumber],
-  {
-    _user: string;
-    _token: string;
-    _tokenId: BigNumber;
-    _totalPerUser: BigNumber;
-  }
+  [string, string, BigNumber],
+  { _user: string; _token: string; _tokenId: BigNumber }
 >;
 
 export type StakedERC721EventFilter = TypedEventFilter<StakedERC721Event>;
 
 export type StakingPowerChangedEvent = TypedEvent<
-  [string, BigNumber, BigNumber],
-  { delegate: string; oldValue: BigNumber; newValue: BigNumber }
+  [string, string, BigNumber, BigNumber],
+  {
+    _delegate: string;
+    _token: string;
+    _oldValue: BigNumber;
+    _newValue: BigNumber;
+  }
 >;
 
 export type StakingPowerChangedEventFilter =
@@ -329,25 +297,15 @@ export type UnpausedEvent = TypedEvent<[string], { account: string }>;
 export type UnpausedEventFilter = TypedEventFilter<UnpausedEvent>;
 
 export type UnstakedERC20Event = TypedEvent<
-  [string, string, BigNumber, BigNumber],
-  {
-    _user: string;
-    _token: string;
-    _amount: BigNumber;
-    _totalPerUser: BigNumber;
-  }
+  [string, string, BigNumber],
+  { _user: string; _token: string; _amount: BigNumber }
 >;
 
 export type UnstakedERC20EventFilter = TypedEventFilter<UnstakedERC20Event>;
 
 export type UnstakedERC721Event = TypedEvent<
-  [string, string, BigNumber, BigNumber],
-  {
-    _user: string;
-    _token: string;
-    _tokenId: BigNumber;
-    _totalPerUser: BigNumber;
-  }
+  [string, string, BigNumber],
+  { _user: string; _token: string; _tokenId: BigNumber }
 >;
 
 export type UnstakedERC721EventFilter = TypedEventFilter<UnstakedERC721Event>;
@@ -390,11 +348,6 @@ export interface Staking extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    accounts(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<[string] & { user: string }>;
-
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
     grantRole(
@@ -421,11 +374,7 @@ export interface Staking extends BaseContract {
 
     pastStakingPower(
       _user: string,
-      _blockNumber: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    pastTotalStaked(
+      _token: string,
       _blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
@@ -462,6 +411,7 @@ export interface Staking extends BaseContract {
 
     stakingPower(
       _user: string,
+      _token: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
@@ -469,8 +419,6 @@ export interface Staking extends BaseContract {
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    totalStaked(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     transferOwnership(
       newOwner: string,
@@ -500,12 +448,6 @@ export interface Staking extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    userStaked(
-      _user: string,
-      _token: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
     version(overrides?: CallOverrides): Promise<[BigNumber]>;
   };
 
@@ -514,8 +456,6 @@ export interface Staking extends BaseContract {
   __Staking_init(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
-
-  accounts(arg0: string, overrides?: CallOverrides): Promise<string>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -543,11 +483,7 @@ export interface Staking extends BaseContract {
 
   pastStakingPower(
     _user: string,
-    _blockNumber: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  pastTotalStaked(
+    _token: string,
     _blockNumber: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
@@ -582,14 +518,16 @@ export interface Staking extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  stakingPower(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  stakingPower(
+    _user: string,
+    _token: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   supportsInterface(
     interfaceId: BytesLike,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  totalStaked(overrides?: CallOverrides): Promise<BigNumber>;
 
   transferOwnership(
     newOwner: string,
@@ -619,20 +557,12 @@ export interface Staking extends BaseContract {
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  userStaked(
-    _user: string,
-    _token: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   version(overrides?: CallOverrides): Promise<BigNumber>;
 
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
     __Staking_init(overrides?: CallOverrides): Promise<void>;
-
-    accounts(arg0: string, overrides?: CallOverrides): Promise<string>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -660,11 +590,7 @@ export interface Staking extends BaseContract {
 
     pastStakingPower(
       _user: string,
-      _blockNumber: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    pastTotalStaked(
+      _token: string,
       _blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -697,14 +623,16 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    stakingPower(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    stakingPower(
+      _user: string,
+      _token: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    totalStaked(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferOwnership(
       newOwner: string,
@@ -733,12 +661,6 @@ export interface Staking extends BaseContract {
       data: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    userStaked(
-      _user: string,
-      _token: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     version(overrides?: CallOverrides): Promise<BigNumber>;
   };
@@ -803,70 +725,64 @@ export interface Staking extends BaseContract {
       sender?: string | null
     ): RoleRevokedEventFilter;
 
-    "StakedERC20(address,address,uint256,uint256)"(
+    "StakedERC20(address,address,uint256)"(
       _user?: string | null,
       _token?: string | null,
-      _amount?: BigNumberish | null,
-      _totalPerUser?: null
+      _amount?: BigNumberish | null
     ): StakedERC20EventFilter;
     StakedERC20(
       _user?: string | null,
       _token?: string | null,
-      _amount?: BigNumberish | null,
-      _totalPerUser?: null
+      _amount?: BigNumberish | null
     ): StakedERC20EventFilter;
 
-    "StakedERC721(address,address,uint256,uint256)"(
+    "StakedERC721(address,address,uint256)"(
       _user?: string | null,
       _token?: string | null,
-      _tokenId?: BigNumberish | null,
-      _totalPerUser?: null
+      _tokenId?: BigNumberish | null
     ): StakedERC721EventFilter;
     StakedERC721(
       _user?: string | null,
       _token?: string | null,
-      _tokenId?: BigNumberish | null,
-      _totalPerUser?: null
+      _tokenId?: BigNumberish | null
     ): StakedERC721EventFilter;
 
-    "StakingPowerChanged(address,uint256,uint256)"(
-      delegate?: string | null,
-      oldValue?: null,
-      newValue?: null
+    "StakingPowerChanged(address,address,uint256,uint256)"(
+      _delegate?: string | null,
+      _token?: string | null,
+      _oldValue?: null,
+      _newValue?: null
     ): StakingPowerChangedEventFilter;
     StakingPowerChanged(
-      delegate?: string | null,
-      oldValue?: null,
-      newValue?: null
+      _delegate?: string | null,
+      _token?: string | null,
+      _oldValue?: null,
+      _newValue?: null
     ): StakingPowerChangedEventFilter;
 
     "Unpaused(address)"(account?: null): UnpausedEventFilter;
     Unpaused(account?: null): UnpausedEventFilter;
 
-    "UnstakedERC20(address,address,uint256,uint256)"(
+    "UnstakedERC20(address,address,uint256)"(
       _user?: string | null,
       _token?: string | null,
-      _amount?: BigNumberish | null,
-      _totalPerUser?: null
+      _amount?: BigNumberish | null
     ): UnstakedERC20EventFilter;
     UnstakedERC20(
       _user?: string | null,
       _token?: string | null,
-      _amount?: BigNumberish | null,
-      _totalPerUser?: null
+      _amount?: BigNumberish | null
     ): UnstakedERC20EventFilter;
 
-    "UnstakedERC721(address,address,uint256,uint256)"(
+    "UnstakedERC721(address,address,uint256)"(
       _user?: string | null,
       _token?: string | null,
-      _tokenId?: BigNumberish | null,
-      _totalPerUser?: null
+      _tokenId?: BigNumberish | null
     ): UnstakedERC721EventFilter;
     UnstakedERC721(
       _user?: string | null,
       _token?: string | null,
-      _tokenId?: BigNumberish | null,
-      _totalPerUser?: null
+      _tokenId?: BigNumberish | null
     ): UnstakedERC721EventFilter;
 
     "Upgraded(address)"(implementation?: string | null): UpgradedEventFilter;
@@ -879,8 +795,6 @@ export interface Staking extends BaseContract {
     __Staking_init(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
-
-    accounts(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     getRoleAdmin(
       role: BytesLike,
@@ -911,11 +825,7 @@ export interface Staking extends BaseContract {
 
     pastStakingPower(
       _user: string,
-      _blockNumber: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    pastTotalStaked(
+      _token: string,
       _blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -950,14 +860,16 @@ export interface Staking extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    stakingPower(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    stakingPower(
+      _user: string,
+      _token: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    totalStaked(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferOwnership(
       newOwner: string,
@@ -987,12 +899,6 @@ export interface Staking extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    userStaked(
-      _user: string,
-      _token: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     version(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
@@ -1003,11 +909,6 @@ export interface Staking extends BaseContract {
 
     __Staking_init(
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    accounts(
-      arg0: string,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getRoleAdmin(
@@ -1039,11 +940,7 @@ export interface Staking extends BaseContract {
 
     pastStakingPower(
       _user: string,
-      _blockNumber: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    pastTotalStaked(
+      _token: string,
       _blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1080,6 +977,7 @@ export interface Staking extends BaseContract {
 
     stakingPower(
       _user: string,
+      _token: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1087,8 +985,6 @@ export interface Staking extends BaseContract {
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    totalStaked(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     transferOwnership(
       newOwner: string,
@@ -1116,12 +1012,6 @@ export interface Staking extends BaseContract {
       newImplementation: string,
       data: BytesLike,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    userStaked(
-      _user: string,
-      _token: string,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     version(overrides?: CallOverrides): Promise<PopulatedTransaction>;
