@@ -95,12 +95,16 @@ class AbstractDAOClient implements zDAO {
     return this._properties.minimumTotalVotingTokens;
   }
 
-  get snapshot() {
-    return this._properties.snapshot;
-  }
-
   get isRelativeMajority() {
     return this._properties.isRelativeMajority;
+  }
+
+  get state() {
+    return this._properties.state;
+  }
+
+  get snapshot() {
+    return this._properties.snapshot;
   }
 
   get destroyed() {

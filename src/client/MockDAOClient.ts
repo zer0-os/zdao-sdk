@@ -59,8 +59,9 @@ class MockDAOClient extends AbstractDAOClient {
       votingThreshold: params.votingThreshold,
       minimumVotingParticipants: params.minimumVotingParticipants,
       minimumTotalVotingTokens: params.minimumTotalVotingTokens,
-      snapshot: timestamp(new Date()),
       isRelativeMajority: params.isRelativeMajority,
+      state: 'active',
+      snapshot: timestamp(new Date()),
       destroyed: false,
     };
 
