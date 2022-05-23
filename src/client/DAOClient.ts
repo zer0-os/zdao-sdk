@@ -54,6 +54,9 @@ class DAOClient extends AbstractDAOClient {
         this._properties.id
       );
       this._polyZDAO = await this.getPolyZDAO();
+      if (this._polyZDAO) {
+        this._properties.state = 'active';
+      }
       return this;
     })() as unknown as DAOClient;
   }
@@ -102,6 +105,7 @@ class DAOClient extends AbstractDAOClient {
       {
         ...zDAOProperties,
         childToken,
+        state: 'pending',
       },
       new GnosisSafeClient(config.gnosisSafe),
       etherZDAOChef,

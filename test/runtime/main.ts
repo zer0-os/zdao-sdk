@@ -93,7 +93,10 @@ const main = async () => {
 
   const staking = instance.staking;
   const stakingAddress = instance.staking.address;
-  const power = await staking.stakingPower(goerliSigner.address);
+  const power = await staking.stakingPower(
+    goerliSigner.address,
+    env.token.mumbai
+  );
   console.log('staking power', stakingAddress, power);
 
   // await instance.createZDAO(goerliSigner, {

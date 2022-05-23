@@ -7,7 +7,7 @@ export interface ZDAORecord {
 }
 
 export interface EtherZDAOProperties
-  extends Omit<zDAOProperties, 'childToken'> {
+  extends Omit<zDAOProperties, 'childToken' | 'state'> {
   // Address to ZDAO contract
   address: string;
 
