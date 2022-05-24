@@ -39,6 +39,12 @@ class NotFoundError extends ZDAOError {
   }
 }
 
+class AlreadyDestroyedError extends ZDAOError {
+  constructor() {
+    super(errorMessageForError('already-destroyed'), 'AlreadyDestroyedError');
+  }
+}
+
 class AlreadyExistError extends ZDAOError {
   constructor(message: string) {
     super(message, 'AlreadyExistError');
@@ -52,6 +58,7 @@ class InvalidError extends ZDAOError {
 }
 
 export {
+  AlreadyDestroyedError,
   AlreadyExistError,
   FailedTxError,
   InvalidError,

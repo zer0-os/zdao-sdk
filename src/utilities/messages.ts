@@ -40,6 +40,10 @@ const ErrorMessages = [
     value: 'zDAO already exists',
   },
   {
+    key: 'already-destroyed',
+    value: 'Already destroyed',
+  },
+  {
     key: 'empty-metadata',
     value: 'Not found Token Transfer information',
   },

@@ -20,6 +20,7 @@ import {
   zDAOProperties,
 } from '../types';
 import {
+  AlreadyDestroyedError,
   FailedTxError,
   NotFoundError,
   NotSyncStateError,
@@ -56,6 +57,9 @@ class DAOClient extends AbstractDAOClient {
       this._polyZDAO = await this.getPolyZDAO();
       if (this._polyZDAO) {
         this._properties.state = 'active';
+      }
+      if (properties.destroyed) {
+        this._properties.state = 'canceled';
       }
       return this;
     })() as unknown as DAOClient;
@@ -283,6 +287,10 @@ class DAOClient extends AbstractDAOClient {
     signer: Signer,
     payload: CreateProposalParams
   ): Promise<ProposalId> {
+    if (this.destroyed) {
+      throw new AlreadyDestroyedError();
+    }
+
     const polyZDAO = await this.getPolyZDAO();
     if (!polyZDAO) {
       throw new NotSyncStateError();
@@ -310,6 +318,9 @@ class DAOClient extends AbstractDAOClient {
   }
 
   async syncState(signer: Signer, txHash: string) {
+    if (this.destroyed) {
+      throw new AlreadyDestroyedError();
+    }
     try {
       const proof = await ProofClient.generate(txHash);
       return await this._etherZDAOChef.receiveMessage(signer, proof);
