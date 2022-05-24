@@ -10,7 +10,4 @@ export interface EtherZDAOProperties
   extends Omit<zDAOProperties, 'childToken' | 'state'> {
   // Address to ZDAO contract
   address: string;
-
-  // Snapshot block number on which zDAO has been created
-  snapshot: number;
 }

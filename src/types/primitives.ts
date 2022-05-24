@@ -4,7 +4,7 @@ export type zDAOId = string;
 export type ProposalId = string;
 export type VoteId = string;
 export type Choice = 1 | 2; // 0: None, 1: Yes, 2: No
-export type zDAOState = 'pending' | 'active';
+export type zDAOState = 'pending' | 'active' | 'canceled';
 export type ProposalState =
   | 'pending' // If not sync to Polygon network
   | 'canceled'

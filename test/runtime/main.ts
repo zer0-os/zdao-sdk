@@ -82,6 +82,8 @@ const main = async () => {
   const instance = await createSDKInstance(config);
   console.log('instance created');
 
+  console.log('instance.registry', instance.registry);
+
   const zNAId1 = ZNAClient.zNATozNAId('wilder.wheels');
   console.log('zNAId1', zNAId1);
   const zNAId2 = ZNAClient.zNATozNAId('wilder.kicks');
@@ -121,7 +123,14 @@ const main = async () => {
   assert.equal(zDAOs.length > 0, true);
 
   const zDAO = await instance.getZDAOByZNA('wilder.kicks');
-  console.log('zDAO', zDAO.id, zDAO.title, zDAO.gnosisSafe);
+  console.log(
+    'zDAO',
+    zDAO.id,
+    zDAO.title,
+    zDAO.gnosisSafe,
+    zDAO.rootToken,
+    zDAO.childToken
+  );
 
   const assets = await zDAO.listAssets();
   console.log('assets', assets);
