@@ -1,17 +1,22 @@
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
-import { BigNumber, Signer } from 'ethers';
+import { BigNumber, ethers, Signer } from 'ethers';
 
-import { RegistryClient } from './client';
-import DAOClient from './client/DAOClient';
-import IPFSClient from './client/IPFSClient';
-import MockDAOClient from './client/MockDAOClient';
-import ProofClient from './client/ProofClient';
-import StakingClient from './client/StakingClient';
-import ZNAClient from './client/ZNAClient';
+import {
+  DAOClient,
+  IPFSClient,
+  MockDAOClient,
+  ProofClient,
+  RegistryClient,
+  StakingClient,
+  ZNAClient,
+} from './client';
+import GlobalClient from './client/GlobalClient';
 import { EtherZDAOChefClient } from './ethereum';
-import { PolyZDAOChefClient } from './polygon';
-import PolyRegistryClient from './polygon/PolyRegistryClient';
-import PolyStakingClient from './polygon/PolyStakingClient';
+import {
+  PolyRegistryClient,
+  PolyStakingClient,
+  PolyZDAOChefClient,
+} from './polygon';
 import {
   Config,
   CreateZDAOParams,
@@ -30,10 +35,7 @@ import { errorMessageForError } from './utilities/messages';
 
 class SDKInstanceClient implements SDKInstance {
   private readonly _config: Config;
-  protected _etherZDAOChef!: EtherZDAOChefClient;
   protected _mockZDAOClients: MockDAOClient[] = [];
-  protected _staking!: StakingClient;
-  protected _registry!: RegistryClient;
 
   constructor(config: Config) {
     this._config = config;
@@ -41,35 +43,53 @@ class SDKInstanceClient implements SDKInstance {
     ZNAClient.initialize(this._config.zNS);
     IPFSClient.initialize(this._config.fleek);
 
+    GlobalClient.etherRpcProvider = new ethers.providers.JsonRpcProvider(
+      this._config.ethereum.rpcUrl,
+      this._config.ethereum.network
+    );
+    GlobalClient.polyRpcProvider = new ethers.providers.JsonRpcProvider(
+      this._config.polygon.rpcUrl,
+      this._config.polygon.network
+    );
+
     return (async (config: Config): Promise<SDKInstanceClient> => {
-      this._etherZDAOChef = await new EtherZDAOChefClient(config.ethereum);
+      GlobalClient.etherZDAOChef = await new EtherZDAOChefClient(
+        config.ethereum
+      );
       await ProofClient.initialize(config);
 
-      const polyZDAOChef = new PolyZDAOChefClient(config.polygon);
-      const stakingProperties = await polyZDAOChef.getStakingProperties();
+      GlobalClient.polyZDAOChef = new PolyZDAOChefClient(config.polygon);
+      const stakingProperties =
+        await GlobalClient.polyZDAOChef.getStakingProperties();
+
+      console.log('stakingProperties', stakingProperties);
       const polyStakingClient = new PolyStakingClient(
         config.polygon,
         stakingProperties.address
       );
-      this._staking = new StakingClient(stakingProperties, polyStakingClient);
+      GlobalClient.staking = new StakingClient(
+        stakingProperties,
+        polyStakingClient
+      );
 
-      const registryAddress = await polyZDAOChef.getRegistryAddress();
+      const registryAddress =
+        await GlobalClient.polyZDAOChef.getRegistryAddress();
       const polyRegistryClient = new PolyRegistryClient(
         config.polygon,
         registryAddress
       );
-      this._registry = new RegistryClient(polyRegistryClient);
+      GlobalClient.registry = new RegistryClient(polyRegistryClient);
 
       return this;
     })(config) as unknown as SDKInstanceClient;
   }
 
   get staking() {
-    return this._staking;
+    return GlobalClient.staking;
   }
 
   get registry() {
-    return this._registry;
+    return GlobalClient.registry;
   }
 
   async createZDAO(signer: Signer, params: CreateZDAOParams): Promise<void> {
@@ -79,7 +99,7 @@ class SDKInstanceClient implements SDKInstance {
 
     try {
       const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
-      await this._etherZDAOChef.addNewDAO(signer, {
+      await GlobalClient.etherZDAOChef.addNewDAO(signer, {
         ...params,
         zNA: zNAId,
       });
@@ -91,7 +111,7 @@ class SDKInstanceClient implements SDKInstance {
 
   async deleteZDAO(signer: Signer, zDAOId: string): Promise<void> {
     try {
-      await this._etherZDAOChef.removeDAO(signer, zDAOId);
+      await GlobalClient.etherZDAOChef.removeDAO(signer, zDAOId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -99,7 +119,7 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async listZNAs(): Promise<zNA[]> {
-    const zDAORecords = await this._etherZDAOChef.listzDAOs();
+    const zDAORecords = await GlobalClient.etherZDAOChef.listzDAOs();
 
     // collect all the associated zNAs
     const zNAs: zNA[] = [];
@@ -112,13 +132,11 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async listZDAOs(): Promise<zDAO[]> {
-    const zDAORecords = await this._etherZDAOChef.listzDAOs();
+    const zDAORecords = await GlobalClient.etherZDAOChef.listzDAOs();
 
     const promises: Promise<zDAO>[] = [];
     for (const zDAORecord of zDAORecords) {
-      promises.push(
-        DAOClient.createInstance(this._config, zDAORecord.id, this._registry)
-      );
+      promises.push(DAOClient.createInstance(this._config, zDAORecord.id));
     }
 
     return await Promise.all(promises);
@@ -130,16 +148,12 @@ class SDKInstanceClient implements SDKInstance {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 
-    const zDAORecord = await this._etherZDAOChef.getZDAORecordByZNA(zNA);
-    return await DAOClient.createInstance(
-      this._config,
-      zDAORecord.id,
-      this._registry
-    );
+    const zDAORecord = await GlobalClient.etherZDAOChef.getZDAORecordByZNA(zNA);
+    return await DAOClient.createInstance(this._config, zDAORecord.id);
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
-    return await this._etherZDAOChef.doeszDAOExistForzNA(zNA);
+    return await GlobalClient.etherZDAOChef.doeszDAOExistForzNA(zNA);
   }
 
   async createZDAOFromParams(
@@ -181,8 +195,7 @@ class SDKInstanceClient implements SDKInstance {
     const zDAOClient = await MockDAOClient.createInstance(
       this._config,
       signer,
-      params,
-      this._registry
+      params
     );
 
     this._mockZDAOClients.push(zDAOClient);

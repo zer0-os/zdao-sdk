@@ -4,9 +4,7 @@ import { IPFSGatway } from '../config';
 import IERC20UpgradeableAbi from '../config/abi/IERC20Upgradeable.json';
 import { EtherZDAO, IEtherZDAO } from '../config/types/EtherZDAO';
 import { PolyZDAO } from '../config/types/PolyZDAO';
-import { EtherZDAOChefClient } from '../ethereum';
 import { GnosisSafeClient } from '../gnosis-safe';
-import { PolyZDAOChefClient } from '../polygon';
 import {
   Config,
   CreateProposalParams,
@@ -14,7 +12,6 @@ import {
   ProposalId,
   ProposalProperties,
   ProposalState,
-  Registry,
   VoteChoice,
   zDAOId,
   zDAOProperties,
@@ -27,13 +24,12 @@ import {
 } from '../types/error';
 import { errorMessageForError } from '../utilities/messages';
 import AbstractDAOClient from './AbstractDAOClient';
+import GlobalClient from './GlobalClient';
 import IPFSClient from './IPFSClient';
 import ProofClient from './ProofClient';
 import ProposalClient from './ProposalClient';
 
 class DAOClient extends AbstractDAOClient {
-  protected _etherZDAOChef!: EtherZDAOChefClient;
-  protected _polyZDAOChef!: PolyZDAOChefClient;
   protected _etherZDAO!: EtherZDAO;
   protected _polyZDAO: PolyZDAO | null = null;
   protected _totalSupply: BigNumber;
@@ -41,17 +37,13 @@ class DAOClient extends AbstractDAOClient {
   private constructor(
     properties: zDAOProperties,
     gnosisSafeClient: GnosisSafeClient,
-    etherZDAOChef: EtherZDAOChefClient,
-    polyZDAOChef: PolyZDAOChefClient,
     totalSupply: BigNumber
   ) {
     super(properties, gnosisSafeClient);
-    this._etherZDAOChef = etherZDAOChef;
-    this._polyZDAOChef = polyZDAOChef;
     this._totalSupply = totalSupply;
 
     return (async (): Promise<DAOClient> => {
-      this._etherZDAO = await this._etherZDAOChef.getZDAOById(
+      this._etherZDAO = await GlobalClient.etherZDAOChef.getZDAOById(
         this._properties.id
       );
       this._polyZDAO = await this.getPolyZDAO();
@@ -65,14 +57,6 @@ class DAOClient extends AbstractDAOClient {
     })() as unknown as DAOClient;
   }
 
-  get etherZDAOChef() {
-    return this._etherZDAOChef;
-  }
-
-  get polyZDAOChef() {
-    return this._polyZDAOChef;
-  }
-
   get etherZDAO() {
     return this._etherZDAO;
   }
@@ -83,23 +67,18 @@ class DAOClient extends AbstractDAOClient {
 
   static async createInstance(
     config: Config,
-    zDAOId: zDAOId,
-    registry: Registry
+    zDAOId: zDAOId
   ): Promise<DAOClient> {
-    const etherZDAOChef = await new EtherZDAOChefClient(config.ethereum);
-    const polyZDAOChef = new PolyZDAOChefClient(config.polygon);
-    const zDAOProperties = await etherZDAOChef.getZDAOPropertiesById(zDAOId);
+    const zDAOProperties =
+      await GlobalClient.etherZDAOChef.getZDAOPropertiesById(zDAOId);
 
     const tokenContract = new ethers.Contract(
       zDAOProperties.rootToken,
       IERC20UpgradeableAbi.abi,
-      new ethers.providers.JsonRpcProvider(
-        config.ethereum.rpcUrl,
-        config.ethereum.network
-      )
+      GlobalClient.etherRpcProvider
     );
 
-    const childToken = await registry.rootToChildToken(
+    const childToken = await GlobalClient.registry.rootToChildToken(
       zDAOProperties.rootToken
     );
 
@@ -112,15 +91,15 @@ class DAOClient extends AbstractDAOClient {
         state: 'pending',
       },
       new GnosisSafeClient(config.gnosisSafe),
-      etherZDAOChef,
-      polyZDAOChef,
       totalSupply
     );
   }
 
   async getPolyZDAO(): Promise<PolyZDAO | null> {
     if (this._polyZDAO) return this._polyZDAO;
-    this._polyZDAO = await this._polyZDAOChef.getZDAOById(this._properties.id);
+    this._polyZDAO = await GlobalClient.polyZDAOChef.getZDAOById(
+      this._properties.id
+    );
     return this._polyZDAO;
   }
 
@@ -299,7 +278,12 @@ class DAOClient extends AbstractDAOClient {
     try {
       const ipfs = await this.uploadToIPFS(signer, payload);
 
-      await this._etherZDAOChef.createProposal(signer, this.id, payload, ipfs);
+      await GlobalClient.etherZDAOChef.createProposal(
+        signer,
+        this.id,
+        payload,
+        ipfs
+      );
 
       // created proposal id
       const lastProposalId = (
@@ -323,7 +307,7 @@ class DAOClient extends AbstractDAOClient {
     }
     try {
       const proof = await ProofClient.generate(txHash);
-      return await this._etherZDAOChef.receiveMessage(signer, proof);
+      return await GlobalClient.etherZDAOChef.receiveMessage(signer, proof);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);

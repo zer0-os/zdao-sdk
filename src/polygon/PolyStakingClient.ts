@@ -1,5 +1,6 @@
 import { ContractReceipt, ethers, Signer } from 'ethers';
 
+import GlobalClient from '../client/GlobalClient';
 import StakingAbi from '../config/abi/Staking.json';
 import { Staking } from '../config/types/Staking';
 import { DAOConfig } from '../types';
@@ -13,10 +14,7 @@ class PolyStakingClient {
     this._contract = new ethers.Contract(
       address,
       StakingAbi.abi,
-      new ethers.providers.JsonRpcProvider(
-        this._config.rpcUrl,
-        this._config.network
-      )
+      GlobalClient.polyRpcProvider
     ) as Staking;
   }
 

@@ -10,7 +10,6 @@ import {
   Proposal,
   ProposalId,
   ProposalProperties,
-  Registry,
   VoteChoice,
   zDAOProperties,
 } from '../types';
@@ -18,6 +17,7 @@ import { NotFoundError, NotImplementedError } from '../types/error';
 import { errorMessageForError } from '../utilities/messages';
 import { timestamp } from '../utilities/tx';
 import AbstractDAOClient from './AbstractDAOClient';
+import GlobalClient from './GlobalClient';
 import MockProposalClient from './MockProposalClient';
 
 class MockDAOClient extends AbstractDAOClient {
@@ -40,8 +40,7 @@ class MockDAOClient extends AbstractDAOClient {
   static async createInstance(
     config: Config,
     signer: Signer,
-    params: CreateZDAOParams,
-    registry: Registry
+    params: CreateZDAOParams
   ): Promise<MockDAOClient> {
     const chainId = await signer.getChainId();
 
@@ -54,7 +53,7 @@ class MockDAOClient extends AbstractDAOClient {
       gnosisSafe: params.gnosisSafe,
       rootToken: params.token,
       amount: params.amount,
-      childToken: await registry.rootToChildToken(params.token),
+      childToken: await GlobalClient.registry.rootToChildToken(params.token),
       duration: params.duration,
       votingThreshold: params.votingThreshold,
       minimumVotingParticipants: params.minimumVotingParticipants,
@@ -68,10 +67,7 @@ class MockDAOClient extends AbstractDAOClient {
     const tokenContract = new ethers.Contract(
       params.token,
       IERC20UpgradeableAbi.abi,
-      new ethers.providers.JsonRpcProvider(
-        config.ethereum.rpcUrl,
-        config.ethereum.network
-      )
+      GlobalClient.etherRpcProvider
     );
 
     const totalSupply = await tokenContract.totalSupply();

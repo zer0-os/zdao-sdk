@@ -1,5 +1,6 @@
 import { BigNumber, ethers, Signer } from 'ethers';
 
+import GlobalClient from '../client/GlobalClient';
 import ZNAClient from '../client/ZNAClient';
 import EtherZDAOAbi from '../config/abi/EtherZDAO.json';
 import EtherZDAOChefAbi from '../config/abi/EtherZDAOChef.json';
@@ -31,14 +32,14 @@ class EtherZDAOChefClient {
       this._contract = new ethers.Contract(
         config.zDAOChef,
         EtherZDAOChefAbi.abi,
-        new ethers.providers.JsonRpcProvider(config.rpcUrl, config.network)
+        GlobalClient.etherRpcProvider
       ) as EtherZDAOChef;
 
       const address = await this._contract.rootStateSender();
       this._rootStateSender = new ethers.Contract(
         address,
         FxStateRootTunnelAbi.abi,
-        new ethers.providers.JsonRpcProvider(config.rpcUrl, config.network)
+        GlobalClient.etherRpcProvider
       ) as FxStateRootTunnel;
 
       return this;
@@ -94,6 +95,7 @@ class EtherZDAOChefClient {
   }
 
   async listzDAOs(): Promise<ZDAORecord[]> {
+    console.log('listzDAOs');
     const count = 100;
     let from = 0;
     let numberOfReturns = count;
@@ -140,10 +142,7 @@ class EtherZDAOChefClient {
     return new ethers.Contract(
       zDAORecord.zDAO,
       EtherZDAOAbi.abi,
-      new ethers.providers.JsonRpcProvider(
-        this._config.rpcUrl,
-        this._config.network
-      )
+      GlobalClient.etherRpcProvider
     ) as EtherZDAO;
   }
 
@@ -153,10 +152,7 @@ class EtherZDAOChefClient {
     return new ethers.Contract(
       zDAORecord.zDAO,
       EtherZDAOAbi.abi,
-      new ethers.providers.JsonRpcProvider(
-        this._config.rpcUrl,
-        this._config.network
-      )
+      GlobalClient.etherRpcProvider
     ) as EtherZDAO;
   }
 
@@ -166,10 +162,7 @@ class EtherZDAOChefClient {
     const etherZDAO = new ethers.Contract(
       zDAORecord.zDAO,
       EtherZDAOAbi.abi,
-      new ethers.providers.JsonRpcProvider(
-        this._config.rpcUrl,
-        this._config.network
-      )
+      GlobalClient.etherRpcProvider
     ) as EtherZDAO;
 
     const zDAOInfo = await etherZDAO.zDAOInfo();

@@ -6,6 +6,7 @@ import { FailedTxError, NotSyncStateError, ZDAOError } from '../types/error';
 import { errorMessageForError } from '../utilities/messages';
 import AbstractProposalClient from './AbstractProposalClient';
 import DAOClient from './DAOClient';
+import GlobalClient from './GlobalClient';
 
 class ProposalClient extends AbstractProposalClient {
   private readonly _zDAO: DAOClient;
@@ -56,11 +57,12 @@ class ProposalClient extends AbstractProposalClient {
     if (!polyZDAO) {
       throw new NotSyncStateError();
     }
+    // todo, should check if zDAO is active and signer is holding minimum amount of tokens
 
     try {
       const daoId = this._zDAO.id;
       const proposalId = this.id;
-      return await this._zDAO.polyZDAOChef.vote(
+      return await GlobalClient.polyZDAOChef.vote(
         signer,
         daoId,
         proposalId,
@@ -77,7 +79,7 @@ class ProposalClient extends AbstractProposalClient {
     const proposalId = this.id;
 
     try {
-      return await this._zDAO.polyZDAOChef.collectProposal(
+      return await GlobalClient.polyZDAOChef.collectProposal(
         signer,
         daoId,
         proposalId
@@ -127,7 +129,7 @@ class ProposalClient extends AbstractProposalClient {
 
       const daoId = this._zDAO.id;
       const proposalId = this.id;
-      return await this._zDAO.etherZDAOChef.executeProposal(
+      return await GlobalClient.etherZDAOChef.executeProposal(
         signer,
         daoId,
         proposalId
@@ -141,7 +143,7 @@ class ProposalClient extends AbstractProposalClient {
   collectTxHash(): Promise<string[]> {
     try {
       if (this.state === 'finalizing')
-        return this._zDAO.polyZDAOChef.collectTxHash(this._zDAO.id, this.id);
+        return GlobalClient.polyZDAOChef.collectTxHash(this._zDAO.id, this.id);
       return Promise.resolve([]);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;

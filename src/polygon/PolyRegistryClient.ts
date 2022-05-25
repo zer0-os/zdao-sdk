@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 
+import GlobalClient from '../client/GlobalClient';
 import IChildChainManagerAbi from '../config/abi/IChildChainManager.json';
 import { IChildChainManager } from '../config/types/IChildChainManager';
 import { DAOConfig } from '../types';
@@ -13,10 +14,7 @@ class PolyRegistryClient {
     this._contract = new ethers.Contract(
       address,
       IChildChainManagerAbi.abi,
-      new ethers.providers.JsonRpcProvider(
-        this._config.rpcUrl,
-        this._config.network
-      )
+      GlobalClient.polyRpcProvider
     ) as IChildChainManager;
   }
 
