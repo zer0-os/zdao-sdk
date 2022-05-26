@@ -121,11 +121,16 @@ export interface Proposal extends ProposalProperties {
 
   /**
    * Cast a vote on proposal
-   * @param signer signer wallet
+   * @param provider Web3 provider
+   * @param account signer address
    * @param choice voter's choice
    * @returns vote id if successfully cast a vote
    */
-  vote(signer: ethers.Wallet, choice: Choice): Promise<VoteId>;
+  vote(
+    provider: ethers.providers.Web3Provider,
+    account: string,
+    choice: Choice
+  ): Promise<VoteId>;
 
   /**
    * Execute a proposal in zDAO

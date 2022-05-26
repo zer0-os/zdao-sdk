@@ -24,7 +24,7 @@ class GnosisSafeClient {
   }
 
   async isOwnerAddress(
-    signer: ethers.Wallet,
+    signer: ethers.Signer,
     safeAddress: string,
     address: string
   ): Promise<boolean> {
@@ -45,7 +45,7 @@ class GnosisSafeClient {
 
   async transferEther(
     safeAddress: string,
-    signer: ethers.Wallet,
+    signer: ethers.Signer,
     recipient: string,
     amount: BigNumberish
   ): Promise<ethers.providers.TransactionResponse> {
@@ -65,7 +65,7 @@ class GnosisSafeClient {
 
   async transferERC20(
     safeAddress: string,
-    signer: ethers.Wallet,
+    signer: ethers.Signer,
     token: string,
     recipient: string,
     amount: BigNumberish

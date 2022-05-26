@@ -164,8 +164,12 @@ class ProposalClient implements Proposal {
     });
   }
 
-  async vote(signer: ethers.Wallet, choice: Choice): Promise<VoteId> {
-    return this._snapshotClient.voteProposal(signer, {
+  async vote(
+    provider: ethers.providers.Web3Provider,
+    account: string,
+    choice: Choice
+  ): Promise<VoteId> {
+    return this._snapshotClient.voteProposal(provider, account, {
       spaceId: this._zDAO.ens,
       proposalId: this.id,
       choice,
@@ -173,12 +177,13 @@ class ProposalClient implements Proposal {
   }
 
   async execute(
-    signer: ethers.Wallet
+    signer: ethers.Signer
   ): Promise<ethers.providers.TransactionResponse> {
+    const address = await signer.getAddress();
     const isOwner = await this._gnosisSafeClient.isOwnerAddress(
       signer,
       this._zDAO.ens,
-      signer.address
+      address
     );
     if (!isOwner) {
       throw new Error(errorMessageForError('not-gnosis-owner'));
