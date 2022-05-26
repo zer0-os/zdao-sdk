@@ -304,20 +304,17 @@ class SnapshotClient {
   }
 
   async voteProposal(
-    signer: ethers.Wallet,
+    provider: ethers.providers.Web3Provider,
+    account: string,
     params: VoteProposalParams
   ): Promise<string> {
-    const response: any = await this._clientEIP712.vote(
-      signer,
-      signer.address,
-      {
-        space: params.spaceId,
-        proposal: params.proposalId,
-        type: 'single-choice', // payload.proposalType,
-        choice: params.choice,
-        metadata: JSON.stringify({}),
-      }
-    );
+    const response: any = await this._clientEIP712.vote(provider, account, {
+      space: params.spaceId,
+      proposal: params.proposalId,
+      type: 'single-choice', // payload.proposalType,
+      choice: params.choice,
+      metadata: JSON.stringify({}),
+    });
     return response.id;
   }
 }

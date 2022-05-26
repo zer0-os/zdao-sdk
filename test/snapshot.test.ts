@@ -133,8 +133,8 @@ describe('Snapshot test', async () => {
     });
     expect(proposal.title).to.be.eq('test proposal');
 
-    const vote = await proposal.vote(signer, 1);
-    expect(vote.length).to.be.gt(0);
+    // const vote = await proposal.vote(signer, 1);
+    // expect(vote.length).to.be.gt(0);
   });
 
   it('should create the proposal of fixed duration', async () => {
