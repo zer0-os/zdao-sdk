@@ -9,14 +9,11 @@ import {
   RegistryClient,
   StakingClient,
   ZNAClient,
+  ZNSHubClient,
 } from './client';
 import GlobalClient from './client/GlobalClient';
 import { EtherZDAOChefClient } from './ethereum';
-import {
-  PolyRegistryClient,
-  PolyStakingClient,
-  PolyZDAOChefClient,
-} from './polygon';
+import { PolyZDAOChefClient } from './polygon';
 import {
   Config,
   CreateZDAOParams,
@@ -56,29 +53,19 @@ class SDKInstanceClient implements SDKInstance {
       GlobalClient.etherZDAOChef = await new EtherZDAOChefClient(
         config.ethereum
       );
-      await ProofClient.initialize(config);
-
       GlobalClient.polyZDAOChef = new PolyZDAOChefClient(config.polygon);
+
+      const znsHubAddress = await GlobalClient.etherZDAOChef.znsHub();
+      GlobalClient.znsHub = new ZNSHubClient(znsHubAddress);
+
       const stakingProperties =
         await GlobalClient.polyZDAOChef.getStakingProperties();
-
-      console.log('stakingProperties', stakingProperties);
-      const polyStakingClient = new PolyStakingClient(
-        config.polygon,
-        stakingProperties.address
-      );
-      GlobalClient.staking = new StakingClient(
-        stakingProperties,
-        polyStakingClient
-      );
+      GlobalClient.staking = new StakingClient(stakingProperties);
 
       const registryAddress =
         await GlobalClient.polyZDAOChef.getRegistryAddress();
-      const polyRegistryClient = new PolyRegistryClient(
-        config.polygon,
-        registryAddress
-      );
-      GlobalClient.registry = new RegistryClient(polyRegistryClient);
+      GlobalClient.registry = new RegistryClient(registryAddress);
+      await ProofClient.initialize(config);
 
       return this;
     })(config) as unknown as SDKInstanceClient;
@@ -99,6 +86,13 @@ class SDKInstanceClient implements SDKInstance {
 
     try {
       const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
+
+      // signer should be owner of zNA
+      const account = await signer.getAddress();
+      if (!GlobalClient.znsHub.isOwnerOf(zNAId, account)) {
+        throw new InvalidError(errorMessageForError('not-zna-owner'));
+      }
+
       await GlobalClient.etherZDAOChef.addNewDAO(signer, {
         ...params,
         zNA: zNAId,
@@ -190,6 +184,14 @@ class SDKInstanceClient implements SDKInstance {
     const exist = await this.doesZDAOExistFromParams(params.zNA);
     if (exist) {
       throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
+    }
+
+    const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
+
+    // signer should be owner of zNA
+    const account = await signer.getAddress();
+    if (!GlobalClient.znsHub.isOwnerOf(zNAId, account)) {
+      throw new InvalidError(errorMessageForError('not-zna-owner'));
     }
 
     const zDAOClient = await MockDAOClient.createInstance(

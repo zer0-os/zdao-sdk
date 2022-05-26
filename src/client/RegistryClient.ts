@@ -4,8 +4,8 @@ import { Registry } from '../types';
 class RegistryClient implements Registry {
   protected _polyRegistry: PolyRegistryClient;
 
-  constructor(polyRegistry: PolyRegistryClient) {
-    this._polyRegistry = polyRegistry;
+  constructor(address: string) {
+    this._polyRegistry = new PolyRegistryClient(address);
   }
 
   rootToChildToken(rootToken: string): Promise<string> {

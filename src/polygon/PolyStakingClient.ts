@@ -3,14 +3,11 @@ import { ContractReceipt, ethers, Signer } from 'ethers';
 import GlobalClient from '../client/GlobalClient';
 import StakingAbi from '../config/abi/Staking.json';
 import { Staking } from '../config/types/Staking';
-import { DAOConfig } from '../types';
 
 class PolyStakingClient {
-  private readonly _config: DAOConfig;
   protected readonly _contract: Staking;
 
-  constructor(config: DAOConfig, address: string) {
-    this._config = config;
+  constructor(address: string) {
     this._contract = new ethers.Contract(
       address,
       StakingAbi.abi,

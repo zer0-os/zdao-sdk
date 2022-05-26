@@ -5,12 +5,14 @@ import { PolyZDAOChefClient } from '../polygon';
 import { NotInitializedError } from '../types/error';
 import RegistryClient from './RegistryClient';
 import StakingClient from './StakingClient';
+import ZNSHubClient from './ZNSHubClient';
 
 class GlobalClient {
   private static _etherRpcProvider?: ethers.providers.JsonRpcProvider;
   private static _polyRpcProvider?: ethers.providers.JsonRpcProvider;
   private static _etherZDAOChef?: EtherZDAOChefClient;
   private static _polyZDAOChef?: PolyZDAOChefClient;
+  private static _znsHub?: ZNSHubClient;
   private static _staking?: StakingClient;
   private static _registry?: RegistryClient;
 
@@ -60,6 +62,17 @@ class GlobalClient {
 
   static set polyZDAOChef(polyZdAOChef: PolyZDAOChefClient) {
     GlobalClient._polyZDAOChef = polyZdAOChef;
+  }
+
+  static get znsHub() {
+    if (!GlobalClient._znsHub) {
+      throw new NotInitializedError();
+    }
+    return GlobalClient._znsHub;
+  }
+
+  static set znsHub(znsHub: ZNSHubClient) {
+    GlobalClient._znsHub = znsHub;
   }
 
   static get staking() {

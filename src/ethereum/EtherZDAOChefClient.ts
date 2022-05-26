@@ -50,6 +50,10 @@ class EtherZDAOChefClient {
     return this._config;
   }
 
+  znsHub(): Promise<string> {
+    return this._contract.znsHub();
+  }
+
   stateSender(): Promise<string> {
     return this._contract.rootStateSender();
   }

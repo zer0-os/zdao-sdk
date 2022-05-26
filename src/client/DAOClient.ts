@@ -19,10 +19,12 @@ import {
 import {
   AlreadyDestroyedError,
   FailedTxError,
+  InvalidError,
   NotFoundError,
   NotSyncStateError,
 } from '../types/error';
 import { errorMessageForError } from '../utilities/messages';
+import { getDecimalAmount, getFullDisplayBalance } from '../utilities/number';
 import AbstractDAOClient from './AbstractDAOClient';
 import GlobalClient from './GlobalClient';
 import IPFSClient from './IPFSClient';
@@ -32,17 +34,23 @@ import ProposalClient from './ProposalClient';
 class DAOClient extends AbstractDAOClient {
   protected _etherZDAO!: EtherZDAO;
   protected _polyZDAO: PolyZDAO | null = null;
-  protected _totalSupply: BigNumber;
+  protected _rootTokenContract!: ethers.Contract;
+  protected _totalSupply!: BigNumber;
 
   private constructor(
     properties: zDAOProperties,
-    gnosisSafeClient: GnosisSafeClient,
-    totalSupply: BigNumber
+    gnosisSafeClient: GnosisSafeClient
   ) {
     super(properties, gnosisSafeClient);
-    this._totalSupply = totalSupply;
 
     return (async (): Promise<DAOClient> => {
+      this._rootTokenContract = new ethers.Contract(
+        properties.rootToken,
+        IERC20UpgradeableAbi.abi,
+        GlobalClient.etherRpcProvider
+      );
+      this._totalSupply = await this._rootTokenContract.totalSupply();
+
       this._etherZDAO = await GlobalClient.etherZDAOChef.getZDAOById(
         this._properties.id
       );
@@ -72,17 +80,9 @@ class DAOClient extends AbstractDAOClient {
     const zDAOProperties =
       await GlobalClient.etherZDAOChef.getZDAOPropertiesById(zDAOId);
 
-    const tokenContract = new ethers.Contract(
-      zDAOProperties.rootToken,
-      IERC20UpgradeableAbi.abi,
-      GlobalClient.etherRpcProvider
-    );
-
     const childToken = await GlobalClient.registry.rootToChildToken(
       zDAOProperties.rootToken
     );
-
-    const totalSupply = await tokenContract.totalSupply();
 
     return await new DAOClient(
       {
@@ -90,8 +90,7 @@ class DAOClient extends AbstractDAOClient {
         childToken,
         state: 'pending',
       },
-      new GnosisSafeClient(config.gnosisSafe),
-      totalSupply
+      new GnosisSafeClient(config.gnosisSafe)
     );
   }
 
@@ -266,10 +265,26 @@ class DAOClient extends AbstractDAOClient {
     signer: Signer,
     payload: CreateProposalParams
   ): Promise<ProposalId> {
+    // zDAO should be active
     if (this.destroyed) {
       throw new AlreadyDestroyedError();
     }
 
+    // signer should have valid amount of voting token on Ethereum
+    const account = await signer.getAddress();
+    const balance = await this._rootTokenContract.balanceOf(account);
+    if (balance.lt(this.amount)) {
+      const decimals = await this._rootTokenContract.decimals();
+      throw new InvalidError(
+        errorMessageForError('should-hold-token', {
+          amount: getFullDisplayBalance(
+            getDecimalAmount(BigNumber.from(this.amount), decimals)
+          ),
+        })
+      );
+    }
+
+    // zDAO should be synchronized to Polygon prior to create proposal
     const polyZDAO = await this.getPolyZDAO();
     if (!polyZDAO) {
       throw new NotSyncStateError();
@@ -302,6 +317,7 @@ class DAOClient extends AbstractDAOClient {
   }
 
   async syncState(signer: Signer, txHash: string) {
+    // zDAO should be active
     if (this.destroyed) {
       throw new AlreadyDestroyedError();
     }
