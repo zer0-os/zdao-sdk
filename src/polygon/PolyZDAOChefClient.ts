@@ -1,6 +1,7 @@
 import { AddressZero } from '@ethersproject/constants';
 import { BigNumber, ethers, Signer } from 'ethers';
 
+import GlobalClient from '../client/GlobalClient';
 import PolyZDAOAbi from '../config/abi/PolyZDAO.json';
 import PolyZDAOChefAbi from '../config/abi/PolyZDAOChef.json';
 import { PolyZDAO } from '../config/types/PolyZDAO';
@@ -23,10 +24,7 @@ class PolyZDAOChefClient {
     this._contract = new ethers.Contract(
       config.zDAOChef,
       PolyZDAOChefAbi.abi,
-      new ethers.providers.JsonRpcProvider(
-        this._config.rpcUrl,
-        this._config.network
-      )
+      GlobalClient.polyRpcProvider
     ) as PolyZDAOChef;
   }
 
@@ -45,10 +43,7 @@ class PolyZDAOChefClient {
     return new ethers.Contract(
       iPolyZDAO,
       PolyZDAOAbi.abi,
-      new ethers.providers.JsonRpcProvider(
-        this._config.rpcUrl,
-        this._config.network
-      )
+      GlobalClient.polyRpcProvider
     ) as PolyZDAO;
   }
 
@@ -57,10 +52,7 @@ class PolyZDAOChefClient {
     const polyZDAO = new ethers.Contract(
       address,
       PolyZDAOAbi.abi,
-      new ethers.providers.JsonRpcProvider(
-        this._config.rpcUrl,
-        this._config.network
-      )
+      GlobalClient.polyRpcProvider
     ) as PolyZDAO;
 
     const zDAOInfo = await polyZDAO.zDAOInfo();

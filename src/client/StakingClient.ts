@@ -8,9 +8,9 @@ class StakingClient implements Staking {
   protected readonly _properties: StakingProperties;
   protected _polyStaking: PolyStakingClient;
 
-  constructor(properties: StakingProperties, polyStaking: PolyStakingClient) {
+  constructor(properties: StakingProperties) {
     this._properties = properties;
-    this._polyStaking = polyStaking;
+    this._polyStaking = new PolyStakingClient(properties.address);
   }
 
   get network() {

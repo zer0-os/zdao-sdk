@@ -4,7 +4,7 @@ import { BigNumber, ethers } from 'ethers';
 import { createSDKInstance } from '../../src';
 import ZNAClient from '../../src/client/ZNAClient';
 import { developmentConfiguration } from '../../src/config';
-import TransferAbi from '../../src/config/abi/transfer.json';
+// import TransferAbi from '../../src/config/abi/transfer.json';
 import { SupportedChainId } from '../../src/types';
 import { sleep } from '../../src/utilities/tx';
 import { setEnv } from '../shared/setupEnv';
@@ -94,6 +94,7 @@ const main = async () => {
   console.log('zNAId4', zNAId4);
 
   const staking = instance.staking;
+  console.log('staking', staking);
   const stakingAddress = instance.staking.address;
   const power = await staking.stakingPower(
     goerliSigner.address,
@@ -122,7 +123,7 @@ const main = async () => {
   console.log('zDAOs.length', zDAOs.length);
   assert.equal(zDAOs.length > 0, true);
 
-  const zDAO = await instance.getZDAOByZNA('wilder.kicks');
+  const zDAO = await instance.getZDAOByZNA('wilder.wheels');
   console.log(
     'zDAO',
     zDAO.id,
@@ -135,20 +136,20 @@ const main = async () => {
   const assets = await zDAO.listAssets();
   console.log('assets', assets);
 
-  await zDAO.createProposal(goerliSigner, {
-    title: 'Hello Proposal',
-    body: 'Hello World',
-    transfer: {
-      abi: JSON.stringify(TransferAbi),
-      sender: zDAO.gnosisSafe,
-      recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-      token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
-      decimals: 18,
-      symbol: 'wilder.goerli',
-      amount: BigNumber.from(10).pow(18).mul(50).toString(),
-    },
-  });
-  console.log('proposal created');
+  // await zDAO.createProposal(goerliSigner, {
+  //   title: 'Hello Proposal',
+  //   body: 'Hello World',
+  //   transfer: {
+  //     abi: JSON.stringify(TransferAbi),
+  //     sender: zDAO.gnosisSafe,
+  //     recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+  //     token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
+  //     decimals: 18,
+  //     symbol: 'wilder.goerli',
+  //     amount: BigNumber.from(10).pow(18).mul(50).toString(),
+  //   },
+  // });
+  // console.log('proposal created');
 
   const proposals = await zDAO.listProposals();
   proposals.forEach((proposal) => {
@@ -156,6 +157,7 @@ const main = async () => {
       proposal.id,
       proposal.createdBy,
       proposal.title,
+      proposal.body,
       proposal.ipfs,
       proposal.state,
       proposal.start,
@@ -167,7 +169,7 @@ const main = async () => {
   assert.equal(proposals.length > 0, true);
 
   for (const proposal of proposals) {
-    console.log('> proposal.id', proposal.id, proposal.state);
+    console.log('> proposal.id', proposal.id, proposal.state, proposal.ipfs);
 
     if (proposal.state === 'active') {
       const votingPower = await proposal.getVotingPowerOfUser(

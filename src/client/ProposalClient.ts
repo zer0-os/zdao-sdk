@@ -1,11 +1,18 @@
-import { Signer } from 'ethers';
+import { BigNumber, Signer } from 'ethers';
 
 import { ProposalProperties } from '../types';
 import { Choice, Vote } from '../types';
-import { FailedTxError, NotSyncStateError, ZDAOError } from '../types/error';
+import {
+  AlreadyDestroyedError,
+  FailedTxError,
+  InvalidError,
+  NotSyncStateError,
+  ZDAOError,
+} from '../types/error';
 import { errorMessageForError } from '../utilities/messages';
 import AbstractProposalClient from './AbstractProposalClient';
 import DAOClient from './DAOClient';
+import GlobalClient from './GlobalClient';
 
 class ProposalClient extends AbstractProposalClient {
   private readonly _zDAO: DAOClient;
@@ -52,15 +59,35 @@ class ProposalClient extends AbstractProposalClient {
   }
 
   async vote(signer: Signer, choice: Choice) {
+    // zDAO should be active
+    if (this._zDAO.destroyed) {
+      throw new AlreadyDestroyedError();
+    }
+
+    // zDAO should be synchronized to Polygon prior to create proposal
     const polyZDAO = await this._zDAO.getPolyZDAO();
     if (!polyZDAO) {
       throw new NotSyncStateError();
     }
 
+    if (this.state !== 'active') {
+      throw new InvalidError(errorMessageForError('not-active-proposal'));
+    }
+
+    const account = await signer.getAddress();
+    const sp = await GlobalClient.staking.pastStakingPower(
+      account,
+      this._zDAO.childToken,
+      this.snapshot!
+    );
+    if (BigNumber.from(sp).eq(BigNumber.from(0))) {
+      throw new InvalidError(errorMessageForError('zero-voting-power'));
+    }
+
     try {
       const daoId = this._zDAO.id;
       const proposalId = this.id;
-      return await this._zDAO.polyZDAOChef.vote(
+      return await GlobalClient.polyZDAOChef.vote(
         signer,
         daoId,
         proposalId,
@@ -77,7 +104,7 @@ class ProposalClient extends AbstractProposalClient {
     const proposalId = this.id;
 
     try {
-      return await this._zDAO.polyZDAOChef.collectProposal(
+      return await GlobalClient.polyZDAOChef.collectProposal(
         signer,
         daoId,
         proposalId
@@ -127,7 +154,7 @@ class ProposalClient extends AbstractProposalClient {
 
       const daoId = this._zDAO.id;
       const proposalId = this.id;
-      return await this._zDAO.etherZDAOChef.executeProposal(
+      return await GlobalClient.etherZDAOChef.executeProposal(
         signer,
         daoId,
         proposalId
@@ -141,7 +168,7 @@ class ProposalClient extends AbstractProposalClient {
   collectTxHash(): Promise<string[]> {
     try {
       if (this.state === 'finalizing')
-        return this._zDAO.polyZDAOChef.collectTxHash(this._zDAO.id, this.id);
+        return GlobalClient.polyZDAOChef.collectTxHash(this._zDAO.id, this.id);
       return Promise.resolve([]);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
