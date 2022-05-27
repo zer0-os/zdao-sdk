@@ -153,13 +153,10 @@ class ProposalClient implements Proposal {
     if (!this.metadata) {
       throw new Error(errorMessageForError('empty-metadata'));
     }
-    return this._snapshotClient.getERC20BalanceOf({
+    return this._snapshotClient.getVotingPower({
       spaceId: this._zDAO.ens,
       network: this.network,
       snapshot: parseInt(this.snapshot),
-      token: this._zDAO.votingToken.token,
-      decimals: this._zDAO.votingToken.decimals,
-      symbol: this._zDAO.votingToken.symbol,
       voter: account,
     });
   }

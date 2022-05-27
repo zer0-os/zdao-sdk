@@ -107,7 +107,7 @@ describe('Snapshot test', async () => {
     );
   });
 
-  it.only('should get voting power', async () => {
+  it('should get voting power', async () => {
     const proposal = await daoInstance.getProposal(
       '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989'
     );

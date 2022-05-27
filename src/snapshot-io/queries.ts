@@ -25,6 +25,18 @@ export const SPACES_QUERY = gql`
   }
 `;
 
+export const SPACES_STRATEGIES_QUERY = gql`
+  query Spaces($id_in: [String]) {
+    spaces(where: { id_in: $id_in }) {
+      id
+      strategies {
+        name
+        params
+      }
+    }
+  }
+`;
+
 export const PROPOSALS_QUERY = gql`
   query Proposals(
     $spaceId: String!
