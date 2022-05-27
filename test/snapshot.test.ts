@@ -58,7 +58,11 @@ describe('Snapshot test', async () => {
       avatar: undefined,
       network: dao.network,
       safeAddress: dao.safeAddress,
-      votingToken: dao.votingToken,
+      votingToken: {
+        token: dao.votingToken,
+        symbol: 'vTEST',
+        decimals: 18,
+      },
     });
   });
 
@@ -103,7 +107,7 @@ describe('Snapshot test', async () => {
     );
   });
 
-  it('should get voting power', async () => {
+  it.only('should get voting power', async () => {
     const proposal = await daoInstance.getProposal(
       '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989'
     );
@@ -125,9 +129,9 @@ describe('Snapshot test', async () => {
         abi: JSON.stringify(TransferAbi),
         sender: daoInstance.safeAddress,
         recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
-        token: daoInstance.votingToken,
-        decimals: 18,
-        symbol: 'zDAOToken',
+        token: daoInstance.votingToken.token,
+        decimals: daoInstance.votingToken.decimals,
+        symbol: daoInstance.votingToken.symbol,
         amount: BigNumber.from(10).pow(18).mul(3000).toString(),
       },
     });
@@ -152,9 +156,9 @@ describe('Snapshot test', async () => {
         abi: JSON.stringify(TransferAbi),
         sender: daoInstance.safeAddress,
         recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
-        token: daoInstance.votingToken,
-        decimals: 18,
-        symbol: 'zDAOToken',
+        token: daoInstance.votingToken.token,
+        decimals: daoInstance.votingToken.decimals,
+        symbol: daoInstance.votingToken.symbol,
         amount: BigNumber.from(10).pow(18).mul(3000).toString(),
       },
     });

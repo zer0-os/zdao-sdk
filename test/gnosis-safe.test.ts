@@ -60,7 +60,11 @@ describe('Gnosis Safe test', async () => {
       avatar: undefined,
       network: dao.network,
       safeAddress: dao.safeAddress,
-      votingToken: dao.votingToken,
+      votingToken: {
+        token: dao.votingToken,
+        symbol: 'vTEST',
+        decimals: 18,
+      },
     });
   });
 
@@ -78,7 +82,7 @@ describe('Gnosis Safe test', async () => {
     const votingToken = assets.coins.find(
       (item: Coin) =>
         item.type === AssetType.ERC20 &&
-        item.address === daoInstance.votingToken
+        item.address === daoInstance.votingToken.token
     );
     expect(votingToken).to.be.not.equal(undefined);
 
@@ -112,7 +116,11 @@ describe('Gnosis Safe test', async () => {
       avatar: undefined,
       network: dao.network,
       safeAddress: dao.safeAddress,
-      votingToken: dao.votingToken,
+      votingToken: {
+        token: dao.votingToken,
+        symbol: 'vTEST',
+        decimals: 18,
+      },
     });
     const assets = await daoInstance.listAssets();
 
@@ -147,7 +155,11 @@ describe('Gnosis Safe test', async () => {
       avatar: undefined,
       network: dao.network,
       safeAddress: dao.safeAddress,
-      votingToken: dao.votingToken,
+      votingToken: {
+        token: dao.votingToken,
+        symbol: 'vTEST',
+        decimals: 18,
+      },
     });
     const assets = await daoInstance.listAssets();
 
@@ -168,7 +180,7 @@ describe('Gnosis Safe test', async () => {
     const filtered = txs.filter((tx: Transaction) => {
       if (tx.asset.type !== AssetType.ERC20) return false;
       const transferInfo = tx.asset as unknown as ERC20Transfer;
-      return transferInfo.tokenAddress === daoInstance.votingToken;
+      return transferInfo.tokenAddress === daoInstance.votingToken.token;
     });
     expect(filtered.length).to.be.gt(0);
 

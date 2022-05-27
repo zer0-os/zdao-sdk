@@ -95,13 +95,16 @@ export interface zDAOAssets {
   collectibles: Collectible[];
 }
 
-export interface TokenMetaData {
-  abi: string;
-  sender: string;
-  recipient: string; // asset recipient address
+export interface Token {
   token: string; // asset token address
   decimals: number;
   symbol: string; // token symbol
+}
+
+export interface TokenMetaData extends Token {
+  abi: string;
+  sender: string;
+  recipient: string; // asset recipient address
   amount: string; // BigNumber string mutiplied by decimals
 }
 
@@ -117,7 +120,7 @@ export interface zDAOProperties {
   network: string; // Chain id
   duration?: number; // Proposal duration if DAO has fixed duration
   safeAddress: string; // Gnosis Safe address
-  votingToken: string; // Voting token address
+  votingToken: Token; // Voting token
 }
 
 export interface ProposalProperties {

@@ -157,9 +157,9 @@ class ProposalClient implements Proposal {
       spaceId: this._zDAO.ens,
       network: this.network,
       snapshot: parseInt(this.snapshot),
-      token: this.metadata.token,
-      decimals: this.metadata.decimals,
-      symbol: this.metadata.symbol,
+      token: this._zDAO.votingToken.token,
+      decimals: this._zDAO.votingToken.decimals,
+      symbol: this._zDAO.votingToken.symbol,
       voter: account,
     });
   }

@@ -1,6 +1,8 @@
+import { ethers } from 'ethers';
 import shortid from 'shortid';
 
 import DAOClient from './client/DAOClient';
+import ERC20Abi from './config/constants/abi/ERC20.json';
 import SnapshotClient from './snapshot-io';
 import { Config, CreateZDAOParams, SDKInstance, zDAO, zNA } from './types';
 import { errorMessageForError } from './utilities/messages';
@@ -48,6 +50,14 @@ class SDKInstanceClient implements SDKInstance {
       throw new Error(errorMessageForError('not-found-strategy-in-snapshot'));
     }
 
+    const contract = new ethers.Contract(
+      strategy.params.address,
+      ERC20Abi,
+      this._config.zNA.provider
+    );
+    const symbol = await contract.symbol();
+    const decimals = await contract.decimals();
+
     return new DAOClient(this._config, {
       id: zDAORecord.id,
       ens: zDAORecord.ens,
@@ -58,7 +68,11 @@ class SDKInstanceClient implements SDKInstance {
       network: space.network,
       duration: space.duration,
       safeAddress: zDAORecord.gnosisSafe,
-      votingToken: strategy.params.address,
+      votingToken: {
+        token: strategy.params.address,
+        symbol,
+        decimals,
+      },
     });
   }
 
@@ -85,6 +99,14 @@ class SDKInstanceClient implements SDKInstance {
 
     this._params.push(param);
 
+    const contract = new ethers.Contract(
+      param.votingToken,
+      ERC20Abi,
+      this._config.zNA.provider
+    );
+    const symbol = await contract.symbol();
+    const decimals = await contract.decimals();
+
     return Promise.resolve(
       new DAOClient(this._config, {
         id: shortid.generate(),
@@ -96,7 +118,11 @@ class SDKInstanceClient implements SDKInstance {
         network: param.network.toString(),
         duration: param.duration,
         safeAddress: param.safeAddress,
-        votingToken: param.votingToken,
+        votingToken: {
+          token: param.votingToken,
+          symbol,
+          decimals,
+        },
       })
     );
   }
@@ -105,13 +131,21 @@ class SDKInstanceClient implements SDKInstance {
     return Promise.resolve(this._params.map((param) => param.zNA));
   }
 
-  getZDAOByZNAFromParams(zNA: zNA): Promise<zDAO> {
+  async getZDAOByZNAFromParams(zNA: zNA): Promise<zDAO> {
     if (!this.doesZDAOExist(zNA)) {
       throw new Error(errorMessageForError('not-found-zdao'));
     }
 
     const found = this._params.find((param) => param.zNA === zNA);
     if (!found) throw new Error(errorMessageForError('not-found-zdao'));
+
+    const contract = new ethers.Contract(
+      found.votingToken,
+      ERC20Abi,
+      this._config.zNA.provider
+    );
+    const symbol = await contract.symbol();
+    const decimals = await contract.decimals();
 
     return Promise.resolve(
       new DAOClient(this._config, {
@@ -124,7 +158,11 @@ class SDKInstanceClient implements SDKInstance {
         network: found.network.toString(),
         duration: found.duration,
         safeAddress: found.safeAddress,
-        votingToken: found.votingToken,
+        votingToken: {
+          token: found.votingToken,
+          symbol,
+          decimals,
+        },
       })
     );
   }
