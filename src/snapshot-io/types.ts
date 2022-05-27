@@ -10,6 +10,13 @@ export interface ERC20BalanceOfParams {
   voter: string;
 }
 
+export interface VotingPowerParams {
+  spaceId: ENS;
+  network: string;
+  snapshot: number;
+  voter: string;
+}
+
 export interface CreateProposalParams {
   spaceId: ENS;
   title: string;

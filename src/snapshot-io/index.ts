@@ -13,6 +13,7 @@ import {
   PROPOSAL_QUERY,
   PROPOSALS_QUERY,
   SPACES_QUERY,
+  SPACES_STRATEGIES_QUERY,
   VOTES_QUERY,
 } from './queries';
 import {
@@ -24,6 +25,7 @@ import {
   SnapshotSpaceDetails,
   SnapshotVote,
   VoteProposalParams,
+  VotingPowerParams,
 } from './types';
 
 class SnapshotClient {
@@ -148,6 +150,22 @@ class SnapshotClient {
     };
   }
 
+  async getSpaceStrategies(spaceId: ENS): Promise<any[]> {
+    const response = await this.graphQLQuery(
+      SPACES_STRATEGIES_QUERY,
+      {
+        id_in: [spaceId],
+      },
+      'spaces'
+    );
+    const filter = response.filter((item: any) => item.id === spaceId);
+
+    if (filter.length < 1) {
+      throw Error(errorMessageForError('not-found-ens-in-snapshot'));
+    }
+    return filter[0].strategies;
+  }
+
   async listProposals(
     spaceId: ENS,
     network: string,
@@ -243,6 +261,24 @@ class SnapshotClient {
       params.decimals,
       params.symbol
     );
+
+    let scores: any = await Client.utils.getScores(
+      params.spaceId,
+      strategies,
+      params.network,
+      [params.voter],
+      params.snapshot
+    );
+    scores = scores.map((score: any) =>
+      Object.values(score).reduce((a, b: any) => a + b, 0)
+    );
+    return scores.reduce((a: number, b: number) => a + b, 0);
+  }
+
+  async getVotingPower(params: VotingPowerParams): Promise<number> {
+    const strategies = await this.getSpaceStrategies(params.spaceId);
+
+    console.log('strategies', strategies);
 
     let scores: any = await Client.utils.getScores(
       params.spaceId,
