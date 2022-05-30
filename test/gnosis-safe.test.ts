@@ -208,4 +208,36 @@ describe('Gnosis Safe test', async () => {
     );
     expect(isOwner).to.be.equal(true);
   });
+
+  it('should propose transaction by owner', async () => {
+    const gnosisSafe = new GnosisSafeClient(config.gnosisSafe);
+
+    const provider = new ethers.providers.JsonRpcProvider(
+      env.rpcUrl,
+      env.network
+    );
+    const ownerSigner = new ethers.Wallet(
+      process.env.GNOSIS_OWNER_PRIVATE_KEY!,
+      provider
+    );
+
+    await expect(
+      gnosisSafe.transferEther(
+        daoInstance.safeAddress,
+        ownerSigner,
+        '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
+        '100000000000000'
+      )
+    ).to.be.not.rejected;
+
+    await expect(
+      gnosisSafe.transferERC20(
+        daoInstance.safeAddress,
+        ownerSigner,
+        daoInstance.votingToken.token,
+        '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
+        '100000000000000'
+      )
+    ).to.be.not.rejected;
+  });
 });

@@ -139,5 +139,5 @@ export interface Proposal extends ProposalProperties {
    * @exception throw Error if signer is not Gnosis Safe owner
    * @exception throw Error if proposal does not conain meta data to transfer tokens
    */
-  execute(signer: ethers.Wallet): Promise<ethers.providers.TransactionResponse>;
+  execute(signer: ethers.Wallet): Promise<void>;
 }

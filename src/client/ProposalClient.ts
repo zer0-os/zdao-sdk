@@ -173,9 +173,7 @@ class ProposalClient implements Proposal {
     });
   }
 
-  async execute(
-    signer: ethers.Signer
-  ): Promise<ethers.providers.TransactionResponse> {
+  async execute(signer: ethers.Signer): Promise<void> {
     const address = await signer.getAddress();
     const isOwner = await this._gnosisSafeClient.isOwnerAddress(
       signer,
@@ -192,7 +190,7 @@ class ProposalClient implements Proposal {
 
     if (!this.metadata?.token || this.metadata.token.length < 1) {
       // Ether transfer
-      return await this._gnosisSafeClient.transferEther(
+      await this._gnosisSafeClient.transferEther(
         this._zDAO.safeAddress,
         signer,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -202,7 +200,7 @@ class ProposalClient implements Proposal {
       );
     } else {
       // ERC20 transfer
-      return await this._gnosisSafeClient.transferERC20(
+      await this._gnosisSafeClient.transferERC20(
         this._zDAO.safeAddress,
         signer,
         this.metadata.token,
