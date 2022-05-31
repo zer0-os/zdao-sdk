@@ -136,7 +136,7 @@ export interface ProposalProperties {
   end: Date;
   state: 'pending' | 'active' | 'closed';
   network: string; // chain id
-  snapshot: string; // snapshot block number
+  snapshot: number; // snapshot block number
   scores: number[]; // scores per all the choices
   votes: number; // number of voters
   // token meta data is stored in ipfs, this member can be valid after calling

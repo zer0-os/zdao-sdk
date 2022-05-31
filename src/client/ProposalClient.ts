@@ -129,13 +129,22 @@ class ProposalClient implements Proposal {
     let from = 0;
     let numberOfResults = count;
     const votes: Vote[] = [];
+
+    const strategies = await this._snapshotClient.getSpaceStrategies(
+      this._zDAO.ens
+    );
+
     while (numberOfResults === count) {
-      const results = await this._snapshotClient.listVotes(
-        this.id,
+      const results = await this._snapshotClient.listVotes({
+        spaceId: this._zDAO.ens,
+        network: this._zDAO.network,
+        strategies: strategies,
+        proposalId: this.id,
+        snapshot: this.snapshot,
         from,
         count,
-        ''
-      );
+        voter: '',
+      });
       votes.push(
         ...results.map((vote: any) => ({
           voter: vote.voter,
@@ -156,7 +165,7 @@ class ProposalClient implements Proposal {
     return this._snapshotClient.getVotingPower({
       spaceId: this._zDAO.ens,
       network: this.network,
-      snapshot: parseInt(this.snapshot),
+      snapshot: this.snapshot,
       voter: account,
     });
   }

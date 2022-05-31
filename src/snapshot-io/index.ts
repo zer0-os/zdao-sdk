@@ -19,6 +19,7 @@ import {
 import {
   CreateProposalParams,
   ERC20BalanceOfParams,
+  ListVotesParams,
   SnapshotProposal,
   SnapshotProposalResponse,
   SnapshotSpace,
@@ -229,30 +230,41 @@ class SnapshotClient {
     };
   }
 
-  async listVotes(
-    proposalId: string,
-    from = 0,
-    count = 30000,
-    voter = ''
-  ): Promise<SnapshotVote[]> {
+  async listVotes(params: ListVotesParams): Promise<SnapshotVote[]> {
     const response = await this.graphQLQuery(
       VOTES_QUERY,
       {
-        id: proposalId,
+        id: params.proposalId,
         orderBy: 'vp',
         orderDirection: 'desc',
-        first: count,
-        voter,
-        skip: from,
+        first: params.count,
+        voter: params.voter,
+        skip: params.from,
       },
       'votes'
     );
+    const voters = response.map((vote: any) => vote.voter);
 
-    return response.map((vote: any) => ({
-      voter: vote.voter,
-      choice: vote.choice,
-      power: vote.vp,
-    }));
+    // Get scores
+    const scores = await Client.utils.getScores(
+      params.spaceId,
+      params.strategies,
+      params.network,
+      voters,
+      params.snapshot
+    );
+
+    return response.map((vote: any) => {
+      vote.scores = params.strategies.map(
+        (strategy: any, i: number) => scores[i][vote.voter] || 0
+      );
+      vote.balance = vote.scores.reduce((a: any, b: any) => a + b, 0);
+      return {
+        voter: vote.voter,
+        choice: vote.choice,
+        power: vote.balance,
+      };
+    });
   }
 
   async getERC20BalanceOf(params: ERC20BalanceOfParams): Promise<number> {
@@ -277,8 +289,6 @@ class SnapshotClient {
 
   async getVotingPower(params: VotingPowerParams): Promise<number> {
     const strategies = await this.getSpaceStrategies(params.spaceId);
-
-    console.log('strategies', strategies);
 
     let scores: any = await Client.utils.getScores(
       params.spaceId,
