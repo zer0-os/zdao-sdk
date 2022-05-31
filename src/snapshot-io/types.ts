@@ -1,8 +1,20 @@
 import { ENS } from '../types';
 
-export interface ERC20BalanceOfParams {
+export interface SpaceParams {
   spaceId: ENS;
   network: string;
+  strategies?: any;
+}
+
+export interface ListVotesParams extends SpaceParams {
+  proposalId: string;
+  snapshot: number;
+  from: number;
+  count: number;
+  voter: string;
+}
+
+export interface ERC20BalanceOfParams extends SpaceParams {
   snapshot: number;
   token: string;
   decimals: number;
@@ -10,21 +22,17 @@ export interface ERC20BalanceOfParams {
   voter: string;
 }
 
-export interface VotingPowerParams {
-  spaceId: ENS;
-  network: string;
+export interface VotingPowerParams extends SpaceParams {
   snapshot: number;
   voter: string;
 }
 
-export interface CreateProposalParams {
-  spaceId: ENS;
+export interface CreateProposalParams extends SpaceParams {
   title: string;
   body: string;
   choices: string[];
   duration: number;
   snapshot: number;
-  network: string;
   abi: string;
   sender: string;
   recipient: string;
@@ -67,7 +75,7 @@ export interface SnapshotProposal {
   end: Date;
   state: 'pending' | 'active' | 'closed';
   network: string; // chain id
-  snapshot: string; // snapshot block number
+  snapshot: number; // snapshot block number
   scores: number[]; // scores per all the choices
   votes: number; // number of voters
 }

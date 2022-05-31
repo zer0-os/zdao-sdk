@@ -129,13 +129,22 @@ class ProposalClient implements Proposal {
     let from = 0;
     let numberOfResults = count;
     const votes: Vote[] = [];
+
+    const strategies = await this._snapshotClient.getSpaceStrategies(
+      this._zDAO.ens
+    );
+
     while (numberOfResults === count) {
-      const results = await this._snapshotClient.listVotes(
-        this.id,
+      const results = await this._snapshotClient.listVotes({
+        spaceId: this._zDAO.ens,
+        network: this._zDAO.network,
+        strategies: strategies,
+        proposalId: this.id,
+        snapshot: this.snapshot,
         from,
         count,
-        ''
-      );
+        voter: '',
+      });
       votes.push(
         ...results.map((vote: any) => ({
           voter: vote.voter,
@@ -156,7 +165,7 @@ class ProposalClient implements Proposal {
     return this._snapshotClient.getVotingPower({
       spaceId: this._zDAO.ens,
       network: this.network,
-      snapshot: parseInt(this.snapshot),
+      snapshot: this.snapshot,
       voter: account,
     });
   }
@@ -173,9 +182,7 @@ class ProposalClient implements Proposal {
     });
   }
 
-  async execute(
-    signer: ethers.Signer
-  ): Promise<ethers.providers.TransactionResponse> {
+  async execute(signer: ethers.Signer): Promise<void> {
     const address = await signer.getAddress();
     const isOwner = await this._gnosisSafeClient.isOwnerAddress(
       signer,
@@ -192,7 +199,7 @@ class ProposalClient implements Proposal {
 
     if (!this.metadata?.token || this.metadata.token.length < 1) {
       // Ether transfer
-      return await this._gnosisSafeClient.transferEther(
+      await this._gnosisSafeClient.transferEther(
         this._zDAO.safeAddress,
         signer,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -202,7 +209,7 @@ class ProposalClient implements Proposal {
       );
     } else {
       // ERC20 transfer
-      return await this._gnosisSafeClient.transferERC20(
+      await this._gnosisSafeClient.transferERC20(
         this._zDAO.safeAddress,
         signer,
         this.metadata.token,
