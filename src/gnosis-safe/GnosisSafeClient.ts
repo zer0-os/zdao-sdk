@@ -1,5 +1,5 @@
 import Safe from '@gnosis.pm/safe-core-sdk';
-import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
+import { SafeTransactionDataPartial } from '@gnosis.pm/safe-core-sdk-types';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import {
   getBalances,
@@ -10,15 +10,17 @@ import {
   Transaction as Transaction,
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
-import { BigNumberish, ContractReceipt, ethers, Signer } from 'ethers';
+import SafeServiceClient from '@gnosis.pm/safe-service-client';
+import { BigNumberish, ethers, Signer } from 'ethers';
 
 import IPFSClient from '../client/IPFSClient';
 import { IPFSGatway } from '../config';
-import TransferAbi from '../config/abi/transfer.json';
+import ERC20Abi from '../config/abi/ERC20.json';
 import { GnosisSafeConfig } from '../types';
 
 class GnosisSafeClient {
   private readonly _config: GnosisSafeConfig;
+  private readonly EMPTY_DATA = '0x';
 
   constructor(config: GnosisSafeConfig) {
     this._config = config;
@@ -53,23 +55,42 @@ class GnosisSafeClient {
     signer: Signer,
     recipient: string,
     amount: BigNumberish
-  ): Promise<ContractReceipt> {
-    const service = new SafeService(this._config.serviceUri);
+  ): Promise<void> {
     const ethAdapter = new EthersAdapter({
       ethers,
       signer,
     });
+    const safeService = new SafeServiceClient(this._config.serviceUri);
     const safe = await Safe.create({
       ethAdapter,
       safeAddress: gnosisSafe,
     });
 
-    const safeSigner = new SafeEthersSigner(safe, service, signer.provider);
-    const tx = await safeSigner.sendTransaction({
+    const signerAddress = await signer.getAddress();
+    const nonce = await safeService.getNextNonce(gnosisSafe);
+    const transaction: SafeTransactionDataPartial = {
       to: recipient,
-      value: amount,
+      data: this.EMPTY_DATA,
+      value: amount.toString(),
+      operation: 0, // Optional
+      safeTxGas: 0, // Optional
+      baseGas: 0, // Optional
+      gasPrice: 0, // Optional
+      gasToken: '0x0000000000000000000000000000000000000000', // Optional
+      refundReceiver: '0x0000000000000000000000000000000000000000', // Optional
+      nonce: Number(nonce), // Optional
+    };
+
+    const safeTransaction = await safe.createTransaction(transaction);
+    await safe.signTransaction(safeTransaction);
+
+    const safeTxHash = await safe.getTransactionHash(safeTransaction);
+    await safeService.proposeTransaction({
+      safeAddress: gnosisSafe,
+      senderAddress: signerAddress,
+      safeTransaction,
+      safeTxHash,
     });
-    return await tx.wait();
   }
 
   async transferERC20(
@@ -78,27 +99,47 @@ class GnosisSafeClient {
     token: string,
     recipient: string,
     amount: BigNumberish
-  ): Promise<ContractReceipt> {
-    const service = new SafeService(this._config.serviceUri);
+  ): Promise<void> {
     const ethAdapter = new EthersAdapter({
       ethers,
       signer,
     });
+    const safeService = new SafeServiceClient(this._config.serviceUri);
     const safe = await Safe.create({
       ethAdapter,
       safeAddress: gnosisSafe,
     });
 
-    const safeSigner = new SafeEthersSigner(safe, service, signer.provider);
-    const transferContract = new ethers.Contract(
-      token,
-      TransferAbi,
-      safeSigner
-    );
-    const tx = await transferContract
-      .connect(safeSigner)
-      .transfer(recipient, amount);
-    return await tx.wait();
+    const signerAddress = await signer.getAddress();
+    const erc20Interface = new ethers.utils.Interface(ERC20Abi);
+    const txData = erc20Interface.encodeFunctionData('transfer', [
+      recipient,
+      amount,
+    ]);
+    const nonce = await safeService.getNextNonce(gnosisSafe);
+    const transaction: SafeTransactionDataPartial = {
+      to: token,
+      data: txData,
+      value: '0',
+      operation: 0, // Optional
+      safeTxGas: 0, // Optional
+      baseGas: 0, // Optional
+      gasPrice: 0, // Optional
+      gasToken: '0x0000000000000000000000000000000000000000', // Optional
+      refundReceiver: '0x0000000000000000000000000000000000000000', // Optional
+      nonce: Number(nonce), // Optional
+    };
+
+    const safeTransaction = await safe.createTransaction(transaction);
+    await safe.signTransaction(safeTransaction);
+
+    const safeTxHash = await safe.getTransactionHash(safeTransaction);
+    await safeService.proposeTransaction({
+      safeAddress: gnosisSafe,
+      senderAddress: signerAddress,
+      safeTransaction,
+      safeTxHash,
+    });
   }
 
   async listAssets(
