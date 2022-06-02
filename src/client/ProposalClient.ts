@@ -140,7 +140,7 @@ class ProposalClient implements Proposal {
         network: this._zDAO.network,
         strategies: strategies,
         proposalId: this.id,
-        snapshot: this.snapshot,
+        snapshot: Number(this.snapshot),
         from,
         count,
         voter: '',
@@ -165,7 +165,7 @@ class ProposalClient implements Proposal {
     return this._snapshotClient.getVotingPower({
       spaceId: this._zDAO.ens,
       network: this.network,
-      snapshot: this.snapshot,
+      snapshot: Number(this.snapshot),
       voter: account,
     });
   }
