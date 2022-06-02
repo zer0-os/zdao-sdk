@@ -176,10 +176,10 @@ export interface Proposal extends ProposalProperties {
   vote(signer: Signer, choice: Choice): Promise<ContractReceipt>;
 
   /**
-   * Collect voting result and sync to ethereum
+   * Calculate voting result and sync to ethereum
    * @param signer signer wallet
    */
-  collect(signer: Signer): Promise<ContractReceipt>;
+  calculate(signer: Signer): Promise<ContractReceipt>;
 
   /**
    * Execute a proposal in zDAO
@@ -191,9 +191,9 @@ export interface Proposal extends ProposalProperties {
   execute(signer: Signer): Promise<ContractReceipt>;
 
   /**
-   * Find all the transaction hashes which collected proposal
+   * Find all the checkpointing transaction hashes
    */
-  collectTxHash(): Promise<string[]>;
+  getCheckPointingHashes(): Promise<string[]>;
 }
 
 export interface Staking extends StakingProperties {

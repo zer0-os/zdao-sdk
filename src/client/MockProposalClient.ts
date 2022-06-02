@@ -58,7 +58,7 @@ class MockProposalClient extends AbstractProposalClient {
     return Promise.resolve(this.makeContractReceipt());
   }
 
-  collect(_: Signer): Promise<ContractReceipt> {
+  calculate(_: Signer): Promise<ContractReceipt> {
     throw new NotImplementedError();
   }
 
@@ -66,7 +66,7 @@ class MockProposalClient extends AbstractProposalClient {
     throw new NotImplementedError();
   }
 
-  collectTxHash(): Promise<string[]> {
+  getCheckPointingHashes(): Promise<string[]> {
     throw new NotImplementedError();
   }
 }
