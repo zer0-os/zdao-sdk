@@ -187,7 +187,7 @@ const main = async () => {
       const tx = await proposal.calculate(mumbaiSigner);
       console.log('successfully calculated on polygon', tx.transactionHash);
     } else if (proposal.state === 'awaiting-finalization') {
-      const hashes = await proposal.collectTxHash();
+      const hashes = await proposal.getCheckPointingHashes();
       console.log('tx hashes', hashes);
 
       for (const hash of hashes) {
