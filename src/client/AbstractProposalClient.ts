@@ -76,7 +76,7 @@ class AbstractProposalClient implements Proposal {
     throw new NotImplementedError();
   }
 
-  collect(_: Signer): Promise<ContractReceipt> {
+  calculate(_: Signer): Promise<ContractReceipt> {
     throw new NotImplementedError();
   }
 
@@ -84,7 +84,7 @@ class AbstractProposalClient implements Proposal {
     throw new NotImplementedError();
   }
 
-  collectTxHash(): Promise<string[]> {
+  getCheckPointingHashes(): Promise<string[]> {
     throw new NotImplementedError();
   }
 }

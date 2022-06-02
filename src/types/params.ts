@@ -59,3 +59,10 @@ export interface ExecuteProposalParams {
   // Unique id for looking up proposal
   proposal: ProposalId;
 }
+
+export interface TokenMintOptions {
+  // Target address to mint for
+  target: string;
+  // Mint amount (as big number)
+  amount: string;
+}

@@ -183,11 +183,11 @@ const main = async () => {
 
       const votes = await proposal.listVotes();
       console.log('votes', votes);
-    } else if (proposal.state === 'calculating') {
-      const tx = await proposal.collect(mumbaiSigner);
-      console.log('successfully collected on polygon', tx.transactionHash);
-    } else if (proposal.state === 'finalizing') {
-      const hashes = await proposal.collectTxHash();
+    } else if (proposal.state === 'awaiting-calculation') {
+      const tx = await proposal.calculate(mumbaiSigner);
+      console.log('successfully calculated on polygon', tx.transactionHash);
+    } else if (proposal.state === 'awaiting-finalization') {
+      const hashes = await proposal.getCheckPointingHashes();
       console.log('tx hashes', hashes);
 
       for (const hash of hashes) {
@@ -202,7 +202,7 @@ const main = async () => {
           console.error(error);
         }
       }
-    } else if (proposal.state === 'succeeded') {
+    } else if (proposal.state === 'awaiting-execution') {
       console.log('executing', proposal.id);
       await proposal.execute(goerliGnosisOwnerSigner);
       console.log('executed', proposal.id);

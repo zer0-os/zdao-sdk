@@ -72,6 +72,10 @@ const ErrorMessages = [
     value: 'Failed to create proposal',
   },
   {
+    key: 'failed-create-token',
+    value: 'Failed to create zToken',
+  },
+  {
     key: 'should-hold-token',
     value: 'Should hold at least %amount% tokens',
   },

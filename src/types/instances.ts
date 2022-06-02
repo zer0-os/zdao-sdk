@@ -1,6 +1,10 @@
 import { ContractReceipt, Signer } from 'ethers';
 
-import { CreateProposalParams, CreateZDAOParams } from './params';
+import {
+  CreateProposalParams,
+  CreateZDAOParams,
+  TokenMintOptions,
+} from './params';
 import { Choice, ProposalId, zDAOId, zNA } from './primitives';
 import {
   ProposalProperties,
@@ -56,6 +60,19 @@ export interface SDKInstance {
    * @returns true if zNA exists
    */
   doesZDAOExist(zNA: zNA): Promise<boolean>;
+
+  /**
+   * Create new zToken with given name and symbol and return deployed address
+   * @param name name of zToken
+   * @param symbol symbol of zToken
+   * @param options mint options
+   */
+  createZToken(
+    signer: Signer,
+    name: string,
+    symbol: string,
+    options?: TokenMintOptions
+  ): Promise<string>;
 
   /**
    * Create zDAO from parameters for test
@@ -159,10 +176,10 @@ export interface Proposal extends ProposalProperties {
   vote(signer: Signer, choice: Choice): Promise<ContractReceipt>;
 
   /**
-   * Collect voting result and sync to ethereum
+   * Calculate voting result and sync to ethereum
    * @param signer signer wallet
    */
-  collect(signer: Signer): Promise<ContractReceipt>;
+  calculate(signer: Signer): Promise<ContractReceipt>;
 
   /**
    * Execute a proposal in zDAO
@@ -174,9 +191,9 @@ export interface Proposal extends ProposalProperties {
   execute(signer: Signer): Promise<ContractReceipt>;
 
   /**
-   * Find all the transaction hashes which collected proposal
+   * Find all the checkpointing transaction hashes
    */
-  collectTxHash(): Promise<string[]>;
+  getCheckPointingHashes(): Promise<string[]>;
 }
 
 export interface Staking extends StakingProperties {

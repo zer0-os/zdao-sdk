@@ -63,7 +63,7 @@ export declare namespace IEtherZDAO {
     voters: BigNumberish;
     ipfs: string;
     snapshot: BigNumberish;
-    collected: boolean;
+    calculated: boolean;
     executed: boolean;
     canceled: boolean;
   };
@@ -87,7 +87,7 @@ export declare namespace IEtherZDAO {
     voters: BigNumber;
     ipfs: string;
     snapshot: BigNumber;
-    collected: boolean;
+    calculated: boolean;
     executed: boolean;
     canceled: boolean;
   };
@@ -98,8 +98,8 @@ export interface EtherZDAOInterface extends utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "__ZDAO_init(address,uint256,address,(string,address,address,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
+    "calculateProposal(uint256,uint256,uint256,uint256)": FunctionFragment;
     "cancelProposal(address,uint256)": FunctionFragment;
-    "collectProposal(uint256,uint256,uint256,uint256)": FunctionFragment;
     "createProposal(address,string)": FunctionFragment;
     "destroyed()": FunctionFragment;
     "executeProposal(address,uint256)": FunctionFragment;
@@ -139,12 +139,12 @@ export interface EtherZDAOInterface extends utils.Interface {
     values: [string, BigNumberish, string, IEtherZDAOChef.ZDAOConfigStruct]
   ): string;
   encodeFunctionData(
-    functionFragment: "cancelProposal",
-    values: [string, BigNumberish]
+    functionFragment: "calculateProposal",
+    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "collectProposal",
-    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+    functionFragment: "cancelProposal",
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "createProposal",
@@ -241,11 +241,11 @@ export interface EtherZDAOInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "cancelProposal",
+    functionFragment: "calculateProposal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "collectProposal",
+    functionFragment: "cancelProposal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -436,17 +436,17 @@ export interface EtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    cancelProposal(
-      arg0: string,
-      _proposalId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    collectProposal(
+    calculateProposal(
       _proposalId: BigNumberish,
       _voters: BigNumberish,
       _yes: BigNumberish,
       _no: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    cancelProposal(
+      _cancelBy: string,
+      _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -524,7 +524,7 @@ export interface EtherZDAO extends BaseContract {
         voters: BigNumber;
         ipfs: string;
         snapshot: BigNumber;
-        collected: boolean;
+        calculated: boolean;
         executed: boolean;
         canceled: boolean;
       }
@@ -639,17 +639,17 @@ export interface EtherZDAO extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  cancelProposal(
-    arg0: string,
-    _proposalId: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  collectProposal(
+  calculateProposal(
     _proposalId: BigNumberish,
     _voters: BigNumberish,
     _yes: BigNumberish,
     _no: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  cancelProposal(
+    _cancelBy: string,
+    _proposalId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -723,7 +723,7 @@ export interface EtherZDAO extends BaseContract {
       voters: BigNumber;
       ipfs: string;
       snapshot: BigNumber;
-      collected: boolean;
+      calculated: boolean;
       executed: boolean;
       canceled: boolean;
     }
@@ -835,17 +835,17 @@ export interface EtherZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    cancelProposal(
-      arg0: string,
-      _proposalId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    collectProposal(
+    calculateProposal(
       _proposalId: BigNumberish,
       _voters: BigNumberish,
       _yes: BigNumberish,
       _no: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    cancelProposal(
+      _cancelBy: string,
+      _proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -919,7 +919,7 @@ export interface EtherZDAO extends BaseContract {
         voters: BigNumber;
         ipfs: string;
         snapshot: BigNumber;
-        collected: boolean;
+        calculated: boolean;
         executed: boolean;
         canceled: boolean;
       }
@@ -1097,17 +1097,17 @@ export interface EtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    cancelProposal(
-      arg0: string,
-      _proposalId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    collectProposal(
+    calculateProposal(
       _proposalId: BigNumberish,
       _voters: BigNumberish,
       _yes: BigNumberish,
       _no: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    cancelProposal(
+      _cancelBy: string,
+      _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1246,17 +1246,17 @@ export interface EtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    cancelProposal(
-      arg0: string,
-      _proposalId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    collectProposal(
+    calculateProposal(
       _proposalId: BigNumberish,
       _voters: BigNumberish,
       _yes: BigNumberish,
       _no: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    cancelProposal(
+      _cancelBy: string,
+      _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -89,14 +89,18 @@ class PolyZDAOChefClient {
     return await tx.wait();
   }
 
-  async collectProposal(signer: Signer, daoId: zDAOId, proposalId: ProposalId) {
+  async calculateProposal(
+    signer: Signer,
+    daoId: zDAOId,
+    proposalId: ProposalId
+  ) {
     const tx = await this._contract
       .connect(signer)
-      .collectProposal(daoId, proposalId);
+      .calculateProposal(daoId, proposalId);
     return await tx.wait();
   }
 
-  async collectTxHash(
+  async getCheckPointingHashes(
     daoId: zDAOId,
     proposalId: ProposalId
   ): Promise<string[]> {
@@ -106,7 +110,7 @@ class PolyZDAOChefClient {
     const creationBlock = this._config.blockNumber;
     console.log('creationBlock', creationBlock);
 
-    // event ProposalCollected(
+    // event ProposalCalculated(
     //   uint256 indexed _zDAOId,
     //   uint256 indexed _proposalId,
     //   uint256 _voters,
@@ -116,7 +120,7 @@ class PolyZDAOChefClient {
 
     const blockCount = 3490;
 
-    const filter = this._contract.filters.ProposalCollected(
+    const filter = this._contract.filters.ProposalCalculated(
       BigNumber.from(daoId),
       BigNumber.from(proposalId)
     );

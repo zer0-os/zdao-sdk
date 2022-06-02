@@ -99,12 +99,12 @@ class ProposalClient extends AbstractProposalClient {
     }
   }
 
-  async collect(signer: Signer) {
+  async calculate(signer: Signer) {
     const daoId = this._zDAO.id;
     const proposalId = this.id;
 
     try {
-      return await GlobalClient.polyZDAOChef.collectProposal(
+      return await GlobalClient.polyZDAOChef.calculateProposal(
         signer,
         daoId,
         proposalId
@@ -165,10 +165,13 @@ class ProposalClient extends AbstractProposalClient {
     }
   }
 
-  collectTxHash(): Promise<string[]> {
+  getCheckPointingHashes(): Promise<string[]> {
     try {
-      if (this.state === 'finalizing')
-        return GlobalClient.polyZDAOChef.collectTxHash(this._zDAO.id, this.id);
+      if (this.state === 'awaiting-finalization')
+        return GlobalClient.polyZDAOChef.getCheckPointingHashes(
+          this._zDAO.id,
+          this.id
+        );
       return Promise.resolve([]);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;

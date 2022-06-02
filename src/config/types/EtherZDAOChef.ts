@@ -351,8 +351,8 @@ export interface EtherZDAOChefInterface extends utils.Interface {
     "LinkRemoved(uint256,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
+    "ProposalCalculated(uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "ProposalCanceled(uint256,uint256,address)": EventFragment;
-    "ProposalCollected(uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "ProposalCreated(uint256,uint256,address,uint256)": EventFragment;
     "ProposalExecuted(uint256,uint256,address)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
@@ -372,8 +372,8 @@ export interface EtherZDAOChefInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "LinkRemoved"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCalculated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalCanceled"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ProposalCollected"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
@@ -447,15 +447,7 @@ export type PausedEvent = TypedEvent<[string], { account: string }>;
 
 export type PausedEventFilter = TypedEventFilter<PausedEvent>;
 
-export type ProposalCanceledEvent = TypedEvent<
-  [BigNumber, BigNumber, string],
-  { _zDAOId: BigNumber; _proposalId: BigNumber; _cancelBy: string }
->;
-
-export type ProposalCanceledEventFilter =
-  TypedEventFilter<ProposalCanceledEvent>;
-
-export type ProposalCollectedEvent = TypedEvent<
+export type ProposalCalculatedEvent = TypedEvent<
   [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber],
   {
     _zDAOId: BigNumber;
@@ -466,8 +458,16 @@ export type ProposalCollectedEvent = TypedEvent<
   }
 >;
 
-export type ProposalCollectedEventFilter =
-  TypedEventFilter<ProposalCollectedEvent>;
+export type ProposalCalculatedEventFilter =
+  TypedEventFilter<ProposalCalculatedEvent>;
+
+export type ProposalCanceledEvent = TypedEvent<
+  [BigNumber, BigNumber, string],
+  { _zDAOId: BigNumber; _proposalId: BigNumber; _cancelBy: string }
+>;
+
+export type ProposalCanceledEventFilter =
+  TypedEventFilter<ProposalCanceledEvent>;
 
 export type ProposalCreatedEvent = TypedEvent<
   [BigNumber, BigNumber, string, BigNumber],
@@ -1137,6 +1137,21 @@ export interface EtherZDAOChef extends BaseContract {
     "Paused(address)"(account?: null): PausedEventFilter;
     Paused(account?: null): PausedEventFilter;
 
+    "ProposalCalculated(uint256,uint256,uint256,uint256,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _propoalId?: BigNumberish | null,
+      _voters?: null,
+      _yes?: null,
+      _no?: null
+    ): ProposalCalculatedEventFilter;
+    ProposalCalculated(
+      _zDAOId?: BigNumberish | null,
+      _propoalId?: BigNumberish | null,
+      _voters?: null,
+      _yes?: null,
+      _no?: null
+    ): ProposalCalculatedEventFilter;
+
     "ProposalCanceled(uint256,uint256,address)"(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
@@ -1147,21 +1162,6 @@ export interface EtherZDAOChef extends BaseContract {
       _proposalId?: BigNumberish | null,
       _cancelBy?: string | null
     ): ProposalCanceledEventFilter;
-
-    "ProposalCollected(uint256,uint256,uint256,uint256,uint256)"(
-      _zDAOId?: BigNumberish | null,
-      _propoalId?: BigNumberish | null,
-      _voters?: null,
-      _yes?: null,
-      _no?: null
-    ): ProposalCollectedEventFilter;
-    ProposalCollected(
-      _zDAOId?: BigNumberish | null,
-      _propoalId?: BigNumberish | null,
-      _voters?: null,
-      _yes?: null,
-      _no?: null
-    ): ProposalCollectedEventFilter;
 
     "ProposalCreated(uint256,uint256,address,uint256)"(
       _zDAOId?: BigNumberish | null,

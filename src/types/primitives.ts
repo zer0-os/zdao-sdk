@@ -6,11 +6,25 @@ export type VoteId = string;
 export type Choice = 1 | 2; // 0: None, 1: Yes, 2: No
 export type zDAOState = 'pending' | 'active' | 'canceled';
 export type ProposalState =
-  | 'pending' // If not sync to Polygon network
+  // The proposal was created and waiting to synchronized to Polygon
+  | 'pending'
+  // The proposal was canceled before calculation
   | 'canceled'
+  // The proposal was successfully created and sychronized to Polygon,
+  // voters can participate a voting.
   | 'active'
-  | 'calculating' // The proposal ends and is waiting to collect
-  | 'finalizing' // The proposal has been colleted on Polygon, waiting sync to Ethereum
-  | 'succeeded' // The proposal has been synced to Ethereum and succeeded
-  | 'failed' // The proposal has been synced to Ethereum and failed
+  // The proposal was ended and ready to calculate voting result on Polygon
+  // and send it to Ethereum
+  | 'awaiting-calculation'
+  // The proposal was triggerred the calculation of voting result on Polygon
+  // and sending it to Ethereum
+  | 'bridging'
+  // The calculated voting result was arrived on Ethereum and ready to
+  // finalize result
+  | 'awaiting-finalization'
+  // The proposal was succeeded on voting and ready to execute proposal
+  | 'awaiting-execution'
+  // The proposal was failed on voting
+  | 'failed'
+  // The proposal was successfully executed
   | 'executed';

@@ -188,12 +188,12 @@ class DAOClient extends AbstractDAOClient {
         return 'active';
       } else if (raw.executed) {
         return 'executed';
-      } else if (raw.collected) {
-        return canExecute() ? 'succeeded' : 'failed';
-      } else if (polyProposal?.collected) {
-        return 'finalizing';
+      } else if (raw.calculated) {
+        return canExecute() ? 'awaiting-execution' : 'failed';
+      } else if (polyProposal?.calculated) {
+        return 'awaiting-finalization';
       }
-      return 'calculating';
+      return 'awaiting-calculation';
     };
 
     const ipfsData = await IPFSClient.getJson(raw.ipfs.toString(), IPFSGatway);
