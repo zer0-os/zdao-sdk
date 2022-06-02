@@ -196,7 +196,7 @@ class SnapshotClient {
       end: new Date(response.end * 1000),
       state: response.state,
       network: response.network,
-      snapshot: response.snapshot,
+      snapshot: Number(response.snapshot),
       scores: response.scores,
       votes: response.votes,
     }));
@@ -224,7 +224,7 @@ class SnapshotClient {
       end: new Date(response.end * 1000),
       state: response.state,
       network: response.network,
-      snapshot: response.snapshot,
+      snapshot: Number(response.snapshot),
       scores: response.scores,
       votes: response.votes,
     };
@@ -295,7 +295,7 @@ class SnapshotClient {
       strategies,
       params.network,
       [params.voter],
-      params.snapshot
+      Number(params.snapshot)
     );
     scores = scores.map((score: any) =>
       Object.values(score).reduce((a, b: any) => a + b, 0)
@@ -322,7 +322,7 @@ class SnapshotClient {
         choices: params.choices,
         start: timestamp(startDateTime),
         end: timestamp(addSeconds(startDateTime, params.duration)),
-        snapshot: params.snapshot,
+        snapshot: Number(params.snapshot),
         network: params.network,
         strategies: JSON.stringify(
           this.generateStrategies(params.token, params.decimals, params.symbol)

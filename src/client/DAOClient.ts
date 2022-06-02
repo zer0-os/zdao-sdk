@@ -212,7 +212,7 @@ class DAOClient implements zDAO {
                 end: proposal.end,
                 state: proposal.state,
                 network: proposal.network,
-                snapshot: proposal.snapshot,
+                snapshot: Number(proposal.snapshot),
                 scores: proposal.scores,
                 votes: proposal.votes,
               }
@@ -247,7 +247,7 @@ class DAOClient implements zDAO {
         end: proposal.end,
         state: proposal.state,
         network: proposal.network,
-        snapshot: proposal.snapshot,
+        snapshot: Number(proposal.snapshot),
         scores: proposal.scores,
         votes: proposal.votes,
       }
@@ -272,7 +272,7 @@ class DAOClient implements zDAO {
         body: payload.body ?? '',
         choices: Object.values(VoteChoice),
         duration: duration!,
-        snapshot: payload.snapshot,
+        snapshot: Number(payload.snapshot),
         network: this.network,
         abi: payload.transfer.abi,
         sender: this.safeAddress,
@@ -302,7 +302,7 @@ class DAOClient implements zDAO {
         end: proposal.end,
         state: proposal.state,
         network: proposal.network,
-        snapshot: proposal.snapshot,
+        snapshot: Number(proposal.snapshot),
         scores: proposal.scores,
         votes: proposal.votes,
       }
