@@ -16,6 +16,7 @@ import {
   AssetType,
   Config,
   CreateProposalParams,
+  PaginationParam,
   Proposal,
   ProposalId,
   Transaction,
@@ -35,10 +36,16 @@ class DAOClient implements zDAO {
   protected readonly _snapshotClient: SnapshotClient;
   protected readonly _gnosisSafeClient: GnosisSafeClient;
   protected readonly _properties: zDAOProperties;
+  private readonly _options: any;
 
-  constructor(config: Config, properties: zDAOProperties) {
+  private constructor(
+    config: Config,
+    properties: zDAOProperties,
+    options: any
+  ) {
     this._config = config;
     this._properties = cloneDeep(properties);
+    this._options = options;
 
     this._snapshotClient = new SnapshotClient(config.snapshot);
     this._gnosisSafeClient = new GnosisSafeClient(config.gnosisSafe);
@@ -82,6 +89,23 @@ class DAOClient implements zDAO {
 
   get votingToken() {
     return this._properties.votingToken;
+  }
+
+  static async createInstance(
+    config: Config,
+    properties: zDAOProperties,
+    options: any
+  ): Promise<zDAO> {
+    if (options === undefined) {
+      const snapshotClient = new SnapshotClient(config.snapshot);
+      const strategies = await snapshotClient.getSpaceStrategies(
+        properties.ens
+      );
+      options = { strategies };
+    }
+
+    const zDAO = new DAOClient(config, properties, options);
+    return zDAO;
   }
 
   async listAssets(): Promise<zDAOAssets> {
@@ -176,18 +200,20 @@ class DAOClient implements zDAO {
     });
   }
 
-  async listProposals(): Promise<Proposal[]> {
-    const count = 3000;
-    let from = 0;
-    let numberOfResults = count;
+  async listProposals(pagination?: PaginationParam): Promise<Proposal[]> {
+    const limit = 3000;
+    let from = pagination?.from ?? 0;
+    let count = pagination?.count ?? limit;
+    let numberOfResults = limit;
     const promises: Promise<Proposal>[] = [];
-    while (numberOfResults === count) {
+
+    while (numberOfResults === limit) {
       const results: SnapshotProposal[] =
         await this._snapshotClient.listProposals(
           this.ens,
           this.network,
           from,
-          count
+          count >= limit ? limit : count
         );
 
       promises.push(
@@ -215,11 +241,16 @@ class DAOClient implements zDAO {
                 snapshot: Number(proposal.snapshot),
                 scores: proposal.scores,
                 votes: proposal.votes,
+              },
+              {
+                strategies: this._options.strategies,
+                scores_state: proposal.scores_state,
               }
             )
         )
       );
       from += results.length;
+      count -= results.length;
       numberOfResults = results.length;
     }
     return await Promise.all(promises);
@@ -252,6 +283,10 @@ class DAOClient implements zDAO {
         snapshot: Number(proposal.snapshot),
         scores: proposal.scores,
         votes: proposal.votes,
+      },
+      {
+        strategies: this._options.strategies,
+        scores_state: proposal.scores_state,
       }
     );
   }
@@ -309,6 +344,10 @@ class DAOClient implements zDAO {
         snapshot: Number(proposal.snapshot),
         scores: proposal.scores,
         votes: proposal.votes,
+      },
+      {
+        strategies: this._options.strategies,
+        scores_state: proposal.scores_state,
       }
     );
   }

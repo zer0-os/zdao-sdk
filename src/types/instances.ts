@@ -1,6 +1,10 @@
 import { ethers } from 'ethers';
 
-import { CreateProposalParams, CreateZDAOParams } from './params';
+import {
+  CreateProposalParams,
+  CreateZDAOParams,
+  PaginationParam,
+} from './params';
 import { Choice, ProposalId, VoteId, zNA } from './primitives';
 import {
   ProposalProperties,
@@ -90,7 +94,7 @@ export interface zDAO extends zDAOProperties {
    * Get the list of the proposals created in the zDAO
    * @return list of proposals
    */
-  listProposals(): Promise<Proposal[]>;
+  listProposals(pagination?: PaginationParam): Promise<Proposal[]>;
 
   /**
    * Get the specific proposal
@@ -117,7 +121,7 @@ export interface Proposal extends ProposalProperties {
    * Get all the votes by proposal id filtering with the function parameter
    * @returns list of votes
    */
-  listVotes(): Promise<Vote[]>;
+  listVotes(pagination?: PaginationParam): Promise<Vote[]>;
 
   /**
    * Get voting power of the user in zDAO
@@ -134,7 +138,7 @@ export interface Proposal extends ProposalProperties {
    * @returns vote id if successfully cast a vote
    */
   vote(
-    provider: ethers.providers.Web3Provider,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
     choice: Choice
   ): Promise<VoteId>;

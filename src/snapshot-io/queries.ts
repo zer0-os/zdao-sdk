@@ -64,6 +64,7 @@ export const PROPOSALS_QUERY = gql`
       state
       network
       snapshot
+      scores_state
       scores
       votes
     }

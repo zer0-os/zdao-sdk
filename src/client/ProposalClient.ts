@@ -3,7 +3,7 @@ import { cloneDeep } from 'lodash';
 
 import GnosisSafeClient from '../gnosis-safe';
 import SnapshotClient from '../snapshot-io';
-import { ProposalProperties, VoteId } from '../types';
+import { PaginationParam, ProposalProperties, VoteId } from '../types';
 import { Choice, Proposal, Vote } from '../types';
 import { errorMessageForError } from '../utilities/messages';
 import DAOClient from './DAOClient';
@@ -13,17 +13,20 @@ class ProposalClient implements Proposal {
   private readonly _snapshotClient: SnapshotClient;
   private readonly _gnosisSafeClient: GnosisSafeClient;
   protected readonly _properties: ProposalProperties;
+  private readonly _options: any;
 
   private constructor(
     zDAO: DAOClient,
     snapshotClient: SnapshotClient,
     gnosisSafeClient: GnosisSafeClient,
-    properties: ProposalProperties
+    properties: ProposalProperties,
+    options: any
   ) {
     this._zDAO = zDAO;
     this._snapshotClient = snapshotClient;
     this._gnosisSafeClient = gnosisSafeClient;
     this._properties = cloneDeep(properties);
+    this._options = options;
   }
 
   get id() {
@@ -94,13 +97,15 @@ class ProposalClient implements Proposal {
     zDAO: DAOClient,
     snapshotClient: SnapshotClient,
     gnosisSafeClient: GnosisSafeClient,
-    properties: ProposalProperties
+    properties: ProposalProperties,
+    options: any
   ): Promise<Proposal> {
     const proposal = new ProposalClient(
       zDAO,
       snapshotClient,
       gnosisSafeClient,
-      properties
+      properties,
+      options
     );
     await proposal.getTokenMetadata();
     return proposal;
@@ -147,25 +152,23 @@ class ProposalClient implements Proposal {
     } catch (error) {}
   }
 
-  async listVotes(): Promise<Vote[]> {
-    const count = 30000;
-    let from = 0;
-    let numberOfResults = count;
+  async listVotes(pagination?: PaginationParam): Promise<Vote[]> {
+    const limit = 30000;
+    let from = pagination?.from ?? 0;
+    let count = pagination?.count ?? limit;
+    let numberOfResults = limit;
     const votes: Vote[] = [];
 
-    const strategies = await this._snapshotClient.getSpaceStrategies(
-      this._zDAO.ens
-    );
-
-    while (numberOfResults === count) {
+    while (numberOfResults === limit) {
       const results = await this._snapshotClient.listVotes({
         spaceId: this._zDAO.ens,
         network: this._zDAO.network,
-        strategies: strategies,
+        strategies: this._options.strategies,
         proposalId: this.id,
+        scores_state: this._options.scores_state,
         snapshot: Number(this.snapshot),
         from,
-        count,
+        count: count >= limit ? limit : count,
         voter: '',
       });
       votes.push(
@@ -176,6 +179,7 @@ class ProposalClient implements Proposal {
         }))
       );
       from += results.length;
+      count -= results.length;
       numberOfResults = results.length;
     }
     return votes;
@@ -194,7 +198,7 @@ class ProposalClient implements Proposal {
   }
 
   async vote(
-    provider: ethers.providers.Web3Provider,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
     choice: Choice
   ): Promise<VoteId> {
