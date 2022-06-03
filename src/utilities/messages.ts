@@ -40,6 +40,10 @@ const ErrorMessages = [
     value: 'Not implemented',
   },
   {
+    key: 'failed-create-token',
+    value: 'Failed to create zToken',
+  },
+  {
     key: 'failed-create-proposal',
     value: 'Failed to create proposal',
   },

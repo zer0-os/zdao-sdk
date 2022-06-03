@@ -19,6 +19,7 @@ import {
 import {
   CreateProposalParams,
   ERC20BalanceOfParams,
+  GetProposalParams,
   ListVotesParams,
   SnapshotProposal,
   SnapshotProposalResponse,
@@ -202,14 +203,68 @@ class SnapshotClient {
     }));
   }
 
-  async getProposal(proposalId: string): Promise<SnapshotProposal> {
+  async getProposal(params: GetProposalParams): Promise<SnapshotProposal> {
     const response = await this.graphQLQuery(
       PROPOSAL_QUERY,
       {
-        id: proposalId,
+        id: params.proposalId,
       },
       'proposal'
     );
+
+    let proposalScores = response.scores;
+    if (
+      response.scores_state !== 'invalid' &&
+      response.scores_state !== 'final'
+    ) {
+      // latest scores are still pending on calculation
+      // it requires to update right now
+      const voteResponse = await this.graphQLQuery(
+        VOTES_QUERY,
+        {
+          id: params.proposalId,
+          orderBy: 'vp',
+          orderDirection: 'desc',
+          first: 30000,
+          voter: '',
+          skip: 0,
+        },
+        'votes'
+      );
+      const voters = voteResponse.map((vote: any) => vote.voter);
+
+      let strategies = params.strategies;
+      if (!params.strategies) {
+        strategies = await this.getSpaceStrategies(params.spaceId);
+      }
+
+      // Get scores
+      const scores = await Client.utils.getScores(
+        params.spaceId,
+        strategies,
+        params.network,
+        voters,
+        Number(response.snapshot)
+      );
+
+      const votes = voteResponse.map((vote: any) => {
+        vote.scores = strategies.map(
+          (strategy: any, i: number) => scores[i][vote.voter] || 0
+        );
+        vote.balance = vote.scores.reduce((a: any, b: any) => a + b, 0);
+        return {
+          voter: vote.voter,
+          choice: vote.choice,
+          power: vote.balance,
+        };
+      });
+
+      proposalScores = response.choices.map((choice: any, i: number) =>
+        votes
+          .filter((vote: any) => vote.choice === i + 1)
+          .reduce((a: number, b: any) => a + b.power, 0)
+      );
+    }
 
     return {
       id: response.id,
@@ -225,7 +280,7 @@ class SnapshotClient {
       state: response.state,
       network: response.network,
       snapshot: Number(response.snapshot),
-      scores: response.scores,
+      scores: proposalScores,
       votes: response.votes,
     };
   }
