@@ -216,6 +216,7 @@ class SnapshotClient {
     );
 
     let proposalScores = response.scores;
+    let numberOfVoters = response.votes;
     if (
       response.scores_state !== 'invalid' &&
       response.scores_state !== 'final'
@@ -267,6 +268,7 @@ class SnapshotClient {
           .filter((vote: any) => vote.choice === i + 1)
           .reduce((a: number, b: any) => a + b.power, 0)
       );
+      numberOfVoters = votes.length;
     }
 
     return {
@@ -285,7 +287,7 @@ class SnapshotClient {
       network: response.network,
       snapshot: Number(response.snapshot),
       scores: proposalScores,
-      votes: response.votes,
+      votes: numberOfVoters,
     };
   }
 
