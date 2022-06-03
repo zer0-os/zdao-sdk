@@ -6,6 +6,10 @@ export interface SpaceParams {
   strategies?: any;
 }
 
+export interface GetProposalParams extends SpaceParams {
+  proposalId: string;
+}
+
 export interface ListVotesParams extends SpaceParams {
   proposalId: string;
   snapshot: number;

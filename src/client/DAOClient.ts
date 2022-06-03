@@ -226,9 +226,11 @@ class DAOClient implements zDAO {
   }
 
   async getProposal(id: ProposalId): Promise<Proposal> {
-    const proposal: SnapshotProposal = await this._snapshotClient.getProposal(
-      id
-    );
+    const proposal: SnapshotProposal = await this._snapshotClient.getProposal({
+      spaceId: this.ens,
+      network: this.network,
+      proposalId: id,
+    });
 
     const instance = new ProposalClient(
       this,
@@ -284,7 +286,11 @@ class DAOClient implements zDAO {
       }
     );
 
-    const proposal = await this._snapshotClient.getProposal(proposalId);
+    const proposal: SnapshotProposal = await this._snapshotClient.getProposal({
+      spaceId: this.ens,
+      network: this.network,
+      proposalId,
+    });
     const instance = new ProposalClient(
       this,
       this._snapshotClient,

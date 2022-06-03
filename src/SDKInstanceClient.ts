@@ -104,8 +104,11 @@ class SDKInstanceClient implements SDKInstance {
       ERC20Abi,
       this._config.zNA.provider
     );
-    const symbol = await contract.symbol();
-    const decimals = await contract.decimals();
+    const promises: Promise<any>[] = [contract.symbol(), contract.decimals()];
+    const results = await Promise.all(promises);
+
+    const symbol = results[0] as string;
+    const decimals = results[1] as number;
 
     return Promise.resolve(
       new DAOClient(this._config, {
@@ -144,8 +147,11 @@ class SDKInstanceClient implements SDKInstance {
       ERC20Abi,
       this._config.zNA.provider
     );
-    const symbol = await contract.symbol();
-    const decimals = await contract.decimals();
+    const promises: Promise<any>[] = [contract.symbol(), contract.decimals()];
+    const results = await Promise.all(promises);
+
+    const symbol = results[0] as string;
+    const decimals = results[1] as number;
 
     return Promise.resolve(
       new DAOClient(this._config, {
