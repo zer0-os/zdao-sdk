@@ -4,7 +4,6 @@ import { CreateProposalParams, CreateZDAOParams } from './params';
 import { Choice, ProposalId, VoteId, zNA } from './primitives';
 import {
   ProposalProperties,
-  TokenMetaData,
   TokenMintOptions,
   Transaction,
   Vote,
@@ -114,12 +113,6 @@ export interface zDAO extends zDAOProperties {
 }
 
 export interface Proposal extends ProposalProperties {
-  /**
-   * Get token meta data from ipfs
-   * @returns transaction meta data
-   */
-  getTokenMetadata(): Promise<TokenMetaData>;
-
   /**
    * Get all the votes by proposal id filtering with the function parameter
    * @returns list of votes

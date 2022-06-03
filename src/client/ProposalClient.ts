@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash';
 import GnosisSafeClient from '../gnosis-safe';
 import SnapshotClient from '../snapshot-io';
 import { ProposalProperties, VoteId } from '../types';
-import { Choice, Proposal, TokenMetaData, Vote } from '../types';
+import { Choice, Proposal, Vote } from '../types';
 import { errorMessageForError } from '../utilities/messages';
 import DAOClient from './DAOClient';
 
@@ -14,7 +14,7 @@ class ProposalClient implements Proposal {
   private readonly _gnosisSafeClient: GnosisSafeClient;
   protected readonly _properties: ProposalProperties;
 
-  constructor(
+  private constructor(
     zDAO: DAOClient,
     snapshotClient: SnapshotClient,
     gnosisSafeClient: GnosisSafeClient,
@@ -90,38 +90,61 @@ class ProposalClient implements Proposal {
     return this._properties.metadata;
   }
 
-  async getTokenMetadata(): Promise<TokenMetaData> {
-    if (!this.ipfs) {
-      throw new Error(errorMessageForError('empty-voting-token'));
-    }
-    if (this.metadata) {
-      return this.metadata;
-    }
+  static async createInstance(
+    zDAO: DAOClient,
+    snapshotClient: SnapshotClient,
+    gnosisSafeClient: GnosisSafeClient,
+    properties: ProposalProperties
+  ): Promise<Proposal> {
+    const proposal = new ProposalClient(
+      zDAO,
+      snapshotClient,
+      gnosisSafeClient,
+      properties
+    );
+    await proposal.getTokenMetadata();
+    return proposal;
+  }
 
-    const ipfsData = await this._snapshotClient.ipfsGet(this.ipfs);
-    if (!ipfsData.data || !ipfsData.data.message) {
-      throw new Error(errorMessageForError('empty-voting-token'));
-    }
+  private async getTokenMetadata() {
+    try {
+      if (!this.ipfs || this.metadata) return;
 
-    const metadataJson = JSON.parse(ipfsData.data.message.metadata);
-    const abi = metadataJson.abi;
-    const sender = metadataJson.sender;
-    const recipient = metadataJson.recipient;
-    const token = metadataJson.token;
-    const decimals = metadataJson.decimals ?? 18;
-    const symbol = metadataJson.symbol ?? 'zToken';
-    const amount = metadataJson.amount;
+      const ipfsData = await this._snapshotClient.ipfsGet(this.ipfs);
+      if (!ipfsData.data || !ipfsData.data.message) {
+        throw new Error(errorMessageForError('empty-voting-token'));
+      }
 
-    this._properties.metadata = {
-      abi,
-      sender,
-      recipient,
-      token,
-      decimals,
-      symbol,
-      amount,
-    };
-    return this._properties.metadata;
+      const metadataJson = JSON.parse(ipfsData.data.message.metadata);
+      if (
+        !metadataJson.sender ||
+        !metadataJson.recipient ||
+        !metadataJson.token ||
+        !metadataJson.amount
+      ) {
+        this._properties.metadata = undefined;
+        return;
+      }
+
+      const abi = metadataJson.abi;
+      const sender = metadataJson.sender;
+      const recipient = metadataJson.recipient;
+      const token = metadataJson.token;
+      const decimals = metadataJson.decimals ?? 18;
+      const symbol = metadataJson.symbol ?? 'zToken';
+      const amount = metadataJson.amount;
+
+      this._properties.metadata = {
+        abi,
+        sender,
+        recipient,
+        token,
+        decimals,
+        symbol,
+        amount,
+      };
+      // eslint-disable-next-line no-empty
+    } catch (error) {}
   }
 
   async listVotes(): Promise<Vote[]> {

@@ -180,7 +180,7 @@ class DAOClient implements zDAO {
     const count = 3000;
     let from = 0;
     let numberOfResults = count;
-    const proposals: Proposal[] = [];
+    const promises: Promise<Proposal>[] = [];
     while (numberOfResults === count) {
       const results: SnapshotProposal[] =
         await this._snapshotClient.listProposals(
@@ -190,10 +190,10 @@ class DAOClient implements zDAO {
           count
         );
 
-      proposals.push(
+      promises.push(
         ...results.map(
-          (proposal: SnapshotProposal): Proposal =>
-            new ProposalClient(
+          (proposal: SnapshotProposal): Promise<Proposal> =>
+            ProposalClient.createInstance(
               this,
               this._snapshotClient,
               this._gnosisSafeClient,
@@ -222,7 +222,7 @@ class DAOClient implements zDAO {
       from += results.length;
       numberOfResults = results.length;
     }
-    return proposals;
+    return await Promise.all(promises);
   }
 
   async getProposal(id: ProposalId): Promise<Proposal> {
@@ -232,7 +232,7 @@ class DAOClient implements zDAO {
       proposalId: id,
     });
 
-    const instance = new ProposalClient(
+    return await ProposalClient.createInstance(
       this,
       this._snapshotClient,
       this._gnosisSafeClient,
@@ -254,14 +254,12 @@ class DAOClient implements zDAO {
         votes: proposal.votes,
       }
     );
-    await instance.getTokenMetadata();
-    return instance;
   }
 
   async createProposal(
     signer: ethers.Wallet,
     payload: CreateProposalParams
-  ): Promise<ProposalClient> {
+  ): Promise<Proposal> {
     if (!this.duration && !payload.duration) {
       throw new Error(errorMessageForError('invalid-proposal-duration'));
     }
@@ -291,7 +289,7 @@ class DAOClient implements zDAO {
       network: this.network,
       proposalId,
     });
-    const instance = new ProposalClient(
+    return await ProposalClient.createInstance(
       this,
       this._snapshotClient,
       this._gnosisSafeClient,
@@ -313,8 +311,6 @@ class DAOClient implements zDAO {
         votes: proposal.votes,
       }
     );
-    await instance.getTokenMetadata();
-    return instance;
   }
 }
 
