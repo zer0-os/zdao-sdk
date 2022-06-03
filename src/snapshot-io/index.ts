@@ -372,40 +372,37 @@ class SnapshotClient {
   }
 
   async createProposal(
-    signer: ethers.Wallet,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string,
     params: CreateProposalParams
   ): Promise<SnapshotProposalResponse> {
     const startDateTime = new Date();
 
-    const response: any = await this._clientEIP712.proposal(
-      signer,
-      signer.address,
-      {
-        from: signer.address,
-        space: params.spaceId,
-        timestamp: timestamp(new Date()),
-        type: 'single-choice',
-        title: params.title,
-        body: params.body,
-        choices: params.choices,
-        start: timestamp(startDateTime),
-        end: timestamp(addSeconds(startDateTime, params.duration)),
-        snapshot: Number(params.snapshot),
-        network: params.network,
-        strategies: JSON.stringify(
-          this.generateStrategies(params.token, params.decimals, params.symbol)
-        ),
-        plugins: '{}',
-        metadata: JSON.stringify({
-          abi: params.abi,
-          sender: params.sender,
-          recipient: params.recipient,
-          token: params.token,
-          decimals: params.decimals,
-          amount: params.amount,
-        }),
-      }
-    );
+    const response: any = await this._clientEIP712.proposal(provider, account, {
+      from: account,
+      space: params.spaceId,
+      timestamp: timestamp(new Date()),
+      type: 'single-choice',
+      title: params.title,
+      body: params.body,
+      choices: params.choices,
+      start: timestamp(startDateTime),
+      end: timestamp(addSeconds(startDateTime, params.duration)),
+      snapshot: Number(params.snapshot),
+      network: params.network,
+      strategies: JSON.stringify(
+        this.generateStrategies(params.token, params.decimals, params.symbol)
+      ),
+      plugins: '{}',
+      metadata: JSON.stringify({
+        abi: params.abi,
+        sender: params.sender,
+        recipient: params.recipient,
+        token: params.token,
+        decimals: params.decimals,
+        amount: params.amount,
+      }),
+    });
 
     if (!response.id || !response.ipfs) {
       throw Error(errorMessageForError('failed-create-proposal'));

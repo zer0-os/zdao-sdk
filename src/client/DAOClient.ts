@@ -292,7 +292,8 @@ class DAOClient implements zDAO {
   }
 
   async createProposal(
-    signer: ethers.Wallet,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string,
     payload: CreateProposalParams
   ): Promise<Proposal> {
     if (!this.duration && !payload.duration) {
@@ -300,7 +301,8 @@ class DAOClient implements zDAO {
     }
     const duration = this.duration ?? payload.duration;
     const { id: proposalId } = await this._snapshotClient.createProposal(
-      signer,
+      provider,
+      account,
       {
         spaceId: this.ens,
         title: payload.title,

@@ -51,21 +51,25 @@ describe('Gnosis Safe test', async () => {
       votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
     };
 
-    daoInstance = new DAOClient(config, {
-      id: dao.id,
-      ens: dao.ens,
-      zNAs: [dao.zNA],
-      title: dao.title,
-      creator: dao.creator,
-      avatar: undefined,
-      network: dao.network,
-      safeAddress: dao.safeAddress,
-      votingToken: {
-        token: dao.votingToken,
-        symbol: 'vTEST',
-        decimals: 18,
+    daoInstance = await DAOClient.createInstance(
+      config,
+      {
+        id: dao.id,
+        ens: dao.ens,
+        zNAs: [dao.zNA],
+        title: dao.title,
+        creator: dao.creator,
+        avatar: undefined,
+        network: dao.network,
+        safeAddress: dao.safeAddress,
+        votingToken: {
+          token: dao.votingToken,
+          symbol: 'vTEST',
+          decimals: 18,
+        },
       },
-    });
+      undefined
+    );
   });
 
   it('should list assets with test tokens', async () => {
@@ -107,21 +111,25 @@ describe('Gnosis Safe test', async () => {
       votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
     };
 
-    const daoInstance = new DAOClient(config, {
-      id: dao.id,
-      ens: dao.ens,
-      zNAs: [dao.zNA],
-      title: dao.title,
-      creator: dao.creator,
-      avatar: undefined,
-      network: dao.network,
-      safeAddress: dao.safeAddress,
-      votingToken: {
-        token: dao.votingToken,
-        symbol: 'vTEST',
-        decimals: 18,
+    const daoInstance = await DAOClient.createInstance(
+      config,
+      {
+        id: dao.id,
+        ens: dao.ens,
+        zNAs: [dao.zNA],
+        title: dao.title,
+        creator: dao.creator,
+        avatar: undefined,
+        network: dao.network,
+        safeAddress: dao.safeAddress,
+        votingToken: {
+          token: dao.votingToken,
+          symbol: 'vTEST',
+          decimals: 18,
+        },
       },
-    });
+      undefined
+    );
     const assets = await daoInstance.listAssets();
 
     // should contain collectibles
@@ -146,21 +154,25 @@ describe('Gnosis Safe test', async () => {
       votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
     };
 
-    const daoInstance = new DAOClient(config, {
-      id: dao.id,
-      ens: dao.ens,
-      zNAs: [dao.zNA],
-      title: dao.title,
-      creator: dao.creator,
-      avatar: undefined,
-      network: dao.network,
-      safeAddress: dao.safeAddress,
-      votingToken: {
-        token: dao.votingToken,
-        symbol: 'vTEST',
-        decimals: 18,
+    const daoInstance = await DAOClient.createInstance(
+      config,
+      {
+        id: dao.id,
+        ens: dao.ens,
+        zNAs: [dao.zNA],
+        title: dao.title,
+        creator: dao.creator,
+        avatar: undefined,
+        network: dao.network,
+        safeAddress: dao.safeAddress,
+        votingToken: {
+          token: dao.votingToken,
+          symbol: 'vTEST',
+          decimals: 18,
+        },
       },
-    });
+      undefined
+    );
     const assets = await daoInstance.listAssets();
 
     // looking for empty meta data

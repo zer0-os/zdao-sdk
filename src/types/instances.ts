@@ -106,12 +106,14 @@ export interface zDAO extends zDAOProperties {
 
   /**
    * Create a proposal in zDAO
-   * @param signer signer wallet
+   * @param provider Web3 provider or wallet
+   * @param account signer address
    * @param payload packaged parameters to create a proposal
    * @returns proposal id if success
    */
   createProposal(
-    signer: ethers.Wallet,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string,
     payload: CreateProposalParams
   ): Promise<Proposal>;
 }
@@ -150,5 +152,5 @@ export interface Proposal extends ProposalProperties {
    * @exception throw Error if signer is not Gnosis Safe owner
    * @exception throw Error if proposal does not conain meta data to transfer tokens
    */
-  execute(signer: ethers.Wallet): Promise<void>;
+  execute(signer: ethers.Signer): Promise<void>;
 }
