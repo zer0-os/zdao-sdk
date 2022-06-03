@@ -39,3 +39,8 @@ export interface VoteProposalParams {
 export interface ExecuteProposalParams {
   proposal: string; // proposal id
 }
+
+export interface PaginationParam {
+  from: number;
+  count: number;
+}

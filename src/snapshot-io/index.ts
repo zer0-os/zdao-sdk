@@ -184,23 +184,26 @@ class SnapshotClient {
       },
       'proposals'
     );
-    return response.map((response: any) => ({
-      id: response.id,
-      type: response.type,
-      author: response.author,
-      title: response.title,
-      body: response.body,
-      ipfs: response.ipfs,
-      choices: response.choices,
-      created: new Date(response.created * 1000),
-      start: new Date(response.start * 1000),
-      end: new Date(response.end * 1000),
-      state: response.state,
-      network: response.network,
-      snapshot: Number(response.snapshot),
-      scores: response.scores,
-      votes: response.votes,
-    }));
+    return response.map(
+      (response: any): SnapshotProposal => ({
+        id: response.id,
+        type: response.type,
+        author: response.author,
+        title: response.title,
+        body: response.body,
+        ipfs: response.ipfs,
+        choices: response.choices,
+        created: new Date(response.created * 1000),
+        start: new Date(response.start * 1000),
+        end: new Date(response.end * 1000),
+        state: response.state,
+        scores_state: response.scores_state,
+        network: response.network,
+        snapshot: Number(response.snapshot),
+        scores: response.scores,
+        votes: response.votes,
+      })
+    );
   }
 
   async getProposal(params: GetProposalParams): Promise<SnapshotProposal> {
@@ -278,6 +281,7 @@ class SnapshotClient {
       start: new Date(response.start * 1000),
       end: new Date(response.end * 1000),
       state: response.state,
+      scores_state: response.scores_state,
       network: response.network,
       snapshot: Number(response.snapshot),
       scores: proposalScores,
@@ -298,28 +302,37 @@ class SnapshotClient {
       },
       'votes'
     );
-    const voters = response.map((vote: any) => vote.voter);
 
-    // Get scores
-    const scores = await Client.utils.getScores(
-      params.spaceId,
-      params.strategies,
-      params.network,
-      voters,
-      params.snapshot
-    );
+    if (params.scores_state !== 'invalid' && params.scores_state !== 'final') {
+      const voters = response.map((vote: any) => vote.voter);
 
-    return response.map((vote: any) => {
-      vote.scores = params.strategies.map(
-        (strategy: any, i: number) => scores[i][vote.voter] || 0
+      // Get scores
+      const scores = await Client.utils.getScores(
+        params.spaceId,
+        params.strategies,
+        params.network,
+        voters,
+        params.snapshot
       );
-      vote.balance = vote.scores.reduce((a: any, b: any) => a + b, 0);
-      return {
-        voter: vote.voter,
-        choice: vote.choice,
-        power: vote.balance,
-      };
-    });
+
+      return response.map((vote: any) => {
+        vote.scores = params.strategies.map(
+          (strategy: any, i: number) => scores[i][vote.voter] || 0
+        );
+        vote.balance = vote.scores.reduce((a: any, b: any) => a + b, 0);
+        return {
+          voter: vote.voter,
+          choice: vote.choice,
+          power: vote.balance,
+        };
+      });
+    }
+
+    return response.map((vote: any) => ({
+      voter: vote.voter,
+      choice: vote.choice,
+      power: vote.vp,
+    }));
   }
 
   async getERC20BalanceOf(params: ERC20BalanceOfParams): Promise<number> {
@@ -359,40 +372,37 @@ class SnapshotClient {
   }
 
   async createProposal(
-    signer: ethers.Wallet,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string,
     params: CreateProposalParams
   ): Promise<SnapshotProposalResponse> {
     const startDateTime = new Date();
 
-    const response: any = await this._clientEIP712.proposal(
-      signer,
-      signer.address,
-      {
-        from: signer.address,
-        space: params.spaceId,
-        timestamp: timestamp(new Date()),
-        type: 'single-choice',
-        title: params.title,
-        body: params.body,
-        choices: params.choices,
-        start: timestamp(startDateTime),
-        end: timestamp(addSeconds(startDateTime, params.duration)),
-        snapshot: Number(params.snapshot),
-        network: params.network,
-        strategies: JSON.stringify(
-          this.generateStrategies(params.token, params.decimals, params.symbol)
-        ),
-        plugins: '{}',
-        metadata: JSON.stringify({
-          abi: params.abi,
-          sender: params.sender,
-          recipient: params.recipient,
-          token: params.token,
-          decimals: params.decimals,
-          amount: params.amount,
-        }),
-      }
-    );
+    const response: any = await this._clientEIP712.proposal(provider, account, {
+      from: account,
+      space: params.spaceId,
+      timestamp: timestamp(new Date()),
+      type: 'single-choice',
+      title: params.title,
+      body: params.body,
+      choices: params.choices,
+      start: timestamp(startDateTime),
+      end: timestamp(addSeconds(startDateTime, params.duration)),
+      snapshot: Number(params.snapshot),
+      network: params.network,
+      strategies: JSON.stringify(
+        this.generateStrategies(params.token, params.decimals, params.symbol)
+      ),
+      plugins: '{}',
+      metadata: JSON.stringify({
+        abi: params.abi,
+        sender: params.sender,
+        recipient: params.recipient,
+        token: params.token,
+        decimals: params.decimals,
+        amount: params.amount,
+      }),
+    });
 
     if (!response.id || !response.ipfs) {
       throw Error(errorMessageForError('failed-create-proposal'));
@@ -405,7 +415,7 @@ class SnapshotClient {
   }
 
   async voteProposal(
-    provider: ethers.providers.Web3Provider,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
     params: VoteProposalParams
   ): Promise<string> {

@@ -64,25 +64,34 @@ class SDKInstanceClient implements SDKInstance {
       ERC20Abi,
       this._config.zNA.provider
     );
-    const symbol = await contract.symbol();
-    const decimals = await contract.decimals();
+    const promises: Promise<any>[] = [contract.symbol(), contract.decimals()];
+    const results = await Promise.all(promises);
 
-    return new DAOClient(this._config, {
-      id: zDAORecord.id,
-      ens: zDAORecord.ens,
-      zNAs: zDAORecord.zNAs,
-      title: space.name,
-      creator: space.admins.length > 0 ? space.admins[0] : zDAORecord.ens,
-      avatar: space.avatar,
-      network: space.network,
-      duration: space.duration,
-      safeAddress: zDAORecord.gnosisSafe,
-      votingToken: {
-        token: strategy.params.address,
-        symbol,
-        decimals,
+    const symbol = results[0] as string;
+    const decimals = results[1] as number;
+
+    return await DAOClient.createInstance(
+      this._config,
+      {
+        id: zDAORecord.id,
+        ens: zDAORecord.ens,
+        zNAs: zDAORecord.zNAs,
+        title: space.name,
+        creator: space.admins.length > 0 ? space.admins[0] : zDAORecord.ens,
+        avatar: space.avatar,
+        network: space.network,
+        duration: space.duration,
+        safeAddress: zDAORecord.gnosisSafe,
+        votingToken: {
+          token: strategy.params.address,
+          symbol,
+          decimals,
+        },
       },
-    });
+      {
+        strategies: space.strategies,
+      }
+    );
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
@@ -172,8 +181,9 @@ class SDKInstanceClient implements SDKInstance {
     const symbol = results[0] as string;
     const decimals = results[1] as number;
 
-    return Promise.resolve(
-      new DAOClient(this._config, {
+    return await DAOClient.createInstance(
+      this._config,
+      {
         id: shortid.generate(),
         ens: param.ens,
         zNAs: [param.zNA],
@@ -188,7 +198,8 @@ class SDKInstanceClient implements SDKInstance {
           symbol,
           decimals,
         },
-      })
+      },
+      undefined
     );
   }
 
@@ -215,8 +226,9 @@ class SDKInstanceClient implements SDKInstance {
     const symbol = results[0] as string;
     const decimals = results[1] as number;
 
-    return Promise.resolve(
-      new DAOClient(this._config, {
+    return await DAOClient.createInstance(
+      this._config,
+      {
         id: shortid.generate(),
         ens: found.ens,
         zNAs: [found.zNA],
@@ -231,7 +243,8 @@ class SDKInstanceClient implements SDKInstance {
           symbol,
           decimals,
         },
-      })
+      },
+      undefined
     );
   }
 

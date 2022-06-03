@@ -144,7 +144,5 @@ export interface ProposalProperties {
   snapshot: number; // snapshot block number
   scores: number[]; // scores per all the choices
   votes: number; // number of voters
-  // token meta data is stored in ipfs, this member can be valid after calling
-  // `getTokenMetadata` function
-  metadata?: TokenMetaData;
+  metadata?: TokenMetaData; // token meta data is stored in ipfs
 }

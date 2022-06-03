@@ -49,21 +49,25 @@ describe('Snapshot test', async () => {
       votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
     };
 
-    daoInstance = new DAOClient(config, {
-      id: dao.id,
-      ens: dao.ens,
-      zNAs: [dao.zNA],
-      title: dao.title,
-      creator: dao.creator,
-      avatar: undefined,
-      network: dao.network,
-      safeAddress: dao.safeAddress,
-      votingToken: {
-        token: dao.votingToken,
-        symbol: 'vTEST',
-        decimals: 18,
+    daoInstance = await DAOClient.createInstance(
+      config,
+      {
+        id: dao.id,
+        ens: dao.ens,
+        zNAs: [dao.zNA],
+        title: dao.title,
+        creator: dao.creator,
+        avatar: undefined,
+        network: dao.network,
+        safeAddress: dao.safeAddress,
+        votingToken: {
+          token: dao.votingToken,
+          symbol: 'vTEST',
+          decimals: 18,
+        },
       },
-    });
+      undefined
+    );
   });
 
   it('should list proposals', async () => {
@@ -120,7 +124,7 @@ describe('Snapshot test', async () => {
 
   it('should create a proposal with `erc20-with-balance` strategy and cast a vote', async () => {
     const blockNumber = await signer.provider.getBlockNumber();
-    const proposal = await daoInstance.createProposal(signer, {
+    const proposal = await daoInstance.createProposal(signer, signer.address, {
       title: 'test proposal',
       body: 'body',
       duration: 300, // 5 min
@@ -148,7 +152,7 @@ describe('Snapshot test', async () => {
     const daoInstance2 = await sdkInstance.getZDAOByZNA('wilder.cats');
     expect(daoInstance2.ens).to.be.equal('zdao-sky.eth');
 
-    const proposal = await daoInstance2.createProposal(signer, {
+    const proposal = await daoInstance2.createProposal(signer, signer.address, {
       title: 'test proposal',
       body: 'body',
       snapshot: blockNumber,

@@ -12,6 +12,7 @@ export interface GetProposalParams extends SpaceParams {
 
 export interface ListVotesParams extends SpaceParams {
   proposalId: string;
+  scores_state: 'final' | 'invalid' | 'pending';
   snapshot: number;
   from: number;
   count: number;
@@ -78,6 +79,7 @@ export interface SnapshotProposal {
   start: Date;
   end: Date;
   state: 'pending' | 'active' | 'closed';
+  scores_state: 'final' | 'invalid' | 'pending';
   network: string; // chain id
   snapshot: number; // snapshot block number
   scores: number[]; // scores per all the choices

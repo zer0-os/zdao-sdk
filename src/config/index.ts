@@ -13,7 +13,7 @@ export const MultiCallAddress: AddressMap = {
 export const developmentConfiguration = (
   contract: string,
   provider: ethers.providers.Provider,
-  ipfsGateway = 'cloudflare-ipfs.com'
+  ipfsGateway = 'snapshot.mypinata.cloud'
 ): Config => ({
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
@@ -35,7 +35,7 @@ export const developmentConfiguration = (
 export const productionConfiguration = (
   contract: string,
   provider: ethers.providers.Provider,
-  ipfsGateway = 'cloudflare-ipfs.com'
+  ipfsGateway = 'snapshot.mypinata.cloud'
 ): Config => ({
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',

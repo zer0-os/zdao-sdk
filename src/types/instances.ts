@@ -1,10 +1,13 @@
 import { ethers } from 'ethers';
 
-import { CreateProposalParams, CreateZDAOParams } from './params';
+import {
+  CreateProposalParams,
+  CreateZDAOParams,
+  PaginationParam,
+} from './params';
 import { Choice, ProposalId, VoteId, zNA } from './primitives';
 import {
   ProposalProperties,
-  TokenMetaData,
   TokenMintOptions,
   Transaction,
   Vote,
@@ -91,7 +94,7 @@ export interface zDAO extends zDAOProperties {
    * Get the list of the proposals created in the zDAO
    * @return list of proposals
    */
-  listProposals(): Promise<Proposal[]>;
+  listProposals(pagination?: PaginationParam): Promise<Proposal[]>;
 
   /**
    * Get the specific proposal
@@ -103,28 +106,24 @@ export interface zDAO extends zDAOProperties {
 
   /**
    * Create a proposal in zDAO
-   * @param signer signer wallet
+   * @param provider Web3 provider or wallet
+   * @param account signer address
    * @param payload packaged parameters to create a proposal
    * @returns proposal id if success
    */
   createProposal(
-    signer: ethers.Wallet,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string,
     payload: CreateProposalParams
   ): Promise<Proposal>;
 }
 
 export interface Proposal extends ProposalProperties {
   /**
-   * Get token meta data from ipfs
-   * @returns transaction meta data
-   */
-  getTokenMetadata(): Promise<TokenMetaData>;
-
-  /**
    * Get all the votes by proposal id filtering with the function parameter
    * @returns list of votes
    */
-  listVotes(): Promise<Vote[]>;
+  listVotes(pagination?: PaginationParam): Promise<Vote[]>;
 
   /**
    * Get voting power of the user in zDAO
@@ -141,7 +140,7 @@ export interface Proposal extends ProposalProperties {
    * @returns vote id if successfully cast a vote
    */
   vote(
-    provider: ethers.providers.Web3Provider,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
     choice: Choice
   ): Promise<VoteId>;
@@ -153,5 +152,5 @@ export interface Proposal extends ProposalProperties {
    * @exception throw Error if signer is not Gnosis Safe owner
    * @exception throw Error if proposal does not conain meta data to transfer tokens
    */
-  execute(signer: ethers.Wallet): Promise<void>;
+  execute(signer: ethers.Signer): Promise<void>;
 }
