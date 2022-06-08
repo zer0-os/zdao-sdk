@@ -136,7 +136,7 @@ export interface Proposal extends ProposalProperties {
    * Cast a vote on proposal
    * @param provider Web3 provider
    * @param account signer address
-   * @param choice voter's choice
+   * @param choice voter's choice, 1: vote on first choice, 2: on second choice
    * @returns vote id if successfully cast a vote
    */
   vote(

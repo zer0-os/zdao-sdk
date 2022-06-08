@@ -392,18 +392,26 @@ class SnapshotClient {
       end: timestamp(addSeconds(startDateTime, params.duration)),
       snapshot: Number(params.snapshot),
       network: params.network,
-      strategies: JSON.stringify(
-        this.generateStrategies(params.token, params.decimals, params.symbol)
-      ),
+      strategies:
+        JSON.stringify(params.strategies) ??
+        JSON.stringify(
+          this.generateStrategies(
+            params.token.token,
+            params.token.decimals,
+            params.token.symbol
+          )
+        ),
       plugins: '{}',
-      metadata: JSON.stringify({
-        abi: params.abi,
-        sender: params.sender,
-        recipient: params.recipient,
-        token: params.token,
-        decimals: params.decimals,
-        amount: params.amount,
-      }),
+      metadata: params.transfer
+        ? JSON.stringify({
+            abi: params.transfer.abi,
+            sender: params.transfer.sender,
+            recipient: params.transfer.recipient,
+            token: params.transfer.token,
+            decimals: params.transfer.decimals,
+            amount: params.transfer.amount,
+          })
+        : '{}',
     });
 
     if (!response.id || !response.ipfs) {

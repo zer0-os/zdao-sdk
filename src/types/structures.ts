@@ -1,9 +1,4 @@
-import {
-  AssetType,
-  TransactionStatus,
-  TransactionType,
-  VoteChoice,
-} from './enumerations';
+import { AssetType, TransactionStatus, TransactionType } from './enumerations';
 import { Choice, ENS, ProposalId, zDAOId, zNA } from './primitives';
 
 export interface Vote {
@@ -135,7 +130,7 @@ export interface ProposalProperties {
   title: string; // proposal title
   body: string; // proposal body
   ipfs: string; // uri to ipfs which contains proposal information and signature
-  choices: VoteChoice[];
+  choices: string[];
   created: Date;
   start: Date;
   end: Date;
