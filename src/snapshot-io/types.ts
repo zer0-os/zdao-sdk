@@ -1,4 +1,4 @@
-import { ENS } from '../types';
+import { ENS, Token, TokenMetaData } from '../types';
 
 export interface SpaceParams {
   spaceId: ENS;
@@ -38,13 +38,8 @@ export interface CreateProposalParams extends SpaceParams {
   choices: string[];
   duration: number;
   snapshot: number;
-  abi: string;
-  sender: string;
-  recipient: string;
-  token: string;
-  decimals: number;
-  symbol: string;
-  amount: string;
+  token: Token; // voting token
+  transfer?: TokenMetaData;
 }
 
 export interface VoteProposalParams {

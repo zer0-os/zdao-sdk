@@ -186,9 +186,6 @@ class ProposalClient implements Proposal {
   }
 
   async getVotingPowerOfUser(account: string): Promise<number> {
-    if (!this.metadata) {
-      throw new Error(errorMessageForError('empty-metadata'));
-    }
     return this._snapshotClient.getVotingPower({
       spaceId: this._zDAO.ens,
       network: this.network,
@@ -210,6 +207,8 @@ class ProposalClient implements Proposal {
   }
 
   async execute(signer: ethers.Signer): Promise<void> {
+    if (!this.metadata) return;
+
     const address = await signer.getAddress();
     const isOwner = await this._gnosisSafeClient.isOwnerAddress(
       signer,

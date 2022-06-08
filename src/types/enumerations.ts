@@ -4,11 +4,6 @@ export enum SupportedChainId {
   RINKEBY = 4,
 }
 
-export enum VoteChoice {
-  YES = 'Yes',
-  NO = 'No',
-}
-
 export enum AssetType {
   ERC20 = 'ERC20',
   ERC721 = 'ERC721',

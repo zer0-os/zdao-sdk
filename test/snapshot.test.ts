@@ -129,6 +129,7 @@ describe('Snapshot test', async () => {
       body: 'body',
       duration: 300, // 5 min
       snapshot: blockNumber,
+      choices: ['Yes', 'No', 'Absent'],
       transfer: {
         abi: JSON.stringify(TransferAbi),
         sender: daoInstance.safeAddress,
@@ -156,6 +157,7 @@ describe('Snapshot test', async () => {
       title: 'test proposal',
       body: 'body',
       snapshot: blockNumber,
+      choices: ['Yes', 'No', 'Absent'],
       transfer: {
         abi: JSON.stringify(TransferAbi),
         sender: daoInstance.safeAddress,

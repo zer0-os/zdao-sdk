@@ -5,4 +5,4 @@ export type ENS = string;
 export type ENSId = string;
 export type ProposalId = string;
 export type VoteId = string;
-export type Choice = 1 | 2;
+export type Choice = number;
