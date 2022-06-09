@@ -1,3 +1,12 @@
-export { default as PolyRegistryClient } from './PolyRegistryClient';
-export { default as PolyStakingClient } from './PolyStakingClient';
-export { default as PolyZDAOChefClient } from './PolyZDAOChefClient';
+import SDKInstanceClient from './SDKInstanceClient';
+import { Config, SDKInstance } from './types';
+
+export { ZNAClient } from './client';
+export * from './config';
+export * from './types';
+
+export const createSDKInstance = async (
+  config: Config
+): Promise<SDKInstance> => {
+  return await new SDKInstanceClient(config);
+};
