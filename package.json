@@ -1,6 +1,6 @@
 {
   "name": "@zero-tech/zdao-sdk",
-  "version": "0.0.6",
+  "version": "0.3.0",
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -36,6 +36,7 @@
     "@gnosis.pm/safe-service-client": "1.1.1",
     "@maticnetwork/maticjs": "3.3.0",
     "@maticnetwork/maticjs-web3": "deep-quality-dev/maticjs-web3#build",
+    "@snapshot-labs/snapshot.js": "0.3.56",
     "@types/lodash": "4.14.180",
     "@types/shortid": "0.0.29",
     "cross-fetch": "3.1.5",
