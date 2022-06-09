@@ -5,7 +5,7 @@ import DAOClient from './client/DAOClient';
 import ERC20Abi from './config/constants/abi/ERC20.json';
 import ERC1967ProxyAbi from './config/constants/abi/ERC1967Proxy.json';
 import ZeroTokenAbi from './config/constants/abi/ZeroToken.json';
-import SnapshotClient from './snapshot-io';
+import SnapshotClient from './snapshot';
 import {
   Config,
   CreateZDAOParams,

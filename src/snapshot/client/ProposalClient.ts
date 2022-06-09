@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import GnosisSafeClient from '../gnosis-safe';
-import SnapshotClient from '../snapshot-io';
+import SnapshotClient from '../snapshot';
 import { PaginationParam, ProposalProperties, VoteId } from '../types';
 import { Choice, Proposal, Vote } from '../types';
 import { errorMessageForError } from '../utilities/messages';

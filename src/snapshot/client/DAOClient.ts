@@ -10,8 +10,8 @@ import { ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import GnosisSafeClient from '../gnosis-safe';
-import SnapshotClient from '../snapshot-io';
-import { SnapshotProposal } from '../snapshot-io/types';
+import SnapshotClient from '../snapshot';
+import { SnapshotProposal } from '../snapshot/types';
 import {
   AssetType,
   Config,
