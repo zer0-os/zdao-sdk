@@ -6,8 +6,7 @@ import {
   Instance as zNSInstance,
 } from '@zero-tech/zns-sdk';
 
-// import * as zns from '@zero-tech/zns-sdk';
-import { zNA, zNAId } from '../types';
+import { zNA, zNAId } from '../../types';
 
 class ZNAClient {
   private static _initialized = false;

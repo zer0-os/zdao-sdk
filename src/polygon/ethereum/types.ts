@@ -1,4 +1,4 @@
-import { zDAOId, zDAOProperties, zNA } from '../types';
+import { zDAOId, zDAOProperties, zNA } from '../../types';
 
 export interface ZDAORecord {
   id: zDAOId;
@@ -6,8 +6,7 @@ export interface ZDAORecord {
   zNAs: zNA[];
 }
 
-export interface EtherZDAOProperties
-  extends Omit<zDAOProperties, 'childToken' | 'state'> {
+export interface EtherZDAOProperties extends Omit<zDAOProperties, 'state'> {
   // Address to ZDAO contract
   address: string;
 }

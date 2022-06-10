@@ -1,5 +1,14 @@
-import { BigNumber, ethers, Signer } from 'ethers';
+import { ethers } from 'ethers';
 
+import {
+  CreateProposalParams,
+  CreateZDAOParams,
+  ProposalId,
+  zDAOId,
+  zNA,
+  zNAId,
+} from '../../types';
+import { getToken } from '../../utilities/calls';
 import GlobalClient from '../client/GlobalClient';
 import ZNAClient from '../client/ZNAClient';
 import EtherZDAOAbi from '../config/abi/EtherZDAO.json';
@@ -8,15 +17,7 @@ import FxStateRootTunnelAbi from '../config/abi/FxStateRootTunnel.json';
 import { EtherZDAO } from '../config/types/EtherZDAO';
 import { EtherZDAOChef } from '../config/types/EtherZDAOChef';
 import { FxStateRootTunnel } from '../config/types/FxStateRootTunnel';
-import {
-  CreateProposalParams,
-  CreateZDAOParams,
-  DAOConfig,
-  ProposalId,
-  zDAOId,
-  zNA,
-  zNAId,
-} from '../types';
+import { DAOConfig } from '../types';
 import { calculateGasMargin } from '../utilities/tx';
 import { EtherZDAOProperties, ZDAORecord } from './types';
 
@@ -99,7 +100,6 @@ class EtherZDAOChefClient {
   }
 
   async listzDAOs(): Promise<ZDAORecord[]> {
-    console.log('listzDAOs');
     const count = 100;
     let from = 0;
     let numberOfReturns = count;
@@ -112,11 +112,11 @@ class EtherZDAOChefClient {
         const zNAs: string[] = [];
         const promises: Promise<zNA>[] = [];
         const zNAIds: string[] = record.associatedzNAs.map(
-          (associated: BigNumber) => associated.toString()
+          (associated: ethers.BigNumber) => associated.toString()
         );
         for (const zNAId of zNAIds) {
           promises.push(
-            ZNAClient.zNAIdTozNA(BigNumber.from(zNAId).toHexString())
+            ZNAClient.zNAIdTozNA(ethers.BigNumber.from(zNAId).toHexString())
           );
         }
         const result: zNA[] = await Promise.all(promises);
@@ -171,6 +171,8 @@ class EtherZDAOChefClient {
 
     const zDAOInfo = await etherZDAO.zDAOInfo();
 
+    const token = await getToken(GlobalClient.etherRpcProvider, zDAOInfo.token);
+
     return {
       id: zDAOInfo.zDAOId.toString(),
       address: zDAORecord.zDAO,
@@ -179,7 +181,7 @@ class EtherZDAOChefClient {
       createdBy: zDAOInfo.createdBy,
       network: this._config.network,
       gnosisSafe: zDAOInfo.gnosisSafe,
-      rootToken: zDAOInfo.token,
+      votingToken: token,
       amount: zDAOInfo.amount.toString(),
       duration: zDAOInfo.duration.toNumber(),
       votingThreshold: zDAOInfo.votingThreshold.toNumber(),
@@ -191,7 +193,7 @@ class EtherZDAOChefClient {
     };
   }
 
-  async addNewDAO(signer: Signer, payload: CreateZDAOParams) {
+  async addNewDAO(signer: ethers.Signer, payload: CreateZDAOParams) {
     const gasEstimated = await this._contract
       .connect(signer)
       .estimateGas.addNewDAO(payload.zNA, {
@@ -226,13 +228,13 @@ class EtherZDAOChefClient {
     return await tx.wait();
   }
 
-  async removeDAO(signer: Signer, zDAOId: zDAOId) {
+  async removeDAO(signer: ethers.Signer, zDAOId: zDAOId) {
     const tx = await this._contract.connect(signer).removeDAO(zDAOId);
     return await tx.wait();
   }
 
   async createProposal(
-    signer: Signer,
+    signer: ethers.Signer,
     zDAOId: zDAOId,
     payload: CreateProposalParams,
     ipfs: string
@@ -249,7 +251,11 @@ class EtherZDAOChefClient {
     return await tx.wait();
   }
 
-  async cancelProposal(signer: Signer, zDAOId: zDAOId, proposalId: ProposalId) {
+  async cancelProposal(
+    signer: ethers.Signer,
+    zDAOId: zDAOId,
+    proposalId: ProposalId
+  ) {
     const tx = await this._contract
       .connect(signer)
       .cancelProposal(zDAOId, proposalId);
@@ -257,7 +263,7 @@ class EtherZDAOChefClient {
   }
 
   async executeProposal(
-    signer: Signer,
+    signer: ethers.Signer,
     zDAOId: zDAOId,
     proposalId: ProposalId
   ) {
@@ -267,7 +273,7 @@ class EtherZDAOChefClient {
     return await tx.wait();
   }
 
-  async receiveMessage(signer: Signer, proof: string) {
+  async receiveMessage(signer: ethers.Signer, proof: string) {
     const tx = await this._rootStateSender
       .connect(signer)
       .receiveMessage(proof);

@@ -1,8 +1,8 @@
 import { ethers } from 'ethers';
 
+import { NotInitializedError } from '../../types';
 import { EtherZDAOChefClient } from '../ethereum';
 import { PolyZDAOChefClient } from '../polygon';
-import { NotInitializedError } from '../types/error';
 import RegistryClient from './RegistryClient';
 import StakingClient from './StakingClient';
 import ZNSHubClient from './ZNSHubClient';

@@ -1,8 +1,8 @@
-import { ContractReceipt, Signer } from 'ethers';
+import { ContractReceipt, ethers } from 'ethers';
 
+import { FailedTxError } from '../../types';
 import PolyStakingClient from '../polygon/PolyStakingClient';
 import { Staking, StakingProperties } from '../types';
-import { FailedTxError } from '../types/error';
 
 class StakingClient implements Staking {
   protected readonly _properties: StakingProperties;
@@ -22,7 +22,7 @@ class StakingClient implements Staking {
   }
 
   stakeERC20(
-    signer: Signer,
+    signer: ethers.Signer,
     token: string,
     amount: string
   ): Promise<ContractReceipt> {
@@ -35,7 +35,7 @@ class StakingClient implements Staking {
   }
 
   stakeERC721(
-    signer: Signer,
+    signer: ethers.Signer,
     token: string,
     tokenId: string
   ): Promise<ContractReceipt> {
@@ -48,7 +48,7 @@ class StakingClient implements Staking {
   }
 
   unstakeERC20(
-    signer: Signer,
+    signer: ethers.Signer,
     token: string,
     amount: string
   ): Promise<ContractReceipt> {
@@ -61,7 +61,7 @@ class StakingClient implements Staking {
   }
 
   unstakeERC721(
-    signer: Signer,
+    signer: ethers.Signer,
     token: string,
     tokenId: string
   ): Promise<ContractReceipt> {

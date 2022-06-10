@@ -1,14 +1,4 @@
-import { Config as zNSConfig } from '@zero-tech/zns-sdk';
-
-import { SupportedChainId } from './enums';
-
-export interface GnosisSafeConfig {
-  // uri to Gnosis Safe service
-  serviceUri: string;
-
-  // uri to Gnosis Safe gateway
-  gateway: string;
-}
+import { BaseConfig, FleekConfig, SupportedChainId } from '../../types';
 
 export interface DAOConfig {
   // address to zDAOChef contract
@@ -29,18 +19,7 @@ export interface ProofConfig {
   from: string;
 }
 
-export interface FleekConfig {
-  // API Key to Fleek
-  apiKey: string;
-
-  // API Secret to Fleek
-  apiSecret: string;
-}
-
-export interface Config {
-  // Gnosis Safe configuration
-  gnosisSafe: GnosisSafeConfig;
-
+export interface Config extends BaseConfig {
   // Ethereum DAO configuration
   ethereum: DAOConfig;
 
@@ -52,10 +31,4 @@ export interface Config {
 
   // Fleek configuration to upload to IPFS
   fleek: FleekConfig;
-
-  // zNS configuration, can be different network from Ethereum DAO configuration
-  zNS: zNSConfig;
-
-  // True for production mode, false for development mode
-  isProd: boolean;
 }

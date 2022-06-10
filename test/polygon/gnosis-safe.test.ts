@@ -7,14 +7,14 @@ import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { ethers } from 'ethers';
 
-import { GnosisSafeClient } from '../src/gnosis-safe';
+import { GnosisSafeClient } from '../../src/gnosis-safe';
 import {
   AssetType,
   Coin,
   Collectible,
   GnosisSafeConfig,
   SupportedChainId,
-} from '../src/types';
+} from '../../src/types';
 import { setEnv } from './shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
@@ -30,6 +30,7 @@ describe('Gnosis Safe test', async () => {
     const config: GnosisSafeConfig = {
       serviceUri: 'https://safe-transaction.goerli.gnosis.io',
       gateway: 'https://safe-client.staging.gnosisdev.com',
+      ipfsGateway: 'snapshot.mypinata.cloud',
     };
 
     gnosisSafeClient = new GnosisSafeClient(config);
@@ -167,5 +168,35 @@ describe('Gnosis Safe test', async () => {
       '0x0905939Cae1b09287872c5D96a41617fF3Bb777a'
     );
     expect(isOwner).to.be.equal(true);
+  });
+
+  it('should propose transaction by owner', async () => {
+    const gnosisSafeAddress = '0x7a935d07d097146f143A45aA79FD8624353abD5D';
+    const token = '0xD53C3bddf27b32ad204e859EB677f709c80E6840';
+
+    const provider = new ethers.providers.JsonRpcProvider(
+      env.rpc.rinkeby,
+      SupportedChainId.RINKEBY
+    );
+    const ownerSigner = new ethers.Wallet(env.wallet.gnosisSafeOwner, provider);
+
+    await expect(
+      gnosisSafeClient.transferEther(
+        gnosisSafeAddress,
+        ownerSigner,
+        '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
+        '100000000000000'
+      )
+    ).to.be.not.rejected;
+
+    await expect(
+      gnosisSafeClient.transferERC20(
+        gnosisSafeAddress,
+        ownerSigner,
+        token,
+        '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
+        '100000000000000'
+      )
+    ).to.be.not.rejected;
   });
 });

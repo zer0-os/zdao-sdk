@@ -1,7 +1,11 @@
-import { BigNumber, ContractReceipt, Signer } from 'ethers';
+import { ContractReceipt, ethers } from 'ethers';
 
-import { Choice, ProposalProperties, Vote } from '../types';
-import { NotImplementedError } from '../types/error';
+import {
+  Choice,
+  NotImplementedError,
+  ProposalProperties,
+  Vote,
+} from '../../types';
 import AbstractProposalClient from './AbstractProposalClient';
 import MockDAOClient from './MockDAOClient';
 
@@ -29,22 +33,28 @@ class MockProposalClient extends AbstractProposalClient {
       from: 'from',
       contractAddress: 'contractAddress',
       transactionIndex: new Date().getTime(),
-      gasUsed: BigNumber.from(0),
+      gasUsed: ethers.BigNumber.from(0),
       logsBloom: '',
-      blockHash: BigNumber.from(new Date().getTime()).toHexString(),
-      transactionHash: BigNumber.from(new Date().getTime()).toHexString(),
+      blockHash: ethers.BigNumber.from(new Date().getTime()).toHexString(),
+      transactionHash: ethers.BigNumber.from(
+        new Date().getTime()
+      ).toHexString(),
       logs: [],
       blockNumber: new Date().getTime(),
       confirmations: 1,
-      cumulativeGasUsed: BigNumber.from(0),
-      effectiveGasPrice: BigNumber.from(0),
+      cumulativeGasUsed: ethers.BigNumber.from(0),
+      effectiveGasPrice: ethers.BigNumber.from(0),
       byzantium: false,
       type: 0,
     };
   }
 
-  async vote(signer: Signer, choice: Choice): Promise<ContractReceipt> {
-    const address = await signer.getAddress();
+  async vote(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string,
+    choice: Choice
+  ): Promise<void> {
+    const address = account;
     const found = this._votes.find((item) => item.voter == address);
     if (!found) {
       this._votes.push({
@@ -52,17 +62,16 @@ class MockProposalClient extends AbstractProposalClient {
         choice,
         votes: '1',
       });
-      return Promise.resolve(this.makeContractReceipt());
+    } else {
+      found.choice = choice;
     }
-    found.choice = choice;
-    return Promise.resolve(this.makeContractReceipt());
   }
 
-  calculate(_: Signer): Promise<ContractReceipt> {
+  calculate(_: ethers.Signer): Promise<void> {
     throw new NotImplementedError();
   }
 
-  execute(_: Signer): Promise<ContractReceipt> {
+  execute(_: ethers.Signer): Promise<void> {
     throw new NotImplementedError();
   }
 

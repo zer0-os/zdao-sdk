@@ -1,19 +1,22 @@
-import { ethers } from 'ethers';
+import { ethers, Signer } from 'ethers';
 import shortid from 'shortid';
 
-import DAOClient from './client/DAOClient';
-import ERC20Abi from './config/constants/abi/ERC20.json';
-import ERC1967ProxyAbi from './config/constants/abi/ERC1967Proxy.json';
-import ZeroTokenAbi from './config/constants/abi/ZeroToken.json';
-import SnapshotClient from './snapshot';
 import {
-  Config,
   CreateZDAOParams,
+  NotImplementedError,
   SDKInstance,
   TokenMintOptions,
   zDAO,
+  zDAOId,
+  zDAOState,
   zNA,
-} from './types';
+} from '../types';
+import { getToken } from '../utilities/calls';
+import DAOClient from './client/DAOClient';
+import ERC1967ProxyAbi from './config/constants/abi/ERC1967Proxy.json';
+import ZeroTokenAbi from './config/constants/abi/ZeroToken.json';
+import { SnapshotClient } from './snapshot';
+import { Config, CreateZDAOParamsOptions } from './types';
 import { errorMessageForError } from './utilities/messages';
 import zDAORegistryClient from './zDAORegistry';
 import { ZDAORecord } from './zDAORegistry/types';
@@ -31,8 +34,23 @@ class SDKInstanceClient implements SDKInstance {
     this._params = [];
   }
 
+  createZDAO(_: Signer, _2: CreateZDAOParams): Promise<void> {
+    throw new NotImplementedError();
+  }
+
+  deleteZDAO(_: Signer, _2: zDAOId): Promise<void> {
+    throw new NotImplementedError();
+  }
+
   async listZNAs(): Promise<zNA[]> {
     return await this._zDAORegistryClient.listZNAs();
+  }
+
+  async listZDAOs(): Promise<zDAO[]> {
+    const zNAs = await this.listZNAs();
+
+    const promises: Promise<zDAO>[] = zNAs.map((zNA) => this.getZDAOByZNA(zNA));
+    return await Promise.all(promises);
   }
 
   async getZDAOByZNA(zNA: zNA): Promise<zDAO> {
@@ -59,33 +77,34 @@ class SDKInstanceClient implements SDKInstance {
       throw new Error(errorMessageForError('not-found-strategy-in-snapshot'));
     }
 
-    const contract = new ethers.Contract(
-      strategy.params.address,
-      ERC20Abi,
-      this._config.zNA.provider
+    const token = await getToken(
+      this._config.zNA.provider,
+      strategy.params.address
     );
-    const promises: Promise<any>[] = [contract.symbol(), contract.decimals()];
-    const results = await Promise.all(promises);
 
-    const symbol = results[0] as string;
-    const decimals = results[1] as number;
+    const snapshot = await this._config.zNA.provider.getBlockNumber();
 
     return await DAOClient.createInstance(
       this._config,
       {
         id: zDAORecord.id,
-        ens: zDAORecord.ens,
         zNAs: zDAORecord.zNAs,
         title: space.name,
-        creator: space.admins.length > 0 ? space.admins[0] : zDAORecord.ens,
-        avatar: space.avatar,
-        network: space.network,
-        duration: space.duration,
-        safeAddress: zDAORecord.gnosisSafe,
-        votingToken: {
-          token: strategy.params.address,
-          symbol,
-          decimals,
+        createdBy: '',
+        network: Number(space.network),
+        gnosisSafe: zDAORecord.gnosisSafe,
+        votingToken: token,
+        amount: '0',
+        duration: space.duration ? Number(space.duration) : 0,
+        votingThreshold: 5001,
+        minimumVotingParticipants: 0,
+        minimumTotalVotingTokens: '0',
+        isRelativeMajority: false,
+        state: zDAOState.ACTIVE,
+        snapshot,
+        destroyed: false,
+        options: {
+          ens: space.id,
         },
       },
       {
@@ -151,7 +170,10 @@ class SDKInstanceClient implements SDKInstance {
     }
   }
 
-  async createZDAOFromParams(param: CreateZDAOParams): Promise<zDAO> {
+  async createZDAOFromParams(
+    signer: Signer,
+    param: CreateZDAOParams
+  ): Promise<zDAO> {
     const found = this._params.find(
       (item: CreateZDAOParams) => item.zNA === param.zNA
     );
@@ -161,42 +183,40 @@ class SDKInstanceClient implements SDKInstance {
     if (param.title.length < 1) {
       throw new Error(errorMessageForError('empty-zdao-title'));
     }
-    if (param.safeAddress.length < 1) {
+    if (param.gnosisSafe.length < 1) {
       throw new Error(errorMessageForError('empty-gnosis-address'));
     }
-    if (param.votingToken.length < 1) {
+    if (param.token.length < 1) {
       throw new Error(errorMessageForError('empty-voting-token'));
     }
 
     this._params.push(param);
 
-    const contract = new ethers.Contract(
-      param.votingToken,
-      ERC20Abi,
-      this._config.zNA.provider
-    );
-    const promises: Promise<any>[] = [contract.symbol(), contract.decimals()];
-    const results = await Promise.all(promises);
+    const token = await getToken(this._config.zNA.provider, param.token);
 
-    const symbol = results[0] as string;
-    const decimals = results[1] as number;
+    const snapshot = await this._config.zNA.provider.getBlockNumber();
 
     return await DAOClient.createInstance(
       this._config,
       {
         id: shortid.generate(),
-        ens: param.ens,
         zNAs: [param.zNA],
         title: param.title,
-        creator: param.creator,
-        avatar: param.avatar,
-        network: param.network.toString(),
+        createdBy: '',
+        network: param.network,
+        gnosisSafe: param.gnosisSafe,
+        votingToken: token,
+        amount: '0',
         duration: param.duration,
-        safeAddress: param.safeAddress,
-        votingToken: {
-          token: param.votingToken,
-          symbol,
-          decimals,
+        votingThreshold: 5001,
+        minimumVotingParticipants: 0,
+        minimumTotalVotingTokens: '0',
+        isRelativeMajority: false,
+        state: zDAOState.ACTIVE,
+        snapshot,
+        destroyed: false,
+        options: {
+          ens: (param.options as unknown as CreateZDAOParamsOptions).ens,
         },
       },
       undefined
@@ -215,33 +235,31 @@ class SDKInstanceClient implements SDKInstance {
     const found = this._params.find((param) => param.zNA === zNA);
     if (!found) throw new Error(errorMessageForError('not-found-zdao'));
 
-    const contract = new ethers.Contract(
-      found.votingToken,
-      ERC20Abi,
-      this._config.zNA.provider
-    );
-    const promises: Promise<any>[] = [contract.symbol(), contract.decimals()];
-    const results = await Promise.all(promises);
+    const token = await getToken(this._config.zNA.provider, found.token);
 
-    const symbol = results[0] as string;
-    const decimals = results[1] as number;
+    const snapshot = await this._config.zNA.provider.getBlockNumber();
 
     return await DAOClient.createInstance(
       this._config,
       {
         id: shortid.generate(),
-        ens: found.ens,
         zNAs: [found.zNA],
         title: found.title,
-        creator: found.creator,
-        avatar: found.avatar,
-        network: found.network.toString(),
+        createdBy: '',
+        network: found.network,
+        gnosisSafe: found.gnosisSafe,
+        votingToken: token,
+        amount: '0',
         duration: found.duration,
-        safeAddress: found.safeAddress,
-        votingToken: {
-          token: found.votingToken,
-          symbol,
-          decimals,
+        votingThreshold: 5001,
+        minimumVotingParticipants: 0,
+        minimumTotalVotingTokens: '0',
+        isRelativeMajority: false,
+        state: zDAOState.ACTIVE,
+        snapshot,
+        destroyed: false,
+        options: {
+          ens: (found.options as unknown as CreateZDAOParamsOptions).ens,
         },
       },
       undefined

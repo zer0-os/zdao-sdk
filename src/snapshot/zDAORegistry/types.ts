@@ -1,4 +1,5 @@
-import { ENS, zDAOId, zNA } from '../types';
+import { zDAOId, zNA } from '../../types';
+import { ENS } from '../types';
 
 export interface ZDAORecord {
   id: zDAOId;

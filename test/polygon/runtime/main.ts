@@ -1,12 +1,12 @@
 import assert from 'assert';
 import { BigNumber, ethers } from 'ethers';
 
-import { createSDKInstance } from '../../src';
-import ZNAClient from '../../src/client/ZNAClient';
-import { developmentConfiguration } from '../../src/config';
+import { createSDKInstance } from '../../../src/polygon';
+import ZNAClient from '../../../src/polygon/client/ZNAClient';
+import { developmentConfiguration } from '../../../src/polygon/config';
+import { ProposalState, SupportedChainId } from '../../../src/types';
 // import TransferAbi from '../../src/config/abi/transfer.json';
-import { SupportedChainId } from '../../src/types';
-import { sleep } from '../../src/utilities/tx';
+import { sleep } from '../../../src/utilities/date';
 import { setEnv } from '../shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
@@ -82,8 +82,6 @@ const main = async () => {
   const instance = await createSDKInstance(config);
   console.log('instance created');
 
-  console.log('instance.registry', instance.registry);
-
   const zNAId1 = ZNAClient.zNATozNAId('wilder.wheels');
   console.log('zNAId1', zNAId1);
   const zNAId2 = ZNAClient.zNATozNAId('wilder.kicks');
@@ -92,15 +90,6 @@ const main = async () => {
   console.log('zNAId3', zNAId3);
   const zNAId4 = ZNAClient.zNATozNAId('wilder.breasts');
   console.log('zNAId4', zNAId4);
-
-  const staking = instance.staking;
-  console.log('staking', staking);
-  const stakingAddress = instance.staking.address;
-  const power = await staking.stakingPower(
-    goerliSigner.address,
-    env.token.mumbai
-  );
-  console.log('staking power', stakingAddress, power);
 
   // await instance.createZDAO(goerliSigner, {
   //   zNA: 'wilder.kicks',
@@ -129,8 +118,8 @@ const main = async () => {
     zDAO.id,
     zDAO.title,
     zDAO.gnosisSafe,
-    zDAO.rootToken,
-    zDAO.childToken
+    zDAO.votingToken,
+    zDAO.options
   );
 
   const assets = await zDAO.listAssets();
@@ -171,22 +160,22 @@ const main = async () => {
   for (const proposal of proposals) {
     console.log('> proposal.id', proposal.id, proposal.state, proposal.ipfs);
 
-    if (proposal.state === 'active') {
+    if (proposal.state === ProposalState.ACTIVE) {
       const votingPower = await proposal.getVotingPowerOfUser(
         mumbaiSigner.address
       );
       console.log('votingPower', votingPower);
       if (BigNumber.from(votingPower).gt(BigNumber.from(0))) {
-        await proposal.vote(mumbaiSigner, 2);
+        await proposal.vote(mumbaiSigner, mumbaiSigner.address, 2);
         console.log('successfully voted');
       }
 
       const votes = await proposal.listVotes();
       console.log('votes', votes);
-    } else if (proposal.state === 'awaiting-calculation') {
+    } else if (proposal.state === ProposalState.AWAITING_CALCULATION) {
       const tx = await proposal.calculate(mumbaiSigner);
-      console.log('successfully calculated on polygon', tx.transactionHash);
-    } else if (proposal.state === 'awaiting-finalization') {
+      console.log('successfully calculated on polygon');
+    } else if (proposal.state === ProposalState.AWAITING_FINALIZATION) {
       const hashes = await proposal.getCheckPointingHashes();
       console.log('tx hashes', hashes);
 
@@ -196,13 +185,13 @@ const main = async () => {
             await sleep(1000);
           }
           console.log('tx hash was checkpointed', hash);
-          const tx = await zDAO.syncState(goerliSigner, hash);
-          console.log('sync state', tx.transactionHash);
+          await zDAO.syncState(goerliSigner, hash);
+          console.log('sync state');
         } catch (error) {
           console.error(error);
         }
       }
-    } else if (proposal.state === 'awaiting-execution') {
+    } else if (proposal.state === ProposalState.AWAITING_EXECUTION) {
       console.log('executing', proposal.id);
       await proposal.execute(goerliGnosisOwnerSigner);
       console.log('executed', proposal.id);

@@ -1,4 +1,5 @@
-import { ENS, Token, TokenMetaData } from '../types';
+import { Token, TokenMetaData } from '../../types';
+import { ENS } from '../types';
 
 export interface SpaceParams {
   spaceId: ENS;
@@ -55,11 +56,11 @@ export interface SnapshotSpace {
   network: string;
   duration?: number;
   followers: number;
+  strategies: any[];
 }
 
 export interface SnapshotSpaceDetails extends SnapshotSpace {
   admins: string[];
-  strategies: any[];
 }
 
 export interface SnapshotProposal {

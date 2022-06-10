@@ -1,5 +1,5 @@
+import { zNAId } from '../../types';
 import EtherZNSHubClient from '../ethereum/EtherZNSHubClient';
-import { zNAId } from '../types';
 
 class ZNSHubClient {
   protected _etherZNSHubClient: EtherZNSHubClient;

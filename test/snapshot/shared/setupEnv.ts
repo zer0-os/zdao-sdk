@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 
-import { SupportedChainId } from '../../src/types';
+import { SupportedChainId } from '../../../src/types';
 
 dotenv.config();
 
@@ -8,6 +8,10 @@ interface Env {
   rpcUrl: string;
   network: SupportedChainId;
   zDAORegistry: string;
+  wallet: {
+    privateKey: string;
+    gnosisSafeOwner: string;
+  };
   DAOs: {
     title: string;
     votingToken: string;
@@ -22,6 +26,10 @@ export const setEnv = (isDev = true): Env => {
         rpcUrl: process.env.RINKEBY_RPC_URL!,
         network: SupportedChainId.RINKEBY,
         zDAORegistry: '0x73D44dEa3A3334aB2504443479aD531FfeD2d2D9',
+        wallet: {
+          privateKey: process.env.PRIVATE_KEY!,
+          gnosisSafeOwner: process.env.GNOSIS_OWNER_PRIVATE_KEY!,
+        },
         DAOs: [
           {
             title: 'zDAO Testnet',
@@ -35,6 +43,10 @@ export const setEnv = (isDev = true): Env => {
         rpcUrl: process.env.MAINNET_RPC_URL!,
         network: SupportedChainId.MAINNET,
         zDAORegistry: '0x7701913b65C9bCDa4d353F77EC12123d57D77f1e',
+        wallet: {
+          privateKey: process.env.PRIVATE_KEY!,
+          gnosisSafeOwner: process.env.GNOSIS_OWNER_PRIVATE_KEY!,
+        },
         DAOs: [
           {
             title: 'Wilder Wheels',

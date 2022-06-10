@@ -1,19 +1,23 @@
-import { BigNumber, ethers, Signer } from 'ethers';
+import { ethers } from 'ethers';
 import shortid from 'shortid';
 
-import IERC20UpgradeableAbi from '../config/abi/IERC20Upgradeable.json';
-import { GnosisSafeClient } from '../gnosis-safe';
+import { GnosisSafeClient } from '../../gnosis-safe';
 import {
-  Config,
   CreateProposalParams,
   CreateZDAOParams,
+  NotFoundError,
+  NotImplementedError,
   Proposal,
   ProposalId,
   ProposalProperties,
-  VoteChoice,
+  ProposalState,
+  zDAO,
   zDAOProperties,
-} from '../types';
-import { NotFoundError, NotImplementedError } from '../types/error';
+  zDAOState,
+} from '../../types';
+import { getToken } from '../../utilities/calls';
+import IERC20UpgradeableAbi from '../config/abi/IERC20Upgradeable.json';
+import { Config, VoteChoice } from '../types';
 import { errorMessageForError } from '../utilities/messages';
 import { timestamp } from '../utilities/tx';
 import AbstractDAOClient from './AbstractDAOClient';
@@ -22,12 +26,12 @@ import MockProposalClient from './MockProposalClient';
 
 class MockDAOClient extends AbstractDAOClient {
   private _proposals: MockProposalClient[] = [];
-  protected _totalSupply: BigNumber;
+  protected _totalSupply: ethers.BigNumber;
 
   private constructor(
     properties: zDAOProperties,
     gnosisSafeClient: GnosisSafeClient,
-    totalSupply: BigNumber
+    totalSupply: ethers.BigNumber
   ) {
     super(properties, gnosisSafeClient);
     this._totalSupply = totalSupply;
@@ -39,10 +43,19 @@ class MockDAOClient extends AbstractDAOClient {
 
   static async createInstance(
     config: Config,
-    signer: Signer,
+    signer: ethers.Signer,
     params: CreateZDAOParams
-  ): Promise<MockDAOClient> {
+  ): Promise<zDAO> {
     const chainId = await signer.getChainId();
+
+    const token = await getToken(GlobalClient.etherRpcProvider, params.token);
+    const childTokenAddress = await GlobalClient.registry.rootToChildToken(
+      params.token
+    );
+    const childToken = await getToken(
+      GlobalClient.polyRpcProvider,
+      childTokenAddress
+    );
 
     const properties: zDAOProperties = {
       id: shortid.generate(),
@@ -51,17 +64,19 @@ class MockDAOClient extends AbstractDAOClient {
       createdBy: await signer.getAddress(),
       network: chainId,
       gnosisSafe: params.gnosisSafe,
-      rootToken: params.token,
+      votingToken: token,
       amount: params.amount,
-      childToken: await GlobalClient.registry.rootToChildToken(params.token),
       duration: params.duration,
       votingThreshold: params.votingThreshold,
       minimumVotingParticipants: params.minimumVotingParticipants,
       minimumTotalVotingTokens: params.minimumTotalVotingTokens,
       isRelativeMajority: params.isRelativeMajority,
-      state: 'active',
+      state: zDAOState.ACTIVE,
       snapshot: timestamp(new Date()),
       destroyed: false,
+      options: {
+        polygonToken: childToken,
+      },
     };
 
     const tokenContract = new ethers.Contract(
@@ -95,9 +110,13 @@ class MockDAOClient extends AbstractDAOClient {
   }
 
   async createProposal(
-    signer: Signer,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string,
     payload: CreateProposalParams
   ): Promise<ProposalId> {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const signer = provider?.getSigner ? provider.getSigner() : provider;
     const address = await signer.getAddress();
     const ipfs = await this.uploadToIPFS(signer, payload);
 
@@ -110,9 +129,10 @@ class MockDAOClient extends AbstractDAOClient {
       body: payload.body,
       ipfs,
       choices: [VoteChoice.YES, VoteChoice.NO],
+      created: now,
       start: now,
       end: new Date(now.getTime() + this.duration * 1000),
-      state: 'active',
+      state: ProposalState.ACTIVE,
       snapshot: timestamp(now),
       scores: ['0', '0'],
       voters: 0,
@@ -127,7 +147,7 @@ class MockDAOClient extends AbstractDAOClient {
     return Promise.resolve(true);
   }
 
-  syncState(_: Signer, _2: string): Promise<ethers.ContractReceipt> {
+  syncState(_: ethers.Signer, _2: string): Promise<void> {
     throw new NotImplementedError();
   }
 }

@@ -4,11 +4,11 @@ import {
   CreateProposalParams,
   CreateZDAOParams,
   PaginationParam,
+  TokenMintOptions,
 } from './params';
-import { Choice, ProposalId, VoteId, zNA } from './primitives';
+import { Choice, ProposalId, zDAOId, zNA } from './primitives';
 import {
   ProposalProperties,
-  TokenMintOptions,
   Transaction,
   Vote,
   zDAOAssets,
@@ -17,10 +17,30 @@ import {
 
 export interface SDKInstance {
   /**
+   * Create zDAO
+   * @param signer
+   * @param params
+   */
+  createZDAO(signer: ethers.Signer, params: CreateZDAOParams): Promise<void>;
+
+  /**
+   * Delete zDAO
+   * @param signer
+   * @param zDAOId
+   */
+  deleteZDAO(signer: ethers.Signer, zDAOId: zDAOId): Promise<void>;
+
+  /**
    * Get all the list of zNA
    * @returns list of zNA
    */
   listZNAs(): Promise<zNA[]>;
+
+  /**
+   * Get all the list of zDAO instance
+   * @returns list of zDAO
+   */
+  listZDAOs(): Promise<zDAO[]>;
 
   /**
    * Create an zDAO instance by zNA
@@ -52,12 +72,15 @@ export interface SDKInstance {
 
   /**
    * Create zDAO from parameters for test
-   * @param packaged parameters of zDAO
+   * @params packaged parameters of zDAO
    * @exception throw Error if zNA already exists
    * @exception throw Error if owners is empty
    * @exception throw Error if title is empty
    */
-  createZDAOFromParams(param: CreateZDAOParams): Promise<zDAO>;
+  createZDAOFromParams(
+    signer: ethers.Signer,
+    params: CreateZDAOParams
+  ): Promise<zDAO>;
 
   /**
    * List all associated zNAs, only used for test
@@ -115,7 +138,20 @@ export interface zDAO extends zDAOProperties {
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
     payload: CreateProposalParams
-  ): Promise<Proposal>;
+  ): Promise<ProposalId>;
+
+  /**
+   * Check if transaction has been verified by Matic validators
+   * @param txHash transaction hash which happened on Polygon to send data to Ethereum
+   */
+  isCheckPointed(txHash: string): Promise<boolean>;
+
+  /**
+   * If tx is successfully check pointed, create a transaction to receive message
+   * @param signer
+   * @param txHash
+   */
+  syncState(signer: ethers.Signer, txHash: string): Promise<void>;
 }
 
 export interface Proposal extends ProposalProperties {
@@ -128,22 +164,28 @@ export interface Proposal extends ProposalProperties {
   /**
    * Get voting power of the user in zDAO
    * @param account account address
-   * @returns voting power as number
+   * @returns voting power as BigNumber
    */
-  getVotingPowerOfUser(account: string): Promise<number>;
+  getVotingPowerOfUser(account: string): Promise<string>;
 
   /**
    * Cast a vote on proposal
-   * @param provider Web3 provider
+   * @param provider Web3 provider or wallet
    * @param account signer address
-   * @param choice voter's choice, 1: vote on first choice, 2: on second choice
+   * @param choice voter's choice
    * @returns vote id if successfully cast a vote
    */
   vote(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
     choice: Choice
-  ): Promise<VoteId>;
+  ): Promise<void>;
+
+  /**
+   * Calculate voting result and sync to ethereum
+   * @param signer signer wallet
+   */
+  calculate(signer: ethers.Signer): Promise<void>;
 
   /**
    * Execute a proposal in zDAO
@@ -153,4 +195,9 @@ export interface Proposal extends ProposalProperties {
    * @exception throw Error if proposal does not conain meta data to transfer tokens
    */
   execute(signer: ethers.Signer): Promise<void>;
+
+  /**
+   * Find all the checkpointing transaction hashes
+   */
+  getCheckPointingHashes(): Promise<string[]>;
 }

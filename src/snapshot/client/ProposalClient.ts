@@ -1,10 +1,17 @@
 import { ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
-import GnosisSafeClient from '../gnosis-safe';
-import SnapshotClient from '../snapshot';
-import { PaginationParam, ProposalProperties, VoteId } from '../types';
-import { Choice, Proposal, Vote } from '../types';
+import { GnosisSafeClient } from '../../gnosis-safe';
+import {
+  Choice,
+  NotImplementedError,
+  PaginationParam,
+  Proposal,
+  ProposalProperties,
+  Vote,
+} from '../../types';
+import { SnapshotClient } from '../snapshot';
+import { ZDAOOptions } from '../types';
 import { errorMessageForError } from '../utilities/messages';
 import DAOClient from './DAOClient';
 
@@ -33,12 +40,8 @@ class ProposalClient implements Proposal {
     return this._properties.id;
   }
 
-  get type() {
-    return this._properties.type;
-  }
-
-  get author() {
-    return this._properties.author;
+  get createdBy() {
+    return this._properties.createdBy;
   }
 
   get title() {
@@ -73,10 +76,6 @@ class ProposalClient implements Proposal {
     return this._properties.state;
   }
 
-  get network() {
-    return this._properties.network;
-  }
-
   get snapshot() {
     return this._properties.snapshot;
   }
@@ -85,8 +84,8 @@ class ProposalClient implements Proposal {
     return this._properties.scores;
   }
 
-  get votes() {
-    return this._properties.votes;
+  get voters() {
+    return this._properties.voters;
   }
 
   get metadata() {
@@ -161,8 +160,8 @@ class ProposalClient implements Proposal {
 
     while (numberOfResults === limit) {
       const results = await this._snapshotClient.listVotes({
-        spaceId: this._zDAO.ens,
-        network: this._zDAO.network,
+        spaceId: (this._zDAO.options as ZDAOOptions).ens,
+        network: this._zDAO.network.toString(),
         strategies: this._options.strategies,
         proposalId: this.id,
         scores_state: this._options.scores_state,
@@ -175,7 +174,7 @@ class ProposalClient implements Proposal {
         ...results.map((vote: any) => ({
           voter: vote.voter,
           choice: vote.choice as Choice,
-          power: vote.power,
+          votes: vote.power,
         }))
       );
       from += results.length;
@@ -185,25 +184,31 @@ class ProposalClient implements Proposal {
     return votes;
   }
 
-  async getVotingPowerOfUser(account: string): Promise<number> {
-    return this._snapshotClient.getVotingPower({
-      spaceId: this._zDAO.ens,
-      network: this.network,
-      snapshot: Number(this.snapshot),
-      voter: account,
-    });
+  async getVotingPowerOfUser(account: string): Promise<string> {
+    return this._snapshotClient
+      .getVotingPower({
+        spaceId: (this._zDAO.options as ZDAOOptions).ens,
+        network: this._zDAO.network.toString(),
+        snapshot: Number(this.snapshot),
+        voter: account,
+      })
+      .then((value) => value.toString());
   }
 
   async vote(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
     choice: Choice
-  ): Promise<VoteId> {
-    return this._snapshotClient.voteProposal(provider, account, {
-      spaceId: this._zDAO.ens,
+  ): Promise<void> {
+    await this._snapshotClient.voteProposal(provider, account, {
+      spaceId: (this._zDAO.options as ZDAOOptions).ens,
       proposalId: this.id,
       choice,
     });
+  }
+
+  async calculate(_: ethers.Signer): Promise<void> {
+    throw new NotImplementedError();
   }
 
   async execute(signer: ethers.Signer): Promise<void> {
@@ -212,7 +217,7 @@ class ProposalClient implements Proposal {
     const address = await signer.getAddress();
     const isOwner = await this._gnosisSafeClient.isOwnerAddress(
       signer,
-      this._zDAO.ens,
+      (this._zDAO.options as ZDAOOptions).ens,
       address
     );
     if (!isOwner) {
@@ -226,7 +231,7 @@ class ProposalClient implements Proposal {
     if (!this.metadata?.token || this.metadata.token.length < 1) {
       // Ether transfer
       await this._gnosisSafeClient.transferEther(
-        this._zDAO.safeAddress,
+        this._zDAO.gnosisSafe,
         signer,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.metadata!.recipient,
@@ -236,13 +241,17 @@ class ProposalClient implements Proposal {
     } else {
       // ERC20 transfer
       await this._gnosisSafeClient.transferERC20(
-        this._zDAO.safeAddress,
+        this._zDAO.gnosisSafe,
         signer,
         this.metadata.token,
         this.metadata.recipient,
         this.metadata.amount.toString()
       );
     }
+  }
+
+  getCheckPointingHashes(): Promise<string[]> {
+    throw new NotImplementedError();
   }
 }
 

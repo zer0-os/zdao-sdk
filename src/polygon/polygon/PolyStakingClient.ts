@@ -1,4 +1,4 @@
-import { ContractReceipt, ethers, Signer } from 'ethers';
+import { ContractReceipt, ethers } from 'ethers';
 
 import GlobalClient from '../client/GlobalClient';
 import StakingAbi from '../config/abi/Staking.json';
@@ -16,7 +16,7 @@ class PolyStakingClient {
   }
 
   async stakeERC20(
-    signer: Signer,
+    signer: ethers.Signer,
     token: string,
     amount: string
   ): Promise<ContractReceipt> {
@@ -25,7 +25,7 @@ class PolyStakingClient {
   }
 
   async stakeERC721(
-    signer: Signer,
+    signer: ethers.Signer,
     token: string,
     tokenId: string
   ): Promise<ContractReceipt> {
@@ -34,7 +34,7 @@ class PolyStakingClient {
   }
 
   async unstakeERC20(
-    signer: Signer,
+    signer: ethers.Signer,
     token: string,
     amount: string
   ): Promise<ContractReceipt> {
@@ -43,7 +43,7 @@ class PolyStakingClient {
   }
 
   async unstakeERC721(
-    signer: Signer,
+    signer: ethers.Signer,
     token: string,
     tokenId: string
   ): Promise<ContractReceipt> {

@@ -11,10 +11,9 @@ import {
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
 import SafeServiceClient from '@gnosis.pm/safe-service-client';
-import { BigNumberish, ethers, Signer } from 'ethers';
+import { ethers } from 'ethers';
 
 import IPFSClient from '../client/IPFSClient';
-import { IPFSGatway } from '../config';
 import ERC20Abi from '../config/abi/ERC20.json';
 import { GnosisSafeConfig } from '../types';
 
@@ -31,7 +30,7 @@ class GnosisSafeClient {
   }
 
   async isOwnerAddress(
-    signer: Signer,
+    signer: ethers.Signer,
     gnosisSafe: string,
     address: string
   ): Promise<boolean> {
@@ -52,9 +51,9 @@ class GnosisSafeClient {
 
   async transferEther(
     gnosisSafe: string,
-    signer: Signer,
+    signer: ethers.Signer,
     recipient: string,
-    amount: BigNumberish
+    amount: ethers.BigNumberish
   ): Promise<void> {
     const ethAdapter = new EthersAdapter({
       ethers,
@@ -95,10 +94,10 @@ class GnosisSafeClient {
 
   async transferERC20(
     gnosisSafe: string,
-    signer: Signer,
+    signer: ethers.Signer,
     token: string,
     recipient: string,
-    amount: BigNumberish
+    amount: ethers.BigNumberish
   ): Promise<void> {
     const ethAdapter = new EthersAdapter({
       ethers,
@@ -188,7 +187,9 @@ class GnosisSafeClient {
 
     const promises: Promise<{ [key: string]: string }>[] = [];
     for (const collectible of needToPatch) {
-      promises.push(IPFSClient.getJson(collectible.uri, IPFSGatway));
+      promises.push(
+        IPFSClient.getJson(collectible.uri, this._config.ipfsGateway)
+      );
     }
     const result: { [key: string]: string }[] = await Promise.all(promises);
     for (const index in needToPatch) {

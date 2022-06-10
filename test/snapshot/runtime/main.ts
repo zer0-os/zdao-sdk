@@ -1,17 +1,11 @@
 import { BigNumber, ethers } from 'ethers';
 
-import { createSDKInstance } from '../../src';
+import { Config, createSDKInstance } from '../../../src/snapshot';
 import {
   developmentConfiguration,
   productionConfiguration,
-} from '../../src/config';
-import {
-  Config,
-  SDKInstance,
-  SupportedChainId,
-  zDAO,
-  zNA,
-} from '../../src/types';
+} from '../../../src/snapshot/config';
+import { SDKInstance, SupportedChainId, zDAO, zNA } from '../../../src/types';
 import { setEnv } from '../shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
@@ -26,17 +20,24 @@ const createToken = async (sdkInstance: SDKInstance, signer: ethers.Wallet) => {
   console.log('new token', token);
 };
 
-const pagination = async (sdkInstance: SDKInstance) => {
+const pagination = async (sdkInstance: SDKInstance, signer: ethers.Wallet) => {
   // isDev should be false
 
-  const dao = await sdkInstance.createZDAOFromParams({
-    ens: 'aave.eth',
+  const dao = await sdkInstance.createZDAOFromParams(signer, {
     zNA: 'aave.eth',
     title: 'zDAO Testing Space 1',
-    creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
     network: SupportedChainId.MAINNET,
-    safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
-    votingToken: '0x514910771af9ca656af840dff83e8264ecf986ca',
+    gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+    token: '0x514910771af9ca656af840dff83e8264ecf986ca',
+    amount: '0',
+    duration: 180,
+    votingThreshold: 5001,
+    isRelativeMajority: true,
+    minimumVotingParticipants: 0,
+    minimumTotalVotingTokens: '0',
+    options: {
+      ens: 'aave.eth',
+    },
   });
 
   const count = 50;
@@ -73,14 +74,21 @@ const immediateVote = async (
 ) => {
   // isDev should be true
 
-  const dao = await sdkInstance.createZDAOFromParams({
-    ens: 'joshupgig.eth',
+  const dao = await sdkInstance.createZDAOFromParams(signer, {
     zNA: 'joshupgig.eth',
     title: 'zDAO Testing Space 1',
-    creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
     network: SupportedChainId.RINKEBY,
-    safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
-    votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+    gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+    token: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+    amount: '0',
+    duration: 180,
+    votingThreshold: 5001,
+    isRelativeMajority: true,
+    minimumVotingParticipants: 0,
+    minimumTotalVotingTokens: '0',
+    options: {
+      ens: 'joshupgig.eth',
+    },
   });
 
   const proposalId =

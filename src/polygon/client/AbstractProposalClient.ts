@@ -1,9 +1,13 @@
-import { ContractReceipt, Signer } from 'ethers';
+import { ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
-import { ProposalProperties } from '../types';
-import { Choice, Proposal, Vote } from '../types';
-import { NotImplementedError } from '../types/error';
+import {
+  Choice,
+  NotImplementedError,
+  Proposal,
+  ProposalProperties,
+  Vote,
+} from '../../types';
 
 class AbstractProposalClient implements Proposal {
   protected readonly _properties: ProposalProperties;
@@ -34,6 +38,10 @@ class AbstractProposalClient implements Proposal {
 
   get choices() {
     return this._properties.choices;
+  }
+
+  get created() {
+    return this._properties.created;
   }
 
   get start() {
@@ -72,15 +80,19 @@ class AbstractProposalClient implements Proposal {
     throw new NotImplementedError();
   }
 
-  vote(_: Signer, _2: Choice): Promise<ContractReceipt> {
+  vote(
+    _: ethers.providers.Web3Provider | ethers.Wallet,
+    _2: string,
+    _3: Choice
+  ): Promise<void> {
     throw new NotImplementedError();
   }
 
-  calculate(_: Signer): Promise<ContractReceipt> {
+  calculate(_: ethers.Signer): Promise<void> {
     throw new NotImplementedError();
   }
 
-  execute(_: Signer): Promise<ContractReceipt> {
+  execute(_: ethers.Signer): Promise<void> {
     throw new NotImplementedError();
   }
 

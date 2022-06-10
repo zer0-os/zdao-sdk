@@ -2,16 +2,16 @@ import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { ethers } from 'ethers';
 
-import { createSDKInstance } from '../src';
-import { developmentConfiguration } from '../src/config';
-import { Config, SDKInstance, zDAO } from '../src/types';
+import { Config, createSDKInstance, ZDAOOptions } from '../../src/snapshot';
+import { developmentConfiguration } from '../../src/snapshot/config';
+import { SDKInstance, zDAO } from '../../src/types';
 import { setEnv } from './shared/setupEnv';
 
 use(chaiAsPromised.default);
 
 describe('zNA test', async () => {
   const env = setEnv();
-  let sdkInstance: SDKInstance;
+  let sdkInstance: SDKInstance, signer: ethers.Wallet;
 
   beforeEach('setup', async () => {
     const provider = new ethers.providers.JsonRpcProvider(
@@ -21,42 +21,64 @@ describe('zNA test', async () => {
     const config: Config = developmentConfiguration(env.zDAORegistry, provider);
 
     sdkInstance = createSDKInstance(config);
+    signer = new ethers.Wallet(env.wallet.gnosisSafeOwner, provider);
   });
 
   it('should create successfully', async () => {
-    const zDAO: zDAO = await sdkInstance.createZDAOFromParams({
-      ens: 'joshupgig.eth',
+    const zDAO: zDAO = await sdkInstance.createZDAOFromParams(signer, {
       zNA: 'joshupgig.eth',
-      title: 'zDAO',
-      creator: 'creator',
+      title: 'zDAO Testing Space 1',
       network: env.network,
-      safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
-      votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+      gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+      token: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+      amount: '0',
+      duration: 180,
+      votingThreshold: 5001,
+      isRelativeMajority: true,
+      minimumVotingParticipants: 0,
+      minimumTotalVotingTokens: '0',
+      options: {
+        ens: 'joshupgig.eth',
+      },
     });
 
-    expect(zDAO.ens).to.be.equal('joshupgig.eth');
+    expect((zDAO.options as ZDAOOptions).ens).to.be.equal('joshupgig.eth');
   });
 
   it('should throw error if create same zNA', async () => {
-    await sdkInstance.createZDAOFromParams({
-      ens: 'joshupgig.eth',
-      zNA: 'zDAO.eth',
-      title: 'zDAO',
-      creator: 'creator',
+    await sdkInstance.createZDAOFromParams(signer, {
+      zNA: 'joshupgig.eth',
+      title: 'zDAO Testing Space 1',
       network: env.network,
-      safeAddress: 'safeAddress',
-      votingToken: 'voting token',
+      gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+      token: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+      amount: '0',
+      duration: 180,
+      votingThreshold: 5001,
+      isRelativeMajority: true,
+      minimumVotingParticipants: 0,
+      minimumTotalVotingTokens: '0',
+      options: {
+        ens: 'joshupgig.eth',
+      },
     });
 
     await expect(
-      sdkInstance.createZDAOFromParams({
-        ens: 'joshupgig.eth',
-        zNA: 'zDAO.eth',
-        title: 'zDAO1',
-        creator: 'creator1',
+      sdkInstance.createZDAOFromParams(signer, {
+        zNA: 'joshupgig.eth',
+        title: 'zDAO Testing Space 1',
         network: env.network,
-        safeAddress: 'safeAddress1',
-        votingToken: 'voting token1',
+        gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+        token: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+        amount: '0',
+        duration: 180,
+        votingThreshold: 5001,
+        isRelativeMajority: true,
+        minimumVotingParticipants: 0,
+        minimumTotalVotingTokens: '0',
+        options: {
+          ens: 'joshupgig.eth',
+        },
       })
     ).to.be.rejectedWith('zDAO already exists');
   });
@@ -74,7 +96,7 @@ describe('zNA test', async () => {
   it('should create zDAO from zNA', async () => {
     const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
     expect(dao).to.be.not.equal(undefined);
-    expect(dao.ens).to.be.equal('zdao-sky.eth');
+    expect((dao.options as ZDAOOptions).ens).to.be.equal('zdao-sky.eth');
   });
 
   it('should associated with zNA', async () => {

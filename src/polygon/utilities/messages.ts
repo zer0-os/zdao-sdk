@@ -32,6 +32,10 @@ const ErrorMessages = [
     value: 'Invalid Token amount to become proposal creator',
   },
   {
+    key: 'empty-voting-token',
+    value: 'Empty Voting ERC20 Token address',
+  },
+  {
     key: 'invalid-quorum-amount',
     value: 'Invalid minimum total voting tokens',
   },
@@ -94,6 +98,22 @@ const ErrorMessages = [
   {
     key: 'zero-voting-power',
     value: 'Should have voting power',
+  },
+  {
+    key: 'not-found-ens-in-snapshot',
+    value: 'Not found space with given ens in snapshot',
+  },
+  {
+    key: 'not-found-strategy-in-snapshot',
+    value: 'Not found any token related strategyies in snapshot',
+  },
+  {
+    key: 'invalid-ens',
+    value: 'Invalid ENS',
+  },
+  {
+    key: 'invalid-proposal-duration',
+    value: 'Not found proposal duration',
   },
 ] as const;
 

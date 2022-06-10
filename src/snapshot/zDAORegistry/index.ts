@@ -5,13 +5,14 @@ import {
   Instance as zNSInstance,
 } from '@zero-tech/zns-sdk';
 import * as zns from '@zero-tech/zns-sdk';
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { gql, GraphQLClient } from 'graphql-request';
 
+import { zNA, zNAId } from '../../types';
 import zDAORegistry from '../config/constants/abi/zDAORegistry.json';
-import { ENS, ENSId, zNA, zNAConfig, zNAId } from '../types';
+import { ZDAORegistry } from '../config/constants/types/ZDAORegistry';
+import { ENS, ENSId, zNAConfig } from '../types';
 import { errorMessageForError } from '../utilities/messages';
-import { ZDAORegistry } from './contracts/ZDAORegistry';
 import { ZDAORecord } from './types';
 
 class zDAORegistryClient {
@@ -83,10 +84,12 @@ class zDAORegistryClient {
       const promises: Promise<zNAId>[] = [];
       for (const record of response) {
         const zNAIds: string[] = record.associatedzNAs.map(
-          (associated: BigNumber) => associated.toString()
+          (associated: ethers.BigNumber) => associated.toString()
         );
         for (const zNAId of zNAIds) {
-          promises.push(this.zNAIdTozNA(BigNumber.from(zNAId).toHexString()));
+          promises.push(
+            this.zNAIdTozNA(ethers.BigNumber.from(zNAId).toHexString())
+          );
         }
       }
       const result: zNAId[] = await Promise.all(promises);

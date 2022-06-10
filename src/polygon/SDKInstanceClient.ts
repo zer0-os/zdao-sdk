@@ -1,6 +1,17 @@
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
-import { BigNumber, ethers, Signer } from 'ethers';
+import { ethers } from 'ethers';
 
+import {
+  AlreadyExistError,
+  CreateZDAOParams,
+  FailedTxError,
+  InvalidError,
+  NotFoundError,
+  SDKInstance,
+  TokenMintOptions,
+  zDAO,
+} from '../types';
+import { zNA, zNAId } from '../types';
 import {
   DAOClient,
   IPFSClient,
@@ -16,26 +27,12 @@ import ERC1967ProxyAbi from './config/abi/ERC1967Proxy.json';
 import ZeroTokenAbi from './config/abi/ZeroToken.json';
 import { EtherZDAOChefClient } from './ethereum';
 import { PolyZDAOChefClient } from './polygon';
-import {
-  Config,
-  CreateZDAOParams,
-  SDKInstance,
-  TokenMintOptions,
-  zDAO,
-  zNA,
-  zNAId,
-} from './types';
-import {
-  AlreadyExistError,
-  FailedTxError,
-  InvalidError,
-  NotFoundError,
-} from './types/error';
+import { Config } from './types';
 import { errorMessageForError } from './utilities/messages';
 
 class SDKInstanceClient implements SDKInstance {
   private readonly _config: Config;
-  protected _mockZDAOClients: MockDAOClient[] = [];
+  protected _mockZDAOClients: zDAO[] = [];
 
   constructor(config: Config) {
     this._config = config;
@@ -82,7 +79,10 @@ class SDKInstanceClient implements SDKInstance {
     return GlobalClient.registry;
   }
 
-  async createZDAO(signer: Signer, params: CreateZDAOParams): Promise<void> {
+  async createZDAO(
+    signer: ethers.Signer,
+    params: CreateZDAOParams
+  ): Promise<void> {
     if (await this.doesZDAOExist(params.zNA)) {
       throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
     }
@@ -106,7 +106,7 @@ class SDKInstanceClient implements SDKInstance {
     }
   }
 
-  async deleteZDAO(signer: Signer, zDAOId: string): Promise<void> {
+  async deleteZDAO(signer: ethers.Signer, zDAOId: string): Promise<void> {
     try {
       await GlobalClient.etherZDAOChef.removeDAO(signer, zDAOId);
     } catch (error: any) {
@@ -207,7 +207,7 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async createZDAOFromParams(
-    signer: Signer,
+    signer: ethers.Signer,
     params: CreateZDAOParams
   ): Promise<zDAO> {
     if (params.title.length < 1) {
@@ -224,7 +224,7 @@ class SDKInstanceClient implements SDKInstance {
     }
     if (
       !isBigNumberish(params.amount) ||
-      BigNumber.from(params.amount).eq(BigNumber.from(0))
+      ethers.BigNumber.from(params.amount).eq(ethers.BigNumber.from(0))
     ) {
       throw new InvalidError(
         errorMessageForError('invalid-proposal-token-amount')
@@ -232,7 +232,7 @@ class SDKInstanceClient implements SDKInstance {
     }
     if (
       !isBigNumberish(params.minimumTotalVotingTokens) ||
-      BigNumber.from(params.amount).eq(BigNumber.from(0))
+      ethers.BigNumber.from(params.amount).eq(ethers.BigNumber.from(0))
     ) {
       throw new InvalidError(errorMessageForError('invalid-quorum-amount'));
     }

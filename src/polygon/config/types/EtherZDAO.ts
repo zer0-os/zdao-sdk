@@ -58,6 +58,7 @@ export declare namespace IEtherZDAO {
   export type ProposalStruct = {
     proposalId: BigNumberish;
     createdBy: string;
+    created: BigNumberish;
     yes: BigNumberish;
     no: BigNumberish;
     voters: BigNumberish;
@@ -74,6 +75,7 @@ export declare namespace IEtherZDAO {
     BigNumber,
     BigNumber,
     BigNumber,
+    BigNumber,
     string,
     BigNumber,
     boolean,
@@ -82,6 +84,7 @@ export declare namespace IEtherZDAO {
   ] & {
     proposalId: BigNumber;
     createdBy: string;
+    created: BigNumber;
     yes: BigNumber;
     no: BigNumber;
     voters: BigNumber;
@@ -710,6 +713,7 @@ export interface EtherZDAO extends BaseContract {
       BigNumber,
       BigNumber,
       BigNumber,
+      BigNumber,
       string,
       BigNumber,
       boolean,
@@ -718,6 +722,7 @@ export interface EtherZDAO extends BaseContract {
     ] & {
       proposalId: BigNumber;
       createdBy: string;
+      created: BigNumber;
       yes: BigNumber;
       no: BigNumber;
       voters: BigNumber;

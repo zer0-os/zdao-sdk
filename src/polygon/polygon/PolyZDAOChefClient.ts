@@ -1,18 +1,13 @@
 import { AddressZero } from '@ethersproject/constants';
-import { BigNumber, ethers, Signer } from 'ethers';
+import { ethers } from 'ethers';
 
+import { Choice, ProposalId, zDAOId } from '../../types';
 import GlobalClient from '../client/GlobalClient';
 import PolyZDAOAbi from '../config/abi/PolyZDAO.json';
 import PolyZDAOChefAbi from '../config/abi/PolyZDAOChef.json';
 import { PolyZDAO } from '../config/types/PolyZDAO';
 import { PolyZDAOChef } from '../config/types/PolyZDAOChef';
-import {
-  Choice,
-  DAOConfig,
-  ProposalId,
-  StakingProperties,
-  zDAOId,
-} from '../types';
+import { DAOConfig, StakingProperties } from '../types';
 import { PolyZDAOProperties } from './types';
 
 class PolyZDAOChefClient {
@@ -78,7 +73,7 @@ class PolyZDAOChefClient {
   }
 
   async vote(
-    signer: Signer,
+    signer: ethers.Signer,
     daoId: zDAOId,
     proposalId: ProposalId,
     choice: Choice
@@ -90,7 +85,7 @@ class PolyZDAOChefClient {
   }
 
   async calculateProposal(
-    signer: Signer,
+    signer: ethers.Signer,
     daoId: zDAOId,
     proposalId: ProposalId
   ) {
@@ -121,8 +116,8 @@ class PolyZDAOChefClient {
     const blockCount = 3490;
 
     const filter = this._contract.filters.ProposalCalculated(
-      BigNumber.from(daoId),
-      BigNumber.from(proposalId)
+      ethers.BigNumber.from(daoId),
+      ethers.BigNumber.from(proposalId)
     );
     const events = [];
     let fromBlock = creationBlock;

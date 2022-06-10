@@ -1,7 +1,7 @@
 import fleek from '@fleekhq/fleek-storage-js';
 import fetch from 'cross-fetch';
 
-import { FleekConfig } from '../types';
+import { FleekConfig } from '../../types';
 
 class IPFSClient {
   private static _config: FleekConfig;

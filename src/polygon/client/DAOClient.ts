@@ -1,28 +1,28 @@
-import { BigNumber, ethers, Signer } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
-import { IPFSGatway } from '../config';
-import IERC20UpgradeableAbi from '../config/abi/IERC20Upgradeable.json';
-import { EtherZDAO, IEtherZDAO } from '../config/types/EtherZDAO';
-import { PolyZDAO } from '../config/types/PolyZDAO';
-import { GnosisSafeClient } from '../gnosis-safe';
-import {
-  Config,
-  CreateProposalParams,
-  Proposal,
-  ProposalId,
-  ProposalProperties,
-  ProposalState,
-  VoteChoice,
-  zDAOId,
-  zDAOProperties,
-} from '../types';
+import { GnosisSafeClient } from '../../gnosis-safe';
 import {
   AlreadyDestroyedError,
+  CreateProposalParams,
   FailedTxError,
   InvalidError,
   NotFoundError,
   NotSyncStateError,
-} from '../types/error';
+  Proposal,
+  ProposalId,
+  ProposalProperties,
+  ProposalState,
+  zDAO,
+  zDAOId,
+  zDAOProperties,
+  zDAOState,
+} from '../../types';
+import { getToken } from '../../utilities/calls';
+import { IPFSGatway } from '../config';
+import IERC20UpgradeableAbi from '../config/abi/IERC20Upgradeable.json';
+import { EtherZDAO, IEtherZDAO } from '../config/types/EtherZDAO';
+import { PolyZDAO } from '../config/types/PolyZDAO';
+import { Config, VoteChoice } from '../types';
 import { errorMessageForError } from '../utilities/messages';
 import { getDecimalAmount, getFullDisplayBalance } from '../utilities/number';
 import AbstractDAOClient from './AbstractDAOClient';
@@ -45,7 +45,7 @@ class DAOClient extends AbstractDAOClient {
 
     return (async (): Promise<DAOClient> => {
       this._rootTokenContract = new ethers.Contract(
-        properties.rootToken,
+        properties.votingToken.token,
         IERC20UpgradeableAbi.abi,
         GlobalClient.etherRpcProvider
       );
@@ -56,10 +56,10 @@ class DAOClient extends AbstractDAOClient {
       );
       this._polyZDAO = await this.getPolyZDAO();
       if (this._polyZDAO) {
-        this._properties.state = 'active';
+        this._properties.state = zDAOState.ACTIVE;
       }
       if (properties.destroyed) {
-        this._properties.state = 'canceled';
+        this._properties.state = zDAOState.CANCELED;
       }
       return this;
     })() as unknown as DAOClient;
@@ -73,22 +73,25 @@ class DAOClient extends AbstractDAOClient {
     return this._totalSupply;
   }
 
-  static async createInstance(
-    config: Config,
-    zDAOId: zDAOId
-  ): Promise<DAOClient> {
+  static async createInstance(config: Config, zDAOId: zDAOId): Promise<zDAO> {
     const zDAOProperties =
       await GlobalClient.etherZDAOChef.getZDAOPropertiesById(zDAOId);
 
-    const childToken = await GlobalClient.registry.rootToChildToken(
-      zDAOProperties.rootToken
+    const childTokenAddress = await GlobalClient.registry.rootToChildToken(
+      zDAOProperties.votingToken.token
+    );
+    const childToken = await getToken(
+      GlobalClient.polyRpcProvider,
+      childTokenAddress
     );
 
     return await new DAOClient(
       {
         ...zDAOProperties,
-        childToken,
-        state: 'pending',
+        state: zDAOState.PENDING,
+        options: {
+          polygonToken: childToken,
+        },
       },
       new GnosisSafeClient(config.gnosisSafe)
     );
@@ -113,6 +116,7 @@ class DAOClient extends AbstractDAOClient {
       ? polyProposal.proposalId.eq(raw.proposalId)
       : false;
 
+    const created = new Date(Number(raw.created) * 1000);
     const start =
         polyZDAO && polyProposal && isSyncedProposal
           ? new Date(Number(polyProposal.startTimestamp) * 1000)
@@ -176,24 +180,26 @@ class DAOClient extends AbstractDAOClient {
 
     const mapState = (raw: IEtherZDAO.ProposalStruct): ProposalState => {
       if (raw.canceled) {
-        return 'canceled';
+        return ProposalState.CANCELED;
       } else if (
         start === undefined ||
         end === undefined ||
         scores === undefined ||
         voters === undefined
       ) {
-        return 'pending';
+        return ProposalState.PENDING;
       } else if (now <= end) {
-        return 'active';
+        return ProposalState.ACTIVE;
       } else if (raw.executed) {
-        return 'executed';
+        return ProposalState.EXECUTED;
       } else if (raw.calculated) {
-        return canExecute() ? 'awaiting-execution' : 'failed';
+        return canExecute()
+          ? ProposalState.AWAITING_EXECUTION
+          : ProposalState.FAILED;
       } else if (polyProposal?.calculated) {
-        return 'awaiting-finalization';
+        return ProposalState.AWAITING_FINALIZATION;
       }
-      return 'awaiting-calculation';
+      return ProposalState.AWAITING_CALCULATION;
     };
 
     const ipfsData = await IPFSClient.getJson(raw.ipfs.toString(), IPFSGatway);
@@ -206,6 +212,7 @@ class DAOClient extends AbstractDAOClient {
       body: ipfsData.data.message.body,
       ipfs: raw.ipfs.toString(),
       choices: [VoteChoice.YES, VoteChoice.NO],
+      created,
       start,
       end,
       state: mapState(raw),
@@ -262,7 +269,8 @@ class DAOClient extends AbstractDAOClient {
   }
 
   async createProposal(
-    signer: Signer,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string,
     payload: CreateProposalParams
   ): Promise<ProposalId> {
     // zDAO should be active
@@ -271,7 +279,6 @@ class DAOClient extends AbstractDAOClient {
     }
 
     // signer should have valid amount of voting token on Ethereum
-    const account = await signer.getAddress();
     const balance = await this._rootTokenContract.balanceOf(account);
     if (balance.lt(this.amount)) {
       const decimals = await this._rootTokenContract.decimals();
@@ -291,6 +298,9 @@ class DAOClient extends AbstractDAOClient {
     }
 
     try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const signer = provider?.getSigner ? provider.getSigner() : provider;
       const ipfs = await this.uploadToIPFS(signer, payload);
 
       await GlobalClient.etherZDAOChef.createProposal(
@@ -316,14 +326,14 @@ class DAOClient extends AbstractDAOClient {
     return ProofClient.isCheckPointed(txHash);
   }
 
-  async syncState(signer: Signer, txHash: string) {
+  async syncState(signer: ethers.Signer, txHash: string) {
     // zDAO should be active
     if (this.destroyed) {
       throw new AlreadyDestroyedError();
     }
     try {
       const proof = await ProofClient.generate(txHash);
-      return await GlobalClient.etherZDAOChef.receiveMessage(signer, proof);
+      await GlobalClient.etherZDAOChef.receiveMessage(signer, proof);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);

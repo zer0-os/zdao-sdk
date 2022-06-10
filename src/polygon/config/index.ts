@@ -1,13 +1,8 @@
 import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
-import {
-  Config,
-  DAOConfig,
-  FleekConfig,
-  ProofConfig,
-  SupportedChainId,
-} from '../types';
+import { FleekConfig, SupportedChainId } from '../../types';
+import { Config, DAOConfig, ProofConfig } from '../types';
 
 type AddressMap = { [chainId in SupportedChainId]: string };
 export const MultiCallAddress: AddressMap = {
@@ -67,6 +62,7 @@ export const developmentConfiguration = ({
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.goerli.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
+    ipfsGateway: IPFSGatway,
   },
   ethereum,
   polygon,
@@ -86,6 +82,7 @@ export const productionConfiguration = ({
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
+    ipfsGateway: IPFSGatway,
   },
   ethereum,
   polygon,

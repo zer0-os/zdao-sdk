@@ -1,5 +1,6 @@
+import { SDKInstance } from '../types';
 import SDKInstanceClient from './SDKInstanceClient';
-import { Config, SDKInstance } from './types';
+import { Config } from './types';
 
 export { ZNAClient } from './client';
 export * from './config';

@@ -1,9 +1,9 @@
 import { ethers } from 'ethers';
 
+import { zNAId } from '../../types';
 import GlobalClient from '../client/GlobalClient';
 import IZNSHubAbi from '../config/abi/IZNSHub.json';
 import { IZNSHub } from '../config/types/IZNSHub';
-import { zNAId } from '../types';
 
 class EtherZNSHubClient {
   protected readonly _contract: IZNSHub;

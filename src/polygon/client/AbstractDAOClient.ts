@@ -6,27 +6,27 @@ import {
   Transfer as GnosisTransfer,
   TransferInfo as GnosisTransferInfo,
 } from '@gnosis.pm/safe-react-gateway-sdk';
-import { ethers, Signer } from 'ethers';
+import { ethers } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { cloneDeep } from 'lodash';
 
-import { EIP712Domain } from '../config';
-import { GnosisSafeClient } from '../gnosis-safe';
+import { GnosisSafeClient } from '../../gnosis-safe';
 import {
   AssetType,
   CreateProposalParams,
+  NotImplementedError,
   Proposal,
   ProposalId,
   Transaction,
   TransactionStatus,
   TransactionType,
   TransferInfo,
-  VoteChoice,
   zDAO,
   zDAOAssets,
   zDAOProperties,
-} from '../types';
-import { NotImplementedError } from '../types/error';
+} from '../../types';
+import { EIP712Domain } from '../config';
+import { VoteChoice } from '../types';
 import { timestamp } from '../utilities/tx';
 import IPFSClient from './IPFSClient';
 
@@ -67,16 +67,12 @@ class AbstractDAOClient implements zDAO {
     return this._properties.gnosisSafe;
   }
 
-  get rootToken() {
-    return this._properties.rootToken;
+  get votingToken() {
+    return this._properties.votingToken;
   }
 
   get amount() {
     return this._properties.amount;
-  }
-
-  get childToken() {
-    return this._properties.childToken;
   }
 
   get duration() {
@@ -109,6 +105,10 @@ class AbstractDAOClient implements zDAO {
 
   get destroyed() {
     return this._properties.destroyed;
+  }
+
+  get options() {
+    return this._properties.options;
   }
 
   async listAssets(): Promise<zDAOAssets> {
@@ -212,7 +212,7 @@ class AbstractDAOClient implements zDAO {
   }
 
   protected async uploadToIPFS(
-    signer: Signer,
+    signer: ethers.Signer,
     payload: CreateProposalParams
   ): Promise<string> {
     const now = new Date();
@@ -284,7 +284,11 @@ class AbstractDAOClient implements zDAO {
     return ipfsHash;
   }
 
-  createProposal(_: Signer, _2: CreateProposalParams): Promise<ProposalId> {
+  createProposal(
+    _: ethers.providers.Web3Provider | ethers.Wallet,
+    _2: string,
+    _3: CreateProposalParams
+  ): Promise<ProposalId> {
     throw new NotImplementedError();
   }
 
@@ -292,7 +296,7 @@ class AbstractDAOClient implements zDAO {
     throw new NotImplementedError();
   }
 
-  syncState(_: Signer, _2: string): Promise<ethers.ContractReceipt> {
+  syncState(_: ethers.Signer, _2: string): Promise<void> {
     throw new NotImplementedError();
   }
 }
