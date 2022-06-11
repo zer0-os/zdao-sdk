@@ -11,8 +11,8 @@ import {
   Vote,
   ZDAOError,
 } from '../../types';
+import { errorMessageForError } from '../../utilities';
 import { ZDAOOptions } from '../types';
-import { errorMessageForError } from '../utilities/messages';
 import AbstractProposalClient from './AbstractProposalClient';
 import DAOClient from './DAOClient';
 import GlobalClient from './GlobalClient';

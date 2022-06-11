@@ -8,7 +8,7 @@ import {
   zNA,
   zNAId,
 } from '../../types';
-import { getToken } from '../../utilities/calls';
+import { calculateGasMargin, getToken } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import ZNAClient from '../client/ZNAClient';
 import EtherZDAOAbi from '../config/abi/EtherZDAO.json';
@@ -18,7 +18,6 @@ import { EtherZDAO } from '../config/types/EtherZDAO';
 import { EtherZDAOChef } from '../config/types/EtherZDAOChef';
 import { FxStateRootTunnel } from '../config/types/FxStateRootTunnel';
 import { DAOConfig } from '../types';
-import { calculateGasMargin } from '../utilities/tx';
 import { EtherZDAOProperties, ZDAORecord } from './types';
 
 class EtherZDAOChefClient {

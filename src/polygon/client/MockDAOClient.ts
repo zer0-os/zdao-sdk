@@ -15,11 +15,9 @@ import {
   zDAOProperties,
   zDAOState,
 } from '../../types';
-import { getToken } from '../../utilities/calls';
+import { errorMessageForError, getToken, timestamp } from '../../utilities';
 import IERC20UpgradeableAbi from '../config/abi/IERC20Upgradeable.json';
 import { Config, VoteChoice } from '../types';
-import { errorMessageForError } from '../utilities/messages';
-import { timestamp } from '../utilities/tx';
 import AbstractDAOClient from './AbstractDAOClient';
 import GlobalClient from './GlobalClient';
 import MockProposalClient from './MockProposalClient';

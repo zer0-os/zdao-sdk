@@ -1,6 +1,8 @@
 import { ethers, Signer } from 'ethers';
 import shortid from 'shortid';
 
+import ERC1967ProxyAbi from '../config/abi/ERC1967Proxy.json';
+import ZeroTokenAbi from '../config/abi/ZeroToken.json';
 import {
   CreateZDAOParams,
   NotImplementedError,
@@ -13,8 +15,6 @@ import {
 } from '../types';
 import { getToken } from '../utilities/calls';
 import DAOClient from './client/DAOClient';
-import ERC1967ProxyAbi from './config/constants/abi/ERC1967Proxy.json';
-import ZeroTokenAbi from './config/constants/abi/ZeroToken.json';
 import { SnapshotClient } from './snapshot';
 import { Config, CreateZDAOParamsOptions } from './types';
 import { errorMessageForError } from './utilities/messages';

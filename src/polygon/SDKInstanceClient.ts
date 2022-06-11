@@ -1,6 +1,9 @@
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
 import { ethers } from 'ethers';
 
+import IPFSClient from '../client/IPFSClient';
+import ERC1967ProxyAbi from '../config/abi/ERC1967Proxy.json';
+import ZeroTokenAbi from '../config/abi/ZeroToken.json';
 import {
   AlreadyExistError,
   CreateZDAOParams,
@@ -12,9 +15,9 @@ import {
   zDAO,
 } from '../types';
 import { zNA, zNAId } from '../types';
+import { errorMessageForError } from '../utilities';
 import {
   DAOClient,
-  IPFSClient,
   MockDAOClient,
   ProofClient,
   RegistryClient,
@@ -23,12 +26,9 @@ import {
   ZNSHubClient,
 } from './client';
 import GlobalClient from './client/GlobalClient';
-import ERC1967ProxyAbi from './config/abi/ERC1967Proxy.json';
-import ZeroTokenAbi from './config/abi/ZeroToken.json';
 import { EtherZDAOChefClient } from './ethereum';
 import { PolyZDAOChefClient } from './polygon';
 import { Config } from './types';
-import { errorMessageForError } from './utilities/messages';
 
 class SDKInstanceClient implements SDKInstance {
   private readonly _config: Config;

@@ -9,8 +9,8 @@ import { ethers } from 'ethers';
 import { gql, GraphQLClient } from 'graphql-request';
 
 import { zNA, zNAId } from '../../types';
-import zDAORegistry from '../config/constants/abi/zDAORegistry.json';
-import { ZDAORegistry } from '../config/constants/types/ZDAORegistry';
+import zDAORegistry from '../config/abi/zDAORegistry.json';
+import { ZDAORegistry } from '../config/types/ZDAORegistry';
 import { ENS, ENSId, zNAConfig } from '../types';
 import { errorMessageForError } from '../utilities/messages';
 import { ZDAORecord } from './types';

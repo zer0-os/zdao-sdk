@@ -2,8 +2,8 @@ import { Fragment, Interface, JsonFragment } from '@ethersproject/abi';
 import { CallOverrides, Contract } from '@ethersproject/contracts';
 import { ethers } from 'ethers';
 
-import { SupportedChainId } from '../../types';
 import { MultiCallAddress } from '../config';
+import { SupportedChainId } from '../types';
 
 export interface Call {
   address: string; // Address of the contract

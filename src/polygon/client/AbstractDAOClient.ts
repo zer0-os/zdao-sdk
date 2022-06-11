@@ -10,6 +10,8 @@ import { ethers } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { cloneDeep } from 'lodash';
 
+import IPFSClient from '../../client/IPFSClient';
+import { EIP712Domain } from '../../config';
 import { GnosisSafeClient } from '../../gnosis-safe';
 import {
   AssetType,
@@ -25,10 +27,8 @@ import {
   zDAOAssets,
   zDAOProperties,
 } from '../../types';
-import { EIP712Domain } from '../config';
+import { timestamp } from '../../utilities';
 import { VoteChoice } from '../types';
-import { timestamp } from '../utilities/tx';
-import IPFSClient from './IPFSClient';
 
 class AbstractDAOClient implements zDAO {
   protected readonly _properties: zDAOProperties;

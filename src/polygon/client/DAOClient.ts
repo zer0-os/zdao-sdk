@@ -1,5 +1,6 @@
 import { BigNumber, ethers } from 'ethers';
 
+import IPFSClient from '../../client/IPFSClient';
 import { GnosisSafeClient } from '../../gnosis-safe';
 import {
   AlreadyDestroyedError,
@@ -17,17 +18,19 @@ import {
   zDAOProperties,
   zDAOState,
 } from '../../types';
-import { getToken } from '../../utilities/calls';
+import {
+  errorMessageForError,
+  getDecimalAmount,
+  getFullDisplayBalance,
+  getToken,
+} from '../../utilities';
 import { IPFSGatway } from '../config';
 import IERC20UpgradeableAbi from '../config/abi/IERC20Upgradeable.json';
 import { EtherZDAO, IEtherZDAO } from '../config/types/EtherZDAO';
 import { PolyZDAO } from '../config/types/PolyZDAO';
 import { Config, VoteChoice } from '../types';
-import { errorMessageForError } from '../utilities/messages';
-import { getDecimalAmount, getFullDisplayBalance } from '../utilities/number';
 import AbstractDAOClient from './AbstractDAOClient';
 import GlobalClient from './GlobalClient';
-import IPFSClient from './IPFSClient';
 import ProofClient from './ProofClient';
 import ProposalClient from './ProposalClient';
 
