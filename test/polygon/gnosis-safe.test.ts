@@ -7,7 +7,7 @@ import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { ethers } from 'ethers';
 
-import { GnosisSafeClient } from '../../src/gnosis-safe';
+import { GnosisSafeClient } from '../../src/client';
 import {
   AssetType,
   Coin,
@@ -33,7 +33,7 @@ describe('Gnosis Safe test', async () => {
       ipfsGateway: 'snapshot.mypinata.cloud',
     };
 
-    gnosisSafeClient = new GnosisSafeClient(config);
+    gnosisSafeClient = new GnosisSafeClient(config, config.ipfsGateway);
   });
 
   it('should list assets with test tokens', async () => {

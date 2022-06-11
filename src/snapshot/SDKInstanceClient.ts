@@ -13,12 +13,12 @@ import {
   zDAOState,
   zNA,
 } from '../types';
+import { errorMessageForError } from '../utilities';
 import { getToken } from '../utilities/calls';
 import DAOClient from './client/DAOClient';
 import GlobalClient from './client/GlobalClient';
 import { SnapshotClient } from './snapshot';
 import { Config, CreateZDAOParamsOptions } from './types';
-import { errorMessageForError } from './utilities/messages';
 import zDAORegistryClient from './zDAORegistry';
 import { ZDAORecord } from './zDAORegistry/types';
 

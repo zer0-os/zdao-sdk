@@ -9,11 +9,11 @@ import { ethers } from 'ethers';
 import { gql, GraphQLClient } from 'graphql-request';
 
 import { zNA, zNAConfig, zNAId } from '../../types';
+import { errorMessageForError } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import zDAORegistry from '../config/abi/zDAORegistry.json';
 import { ZDAORegistry } from '../config/types/ZDAORegistry';
 import { ENS, ENSId } from '../types';
-import { errorMessageForError } from '../utilities/messages';
 import { ZDAORecord } from './types';
 
 class zDAORegistryClient {

@@ -26,10 +26,10 @@ import {
   zDAOAssets,
   zDAOProperties,
 } from '../../types';
+import { errorMessageForError } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
 import { SnapshotProposal } from '../snapshot/types';
 import { Config, CreateProposalParamsOptions, ZDAOOptions } from '../types';
-import { errorMessageForError } from '../utilities';
 import GlobalClient from './GlobalClient';
 import ProposalClient from './ProposalClient';
 

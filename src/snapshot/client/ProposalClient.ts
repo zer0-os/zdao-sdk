@@ -10,9 +10,9 @@ import {
   ProposalProperties,
   Vote,
 } from '../../types';
+import { errorMessageForError } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
 import { ZDAOOptions } from '../types';
-import { errorMessageForError } from '../utilities';
 import DAOClient from './DAOClient';
 
 class ProposalClient implements Proposal {

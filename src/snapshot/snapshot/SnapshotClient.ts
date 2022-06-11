@@ -6,11 +6,10 @@ import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
 import { cloneDeep, orderBy } from 'lodash';
 
 import { SupportedChainId } from '../../types';
+import { errorMessageForError, timestamp } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import verified from '../config/verified.json';
 import { ENS, SnapshotConfig } from '../types';
-import { timestamp } from '../utilities/date';
-import { errorMessageForError } from '../utilities/messages';
 import {
   PROPOSAL_QUERY,
   PROPOSALS_QUERY,
