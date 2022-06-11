@@ -1,7 +1,6 @@
 import { BigNumber, ethers } from 'ethers';
 
-import IPFSClient from '../../client/IPFSClient';
-import { GnosisSafeClient } from '../../gnosis-safe';
+import { GnosisSafeClient, IPFSClient } from '../../client';
 import {
   AlreadyDestroyedError,
   CreateProposalParams,
@@ -24,7 +23,6 @@ import {
   getFullDisplayBalance,
   getToken,
 } from '../../utilities';
-import { IPFSGatway } from '../config';
 import IERC20UpgradeableAbi from '../config/abi/IERC20Upgradeable.json';
 import { EtherZDAO, IEtherZDAO } from '../config/types/EtherZDAO';
 import { PolyZDAO } from '../config/types/PolyZDAO';
@@ -96,7 +94,7 @@ class DAOClient extends AbstractDAOClient {
           polygonToken: childToken,
         },
       },
-      new GnosisSafeClient(config.gnosisSafe)
+      new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
     );
   }
 
@@ -205,7 +203,10 @@ class DAOClient extends AbstractDAOClient {
       return ProposalState.AWAITING_CALCULATION;
     };
 
-    const ipfsData = await IPFSClient.getJson(raw.ipfs.toString(), IPFSGatway);
+    const ipfsData = await IPFSClient.getJson(
+      raw.ipfs.toString(),
+      GlobalClient.ipfsGateway
+    );
     const metadataJson = JSON.parse(ipfsData.data.message.metadata);
 
     return {

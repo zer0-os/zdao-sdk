@@ -8,10 +8,11 @@ import * as zns from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 import { gql, GraphQLClient } from 'graphql-request';
 
-import { zNA, zNAId } from '../../types';
+import { zNA, zNAConfig, zNAId } from '../../types';
+import GlobalClient from '../client/GlobalClient';
 import zDAORegistry from '../config/abi/zDAORegistry.json';
 import { ZDAORegistry } from '../config/types/ZDAORegistry';
-import { ENS, ENSId, zNAConfig } from '../types';
+import { ENS, ENSId } from '../types';
 import { errorMessageForError } from '../utilities/messages';
 import { ZDAORecord } from './types';
 
@@ -24,9 +25,9 @@ class zDAORegistryClient {
   constructor(config: zNAConfig, zNSConfig: zNSConfig) {
     this._config = config;
     this._contract = new ethers.Contract(
-      config.contract,
+      config.zDAORegistry,
       zDAORegistry,
-      config.provider
+      GlobalClient.etherRpcProvider
     ) as ZDAORegistry;
     this._znsInstance = createZNSInstance(zNSConfig);
     this._ensGraphQLClient = new GraphQLClient(

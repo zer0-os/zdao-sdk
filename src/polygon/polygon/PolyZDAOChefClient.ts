@@ -1,13 +1,13 @@
 import { AddressZero } from '@ethersproject/constants';
 import { ethers } from 'ethers';
 
-import { Choice, ProposalId, zDAOId } from '../../types';
+import { Choice, DAOConfig, ProposalId, zDAOId } from '../../types';
 import GlobalClient from '../client/GlobalClient';
 import PolyZDAOAbi from '../config/abi/PolyZDAO.json';
 import PolyZDAOChefAbi from '../config/abi/PolyZDAOChef.json';
 import { PolyZDAO } from '../config/types/PolyZDAO';
 import { PolyZDAOChef } from '../config/types/PolyZDAOChef';
-import { DAOConfig, StakingProperties } from '../types';
+import { StakingProperties } from '../types';
 import { PolyZDAOProperties } from './types';
 
 class PolyZDAOChefClient {

@@ -1,5 +1,3 @@
-// import { SDKInstance } from './types';
-
 import { createSDKInstance as _createPolygonSDKInstance } from './polygon';
 import { createSDKInstance as _createSnapshotSDKInstance } from './snapshot';
 

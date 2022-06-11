@@ -1,18 +1,4 @@
-import { BaseConfig, FleekConfig, SupportedChainId } from '../../types';
-
-export interface DAOConfig {
-  // address to zDAOChef contract
-  zDAOChef: string;
-
-  // Contract Creation block number
-  blockNumber: number;
-
-  // RPC url for Web3 provider
-  rpcUrl: string;
-
-  // ChainId
-  network: SupportedChainId;
-}
+import { BaseConfig, DAOConfig, FleekConfig } from '../../types';
 
 export interface ProofConfig {
   // From address
@@ -20,9 +6,6 @@ export interface ProofConfig {
 }
 
 export interface Config extends BaseConfig {
-  // Ethereum DAO configuration
-  ethereum: DAOConfig;
-
   // Polygon DAO configuration
   polygon: DAOConfig;
 

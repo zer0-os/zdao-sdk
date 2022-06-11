@@ -1,57 +1,75 @@
 import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
-import { SupportedChainId } from '../../types';
+import {
+  DAOConfig,
+  FleekConfig,
+  SupportedChainId,
+  zNAConfig,
+} from '../../types';
 import { Config } from '../types';
 
-type AddressMap = { [chainId: number]: string };
-export const MultiCallAddress: AddressMap = {
-  [SupportedChainId.MAINNET]: '0x1F98415757620B543A52E61c46B32eB19261F984',
-  [SupportedChainId.RINKEBY]: '0x42ad527de7d4e9d9d011ac45b31d8551f8fe9821',
-};
+interface ConfigParams {
+  /**
+   * On the development, ethereum network should be Goerli,
+   * On the production, ethereum network should be mainnet
+   */
+  ethereum: DAOConfig;
 
-export const developmentConfiguration = (
-  contract: string,
-  provider: ethers.providers.Provider,
-  ipfsGateway = 'snapshot.mypinata.cloud'
-): Config => ({
-  snapshot: {
-    serviceUri: 'https://hub.snapshot.org',
-    ipfsGateway,
-    network: SupportedChainId.RINKEBY.toString(),
-  },
+  zNA: zNAConfig;
+
+  /**
+   * Fleek configuration to upload to IPFS
+   */
+  fleek: FleekConfig;
+
+  ipfsGateway: string;
+}
+
+export const developmentConfiguration = ({
+  ethereum,
+  zNA,
+  fleek,
+  ipfsGateway,
+}: ConfigParams): Config => ({
+  ethereum,
+  zNA,
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.rinkeby.gnosis.io',
     gateway: 'https://safe-client.staging.gnosisdev.com',
-    ipfsGateway,
   },
-  zNA: {
-    contract,
-    provider,
-  },
-  zNS: configuration.rinkebyConfiguration(provider),
+  fleek,
+  ipfsGateway,
+  zNS: configuration.rinkebyConfiguration(
+    new ethers.providers.JsonRpcProvider(ethereum.rpcUrl, ethereum.network)
+  ),
   isProd: false,
-});
-
-export const productionConfiguration = (
-  contract: string,
-  provider: ethers.providers.Provider,
-  ipfsGateway = 'snapshot.mypinata.cloud'
-): Config => ({
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
-    ipfsGateway,
-    network: SupportedChainId.MAINNET.toString(),
+    network: SupportedChainId.RINKEBY.toString(),
   },
+});
+
+export const productionConfiguration = ({
+  ethereum,
+  zNA,
+  fleek,
+  ipfsGateway,
+}: ConfigParams): Config => ({
+  ethereum,
+  zNA,
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
-    ipfsGateway,
   },
-  zNA: {
-    contract,
-    provider,
-  },
-  zNS: configuration.mainnetConfiguration(provider),
+  fleek,
+  ipfsGateway,
+  zNS: configuration.mainnetConfiguration(
+    new ethers.providers.JsonRpcProvider(ethereum.rpcUrl, ethereum.network)
+  ),
   isProd: true,
+  snapshot: {
+    serviceUri: 'https://hub.snapshot.org',
+    network: SupportedChainId.MAINNET.toString(),
+  },
 });

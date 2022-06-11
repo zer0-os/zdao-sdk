@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import shortid from 'shortid';
 
-import { GnosisSafeClient } from '../../gnosis-safe';
+import { GnosisSafeClient } from '../../client';
 import {
   CreateProposalParams,
   CreateZDAOParams,
@@ -87,7 +87,7 @@ class MockDAOClient extends AbstractDAOClient {
 
     return new MockDAOClient(
       properties,
-      new GnosisSafeClient(config.gnosisSafe),
+      new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway),
       totalSupply
     );
   }

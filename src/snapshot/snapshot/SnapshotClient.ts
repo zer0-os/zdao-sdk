@@ -6,6 +6,7 @@ import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
 import { cloneDeep, orderBy } from 'lodash';
 
 import { SupportedChainId } from '../../types';
+import GlobalClient from '../client/GlobalClient';
 import verified from '../config/verified.json';
 import { ENS, SnapshotConfig } from '../types';
 import { timestamp } from '../utilities/date';
@@ -56,7 +57,7 @@ class SnapshotClient {
   }
 
   ipfsGet(ipfs: string) {
-    return Client.utils.ipfsGet(this._config.ipfsGateway, ipfs);
+    return Client.utils.ipfsGet(GlobalClient.ipfsGateway, ipfs);
   }
 
   private generateStrategies(
@@ -90,7 +91,7 @@ class SnapshotClient {
         space.categories = space.categories?.length ? space.categories : [];
         space.avatarUri = Client.utils.getUrl(
           space.avatar,
-          this._config.ipfsGateway
+          GlobalClient.ipfsGateway
         );
         return [id, { id, ...space }];
       }
@@ -145,7 +146,7 @@ class SnapshotClient {
     return {
       id: item.id,
       name: item.name,
-      avatar: Client.utils.getUrl(item.avatar, this._config.ipfsGateway),
+      avatar: Client.utils.getUrl(item.avatar, GlobalClient.ipfsGateway),
       network: item.network,
       duration: item.voting.period,
       admins: item.admins,

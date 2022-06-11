@@ -13,16 +13,18 @@ import {
 import SafeServiceClient from '@gnosis.pm/safe-service-client';
 import { ethers } from 'ethers';
 
-import IPFSClient from '../client/IPFSClient';
 import ERC20Abi from '../config/abi/ERC20.json';
 import { GnosisSafeConfig } from '../types';
+import IPFSClient from './IPFSClient';
 
 class GnosisSafeClient {
   private readonly _config: GnosisSafeConfig;
+  private readonly _ipfsGateway: string;
   private readonly EMPTY_DATA = '0x';
 
-  constructor(config: GnosisSafeConfig) {
+  constructor(config: GnosisSafeConfig, ipfsGateway: string) {
     this._config = config;
+    this._ipfsGateway = ipfsGateway;
   }
 
   get config() {
@@ -187,9 +189,7 @@ class GnosisSafeClient {
 
     const promises: Promise<{ [key: string]: string }>[] = [];
     for (const collectible of needToPatch) {
-      promises.push(
-        IPFSClient.getJson(collectible.uri, this._config.ipfsGateway)
-      );
+      promises.push(IPFSClient.getJson(collectible.uri, this._ipfsGateway));
     }
     const result: { [key: string]: string }[] = await Promise.all(promises);
     for (const index in needToPatch) {

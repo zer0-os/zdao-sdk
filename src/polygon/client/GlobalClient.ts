@@ -15,6 +15,7 @@ class GlobalClient {
   private static _znsHub?: ZNSHubClient;
   private static _staking?: StakingClient;
   private static _registry?: RegistryClient;
+  private static _ipfsGateway?: string;
 
   static get etherRpcProvider() {
     if (!GlobalClient._etherRpcProvider) {
@@ -95,6 +96,17 @@ class GlobalClient {
 
   static set registry(registry: RegistryClient) {
     GlobalClient._registry = registry;
+  }
+
+  static get ipfsGateway() {
+    if (!GlobalClient._ipfsGateway) {
+      throw new NotInitializedError();
+    }
+    return GlobalClient._ipfsGateway;
+  }
+
+  static set ipfsGateway(ipfsGateway: string) {
+    GlobalClient._ipfsGateway = ipfsGateway;
   }
 }
 

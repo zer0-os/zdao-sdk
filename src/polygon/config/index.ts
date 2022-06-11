@@ -1,10 +1,8 @@
 import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
-import { FleekConfig } from '../../types';
-import { Config, DAOConfig, ProofConfig } from '../types';
-
-export const IPFSGatway = 'cloudflare-ipfs.com';
+import { DAOConfig, FleekConfig, zNAConfig } from '../../types';
+import { Config, ProofConfig } from '../types';
 
 interface ConfigParams {
   /**
@@ -19,6 +17,8 @@ interface ConfigParams {
    */
   polygon: DAOConfig;
 
+  zNA: zNAConfig;
+
   /**
    * Proof configuration for @maticnetwork/maticjs
    */
@@ -28,6 +28,8 @@ interface ConfigParams {
    * Fleek configuration to upload to IPFS
    */
   fleek: FleekConfig;
+
+  ipfsGateway: string;
 
   /**
    * Only used for development mode, should be rinkeby provider on development
@@ -40,19 +42,22 @@ interface ConfigParams {
 export const developmentConfiguration = ({
   ethereum,
   polygon,
+  zNA,
   proof,
   fleek,
+  ipfsGateway,
   zNSProvider,
 }: ConfigParams): Config => ({
+  ethereum,
+  polygon,
+  zNA,
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.goerli.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
-    ipfsGateway: IPFSGatway,
   },
-  ethereum,
-  polygon,
   proof,
   fleek,
+  ipfsGateway,
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   zNS: configuration.rinkebyConfiguration(zNSProvider!),
   isProd: false,
@@ -61,18 +66,21 @@ export const developmentConfiguration = ({
 export const productionConfiguration = ({
   ethereum,
   polygon,
+  zNA,
   proof,
   fleek,
+  ipfsGateway,
 }: ConfigParams): Config => ({
+  ethereum,
+  polygon,
+  zNA,
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
-    ipfsGateway: IPFSGatway,
   },
-  ethereum,
-  polygon,
   proof,
   fleek,
+  ipfsGateway,
   zNS: configuration.mainnetConfiguration(
     new ethers.providers.JsonRpcProvider(ethereum.rpcUrl, ethereum.network)
   ),

@@ -15,6 +15,7 @@ import {
 } from '../types';
 import { getToken } from '../utilities/calls';
 import DAOClient from './client/DAOClient';
+import GlobalClient from './client/GlobalClient';
 import { SnapshotClient } from './snapshot';
 import { Config, CreateZDAOParamsOptions } from './types';
 import { errorMessageForError } from './utilities/messages';
@@ -32,6 +33,13 @@ class SDKInstanceClient implements SDKInstance {
     this._zDAORegistryClient = new zDAORegistryClient(config.zNA, config.zNS);
     this._snapshotClient = new SnapshotClient(config.snapshot);
     this._params = [];
+
+    GlobalClient.etherRpcProvider = new ethers.providers.JsonRpcProvider(
+      this._config.ethereum.rpcUrl,
+      this._config.ethereum.network
+    );
+
+    GlobalClient.ipfsGateway = config.ipfsGateway;
   }
 
   createZDAO(_: Signer, _2: CreateZDAOParams): Promise<void> {
@@ -78,11 +86,11 @@ class SDKInstanceClient implements SDKInstance {
     }
 
     const token = await getToken(
-      this._config.zNA.provider,
+      GlobalClient.etherRpcProvider,
       strategy.params.address
     );
 
-    const snapshot = await this._config.zNA.provider.getBlockNumber();
+    const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
 
     return await DAOClient.createInstance(
       this._config,
@@ -192,9 +200,9 @@ class SDKInstanceClient implements SDKInstance {
 
     this._params.push(param);
 
-    const token = await getToken(this._config.zNA.provider, param.token);
+    const token = await getToken(GlobalClient.etherRpcProvider, param.token);
 
-    const snapshot = await this._config.zNA.provider.getBlockNumber();
+    const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
 
     return await DAOClient.createInstance(
       this._config,
@@ -235,9 +243,9 @@ class SDKInstanceClient implements SDKInstance {
     const found = this._params.find((param) => param.zNA === zNA);
     if (!found) throw new Error(errorMessageForError('not-found-zdao'));
 
-    const token = await getToken(this._config.zNA.provider, found.token);
+    const token = await getToken(GlobalClient.etherRpcProvider, found.token);
 
-    const snapshot = await this._config.zNA.provider.getBlockNumber();
+    const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
 
     return await DAOClient.createInstance(
       this._config,

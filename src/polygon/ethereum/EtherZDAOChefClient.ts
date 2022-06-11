@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import {
   CreateProposalParams,
   CreateZDAOParams,
+  DAOConfig,
   ProposalId,
   zDAOId,
   zNA,
@@ -17,7 +18,6 @@ import FxStateRootTunnelAbi from '../config/abi/FxStateRootTunnel.json';
 import { EtherZDAO } from '../config/types/EtherZDAO';
 import { EtherZDAOChef } from '../config/types/EtherZDAOChef';
 import { FxStateRootTunnel } from '../config/types/FxStateRootTunnel';
-import { DAOConfig } from '../types';
 import { EtherZDAOProperties, ZDAORecord } from './types';
 
 class EtherZDAOChefClient {

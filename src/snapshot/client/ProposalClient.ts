@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
-import { GnosisSafeClient } from '../../gnosis-safe';
+import { GnosisSafeClient } from '../../client';
 import {
   Choice,
   NotImplementedError,
@@ -12,7 +12,7 @@ import {
 } from '../../types';
 import { SnapshotClient } from '../snapshot';
 import { ZDAOOptions } from '../types';
-import { errorMessageForError } from '../utilities/messages';
+import { errorMessageForError } from '../utilities';
 import DAOClient from './DAOClient';
 
 class ProposalClient implements Proposal {

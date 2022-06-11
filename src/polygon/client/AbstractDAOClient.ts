@@ -10,9 +10,8 @@ import { ethers } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { cloneDeep } from 'lodash';
 
-import IPFSClient from '../../client/IPFSClient';
+import { GnosisSafeClient, IPFSClient } from '../../client';
 import { EIP712Domain } from '../../config';
-import { GnosisSafeClient } from '../../gnosis-safe';
 import {
   AssetType,
   CreateProposalParams,

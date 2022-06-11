@@ -9,7 +9,7 @@ import {
 import { ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
-import { GnosisSafeClient } from '../../gnosis-safe';
+import { GnosisSafeClient } from '../../client';
 import {
   AssetType,
   CreateProposalParams,
@@ -29,7 +29,8 @@ import {
 import { SnapshotClient } from '../snapshot';
 import { SnapshotProposal } from '../snapshot/types';
 import { Config, CreateProposalParamsOptions, ZDAOOptions } from '../types';
-import { errorMessageForError } from '../utilities/messages';
+import { errorMessageForError } from '../utilities';
+import GlobalClient from './GlobalClient';
 import ProposalClient from './ProposalClient';
 
 class DAOClient implements zDAO {
@@ -49,7 +50,10 @@ class DAOClient implements zDAO {
     this._options = options;
 
     this._snapshotClient = new SnapshotClient(config.snapshot);
-    this._gnosisSafeClient = new GnosisSafeClient(config.gnosisSafe);
+    this._gnosisSafeClient = new GnosisSafeClient(
+      config.gnosisSafe,
+      config.ipfsGateway
+    );
   }
 
   get id() {
@@ -350,7 +354,7 @@ class DAOClient implements zDAO {
       throw new Error(errorMessageForError('invalid-proposal-duration'));
     }
 
-    const snapshot = await this._config.zNA.provider.getBlockNumber();
+    const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
 
     const { id: proposalId } = await this._snapshotClient.createProposal(
       provider,

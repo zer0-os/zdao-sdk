@@ -1,7 +1,7 @@
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
 import { ethers } from 'ethers';
 
-import IPFSClient from '../client/IPFSClient';
+import { IPFSClient } from '../client';
 import ERC1967ProxyAbi from '../config/abi/ERC1967Proxy.json';
 import ZeroTokenAbi from '../config/abi/ZeroToken.json';
 import {
@@ -48,6 +48,8 @@ class SDKInstanceClient implements SDKInstance {
       this._config.polygon.rpcUrl,
       this._config.polygon.network
     );
+
+    GlobalClient.ipfsGateway = config.ipfsGateway;
 
     return (async (config: Config): Promise<SDKInstanceClient> => {
       GlobalClient.etherZDAOChef = await new EtherZDAOChefClient(
