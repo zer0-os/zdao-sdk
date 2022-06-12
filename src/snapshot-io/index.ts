@@ -26,6 +26,7 @@ import {
   SnapshotSpace,
   SnapshotSpaceDetails,
   SnapshotVote,
+  SpaceParams,
   VoteProposalParams,
   VotingPowerParams,
 } from './types';
@@ -168,6 +169,8 @@ class SnapshotClient {
     return filter[0].strategies;
   }
 
+  // this function can not contain immediate voting scores and voters,
+  // we should call updateScore per every proposal to update scores and voters
   async listProposals(
     spaceId: ENS,
     network: string,
@@ -206,27 +209,22 @@ class SnapshotClient {
     );
   }
 
-  async getProposal(params: GetProposalParams): Promise<SnapshotProposal> {
-    const response = await this.graphQLQuery(
-      PROPOSAL_QUERY,
-      {
-        id: params.proposalId,
-      },
-      'proposal'
-    );
-
-    let proposalScores = response.scores;
-    let numberOfVoters = response.votes;
+  async updateScores(
+    proposal: SnapshotProposal,
+    params: SpaceParams
+  ): Promise<SnapshotProposal> {
+    let proposalScores = proposal.scores;
+    let numberOfVoters = proposal.votes;
     if (
-      response.scores_state !== 'invalid' &&
-      response.scores_state !== 'final'
+      proposal.scores_state !== 'invalid' &&
+      proposal.scores_state !== 'final'
     ) {
       // latest scores are still pending on calculation
       // it requires to update right now
       const voteResponse = await this.graphQLQuery(
         VOTES_QUERY,
         {
-          id: params.proposalId,
+          id: proposal.id,
           orderBy: 'vp',
           orderDirection: 'desc',
           first: 30000,
@@ -248,7 +246,7 @@ class SnapshotClient {
         strategies,
         params.network,
         voters,
-        Number(response.snapshot)
+        Number(proposal.snapshot)
       );
 
       const votes = voteResponse.map((vote: any) => {
@@ -263,7 +261,7 @@ class SnapshotClient {
         };
       });
 
-      proposalScores = response.choices.map((choice: any, i: number) =>
+      proposalScores = proposal.choices.map((choice: any, i: number) =>
         votes
           .filter((vote: any) => vote.choice === i + 1)
           .reduce((a: number, b: any) => a + b.power, 0)
@@ -272,6 +270,22 @@ class SnapshotClient {
     }
 
     return {
+      ...proposal,
+      scores: proposalScores,
+      votes: numberOfVoters,
+    };
+  }
+
+  async getProposal(params: GetProposalParams): Promise<SnapshotProposal> {
+    const response = await this.graphQLQuery(
+      PROPOSAL_QUERY,
+      {
+        id: params.proposalId,
+      },
+      'proposal'
+    );
+
+    const proposal: SnapshotProposal = {
       id: response.id,
       type: response.type,
       author: response.author,
@@ -286,9 +300,15 @@ class SnapshotClient {
       scores_state: response.scores_state,
       network: response.network,
       snapshot: Number(response.snapshot),
-      scores: proposalScores,
-      votes: numberOfVoters,
+      scores: response.scores,
+      votes: response.votes,
     };
+
+    return this.updateScores(proposal, {
+      spaceId: params.spaceId,
+      network: params.network,
+      strategies: params.strategies,
+    });
   }
 
   async listVotes(params: ListVotesParams): Promise<SnapshotVote[]> {

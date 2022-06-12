@@ -204,8 +204,9 @@ class DAOClient implements zDAO {
     let from = pagination?.from ?? 0;
     let count = pagination?.count ?? limit;
     let numberOfResults = limit;
-    const promises: Promise<Proposal>[] = [];
+    const snapshotProposals: SnapshotProposal[] = [];
 
+    // get the list of proposals
     while (numberOfResults === limit) {
       const results: SnapshotProposal[] =
         await this._snapshotClient.listProposals(
@@ -215,41 +216,55 @@ class DAOClient implements zDAO {
           count >= limit ? limit : count
         );
 
-      promises.push(
-        ...results.map(
-          (proposal: SnapshotProposal): Promise<Proposal> =>
-            ProposalClient.createInstance(
-              this,
-              this._snapshotClient,
-              this._gnosisSafeClient,
-              {
-                id: proposal.id,
-                type: proposal.type,
-                author: proposal.author,
-                title: proposal.title,
-                body: proposal.body ?? '',
-                ipfs: proposal.ipfs,
-                choices: proposal.choices,
-                created: proposal.created,
-                start: proposal.start,
-                end: proposal.end,
-                state: proposal.state,
-                network: proposal.network,
-                snapshot: Number(proposal.snapshot),
-                scores: proposal.scores,
-                votes: proposal.votes,
-              },
-              {
-                strategies: this._options.strategies,
-                scores_state: proposal.scores_state,
-              }
-            )
-        )
-      );
+      snapshotProposals.push(...results);
+
       from += results.length;
       count -= results.length;
       numberOfResults = results.length;
     }
+
+    // update the immediate scores
+    const snapshotPromises: Promise<SnapshotProposal>[] = snapshotProposals.map(
+      (proposal: SnapshotProposal) =>
+        this._snapshotClient.updateScores(proposal, {
+          spaceId: this.ens,
+          network: this.network,
+          strategies: this._options.strategies,
+        })
+    );
+    const proposals = await Promise.all(snapshotPromises);
+
+    // create all instances
+    const promises: Promise<Proposal>[] = proposals.map(
+      (proposal: SnapshotProposal): Promise<Proposal> =>
+        ProposalClient.createInstance(
+          this,
+          this._snapshotClient,
+          this._gnosisSafeClient,
+          {
+            id: proposal.id,
+            type: proposal.type,
+            author: proposal.author,
+            title: proposal.title,
+            body: proposal.body ?? '',
+            ipfs: proposal.ipfs,
+            choices: proposal.choices,
+            created: proposal.created,
+            start: proposal.start,
+            end: proposal.end,
+            state: proposal.state,
+            network: proposal.network,
+            snapshot: Number(proposal.snapshot),
+            scores: proposal.scores,
+            votes: proposal.votes,
+          },
+          {
+            strategies: this._options.strategies,
+            scores_state: proposal.scores_state,
+          }
+        )
+    );
+
     return await Promise.all(promises);
   }
 
@@ -257,6 +272,7 @@ class DAOClient implements zDAO {
     const proposal: SnapshotProposal = await this._snapshotClient.getProposal({
       spaceId: this.ens,
       network: this.network,
+      strategies: this._options.strategies,
       proposalId: id,
     });
 
