@@ -20,6 +20,9 @@ export interface zNAConfig {
   // address to zDAORegistry contract
   zDAORegistry: string;
 
+  // address to zNSHub contract
+  zNSHub: string;
+
   // RPC url for Web3 provider
   rpcUrl: string;
 

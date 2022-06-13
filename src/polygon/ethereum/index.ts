@@ -1,1 +1,1 @@
-export { default as EtherZDAOChefClient } from './EtherZDAOChefClient';
+export { default as RootZDAOChefClient } from './RootZDAOChefClient';

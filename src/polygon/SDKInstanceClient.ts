@@ -1,7 +1,9 @@
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
 import { ethers } from 'ethers';
 
-import { IPFSClient } from '../client';
+import { IPFSClient, ZNAClient } from '../client';
+import ZDAORegistryClient from '../client/ZDAORegistry';
+import ZNSHubClient from '../client/ZNSHubClient';
 import ERC1967ProxyAbi from '../config/abi/ERC1967Proxy.json';
 import ZeroTokenAbi from '../config/abi/ZeroToken.json';
 import {
@@ -22,12 +24,10 @@ import {
   ProofClient,
   RegistryClient,
   StakingClient,
-  ZNAClient,
-  ZNSHubClient,
 } from './client';
 import GlobalClient from './client/GlobalClient';
-import { EtherZDAOChefClient } from './ethereum';
-import { PolyZDAOChefClient } from './polygon';
+import { RootZDAOChefClient } from './ethereum';
+import { ChildZDAOChefClient } from './polygon';
 import { Config } from './types';
 
 class SDKInstanceClient implements SDKInstance {
@@ -48,24 +48,22 @@ class SDKInstanceClient implements SDKInstance {
       this._config.polygon.rpcUrl,
       this._config.polygon.network
     );
-
+    GlobalClient.zDAORegistry = new ZDAORegistryClient(config.zNA);
     GlobalClient.ipfsGateway = config.ipfsGateway;
 
     return (async (config: Config): Promise<SDKInstanceClient> => {
-      GlobalClient.etherZDAOChef = await new EtherZDAOChefClient(
-        config.ethereum
-      );
-      GlobalClient.polyZDAOChef = new PolyZDAOChefClient(config.polygon);
+      GlobalClient.rootZDAOChef = await new RootZDAOChefClient(config.ethereum);
+      GlobalClient.childZDAOChef = new ChildZDAOChefClient(config.polygon);
 
-      const znsHubAddress = await GlobalClient.etherZDAOChef.znsHub();
-      GlobalClient.znsHub = new ZNSHubClient(znsHubAddress);
+      await ZNAClient.initialize(config.zNS);
+      await ZNSHubClient.initialize(config.zNA);
 
       const stakingProperties =
-        await GlobalClient.polyZDAOChef.getStakingProperties();
+        await GlobalClient.childZDAOChef.getStakingProperties();
       GlobalClient.staking = new StakingClient(stakingProperties);
 
       const registryAddress =
-        await GlobalClient.polyZDAOChef.getRegistryAddress();
+        await GlobalClient.childZDAOChef.getRegistryAddress();
       GlobalClient.registry = new RegistryClient(registryAddress);
       await ProofClient.initialize(config);
 
@@ -94,11 +92,11 @@ class SDKInstanceClient implements SDKInstance {
 
       // signer should be owner of zNA
       const account = await signer.getAddress();
-      if (!GlobalClient.znsHub.isOwnerOf(zNAId, account)) {
+      if (!(await ZNSHubClient.isOwnerOf(zNAId, account))) {
         throw new InvalidError(errorMessageForError('not-zna-owner'));
       }
 
-      await GlobalClient.etherZDAOChef.addNewDAO(signer, {
+      await GlobalClient.rootZDAOChef.addNewDAO(signer, {
         ...params,
         zNA: zNAId,
       });
@@ -110,7 +108,7 @@ class SDKInstanceClient implements SDKInstance {
 
   async deleteZDAO(signer: ethers.Signer, zDAOId: string): Promise<void> {
     try {
-      await GlobalClient.etherZDAOChef.removeDAO(signer, zDAOId);
+      await GlobalClient.rootZDAOChef.removeDAO(signer, zDAOId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -118,12 +116,12 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async listZNAs(): Promise<zNA[]> {
-    const zDAORecords = await GlobalClient.etherZDAOChef.listzDAOs();
+    const zDAORecords = await GlobalClient.zDAORegistry.listZDAOs();
 
     // collect all the associated zNAs
     const zNAs: zNA[] = [];
     for (const zDAORecord of zDAORecords) {
-      zNAs.push(...zDAORecord.zNAs);
+      zNAs.push(...zDAORecord.associatedzNAs);
     }
 
     // remove duplicated entries
@@ -131,7 +129,7 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async listZDAOs(): Promise<zDAO[]> {
-    const zDAORecords = await GlobalClient.etherZDAOChef.listzDAOs();
+    const zDAORecords = await GlobalClient.zDAORegistry.listZDAOs();
 
     const promises: Promise<zDAO>[] = [];
     for (const zDAORecord of zDAORecords) {
@@ -147,12 +145,12 @@ class SDKInstanceClient implements SDKInstance {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 
-    const zDAORecord = await GlobalClient.etherZDAOChef.getZDAORecordByZNA(zNA);
+    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
     return await DAOClient.createInstance(this._config, zDAORecord.id);
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
-    return await GlobalClient.etherZDAOChef.doeszDAOExistForzNA(zNA);
+    return await GlobalClient.zDAORegistry.doeszDAOExistForzNA(zNA);
   }
 
   async createZToken(
@@ -248,7 +246,7 @@ class SDKInstanceClient implements SDKInstance {
 
     // signer should be owner of zNA
     const account = await signer.getAddress();
-    if (!GlobalClient.znsHub.isOwnerOf(zNAId, account)) {
+    if (!(await ZNSHubClient.isOwnerOf(zNAId, account))) {
       throw new InvalidError(errorMessageForError('not-zna-owner'));
     }
 

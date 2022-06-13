@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 import shortid from 'shortid';
 
 import { GnosisSafeClient } from '../../client';
+import IERC20UpgradeableAbi from '../../config/abi/IERC20Upgradeable.json';
 import {
   CreateProposalParams,
   CreateZDAOParams,
@@ -16,7 +17,6 @@ import {
   zDAOState,
 } from '../../types';
 import { errorMessageForError, getToken, timestamp } from '../../utilities';
-import IERC20UpgradeableAbi from '../config/abi/IERC20Upgradeable.json';
 import { Config, VoteChoice } from '../types';
 import AbstractDAOClient from './AbstractDAOClient';
 import GlobalClient from './GlobalClient';

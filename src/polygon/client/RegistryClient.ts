@@ -1,11 +1,11 @@
-import PolyRegistryClient from '../polygon/PolyRegistryClient';
+import ChildRegistryClient from '../polygon/ChildRegistryClient';
 import { Registry } from '../types';
 
 class RegistryClient implements Registry {
-  protected _polyRegistry: PolyRegistryClient;
+  protected _polyRegistry: ChildRegistryClient;
 
   constructor(address: string) {
-    this._polyRegistry = new PolyRegistryClient(address);
+    this._polyRegistry = new ChildRegistryClient(address);
   }
 
   rootToChildToken(rootToken: string): Promise<string> {

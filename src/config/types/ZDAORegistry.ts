@@ -18,119 +18,73 @@ import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export declare namespace IEtherZDAOChef {
-  export type ZDAOConfigStruct = {
-    title: string;
+export declare namespace IZDAORegistry {
+  export type ZDAORecordStruct = {
+    platformType: BigNumberish;
+    id: BigNumberish;
+    zDAO: string;
+    zDAOOwnedBy: string;
     gnosisSafe: string;
-    token: string;
-    amount: BigNumberish;
-    duration: BigNumberish;
-    votingThreshold: BigNumberish;
-    minimumVotingParticipants: BigNumberish;
-    minimumTotalVotingTokens: BigNumberish;
-    isRelativeMajority: boolean;
+    destroyed: boolean;
+    associatedzNAs: BigNumberish[];
   };
 
-  export type ZDAOConfigStructOutput = [
+  export type ZDAORecordStructOutput = [
+    BigNumber,
+    BigNumber,
     string,
     string,
     string,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    boolean
+    boolean,
+    BigNumber[]
   ] & {
-    title: string;
+    platformType: BigNumber;
+    id: BigNumber;
+    zDAO: string;
+    zDAOOwnedBy: string;
     gnosisSafe: string;
-    token: string;
-    amount: BigNumber;
-    duration: BigNumber;
-    votingThreshold: BigNumber;
-    minimumVotingParticipants: BigNumber;
-    minimumTotalVotingTokens: BigNumber;
-    isRelativeMajority: boolean;
+    destroyed: boolean;
+    associatedzNAs: BigNumber[];
   };
 }
 
-export declare namespace IEtherZDAO {
-  export type ProposalStruct = {
-    proposalId: BigNumberish;
-    createdBy: string;
-    created: BigNumberish;
-    yes: BigNumberish;
-    no: BigNumberish;
-    voters: BigNumberish;
-    ipfs: string;
-    snapshot: BigNumberish;
-    calculated: boolean;
-    executed: boolean;
-    canceled: boolean;
-  };
-
-  export type ProposalStructOutput = [
-    BigNumber,
-    string,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    string,
-    BigNumber,
-    boolean,
-    boolean,
-    boolean
-  ] & {
-    proposalId: BigNumber;
-    createdBy: string;
-    created: BigNumber;
-    yes: BigNumber;
-    no: BigNumber;
-    voters: BigNumber;
-    ipfs: string;
-    snapshot: BigNumber;
-    calculated: boolean;
-    executed: boolean;
-    canceled: boolean;
-  };
-}
-
-export interface EtherZDAOInterface extends utils.Interface {
-  contractName: "EtherZDAO";
+export interface ZDAORegistryInterface extends utils.Interface {
+  contractName: "ZDAORegistry";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "__ZDAO_init(address,uint256,address,(string,address,address,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
-    "calculateProposal(uint256,uint256,uint256,uint256)": FunctionFragment;
-    "cancelProposal(address,uint256)": FunctionFragment;
-    "createProposal(address,string)": FunctionFragment;
-    "destroyed()": FunctionFragment;
-    "executeProposal(address,uint256)": FunctionFragment;
+    "__ZDAORegistry_init(address)": FunctionFragment;
+    "addNewZDAO(uint256,uint256,address,bytes)": FunctionFragment;
+    "addZDAOFactory(uint8,address)": FunctionFragment;
+    "addZNAAssociation(uint256,uint256)": FunctionFragment;
+    "adminAssociateZNA(uint256,uint256)": FunctionFragment;
+    "adminDisassociateZNA(uint256,uint256)": FunctionFragment;
+    "adminModifyZDAO(uint256,address,bytes)": FunctionFragment;
+    "adminRemoveZDAO(uint256)": FunctionFragment;
+    "doesZNAExistForZNA(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
+    "getZDAOById(uint256)": FunctionFragment;
+    "getZDAOByZNA(uint256)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
-    "lastProposalId()": FunctionFragment;
-    "listProposals(uint256,uint256)": FunctionFragment;
-    "numberOfProposals()": FunctionFragment;
+    "lastZDAOId()": FunctionFragment;
+    "listZDAOs(uint256,uint256)": FunctionFragment;
+    "numberOfzDAOs()": FunctionFragment;
     "owner()": FunctionFragment;
     "paused()": FunctionFragment;
-    "proposalIds(uint256)": FunctionFragment;
-    "proposals(uint256)": FunctionFragment;
+    "removeZNAAssociation(uint256,uint256)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
-    "setDestroyed(bool)": FunctionFragment;
-    "setGnosisSafe(address)": FunctionFragment;
-    "setVotingToken(address,uint256)": FunctionFragment;
-    "state(uint256)": FunctionFragment;
+    "setZNSHub(address)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
     "upgradeToAndCall(address,bytes)": FunctionFragment;
     "version()": FunctionFragment;
-    "zDAOChef()": FunctionFragment;
-    "zDAOInfo()": FunctionFragment;
-    "zDAOOwner()": FunctionFragment;
+    "zDAOFactories(uint256)": FunctionFragment;
+    "zDAORecords(uint256)": FunctionFragment;
+    "zNATozDAOId(uint256)": FunctionFragment;
+    "znsHub()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -138,29 +92,52 @@ export interface EtherZDAOInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "__ZDAO_init",
-    values: [string, BigNumberish, string, IEtherZDAOChef.ZDAOConfigStruct]
+    functionFragment: "__ZDAORegistry_init",
+    values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "calculateProposal",
-    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+    functionFragment: "addNewZDAO",
+    values: [BigNumberish, BigNumberish, string, BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "cancelProposal",
-    values: [string, BigNumberish]
+    functionFragment: "addZDAOFactory",
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "createProposal",
-    values: [string, string]
+    functionFragment: "addZNAAssociation",
+    values: [BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "destroyed", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "executeProposal",
-    values: [string, BigNumberish]
+    functionFragment: "adminAssociateZNA",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "adminDisassociateZNA",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "adminModifyZDAO",
+    values: [BigNumberish, string, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "adminRemoveZDAO",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "doesZNAExistForZNA",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getZDAOById",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getZDAOByZNA",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "grantRole",
@@ -171,26 +148,22 @@ export interface EtherZDAOInterface extends utils.Interface {
     values: [BytesLike, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "lastProposalId",
+    functionFragment: "lastZDAOId",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "listProposals",
+    functionFragment: "listZDAOs",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "numberOfProposals",
+    functionFragment: "numberOfzDAOs",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "proposalIds",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "proposals",
-    values: [BigNumberish]
+    functionFragment: "removeZNAAssociation",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -204,19 +177,7 @@ export interface EtherZDAOInterface extends utils.Interface {
     functionFragment: "revokeRole",
     values: [BytesLike, string]
   ): string;
-  encodeFunctionData(
-    functionFragment: "setDestroyed",
-    values: [boolean]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setGnosisSafe",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setVotingToken",
-    values: [string, BigNumberish]
-  ): string;
-  encodeFunctionData(functionFragment: "state", values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: "setZNSHub", values: [string]): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
@@ -231,60 +192,83 @@ export interface EtherZDAOInterface extends utils.Interface {
     values: [string, BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
-  encodeFunctionData(functionFragment: "zDAOChef", values?: undefined): string;
-  encodeFunctionData(functionFragment: "zDAOInfo", values?: undefined): string;
-  encodeFunctionData(functionFragment: "zDAOOwner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "zDAOFactories",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "zDAORecords",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "zNATozDAOId",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(functionFragment: "znsHub", values?: undefined): string;
 
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "__ZDAO_init",
+    functionFragment: "__ZDAORegistry_init",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "addNewZDAO", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "addZDAOFactory",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "calculateProposal",
+    functionFragment: "addZNAAssociation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "cancelProposal",
+    functionFragment: "adminAssociateZNA",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "createProposal",
+    functionFragment: "adminDisassociateZNA",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "destroyed", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "executeProposal",
+    functionFragment: "adminModifyZDAO",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "adminRemoveZDAO",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "doesZNAExistForZNA",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "getRoleAdmin",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getZDAOById",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getZDAOByZNA",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "lastZDAOId", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "listZDAOs", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "lastProposalId",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "listProposals",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "numberOfProposals",
+    functionFragment: "numberOfzDAOs",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "proposalIds",
+    functionFragment: "removeZNAAssociation",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "proposals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -294,19 +278,7 @@ export interface EtherZDAOInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "setDestroyed",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setGnosisSafe",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setVotingToken",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "state", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setZNSHub", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
@@ -321,13 +293,28 @@ export interface EtherZDAOInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "zDAOChef", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "zDAOInfo", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "zDAOOwner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "zDAOFactories",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "zDAORecords",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "zNATozDAOId",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "znsHub", data: BytesLike): Result;
 
   events: {
     "AdminChanged(address,address)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
+    "DAOCreated(uint256,uint256,address,address,address)": EventFragment;
+    "DAODestroyed(uint256)": EventFragment;
+    "DAOModified(uint256,address)": EventFragment;
+    "LinkAdded(uint256,uint256)": EventFragment;
+    "LinkRemoved(uint256,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
@@ -339,6 +326,11 @@ export interface EtherZDAOInterface extends utils.Interface {
 
   getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DAODestroyed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DAOModified"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "LinkAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "LinkRemoved"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
@@ -358,6 +350,44 @@ export type AdminChangedEventFilter = TypedEventFilter<AdminChangedEvent>;
 export type BeaconUpgradedEvent = TypedEvent<[string], { beacon: string }>;
 
 export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
+
+export type DAOCreatedEvent = TypedEvent<
+  [BigNumber, BigNumber, string, string, string],
+  {
+    _platformType: BigNumber;
+    _zDAOId: BigNumber;
+    _gnosisSafe: string;
+    _creator: string;
+    _zDAO: string;
+  }
+>;
+
+export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
+
+export type DAODestroyedEvent = TypedEvent<[BigNumber], { _zDAOId: BigNumber }>;
+
+export type DAODestroyedEventFilter = TypedEventFilter<DAODestroyedEvent>;
+
+export type DAOModifiedEvent = TypedEvent<
+  [BigNumber, string],
+  { _zDAOId: BigNumber; _gnosisSafe: string }
+>;
+
+export type DAOModifiedEventFilter = TypedEventFilter<DAOModifiedEvent>;
+
+export type LinkAddedEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  { _zDAOId: BigNumber; _zNA: BigNumber }
+>;
+
+export type LinkAddedEventFilter = TypedEventFilter<LinkAddedEvent>;
+
+export type LinkRemovedEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  { _zDAOId: BigNumber; _zNA: BigNumber }
+>;
+
+export type LinkRemovedEventFilter = TypedEventFilter<LinkRemovedEvent>;
 
 export type OwnershipTransferredEvent = TypedEvent<
   [string, string],
@@ -401,13 +431,13 @@ export type UpgradedEvent = TypedEvent<[string], { implementation: string }>;
 
 export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
 
-export interface EtherZDAO extends BaseContract {
-  contractName: "EtherZDAO";
+export interface ZDAORegistry extends BaseContract {
+  contractName: "ZDAORegistry";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: EtherZDAOInterface;
+  interface: ZDAORegistryInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -431,43 +461,71 @@ export interface EtherZDAO extends BaseContract {
   functions: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    __ZDAO_init(
-      _zDAOChef: string,
+    __ZDAORegistry_init(
+      _znsHub: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    addNewZDAO(
+      _platformType: BigNumberish,
+      _zNA: BigNumberish,
+      _gnosisSafe: string,
+      _options: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    addZDAOFactory(
+      _platformType: BigNumberish,
+      _factory: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    addZNAAssociation(
       _zDAOId: BigNumberish,
-      _createdBy: string,
-      _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+      _zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    calculateProposal(
-      _proposalId: BigNumberish,
-      _voters: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
+    adminAssociateZNA(
+      _zDAOId: BigNumberish,
+      _zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    cancelProposal(
-      _cancelBy: string,
-      _proposalId: BigNumberish,
+    adminDisassociateZNA(
+      _zDAOId: BigNumberish,
+      _zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    createProposal(
-      _createdBy: string,
-      _ipfs: string,
+    adminModifyZDAO(
+      _zDAOId: BigNumberish,
+      _gnosisSafe: string,
+      _options: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    destroyed(overrides?: CallOverrides): Promise<[boolean]>;
-
-    executeProposal(
-      _executeBy: string,
-      _proposalId: BigNumberish,
+    adminRemoveZDAO(
+      _zDAOId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    doesZNAExistForZNA(
+      _zNA: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
+
+    getZDAOById(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[IZDAORegistry.ZDAORecordStructOutput]>;
+
+    getZDAOByZNA(
+      _zNA: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[IZDAORegistry.ZDAORecordStructOutput]>;
 
     grantRole(
       role: BytesLike,
@@ -481,57 +539,29 @@ export interface EtherZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    lastProposalId(overrides?: CallOverrides): Promise<[BigNumber]>;
+    lastZDAOId(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    listProposals(
+    listZDAOs(
       _startIndex: BigNumberish,
       _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [IEtherZDAO.ProposalStructOutput[]] & {
-        records: IEtherZDAO.ProposalStructOutput[];
+      [IZDAORegistry.ZDAORecordStructOutput[]] & {
+        records: IZDAORegistry.ZDAORecordStructOutput[];
       }
     >;
 
-    numberOfProposals(overrides?: CallOverrides): Promise<[BigNumber]>;
+    numberOfzDAOs(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     paused(overrides?: CallOverrides): Promise<[boolean]>;
 
-    proposalIds(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    proposals(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        BigNumber,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        string,
-        BigNumber,
-        boolean,
-        boolean,
-        boolean
-      ] & {
-        proposalId: BigNumber;
-        createdBy: string;
-        yes: BigNumber;
-        no: BigNumber;
-        voters: BigNumber;
-        ipfs: string;
-        snapshot: BigNumber;
-        calculated: boolean;
-        executed: boolean;
-        canceled: boolean;
-      }
-    >;
+    removeZNAAssociation(
+      _zDAOId: BigNumberish,
+      _zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -549,26 +579,10 @@ export interface EtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setDestroyed(
-      _destroyed: boolean,
+    setZNSHub(
+      _znsHub: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    setGnosisSafe(
-      _gnosisSafe: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setVotingToken(
-      _token: string,
-      _amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    state(
-      _proposalId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[number]>;
 
     supportsInterface(
       interfaceId: BytesLike,
@@ -593,84 +607,100 @@ export interface EtherZDAO extends BaseContract {
 
     version(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    zDAOChef(overrides?: CallOverrides): Promise<[string]>;
+    zDAOFactories(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
-    zDAOInfo(
+    zDAORecords(
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        string,
-        string,
-        string,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        boolean,
-        boolean
-      ] & {
-        zDAOId: BigNumber;
-        title: string;
-        createdBy: string;
+      [BigNumber, BigNumber, string, string, string, boolean] & {
+        platformType: BigNumber;
+        id: BigNumber;
+        zDAO: string;
+        zDAOOwnedBy: string;
         gnosisSafe: string;
-        token: string;
-        amount: BigNumber;
-        duration: BigNumber;
-        votingThreshold: BigNumber;
-        minimumVotingParticipants: BigNumber;
-        minimumTotalVotingTokens: BigNumber;
-        snapshot: BigNumber;
-        isRelativeMajority: boolean;
         destroyed: boolean;
       }
     >;
 
-    zDAOOwner(overrides?: CallOverrides): Promise<[string]>;
+    zNATozDAOId(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    znsHub(overrides?: CallOverrides): Promise<[string]>;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  __ZDAO_init(
-    _zDAOChef: string,
+  __ZDAORegistry_init(
+    _znsHub: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  addNewZDAO(
+    _platformType: BigNumberish,
+    _zNA: BigNumberish,
+    _gnosisSafe: string,
+    _options: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  addZDAOFactory(
+    _platformType: BigNumberish,
+    _factory: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  addZNAAssociation(
     _zDAOId: BigNumberish,
-    _createdBy: string,
-    _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+    _zNA: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  calculateProposal(
-    _proposalId: BigNumberish,
-    _voters: BigNumberish,
-    _yes: BigNumberish,
-    _no: BigNumberish,
+  adminAssociateZNA(
+    _zDAOId: BigNumberish,
+    _zNA: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  cancelProposal(
-    _cancelBy: string,
-    _proposalId: BigNumberish,
+  adminDisassociateZNA(
+    _zDAOId: BigNumberish,
+    _zNA: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  createProposal(
-    _createdBy: string,
-    _ipfs: string,
+  adminModifyZDAO(
+    _zDAOId: BigNumberish,
+    _gnosisSafe: string,
+    _options: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  destroyed(overrides?: CallOverrides): Promise<boolean>;
-
-  executeProposal(
-    _executeBy: string,
-    _proposalId: BigNumberish,
+  adminRemoveZDAO(
+    _zDAOId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  doesZNAExistForZNA(
+    _zNA: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
+
+  getZDAOById(
+    _zDAOId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<IZDAORegistry.ZDAORecordStructOutput>;
+
+  getZDAOByZNA(
+    _zNA: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<IZDAORegistry.ZDAORecordStructOutput>;
 
   grantRole(
     role: BytesLike,
@@ -684,55 +714,25 @@ export interface EtherZDAO extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  lastProposalId(overrides?: CallOverrides): Promise<BigNumber>;
+  lastZDAOId(overrides?: CallOverrides): Promise<BigNumber>;
 
-  listProposals(
+  listZDAOs(
     _startIndex: BigNumberish,
     _count: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<IEtherZDAO.ProposalStructOutput[]>;
+  ): Promise<IZDAORegistry.ZDAORecordStructOutput[]>;
 
-  numberOfProposals(overrides?: CallOverrides): Promise<BigNumber>;
+  numberOfzDAOs(overrides?: CallOverrides): Promise<BigNumber>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
   paused(overrides?: CallOverrides): Promise<boolean>;
 
-  proposalIds(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  proposals(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [
-      BigNumber,
-      string,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      string,
-      BigNumber,
-      boolean,
-      boolean,
-      boolean
-    ] & {
-      proposalId: BigNumber;
-      createdBy: string;
-      created: BigNumber;
-      yes: BigNumber;
-      no: BigNumber;
-      voters: BigNumber;
-      ipfs: string;
-      snapshot: BigNumber;
-      calculated: boolean;
-      executed: boolean;
-      canceled: boolean;
-    }
-  >;
+  removeZNAAssociation(
+    _zDAOId: BigNumberish,
+    _zNA: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -750,23 +750,10 @@ export interface EtherZDAO extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setDestroyed(
-    _destroyed: boolean,
+  setZNSHub(
+    _znsHub: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
-
-  setGnosisSafe(
-    _gnosisSafe: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setVotingToken(
-    _token: string,
-    _amount: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  state(_proposalId: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
   supportsInterface(
     interfaceId: BytesLike,
@@ -791,84 +778,97 @@ export interface EtherZDAO extends BaseContract {
 
   version(overrides?: CallOverrides): Promise<BigNumber>;
 
-  zDAOChef(overrides?: CallOverrides): Promise<string>;
+  zDAOFactories(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
-  zDAOInfo(
+  zDAORecords(
+    arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [
-      BigNumber,
-      string,
-      string,
-      string,
-      string,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      boolean,
-      boolean
-    ] & {
-      zDAOId: BigNumber;
-      title: string;
-      createdBy: string;
+    [BigNumber, BigNumber, string, string, string, boolean] & {
+      platformType: BigNumber;
+      id: BigNumber;
+      zDAO: string;
+      zDAOOwnedBy: string;
       gnosisSafe: string;
-      token: string;
-      amount: BigNumber;
-      duration: BigNumber;
-      votingThreshold: BigNumber;
-      minimumVotingParticipants: BigNumber;
-      minimumTotalVotingTokens: BigNumber;
-      snapshot: BigNumber;
-      isRelativeMajority: boolean;
       destroyed: boolean;
     }
   >;
 
-  zDAOOwner(overrides?: CallOverrides): Promise<string>;
+  zNATozDAOId(
+    arg0: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  znsHub(overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    __ZDAO_init(
-      _zDAOChef: string,
+    __ZDAORegistry_init(
+      _znsHub: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    addNewZDAO(
+      _platformType: BigNumberish,
+      _zNA: BigNumberish,
+      _gnosisSafe: string,
+      _options: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    addZDAOFactory(
+      _platformType: BigNumberish,
+      _factory: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    addZNAAssociation(
       _zDAOId: BigNumberish,
-      _createdBy: string,
-      _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+      _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    calculateProposal(
-      _proposalId: BigNumberish,
-      _voters: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
+    adminAssociateZNA(
+      _zDAOId: BigNumberish,
+      _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    cancelProposal(
-      _cancelBy: string,
-      _proposalId: BigNumberish,
+    adminDisassociateZNA(
+      _zDAOId: BigNumberish,
+      _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    createProposal(
-      _createdBy: string,
-      _ipfs: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    destroyed(overrides?: CallOverrides): Promise<boolean>;
-
-    executeProposal(
-      _executeBy: string,
-      _proposalId: BigNumberish,
+    adminModifyZDAO(
+      _zDAOId: BigNumberish,
+      _gnosisSafe: string,
+      _options: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    adminRemoveZDAO(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    doesZNAExistForZNA(
+      _zNA: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
+
+    getZDAOById(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<IZDAORegistry.ZDAORecordStructOutput>;
+
+    getZDAOByZNA(
+      _zNA: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<IZDAORegistry.ZDAORecordStructOutput>;
 
     grantRole(
       role: BytesLike,
@@ -882,53 +882,25 @@ export interface EtherZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    lastProposalId(overrides?: CallOverrides): Promise<BigNumber>;
+    lastZDAOId(overrides?: CallOverrides): Promise<BigNumber>;
 
-    listProposals(
+    listZDAOs(
       _startIndex: BigNumberish,
       _count: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<IEtherZDAO.ProposalStructOutput[]>;
+    ): Promise<IZDAORegistry.ZDAORecordStructOutput[]>;
 
-    numberOfProposals(overrides?: CallOverrides): Promise<BigNumber>;
+    numberOfzDAOs(overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
     paused(overrides?: CallOverrides): Promise<boolean>;
 
-    proposalIds(
-      arg0: BigNumberish,
+    removeZNAAssociation(
+      _zDAOId: BigNumberish,
+      _zNA: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    proposals(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        BigNumber,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        string,
-        BigNumber,
-        boolean,
-        boolean,
-        boolean
-      ] & {
-        proposalId: BigNumber;
-        createdBy: string;
-        yes: BigNumber;
-        no: BigNumber;
-        voters: BigNumber;
-        ipfs: string;
-        snapshot: BigNumber;
-        calculated: boolean;
-        executed: boolean;
-        canceled: boolean;
-      }
-    >;
+    ): Promise<void>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
@@ -944,23 +916,7 @@ export interface EtherZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setDestroyed(_destroyed: boolean, overrides?: CallOverrides): Promise<void>;
-
-    setGnosisSafe(
-      _gnosisSafe: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setVotingToken(
-      _token: string,
-      _amount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    state(
-      _proposalId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<number>;
+    setZNSHub(_znsHub: string, overrides?: CallOverrides): Promise<void>;
 
     supportsInterface(
       interfaceId: BytesLike,
@@ -985,43 +941,31 @@ export interface EtherZDAO extends BaseContract {
 
     version(overrides?: CallOverrides): Promise<BigNumber>;
 
-    zDAOChef(overrides?: CallOverrides): Promise<string>;
+    zDAOFactories(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
-    zDAOInfo(
+    zDAORecords(
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        string,
-        string,
-        string,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        boolean,
-        boolean
-      ] & {
-        zDAOId: BigNumber;
-        title: string;
-        createdBy: string;
+      [BigNumber, BigNumber, string, string, string, boolean] & {
+        platformType: BigNumber;
+        id: BigNumber;
+        zDAO: string;
+        zDAOOwnedBy: string;
         gnosisSafe: string;
-        token: string;
-        amount: BigNumber;
-        duration: BigNumber;
-        votingThreshold: BigNumber;
-        minimumVotingParticipants: BigNumber;
-        minimumTotalVotingTokens: BigNumber;
-        snapshot: BigNumber;
-        isRelativeMajority: boolean;
         destroyed: boolean;
       }
     >;
 
-    zDAOOwner(overrides?: CallOverrides): Promise<string>;
+    zNATozDAOId(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    znsHub(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
@@ -1038,6 +982,53 @@ export interface EtherZDAO extends BaseContract {
       beacon?: string | null
     ): BeaconUpgradedEventFilter;
     BeaconUpgraded(beacon?: string | null): BeaconUpgradedEventFilter;
+
+    "DAOCreated(uint256,uint256,address,address,address)"(
+      _platformType?: BigNumberish | null,
+      _zDAOId?: BigNumberish | null,
+      _gnosisSafe?: string | null,
+      _creator?: null,
+      _zDAO?: null
+    ): DAOCreatedEventFilter;
+    DAOCreated(
+      _platformType?: BigNumberish | null,
+      _zDAOId?: BigNumberish | null,
+      _gnosisSafe?: string | null,
+      _creator?: null,
+      _zDAO?: null
+    ): DAOCreatedEventFilter;
+
+    "DAODestroyed(uint256)"(
+      _zDAOId?: BigNumberish | null
+    ): DAODestroyedEventFilter;
+    DAODestroyed(_zDAOId?: BigNumberish | null): DAODestroyedEventFilter;
+
+    "DAOModified(uint256,address)"(
+      _zDAOId?: BigNumberish | null,
+      _gnosisSafe?: string | null
+    ): DAOModifiedEventFilter;
+    DAOModified(
+      _zDAOId?: BigNumberish | null,
+      _gnosisSafe?: string | null
+    ): DAOModifiedEventFilter;
+
+    "LinkAdded(uint256,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _zNA?: BigNumberish | null
+    ): LinkAddedEventFilter;
+    LinkAdded(
+      _zDAOId?: BigNumberish | null,
+      _zNA?: BigNumberish | null
+    ): LinkAddedEventFilter;
+
+    "LinkRemoved(uint256,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _zNA?: BigNumberish | null
+    ): LinkRemovedEventFilter;
+    LinkRemoved(
+      _zDAOId?: BigNumberish | null,
+      _zNA?: BigNumberish | null
+    ): LinkRemovedEventFilter;
 
     "OwnershipTransferred(address,address)"(
       previousOwner?: string | null,
@@ -1094,44 +1085,72 @@ export interface EtherZDAO extends BaseContract {
   estimateGas: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    __ZDAO_init(
-      _zDAOChef: string,
+    __ZDAORegistry_init(
+      _znsHub: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    addNewZDAO(
+      _platformType: BigNumberish,
+      _zNA: BigNumberish,
+      _gnosisSafe: string,
+      _options: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    addZDAOFactory(
+      _platformType: BigNumberish,
+      _factory: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    addZNAAssociation(
       _zDAOId: BigNumberish,
-      _createdBy: string,
-      _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+      _zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    calculateProposal(
-      _proposalId: BigNumberish,
-      _voters: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
+    adminAssociateZNA(
+      _zDAOId: BigNumberish,
+      _zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    cancelProposal(
-      _cancelBy: string,
-      _proposalId: BigNumberish,
+    adminDisassociateZNA(
+      _zDAOId: BigNumberish,
+      _zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    createProposal(
-      _createdBy: string,
-      _ipfs: string,
+    adminModifyZDAO(
+      _zDAOId: BigNumberish,
+      _gnosisSafe: string,
+      _options: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    destroyed(overrides?: CallOverrides): Promise<BigNumber>;
-
-    executeProposal(
-      _executeBy: string,
-      _proposalId: BigNumberish,
+    adminRemoveZDAO(
+      _zDAOId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    doesZNAExistForZNA(
+      _zNA: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getRoleAdmin(
       role: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getZDAOById(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getZDAOByZNA(
+      _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1147,28 +1166,24 @@ export interface EtherZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    lastProposalId(overrides?: CallOverrides): Promise<BigNumber>;
+    lastZDAOId(overrides?: CallOverrides): Promise<BigNumber>;
 
-    listProposals(
+    listZDAOs(
       _startIndex: BigNumberish,
       _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    numberOfProposals(overrides?: CallOverrides): Promise<BigNumber>;
+    numberOfzDAOs(overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     paused(overrides?: CallOverrides): Promise<BigNumber>;
 
-    proposalIds(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    proposals(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
+    removeZNAAssociation(
+      _zDAOId: BigNumberish,
+      _zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     renounceOwnership(
@@ -1187,25 +1202,9 @@ export interface EtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setDestroyed(
-      _destroyed: boolean,
+    setZNSHub(
+      _znsHub: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setGnosisSafe(
-      _gnosisSafe: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setVotingToken(
-      _token: string,
-      _amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    state(
-      _proposalId: BigNumberish,
-      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     supportsInterface(
@@ -1231,11 +1230,22 @@ export interface EtherZDAO extends BaseContract {
 
     version(overrides?: CallOverrides): Promise<BigNumber>;
 
-    zDAOChef(overrides?: CallOverrides): Promise<BigNumber>;
+    zDAOFactories(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    zDAOInfo(overrides?: CallOverrides): Promise<BigNumber>;
+    zDAORecords(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    zDAOOwner(overrides?: CallOverrides): Promise<BigNumber>;
+    zNATozDAOId(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    znsHub(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1243,44 +1253,72 @@ export interface EtherZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    __ZDAO_init(
-      _zDAOChef: string,
+    __ZDAORegistry_init(
+      _znsHub: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    addNewZDAO(
+      _platformType: BigNumberish,
+      _zNA: BigNumberish,
+      _gnosisSafe: string,
+      _options: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    addZDAOFactory(
+      _platformType: BigNumberish,
+      _factory: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    addZNAAssociation(
       _zDAOId: BigNumberish,
-      _createdBy: string,
-      _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+      _zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    calculateProposal(
-      _proposalId: BigNumberish,
-      _voters: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
+    adminAssociateZNA(
+      _zDAOId: BigNumberish,
+      _zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    cancelProposal(
-      _cancelBy: string,
-      _proposalId: BigNumberish,
+    adminDisassociateZNA(
+      _zDAOId: BigNumberish,
+      _zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    createProposal(
-      _createdBy: string,
-      _ipfs: string,
+    adminModifyZDAO(
+      _zDAOId: BigNumberish,
+      _gnosisSafe: string,
+      _options: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    destroyed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    executeProposal(
-      _executeBy: string,
-      _proposalId: BigNumberish,
+    adminRemoveZDAO(
+      _zDAOId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    doesZNAExistForZNA(
+      _zNA: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getRoleAdmin(
       role: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getZDAOById(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getZDAOByZNA(
+      _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1296,28 +1334,24 @@ export interface EtherZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    lastProposalId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    lastZDAOId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    listProposals(
+    listZDAOs(
       _startIndex: BigNumberish,
       _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    numberOfProposals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    numberOfzDAOs(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    proposalIds(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    proposals(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
+    removeZNAAssociation(
+      _zDAOId: BigNumberish,
+      _zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     renounceOwnership(
@@ -1336,25 +1370,9 @@ export interface EtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setDestroyed(
-      _destroyed: boolean,
+    setZNSHub(
+      _znsHub: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setGnosisSafe(
-      _gnosisSafe: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setVotingToken(
-      _token: string,
-      _amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    state(
-      _proposalId: BigNumberish,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     supportsInterface(
@@ -1380,10 +1398,21 @@ export interface EtherZDAO extends BaseContract {
 
     version(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    zDAOChef(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    zDAOFactories(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
-    zDAOInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    zDAORecords(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
-    zDAOOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    zNATozDAOId(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    znsHub(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

@@ -1,3 +1,3 @@
-export { default as PolyRegistryClient } from './PolyRegistryClient';
-export { default as PolyStakingClient } from './PolyStakingClient';
-export { default as PolyZDAOChefClient } from './PolyZDAOChefClient';
+export { default as ChildRegistryClient } from './ChildRegistryClient';
+export { default as ChildStakingClient } from './ChildStakingClient';
+export { default as ChildZDAOChefClient } from './ChildZDAOChefClient';

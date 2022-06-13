@@ -6,15 +6,13 @@ import {
   Instance as zNSInstance,
 } from '@zero-tech/zns-sdk';
 
-import { zNA, zNAId } from '../../types';
+import { zNA, zNAId } from '../types';
 
 class ZNAClient {
-  private static _initialized = false;
   private static _znsInstance: zNSInstance;
 
   static initialize(config: zNSConfig) {
     ZNAClient._znsInstance = createZNSInstance(config);
-    ZNAClient._initialized = true;
   }
 
   static async zNAIdTozNA(zNAId: zNAId): Promise<zNA> {

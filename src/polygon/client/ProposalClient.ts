@@ -26,8 +26,8 @@ class ProposalClient extends AbstractProposalClient {
   }
 
   async listVotes(): Promise<Vote[]> {
-    const polyZDAO = await this._zDAO.getPolyZDAO();
-    if (!polyZDAO) {
+    const childZDAO = await this._zDAO.getChildZDAO();
+    if (!childZDAO) {
       throw new NotSyncStateError();
     }
 
@@ -37,7 +37,7 @@ class ProposalClient extends AbstractProposalClient {
     const votes: Vote[] = [];
 
     while (numberOfResults === count) {
-      const results = await polyZDAO.listVoters(this.id, from, count);
+      const results = await childZDAO.listVoters(this.id, from, count);
 
       votes.push(
         ...[...Array(results.voters.length).keys()].map((index: number) => ({
@@ -53,12 +53,12 @@ class ProposalClient extends AbstractProposalClient {
   }
 
   async getVotingPowerOfUser(account: string): Promise<string> {
-    const polyZDAO = await this._zDAO.getPolyZDAO();
-    if (!polyZDAO) {
+    const childZDAO = await this._zDAO.getChildZDAO();
+    if (!childZDAO) {
       throw new NotSyncStateError();
     }
 
-    return (await polyZDAO.votingPowerOfVoter(this.id, account)).toString();
+    return (await childZDAO.votingPowerOfVoter(this.id, account)).toString();
   }
 
   async vote(
@@ -72,8 +72,8 @@ class ProposalClient extends AbstractProposalClient {
     }
 
     // zDAO should be synchronized to Polygon prior to create proposal
-    const polyZDAO = await this._zDAO.getPolyZDAO();
-    if (!polyZDAO) {
+    const childZDAO = await this._zDAO.getChildZDAO();
+    if (!childZDAO) {
       throw new NotSyncStateError();
     }
 
@@ -97,7 +97,7 @@ class ProposalClient extends AbstractProposalClient {
 
       const daoId = this._zDAO.id;
       const proposalId = this.id;
-      await GlobalClient.polyZDAOChef.vote(signer, daoId, proposalId, choice);
+      await GlobalClient.childZDAOChef.vote(signer, daoId, proposalId, choice);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -109,7 +109,7 @@ class ProposalClient extends AbstractProposalClient {
     const proposalId = this.id;
 
     try {
-      await GlobalClient.polyZDAOChef.calculateProposal(
+      await GlobalClient.childZDAOChef.calculateProposal(
         signer,
         daoId,
         proposalId
@@ -159,7 +159,7 @@ class ProposalClient extends AbstractProposalClient {
 
       const daoId = this._zDAO.id;
       const proposalId = this.id;
-      await GlobalClient.etherZDAOChef.executeProposal(
+      await GlobalClient.rootZDAOChef.executeProposal(
         signer,
         daoId,
         proposalId
@@ -173,7 +173,7 @@ class ProposalClient extends AbstractProposalClient {
   getCheckPointingHashes(): Promise<string[]> {
     try {
       if (this.state === ProposalState.AWAITING_FINALIZATION)
-        return GlobalClient.polyZDAOChef.getCheckPointingHashes(
+        return GlobalClient.childZDAOChef.getCheckPointingHashes(
           this._zDAO.id,
           this.id
         );

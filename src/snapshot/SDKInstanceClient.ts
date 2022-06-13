@@ -1,6 +1,7 @@
 import { ethers, Signer } from 'ethers';
 import shortid from 'shortid';
 
+import ZDAORegistryClient, { ZDAORecord } from '../client/ZDAORegistry';
 import ERC1967ProxyAbi from '../config/abi/ERC1967Proxy.json';
 import ZeroTokenAbi from '../config/abi/ZeroToken.json';
 import {
@@ -17,20 +18,17 @@ import { errorMessageForError } from '../utilities';
 import { getToken } from '../utilities/calls';
 import DAOClient from './client/DAOClient';
 import GlobalClient from './client/GlobalClient';
+import { ZDAOChefClient } from './ethereum';
 import { SnapshotClient } from './snapshot';
 import { Config, CreateZDAOParamsOptions } from './types';
-import zDAORegistryClient from './zDAORegistry';
-import { ZDAORecord } from './zDAORegistry/types';
 
 class SDKInstanceClient implements SDKInstance {
   private readonly _config: Config;
-  private readonly _zDAORegistryClient: zDAORegistryClient;
   private readonly _snapshotClient: SnapshotClient;
   protected _params: CreateZDAOParams[];
 
   constructor(config: Config) {
     this._config = config;
-    this._zDAORegistryClient = new zDAORegistryClient(config.zNA, config.zNS);
     this._snapshotClient = new SnapshotClient(config.snapshot);
     this._params = [];
 
@@ -38,6 +36,8 @@ class SDKInstanceClient implements SDKInstance {
       this._config.ethereum.rpcUrl,
       this._config.ethereum.network
     );
+    GlobalClient.zDAORegistry = new ZDAORegistryClient(config.zNA);
+    GlobalClient.rootZDAOChef = new ZDAOChefClient(config.ethereum);
 
     GlobalClient.ipfsGateway = config.ipfsGateway;
   }
@@ -51,7 +51,16 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async listZNAs(): Promise<zNA[]> {
-    return await this._zDAORegistryClient.listZNAs();
+    const zDAORecords = await GlobalClient.zDAORegistry.listZDAOs();
+
+    // collect all the associated zNAs
+    const zNAs: zNA[] = [];
+    for (const zDAORecord of zDAORecords) {
+      zNAs.push(...zDAORecord.associatedzNAs);
+    }
+
+    // remove duplicated entries
+    return zNAs.filter((value, index) => zNAs.indexOf(value) === index);
   }
 
   async listZDAOs(): Promise<zDAO[]> {
@@ -69,10 +78,14 @@ class SDKInstanceClient implements SDKInstance {
 
     // get zDAO information associated with zNA
     const zDAORecord: ZDAORecord =
-      await this._zDAORegistryClient.getZDAORecordByZNA(zNA);
+      await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
+
+    const zDAOInfo = await GlobalClient.rootZDAOChef.getZDAOPropertiesById(
+      zDAORecord.id
+    );
 
     // should be found by ens in snapshot
-    const space = await this._snapshotClient.getSpaceDetails(zDAORecord.ens);
+    const space = await this._snapshotClient.getSpaceDetails(zDAOInfo.ensSpace);
     if (!space) {
       throw new Error(errorMessageForError('not-found-ens-in-snapshot'));
     }
@@ -96,7 +109,7 @@ class SDKInstanceClient implements SDKInstance {
       this._config,
       {
         id: zDAORecord.id,
-        zNAs: zDAORecord.zNAs,
+        zNAs: zDAORecord.associatedzNAs,
         title: space.name,
         createdBy: '',
         network: Number(space.network),
@@ -122,7 +135,7 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
-    return await this._zDAORegistryClient.doesZDAOExist(zNA);
+    return await GlobalClient.zDAORegistry.doeszDAOExistForzNA(zNA);
   }
 
   async createZToken(

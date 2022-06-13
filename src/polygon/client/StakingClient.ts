@@ -1,16 +1,16 @@
 import { ContractReceipt, ethers } from 'ethers';
 
 import { FailedTxError } from '../../types';
-import PolyStakingClient from '../polygon/PolyStakingClient';
+import ChildStakingClient from '../polygon/ChildStakingClient';
 import { Staking, StakingProperties } from '../types';
 
 class StakingClient implements Staking {
   protected readonly _properties: StakingProperties;
-  protected _polyStaking: PolyStakingClient;
+  protected _polyStaking: ChildStakingClient;
 
   constructor(properties: StakingProperties) {
     this._properties = properties;
-    this._polyStaking = new PolyStakingClient(properties.address);
+    this._polyStaking = new ChildStakingClient(properties.address);
   }
 
   get network() {

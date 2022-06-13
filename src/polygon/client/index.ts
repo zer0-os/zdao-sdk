@@ -5,5 +5,3 @@ export { default as ProofClient } from './ProofClient';
 export { default as ProposalClient } from './ProposalClient';
 export { default as RegistryClient } from './RegistryClient';
 export { default as StakingClient } from './StakingClient';
-export { default as ZNAClient } from './ZNAClient';
-export { default as ZNSHubClient } from './ZNSHubClient';

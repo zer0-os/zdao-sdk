@@ -51,6 +51,7 @@ const main = async () => {
       from: goerliSigner.address,
     },
     fleek: env.fleek,
+    ipfsGateway: 'snapshot.mypinata.cloud',
     zNSProvider: rinkebyProvider,
   });
   const mumbaiSigner = new ethers.Wallet(

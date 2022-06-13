@@ -1,6 +1,6 @@
 import { zDAOId } from '../../types';
 
-export interface PolyZDAOProperties {
+export interface ChildZDAOProperties {
   // Unique id for looking up zDAO
   id: zDAOId;
 

@@ -1,18 +1,18 @@
 import { ethers } from 'ethers';
 
+import ZDAORegistryClient from '../../client/ZDAORegistry';
 import { NotInitializedError } from '../../types';
-import { EtherZDAOChefClient } from '../ethereum';
-import { PolyZDAOChefClient } from '../polygon';
+import { RootZDAOChefClient } from '../ethereum';
+import { ChildZDAOChefClient } from '../polygon';
 import RegistryClient from './RegistryClient';
 import StakingClient from './StakingClient';
-import ZNSHubClient from './ZNSHubClient';
 
 class GlobalClient {
   private static _etherRpcProvider?: ethers.providers.JsonRpcProvider;
   private static _polyRpcProvider?: ethers.providers.JsonRpcProvider;
-  private static _etherZDAOChef?: EtherZDAOChefClient;
-  private static _polyZDAOChef?: PolyZDAOChefClient;
-  private static _znsHub?: ZNSHubClient;
+  private static _zDAORegistry?: ZDAORegistryClient;
+  private static _rootZDAOChef?: RootZDAOChefClient;
+  private static _childZDAOChef?: ChildZDAOChefClient;
   private static _staking?: StakingClient;
   private static _registry?: RegistryClient;
   private static _ipfsGateway?: string;
@@ -43,37 +43,37 @@ class GlobalClient {
     GlobalClient._polyRpcProvider = polyRpcProvider;
   }
 
-  static get etherZDAOChef() {
-    if (!GlobalClient._etherZDAOChef) {
+  static get zDAORegistry() {
+    if (!GlobalClient._zDAORegistry) {
       throw new NotInitializedError();
     }
-    return GlobalClient._etherZDAOChef;
+    return GlobalClient._zDAORegistry;
   }
 
-  static set etherZDAOChef(etherZDAOChef: EtherZDAOChefClient) {
-    GlobalClient._etherZDAOChef = etherZDAOChef;
+  static set zDAORegistry(registry: ZDAORegistryClient) {
+    GlobalClient._zDAORegistry = registry;
   }
 
-  static get polyZDAOChef() {
-    if (!GlobalClient._polyZDAOChef) {
+  static get rootZDAOChef() {
+    if (!GlobalClient._rootZDAOChef) {
       throw new NotInitializedError();
     }
-    return GlobalClient._polyZDAOChef;
+    return GlobalClient._rootZDAOChef;
   }
 
-  static set polyZDAOChef(polyZdAOChef: PolyZDAOChefClient) {
-    GlobalClient._polyZDAOChef = polyZdAOChef;
+  static set rootZDAOChef(rootZDAOChef: RootZDAOChefClient) {
+    GlobalClient._rootZDAOChef = rootZDAOChef;
   }
 
-  static get znsHub() {
-    if (!GlobalClient._znsHub) {
+  static get childZDAOChef() {
+    if (!GlobalClient._childZDAOChef) {
       throw new NotInitializedError();
     }
-    return GlobalClient._znsHub;
+    return GlobalClient._childZDAOChef;
   }
 
-  static set znsHub(znsHub: ZNSHubClient) {
-    GlobalClient._znsHub = znsHub;
+  static set childZDAOChef(polyZdAOChef: ChildZDAOChefClient) {
+    GlobalClient._childZDAOChef = polyZdAOChef;
   }
 
   static get staking() {

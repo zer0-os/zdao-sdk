@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
   "contractName": "IChildChainManager",
-  "sourceName": "contracts/polygon/interfaces/IChildChainManager.sol",
+  "sourceName": "contracts/polygon/child/interfaces/IChildChainManager.sol",
   "abi": [
     {
       "inputs": [

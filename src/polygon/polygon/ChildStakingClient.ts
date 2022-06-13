@@ -4,7 +4,7 @@ import GlobalClient from '../client/GlobalClient';
 import StakingAbi from '../config/abi/Staking.json';
 import { Staking } from '../config/types/Staking';
 
-class PolyStakingClient {
+class ChildStakingClient {
   protected readonly _contract: Staking;
 
   constructor(address: string) {
@@ -70,4 +70,4 @@ class PolyStakingClient {
   }
 }
 
-export default PolyStakingClient;
+export default ChildStakingClient;

@@ -3,24 +3,24 @@ import { ethers } from 'ethers';
 
 import { Choice, DAOConfig, ProposalId, zDAOId } from '../../types';
 import GlobalClient from '../client/GlobalClient';
-import PolyZDAOAbi from '../config/abi/PolyZDAO.json';
-import PolyZDAOChefAbi from '../config/abi/PolyZDAOChef.json';
-import { PolyZDAO } from '../config/types/PolyZDAO';
-import { PolyZDAOChef } from '../config/types/PolyZDAOChef';
+import ChildZDAOAbi from '../config/abi/ChildZDAO.json';
+import ChildZDAOChefAbi from '../config/abi/ChildZDAOChef.json';
+import { ChildZDAO } from '../config/types/ChildZDAO';
+import { ChildZDAOChef } from '../config/types/ChildZDAOChef';
 import { StakingProperties } from '../types';
-import { PolyZDAOProperties } from './types';
+import { ChildZDAOProperties } from './types';
 
-class PolyZDAOChefClient {
+class ChildZDAOChefClient {
   private readonly _config: DAOConfig;
-  protected readonly _contract: PolyZDAOChef;
+  protected readonly _contract: ChildZDAOChef;
 
   constructor(config: DAOConfig) {
     this._config = config;
     this._contract = new ethers.Contract(
       config.zDAOChef,
-      PolyZDAOChefAbi.abi,
+      ChildZDAOChefAbi.abi,
       GlobalClient.polyRpcProvider
-    ) as PolyZDAOChef;
+    ) as ChildZDAOChef;
   }
 
   get config(): DAOConfig {
@@ -31,30 +31,30 @@ class PolyZDAOChefClient {
     return (await this._contract.numberOfzDAOs()).toNumber();
   }
 
-  async getZDAOById(daoId: zDAOId): Promise<PolyZDAO | null> {
-    const iPolyZDAO = await this._contract.getzDAOById(daoId);
-    if (!iPolyZDAO || iPolyZDAO === AddressZero) return null;
+  async getZDAOById(daoId: zDAOId): Promise<ChildZDAO | null> {
+    const iChildZDAO = await this._contract.getzDAOById(daoId);
+    if (!iChildZDAO || iChildZDAO === AddressZero) return null;
 
     return new ethers.Contract(
-      iPolyZDAO,
-      PolyZDAOAbi.abi,
+      iChildZDAO,
+      ChildZDAOAbi.abi,
       GlobalClient.polyRpcProvider
-    ) as PolyZDAO;
+    ) as ChildZDAO;
   }
 
-  async getZDAOProperties(daoId: zDAOId): Promise<PolyZDAOProperties> {
+  async getZDAOProperties(daoId: zDAOId): Promise<ChildZDAOProperties> {
     const address = await this._contract.getzDAOById(daoId);
-    const polyZDAO = new ethers.Contract(
+    const childZDAO = new ethers.Contract(
       address,
-      PolyZDAOAbi.abi,
+      ChildZDAOAbi.abi,
       GlobalClient.polyRpcProvider
-    ) as PolyZDAO;
+    ) as ChildZDAO;
 
-    const zDAOInfo = await polyZDAO.zDAOInfo();
+    const zDAOInfo = await childZDAO.zDAOInfo();
 
     return {
       id: zDAOInfo.zDAOId.toString(),
-      address: polyZDAO.address,
+      address: childZDAO.address,
       snapshot: zDAOInfo.snapshot.toNumber(),
       destroyed: zDAOInfo.destroyed,
     };
@@ -135,4 +135,4 @@ class PolyZDAOChefClient {
   }
 }
 
-export default PolyZDAOChefClient;
+export default ChildZDAOChefClient;
