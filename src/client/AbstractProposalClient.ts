@@ -7,7 +7,7 @@ import {
   Proposal,
   ProposalProperties,
   Vote,
-} from '../../types';
+} from '../types';
 
 class AbstractProposalClient implements Proposal {
   protected readonly _properties: ProposalProperties;

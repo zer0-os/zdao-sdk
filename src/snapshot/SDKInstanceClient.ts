@@ -1,11 +1,16 @@
+import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
 import { ethers, Signer } from 'ethers';
-import shortid from 'shortid';
 
+import { IPFSClient, ZNAClient } from '../client';
 import ZDAORegistryClient, { ZDAORecord } from '../client/ZDAORegistry';
+import ZNSHubClient from '../client/ZNSHubClient';
 import ERC1967ProxyAbi from '../config/abi/ERC1967Proxy.json';
 import ZeroTokenAbi from '../config/abi/ZeroToken.json';
 import {
+  AlreadyExistError,
   CreateZDAOParams,
+  InvalidError,
+  NotFoundError,
   NotImplementedError,
   SDKInstance,
   TokenMintOptions,
@@ -18,6 +23,7 @@ import { errorMessageForError } from '../utilities';
 import { getToken } from '../utilities/calls';
 import DAOClient from './client/DAOClient';
 import GlobalClient from './client/GlobalClient';
+import MockDAOClient from './client/MockDAOClient';
 import { ZDAOChefClient } from './ethereum';
 import { SnapshotClient } from './snapshot';
 import { Config, CreateZDAOParamsOptions } from './types';
@@ -25,12 +31,15 @@ import { Config, CreateZDAOParamsOptions } from './types';
 class SDKInstanceClient implements SDKInstance {
   private readonly _config: Config;
   private readonly _snapshotClient: SnapshotClient;
-  protected _params: CreateZDAOParams[];
+  protected _mockZDAOClients: zDAO[] = [];
 
   constructor(config: Config) {
     this._config = config;
     this._snapshotClient = new SnapshotClient(config.snapshot);
-    this._params = [];
+
+    IPFSClient.initialize(this._config.fleek);
+    ZNAClient.initialize(this._config.zNS);
+    ZNSHubClient.initialize(config.zNA);
 
     GlobalClient.etherRpcProvider = new ethers.providers.JsonRpcProvider(
       this._config.ethereum.rpcUrl,
@@ -38,7 +47,6 @@ class SDKInstanceClient implements SDKInstance {
     );
     GlobalClient.zDAORegistry = new ZDAORegistryClient(config.zNA);
     GlobalClient.rootZDAOChef = new ZDAOChefClient(config.ethereum);
-
     GlobalClient.ipfsGateway = config.ipfsGateway;
   }
 
@@ -193,102 +201,84 @@ class SDKInstanceClient implements SDKInstance {
 
   async createZDAOFromParams(
     signer: Signer,
-    param: CreateZDAOParams
+    params: CreateZDAOParams
   ): Promise<zDAO> {
-    const found = this._params.find(
-      (item: CreateZDAOParams) => item.zNA === param.zNA
-    );
-    if (found) {
-      throw new Error(errorMessageForError('already-exist-zdao'));
-    }
-    if (param.title.length < 1) {
+    if (params.title.length < 1) {
       throw new Error(errorMessageForError('empty-zdao-title'));
     }
-    if (param.gnosisSafe.length < 1) {
+    if (params.gnosisSafe.length < 1) {
       throw new Error(errorMessageForError('empty-gnosis-address'));
     }
-    if (param.token.length < 1) {
-      throw new Error(errorMessageForError('empty-voting-token'));
+    if (params.token.length < 1) {
+      throw new Error(errorMessageForError('empty-proposal-token'));
+    }
+    if (
+      !isBigNumberish(params.amount) ||
+      ethers.BigNumber.from(params.amount).eq(ethers.BigNumber.from(0))
+    ) {
+      throw new InvalidError(
+        errorMessageForError('invalid-proposal-token-amount')
+      );
+    }
+    if (!params.options) {
+      throw new InvalidError(errorMessageForError('invalid-zdao-options'));
+    }
+    if (!(params.options as CreateZDAOParamsOptions).ens) {
+      throw new InvalidError(errorMessageForError('empty-ens'));
     }
 
-    this._params.push(param);
+    const exist = await this.doesZDAOExistFromParams(params.zNA);
+    if (exist) {
+      throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
+    }
 
-    const token = await getToken(GlobalClient.etherRpcProvider, param.token);
+    // const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
 
-    const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
+    // // signer should be owner of zNA
+    // const account = await signer.getAddress();
+    // if (!(await ZNSHubClient.isOwnerOf(zNAId, account))) {
+    //   throw new InvalidError(errorMessageForError('not-zna-owner'));
+    // }
 
-    return await DAOClient.createInstance(
+    const zDAOClient = await MockDAOClient.createInstance(
       this._config,
-      {
-        id: shortid.generate(),
-        zNAs: [param.zNA],
-        title: param.title,
-        createdBy: '',
-        network: param.network,
-        gnosisSafe: param.gnosisSafe,
-        votingToken: token,
-        amount: '0',
-        duration: param.duration,
-        votingThreshold: 5001,
-        minimumVotingParticipants: 0,
-        minimumTotalVotingTokens: '0',
-        isRelativeMajority: false,
-        state: zDAOState.ACTIVE,
-        snapshot,
-        destroyed: false,
-        options: {
-          ens: (param.options as unknown as CreateZDAOParamsOptions).ens,
-        },
-      },
-      undefined
+      signer,
+      params
     );
+
+    this._mockZDAOClients.push(zDAOClient);
+    return zDAOClient;
   }
 
   listZNAsFromParams(): Promise<zNA[]> {
-    return Promise.resolve(this._params.map((param) => param.zNA));
-  }
+    // collect all the associated zNAs
+    const zNAs: zNA[] = this._mockZDAOClients.reduce(
+      (prev, current) => [...prev, ...current.zNAs],
+      [] as string[]
+    );
 
-  async getZDAOByZNAFromParams(zNA: zNA): Promise<zDAO> {
-    if (!this.doesZDAOExist(zNA)) {
-      throw new Error(errorMessageForError('not-found-zdao'));
-    }
-
-    const found = this._params.find((param) => param.zNA === zNA);
-    if (!found) throw new Error(errorMessageForError('not-found-zdao'));
-
-    const token = await getToken(GlobalClient.etherRpcProvider, found.token);
-
-    const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
-
-    return await DAOClient.createInstance(
-      this._config,
-      {
-        id: shortid.generate(),
-        zNAs: [found.zNA],
-        title: found.title,
-        createdBy: '',
-        network: found.network,
-        gnosisSafe: found.gnosisSafe,
-        votingToken: token,
-        amount: '0',
-        duration: found.duration,
-        votingThreshold: 5001,
-        minimumVotingParticipants: 0,
-        minimumTotalVotingTokens: '0',
-        isRelativeMajority: false,
-        state: zDAOState.ACTIVE,
-        snapshot,
-        destroyed: false,
-        options: {
-          ens: (found.options as unknown as CreateZDAOParamsOptions).ens,
-        },
-      },
-      undefined
+    // remove duplicated entries
+    return Promise.resolve(
+      zNAs.filter((value, index) => zNAs.indexOf(value) === index)
     );
   }
 
-  doesZDAOExistFromParams(zNA: zNA): Promise<boolean> {
-    const found = this._params.find((param) => param.zNA === zNA);
+  async getZDAOByZNAFromParams(zNA: zNA): Promise<zDAO> {
+    if (!this.doesZDAOExistFromParams(zNA)) {
+      throw new NotFoundError(errorMessageForError('not-found-zdao'));
+    }
+
+    const found = this._mockZDAOClients.find((client) =>
+      client.zNAs.find((item: zNA) => item === zNA)
+    );
+    if (!found) throw new NotFoundError(errorMessageForError('not-found-zdao'));
+
+    return Promise.resolve(found);
+  }
+
+  async doesZDAOExistFromParams(zNA: zNA): Promise<boolean> {
+    const zNAs = await this.listZNAsFromParams();
+    const found = zNAs.find((item: zNA) => item === zNA);
     return Promise.resolve(found ? true : false);
   }
 }

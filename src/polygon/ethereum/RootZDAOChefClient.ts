@@ -18,6 +18,7 @@ import RootZDAOChefAbi from '../config/abi/RootZDAOChef.json';
 import { FxStateRootTunnel } from '../config/types/FxStateRootTunnel';
 import { RootZDAO } from '../config/types/RootZDAO';
 import { RootZDAOChef } from '../config/types/RootZDAOChef';
+import { CreateZDAOParamsOptions } from '../types';
 import { RootZDAOProperties } from './types';
 
 class RootZDAOChefClient {
@@ -144,10 +145,11 @@ class RootZDAOChefClient {
           payload.token,
           payload.amount,
           payload.duration,
-          payload.votingThreshold,
-          payload.minimumVotingParticipants,
-          payload.minimumTotalVotingTokens,
-          payload.isRelativeMajority,
+          (payload.options as CreateZDAOParamsOptions).votingThreshold,
+          (payload.options as CreateZDAOParamsOptions)
+            .minimumVotingParticipants,
+          (payload.options as CreateZDAOParamsOptions).minimumTotalVotingTokens,
+          (payload.options as CreateZDAOParamsOptions).isRelativeMajority,
         ]
       )
     );

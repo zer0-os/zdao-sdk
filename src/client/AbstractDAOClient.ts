@@ -10,8 +10,7 @@ import { ethers } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { cloneDeep } from 'lodash';
 
-import { GnosisSafeClient, IPFSClient } from '../../client';
-import { EIP712Domain } from '../../config';
+import { EIP712Domain } from '../config';
 import {
   AssetType,
   CreateProposalParams,
@@ -25,9 +24,10 @@ import {
   zDAO,
   zDAOAssets,
   zDAOProperties,
-} from '../../types';
-import { timestamp } from '../../utilities';
-import { VoteChoice } from '../types';
+} from '../types';
+import { timestamp } from '../utilities';
+import GnosisSafeClient from './GnosisSafeClient';
+import IPFSClient from './IPFSClient';
 
 class AbstractDAOClient implements zDAO {
   protected readonly _properties: zDAOProperties;
@@ -225,9 +225,9 @@ class AbstractDAOClient implements zDAO {
         createdAt: timestamp(now),
         title: payload.title,
         body: payload.body,
-        choices: [VoteChoice.YES, VoteChoice.NO],
         network: chainId,
         metadata: JSON.stringify(payload.transfer),
+        ...payload.options,
       },
     });
 
@@ -256,10 +256,6 @@ class AbstractDAOClient implements zDAO {
             name: 'body',
           },
           {
-            type: 'address',
-            name: 'target',
-          },
-          {
             type: 'uint256',
             name: 'value',
           },
@@ -273,9 +269,9 @@ class AbstractDAOClient implements zDAO {
           createdAt: timestamp(now),
           title: payload.title,
           body: payload.body,
-          choices: [VoteChoice.YES, VoteChoice.NO],
           network: chainId,
           metadata: JSON.stringify(payload.transfer),
+          ...payload.options,
         },
       },
     });

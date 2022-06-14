@@ -28,7 +28,7 @@ import {
 import GlobalClient from './client/GlobalClient';
 import { RootZDAOChefClient } from './ethereum';
 import { ChildZDAOChefClient } from './polygon';
-import { Config } from './types';
+import { Config, CreateZDAOParamsOptions } from './types';
 
 class SDKInstanceClient implements SDKInstance {
   private readonly _config: Config;
@@ -37,8 +37,9 @@ class SDKInstanceClient implements SDKInstance {
   constructor(config: Config) {
     this._config = config;
 
-    ZNAClient.initialize(this._config.zNS);
     IPFSClient.initialize(this._config.fleek);
+    ZNAClient.initialize(this._config.zNS);
+    ZNSHubClient.initialize(config.zNA);
 
     GlobalClient.etherRpcProvider = new ethers.providers.JsonRpcProvider(
       this._config.ethereum.rpcUrl,
@@ -54,9 +55,6 @@ class SDKInstanceClient implements SDKInstance {
     return (async (config: Config): Promise<SDKInstanceClient> => {
       GlobalClient.rootZDAOChef = await new RootZDAOChefClient(config.ethereum);
       GlobalClient.childZDAOChef = new ChildZDAOChefClient(config.polygon);
-
-      await ZNAClient.initialize(config.zNS);
-      await ZNSHubClient.initialize(config.zNA);
 
       const stakingProperties =
         await GlobalClient.childZDAOChef.getStakingProperties();
@@ -213,9 +211,6 @@ class SDKInstanceClient implements SDKInstance {
     if (params.title.length < 1) {
       throw new InvalidError(errorMessageForError('empty-zdao-title'));
     }
-    // if (params.createdBy.length < 1) {
-    //   throw new InvalidError(errorMessageForError('empty-zdao-creator'));
-    // }
     if (params.gnosisSafe.length < 1) {
       throw new InvalidError(errorMessageForError('empty-gnosis-address'));
     }
@@ -230,8 +225,13 @@ class SDKInstanceClient implements SDKInstance {
         errorMessageForError('invalid-proposal-token-amount')
       );
     }
+    if (!params.options) {
+      throw new InvalidError(errorMessageForError('invalid-zdao-options'));
+    }
     if (
-      !isBigNumberish(params.minimumTotalVotingTokens) ||
+      !isBigNumberish(
+        (params.options as CreateZDAOParamsOptions).minimumTotalVotingTokens
+      ) ||
       ethers.BigNumber.from(params.amount).eq(ethers.BigNumber.from(0))
     ) {
       throw new InvalidError(errorMessageForError('invalid-quorum-amount'));

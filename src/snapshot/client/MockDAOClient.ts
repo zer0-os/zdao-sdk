@@ -2,7 +2,6 @@ import { ethers } from 'ethers';
 import shortid from 'shortid';
 
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
-import IERC20UpgradeableAbi from '../../config/abi/IERC20Upgradeable.json';
 import {
   CreateProposalParams,
   CreateZDAOParams,
@@ -17,25 +16,22 @@ import {
   zDAOState,
 } from '../../types';
 import { errorMessageForError, getToken, timestamp } from '../../utilities';
-import { Config, CreateZDAOParamsOptions, VoteChoice } from '../types';
+import {
+  Config,
+  CreateProposalParamsOptions,
+  CreateZDAOParamsOptions,
+} from '../types';
 import GlobalClient from './GlobalClient';
 import MockProposalClient from './MockProposalClient';
 
 class MockDAOClient extends AbstractDAOClient {
   private _proposals: MockProposalClient[] = [];
-  protected _totalSupply: ethers.BigNumber;
 
   private constructor(
     properties: zDAOProperties,
-    gnosisSafeClient: GnosisSafeClient,
-    totalSupply: ethers.BigNumber
+    gnosisSafeClient: GnosisSafeClient
   ) {
     super(properties, gnosisSafeClient);
-    this._totalSupply = totalSupply;
-  }
-
-  get totalSupply() {
-    return this._totalSupply;
   }
 
   static async createInstance(
@@ -43,55 +39,34 @@ class MockDAOClient extends AbstractDAOClient {
     signer: ethers.Signer,
     params: CreateZDAOParams
   ): Promise<zDAO> {
-    const chainId = await signer.getChainId();
-
     const token = await getToken(GlobalClient.etherRpcProvider, params.token);
-    const childTokenAddress = await GlobalClient.registry.rootToChildToken(
-      params.token
-    );
-    const childToken = await getToken(
-      GlobalClient.polyRpcProvider,
-      childTokenAddress
-    );
+    const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
 
     const properties: zDAOProperties = {
       id: shortid.generate(),
       zNAs: [params.zNA],
       title: params.title,
-      createdBy: await signer.getAddress(),
-      network: chainId,
+      createdBy: '',
+      network: params.network,
       gnosisSafe: params.gnosisSafe,
       votingToken: token,
-      amount: params.amount,
+      amount: '0',
       duration: params.duration,
-      votingThreshold: (params.options as CreateZDAOParamsOptions)
-        .votingThreshold,
-      minimumVotingParticipants: (params.options as CreateZDAOParamsOptions)
-        .minimumVotingParticipants,
-      minimumTotalVotingTokens: (params.options as CreateZDAOParamsOptions)
-        .minimumTotalVotingTokens,
-      isRelativeMajority: (params.options as CreateZDAOParamsOptions)
-        .isRelativeMajority,
+      votingThreshold: 5001,
+      minimumVotingParticipants: 0,
+      minimumTotalVotingTokens: '0',
+      isRelativeMajority: false,
       state: zDAOState.ACTIVE,
-      snapshot: timestamp(new Date()),
+      snapshot,
       destroyed: false,
       options: {
-        polygonToken: childToken,
+        ens: (params.options as unknown as CreateZDAOParamsOptions).ens,
       },
     };
 
-    const tokenContract = new ethers.Contract(
-      params.token,
-      IERC20UpgradeableAbi.abi,
-      GlobalClient.etherRpcProvider
-    );
-
-    const totalSupply = await tokenContract.totalSupply();
-
     return new MockDAOClient(
       properties,
-      new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway),
-      totalSupply
+      new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
     );
   }
 
@@ -129,13 +104,15 @@ class MockDAOClient extends AbstractDAOClient {
       title: payload.title,
       body: payload.body,
       ipfs,
-      choices: [VoteChoice.YES, VoteChoice.NO],
+      choices: (payload.options as CreateProposalParamsOptions).choices,
       created: now,
       start: now,
       end: new Date(now.getTime() + this.duration * 1000),
       state: ProposalState.ACTIVE,
       snapshot: timestamp(now),
-      scores: ['0', '0'],
+      scores: (payload.options as CreateProposalParamsOptions).choices.map(
+        (_) => '0'
+      ),
       voters: 0,
       metadata: undefined,
     };

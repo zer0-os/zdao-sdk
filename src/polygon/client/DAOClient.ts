@@ -1,6 +1,6 @@
 import { BigNumber, ethers } from 'ethers';
 
-import { GnosisSafeClient, IPFSClient } from '../../client';
+import { AbstractDAOClient, GnosisSafeClient, IPFSClient } from '../../client';
 import IERC20UpgradeableAbi from '../../config/abi/IERC20Upgradeable.json';
 import {
   AlreadyDestroyedError,
@@ -27,7 +27,6 @@ import {
 import { ChildZDAO } from '../config/types/ChildZDAO';
 import { IRootZDAO, RootZDAO } from '../config/types/RootZDAO';
 import { Config, VoteChoice } from '../types';
-import AbstractDAOClient from './AbstractDAOClient';
 import GlobalClient from './GlobalClient';
 import ProofClient from './ProofClient';
 import ProposalClient from './ProposalClient';

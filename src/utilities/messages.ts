@@ -28,16 +28,24 @@ const ErrorMessages = [
     value: 'Empty ERC20 Token address to become proposal creator',
   },
   {
-    key: 'empty-voting-token',
-    value: 'Empty Voting ERC20 Token address',
-  },
-  {
     key: 'invalid-proposal-token-amount',
     value: 'Invalid Token amount to become proposal creator',
   },
   {
+    key: 'empty-voting-token',
+    value: 'Empty ERC20 Voting Token address',
+  },
+  {
+    key: 'invalid-zdao-options',
+    value: 'Invalid zDAO options',
+  },
+  {
     key: 'invalid-quorum-amount',
     value: 'Invalid minimum total voting tokens',
+  },
+  {
+    key: 'empty-ens',
+    value: 'Empty ENS',
   },
   {
     key: 'not-zna-owner',

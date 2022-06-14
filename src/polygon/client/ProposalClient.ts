@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 
+import { AbstractProposalClient } from '../../client';
 import {
   AlreadyDestroyedError,
   Choice,
@@ -13,7 +14,6 @@ import {
 } from '../../types';
 import { errorMessageForError } from '../../utilities';
 import { ZDAOOptions } from '../types';
-import AbstractProposalClient from './AbstractProposalClient';
 import DAOClient from './DAOClient';
 import GlobalClient from './GlobalClient';
 

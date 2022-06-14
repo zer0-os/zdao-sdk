@@ -33,20 +33,6 @@ export interface CreateZDAOParams {
   // Time duration of this proposal in seconds
   duration: number;
 
-  // Threshold in 100% as 10000 required to check if proposal is succeeded
-  votingThreshold: number;
-
-  // True if relative majority to calculate voting result
-  isRelativeMajority: boolean;
-
-  // The number of voters in support of a proposal required in order
-  // for a vote to succeed
-  minimumVotingParticipants: number;
-
-  // The number of votes in support of a proposal required in order
-  // for a vote to succeed
-  minimumTotalVotingTokens: string;
-
   // Additional parameters for Snapshot/Polygon platform
   options?: CreatePolygonZDAOParamsOptions | CreateSnapshotZDAOParamsOptions;
 }
