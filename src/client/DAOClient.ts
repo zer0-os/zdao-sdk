@@ -223,19 +223,21 @@ class DAOClient implements zDAO {
       numberOfResults = results.length;
     }
 
-    // update the immediate scores
-    const snapshotPromises: Promise<SnapshotProposal>[] = snapshotProposals.map(
-      (proposal: SnapshotProposal) =>
-        this._snapshotClient.updateScores(proposal, {
-          spaceId: this.ens,
-          network: this.network,
-          strategies: this._options.strategies,
-        })
-    );
-    const proposals = await Promise.all(snapshotPromises);
+    // The scores in voted proposal was updated immediately after voting,
+    // so we don't need to call `updateScore`.
+    // // update the immediate scores
+    // const snapshotPromises: Promise<SnapshotProposal>[] = snapshotProposals.map(
+    //   (proposal: SnapshotProposal) =>
+    //     this._snapshotClient.updateScores(proposal, {
+    //       spaceId: this.ens,
+    //       network: this.network,
+    //       strategies: this._options.strategies,
+    //     })
+    // );
+    // const proposals = await Promise.all(snapshotPromises);
 
     // create all instances
-    const promises: Promise<Proposal>[] = proposals.map(
+    const promises: Promise<Proposal>[] = snapshotProposals.map(
       (proposal: SnapshotProposal): Promise<Proposal> =>
         ProposalClient.createInstance(
           this,

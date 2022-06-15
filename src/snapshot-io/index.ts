@@ -303,12 +303,14 @@ class SnapshotClient {
       scores: response.scores,
       votes: response.votes,
     };
+    return proposal;
 
-    return this.updateScores(proposal, {
-      spaceId: params.spaceId,
-      network: params.network,
-      strategies: params.strategies,
-    });
+    // There are tricky method to update proposal scores and voters immediately after voting, no need to call `updateScores
+    // return this.updateScores(proposal, {
+    //   spaceId: params.spaceId,
+    //   network: params.network,
+    //   strategies: params.strategies,
+    // });
   }
 
   async listVotes(params: ListVotesParams): Promise<SnapshotVote[]> {
@@ -456,6 +458,13 @@ class SnapshotClient {
       choice: params.choice,
       metadata: JSON.stringify({}),
     });
+
+    // There are tricky method to update proposal scores and voters immediately after voting
+    const updateScoreApi = `${this._config.serviceUri}/api/scores/${params.proposalId}`;
+    await fetch(updateScoreApi, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    }); // .then((value) => value.json().then((json) => console.log(json)));
     return response.id;
   }
 }
