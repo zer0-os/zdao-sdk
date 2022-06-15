@@ -133,6 +133,12 @@ export interface Proposal extends ProposalProperties {
   getVotingPowerOfUser(account: string): Promise<number>;
 
   /**
+   * Update latest scores and votes
+   * @returns proposal instance itself
+   */
+  updateScoresAndVotes(): Promise<Proposal>;
+
+  /**
    * Cast a vote on proposal
    * @param provider Web3 provider
    * @param account signer address
