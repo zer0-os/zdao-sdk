@@ -263,8 +263,7 @@ class DAOClient implements zDAO {
           {
             strategies: this._options.strategies,
             scores_state: proposal.scores_state,
-          },
-          false
+          }
         )
     );
 
