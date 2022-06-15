@@ -98,7 +98,8 @@ class ProposalClient implements Proposal {
     snapshotClient: SnapshotClient,
     gnosisSafeClient: GnosisSafeClient,
     properties: ProposalProperties,
-    options: any
+    options: any,
+    requireMetadata = true
   ): Promise<Proposal> {
     const proposal = new ProposalClient(
       zDAO,
@@ -107,7 +108,9 @@ class ProposalClient implements Proposal {
       properties,
       options
     );
-    await proposal.getTokenMetadata();
+    if (requireMetadata) {
+      await proposal.getTokenMetadata();
+    }
     return proposal;
   }
 
