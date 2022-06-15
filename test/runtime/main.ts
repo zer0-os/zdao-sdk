@@ -29,14 +29,24 @@ const createToken = async (sdkInstance: SDKInstance, signer: ethers.Wallet) => {
 const pagination = async (sdkInstance: SDKInstance) => {
   // isDev should be false
 
+  // const dao = await sdkInstance.createZDAOFromParams({
+  //   ens: 'aave.eth',
+  //   zNA: 'aave.eth',
+  //   title: 'zDAO Testing Space 1',
+  //   creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+  //   network: SupportedChainId.MAINNET,
+  //   safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+  //   votingToken: '0x514910771af9ca656af840dff83e8264ecf986ca',
+  // });
+
   const dao = await sdkInstance.createZDAOFromParams({
-    ens: 'aave.eth',
-    zNA: 'aave.eth',
+    ens: 'joshupgig.eth',
+    zNA: 'joshupgig.eth',
     title: 'zDAO Testing Space 1',
     creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-    network: SupportedChainId.MAINNET,
+    network: SupportedChainId.RINKEBY,
     safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
-    votingToken: '0x514910771af9ca656af840dff83e8264ecf986ca',
+    votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
   });
 
   const count = 50;
@@ -47,13 +57,17 @@ const pagination = async (sdkInstance: SDKInstance) => {
       count,
     });
     console.log('proposals', proposals.length);
+    proposals.forEach((proposal) =>
+      console.log('proposal.metadata', proposal.id, proposal.metadata)
+    );
     console.timeEnd('listProposals');
     if (proposals.length < 1) break;
   }
 
   const proposal = await dao.getProposal(
-    '0x718c496b04017fb82749b68570d12f32c839f59b9f9433df127f48bf99121eb7'
+    '0xf51d5d3b8f81737a001ea7f8bbb0aa426ff46bfc715e6524bf23271592fabea7'
   );
+  console.log('> proposal.metadata', proposal.id, proposal.metadata);
 
   for (let i = 0; i < 1000; i += count) {
     console.time('listVotes');
@@ -74,8 +88,8 @@ const immediateVote = async (
   // isDev should be true
 
   const dao = await sdkInstance.createZDAOFromParams({
-    ens: 'joshupgig.eth',
-    zNA: 'joshupgig.eth',
+    ens: 'zdao-sky.eth',
+    zNA: 'zdao-sky.eth',
     title: 'zDAO Testing Space 1',
     creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
     network: SupportedChainId.RINKEBY,
@@ -84,15 +98,19 @@ const immediateVote = async (
   });
 
   const proposalId =
-    '0x041cb64d4bab9f9949198aa91561bd83b120152f9290de2724d2d16d129e3df8';
+    '0x558fff7cace5c2f8aa261953e5ad833cfa889ad721051d2557acfda13496f2be';
   const proposal = await dao.getProposal(proposalId);
   await proposal.vote(signer, signer.address, 1);
 
   const votes = await proposal.listVotes();
   console.log('votes', votes);
 
-  const proposal1 = await dao.getProposal(proposalId);
-  console.log('proposal.scores', proposal1.scores);
+  proposal
+    .updateScoresAndVotes()
+    .then((proposal) =>
+      console.log('proposal.scores and votes', proposal.scores, proposal.votes)
+    )
+    .catch((error) => console.error(error));
 };
 
 const main = async () => {

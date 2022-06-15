@@ -3,6 +3,7 @@ import { cloneDeep } from 'lodash';
 
 import GnosisSafeClient from '../gnosis-safe';
 import SnapshotClient from '../snapshot-io';
+import { SnapshotProposal } from '../snapshot-io/types';
 import { PaginationParam, ProposalProperties, VoteId } from '../types';
 import { Choice, Proposal, Vote } from '../types';
 import { errorMessageForError } from '../utilities/messages';
@@ -195,6 +196,36 @@ class ProposalClient implements Proposal {
       snapshot: Number(this.snapshot),
       voter: account,
     });
+  }
+
+  async updateScoresAndVotes(): Promise<Proposal> {
+    const snapshotProposal: SnapshotProposal = {
+      id: this._properties.id,
+      type: this._properties.type,
+      author: this._properties.author,
+      title: this._properties.title,
+      body: this._properties.body,
+      ipfs: this._properties.ipfs,
+      choices: this._properties.choices,
+      created: this._properties.created,
+      start: this._properties.start,
+      end: this._properties.end,
+      state: this._properties.state,
+      scores_state: this._options.scores_state,
+      network: this._properties.network,
+      snapshot: Number(this._properties.snapshot),
+      scores: this._properties.scores,
+      votes: this._properties.votes,
+    };
+
+    const updated = await this._snapshotClient.updateScores(snapshotProposal, {
+      spaceId: this._zDAO.ens,
+      network: this._zDAO.network,
+      strategies: this._options.strategies,
+    });
+    this._properties.scores = updated.scores;
+    this._properties.votes = updated.votes;
+    return this;
   }
 
   async vote(
