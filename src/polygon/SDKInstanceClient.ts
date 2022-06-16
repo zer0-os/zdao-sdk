@@ -15,6 +15,7 @@ import {
   SDKInstance,
   TokenMintOptions,
   zDAO,
+  zDAOId,
 } from '../types';
 import { zNA, zNAId } from '../types';
 import { errorMessageForError } from '../utilities';
@@ -104,7 +105,7 @@ class SDKInstanceClient implements SDKInstance {
     }
   }
 
-  async deleteZDAO(signer: ethers.Signer, zDAOId: string): Promise<void> {
+  async deleteZDAO(signer: ethers.Signer, zDAOId: zDAOId): Promise<void> {
     try {
       await GlobalClient.rootZDAOChef.removeDAO(signer, zDAOId);
     } catch (error: any) {
@@ -242,13 +243,13 @@ class SDKInstanceClient implements SDKInstance {
       throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
     }
 
-    const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
+    // const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
 
-    // signer should be owner of zNA
-    const account = await signer.getAddress();
-    if (!(await ZNSHubClient.isOwnerOf(zNAId, account))) {
-      throw new InvalidError(errorMessageForError('not-zna-owner'));
-    }
+    // // signer should be owner of zNA
+    // const account = await signer.getAddress();
+    // if (!(await ZNSHubClient.isOwnerOf(zNAId, account))) {
+    //   throw new InvalidError(errorMessageForError('not-zna-owner'));
+    // }
 
     const zDAOClient = await MockDAOClient.createInstance(
       this._config,

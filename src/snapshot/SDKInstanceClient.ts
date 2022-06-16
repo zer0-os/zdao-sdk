@@ -9,15 +9,16 @@ import ZeroTokenAbi from '../config/abi/ZeroToken.json';
 import {
   AlreadyExistError,
   CreateZDAOParams,
+  FailedTxError,
   InvalidError,
   NotFoundError,
-  NotImplementedError,
   SDKInstance,
   TokenMintOptions,
   zDAO,
   zDAOId,
   zDAOState,
   zNA,
+  zNAId,
 } from '../types';
 import { errorMessageForError } from '../utilities';
 import { getToken } from '../utilities/calls';
@@ -50,12 +51,37 @@ class SDKInstanceClient implements SDKInstance {
     GlobalClient.ipfsGateway = config.ipfsGateway;
   }
 
-  createZDAO(_: Signer, _2: CreateZDAOParams): Promise<void> {
-    throw new NotImplementedError();
+  async createZDAO(signer: Signer, params: CreateZDAOParams): Promise<void> {
+    if (await this.doesZDAOExist(params.zNA)) {
+      throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
+    }
+
+    try {
+      const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
+
+      // signer should be owner of zNA
+      const account = await signer.getAddress();
+      if (!(await ZNSHubClient.isOwnerOf(zNAId, account))) {
+        throw new InvalidError(errorMessageForError('not-zna-owner'));
+      }
+
+      await GlobalClient.rootZDAOChef.addNewDAO(signer, {
+        ...params,
+        zNA: zNAId,
+      });
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 
-  deleteZDAO(_: Signer, _2: zDAOId): Promise<void> {
-    throw new NotImplementedError();
+  async deleteZDAO(signer: Signer, zDAOId: zDAOId): Promise<void> {
+    try {
+      await GlobalClient.rootZDAOChef.removeDAO(signer, zDAOId);
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 
   async listZNAs(): Promise<zNA[]> {

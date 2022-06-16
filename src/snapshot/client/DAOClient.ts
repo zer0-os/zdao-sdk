@@ -9,7 +9,7 @@ import {
 import { ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
-import { GnosisSafeClient } from '../../client';
+import { AbstractDAOClient, GnosisSafeClient } from '../../client';
 import {
   AssetType,
   CreateProposalParams,
@@ -33,10 +33,9 @@ import { Config, CreateProposalParamsOptions, ZDAOOptions } from '../types';
 import GlobalClient from './GlobalClient';
 import ProposalClient from './ProposalClient';
 
-class DAOClient implements zDAO {
+class DAOClient extends AbstractDAOClient {
   private readonly _config: Config;
   protected readonly _snapshotClient: SnapshotClient;
-  protected readonly _gnosisSafeClient: GnosisSafeClient;
   protected readonly _properties: zDAOProperties;
   private readonly _options: any;
 
@@ -45,83 +44,15 @@ class DAOClient implements zDAO {
     properties: zDAOProperties,
     options: any
   ) {
+    super(
+      properties,
+      new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
+    );
     this._config = config;
     this._properties = cloneDeep(properties);
     this._options = options;
 
     this._snapshotClient = new SnapshotClient(config.snapshot);
-    this._gnosisSafeClient = new GnosisSafeClient(
-      config.gnosisSafe,
-      config.ipfsGateway
-    );
-  }
-
-  get id() {
-    return this._properties.id;
-  }
-
-  get zNAs() {
-    return this._properties.zNAs;
-  }
-
-  get title() {
-    return this._properties.title;
-  }
-
-  get createdBy() {
-    return this._properties.createdBy;
-  }
-
-  get network() {
-    return this._properties.network;
-  }
-
-  get gnosisSafe() {
-    return this._properties.gnosisSafe;
-  }
-
-  get votingToken() {
-    return this._properties.votingToken;
-  }
-
-  get amount() {
-    return this._properties.amount;
-  }
-
-  get duration() {
-    return this._properties.duration;
-  }
-
-  get votingThreshold() {
-    return this._properties.votingThreshold;
-  }
-
-  get minimumVotingParticipants() {
-    return this._properties.minimumVotingParticipants;
-  }
-
-  get minimumTotalVotingTokens() {
-    return this._properties.minimumTotalVotingTokens;
-  }
-
-  get isRelativeMajority() {
-    return this._properties.isRelativeMajority;
-  }
-
-  get state() {
-    return this._properties.state;
-  }
-
-  get snapshot() {
-    return this._properties.snapshot;
-  }
-
-  get destroyed() {
-    return this._properties.destroyed;
-  }
-
-  get options() {
-    return this._properties.options;
   }
 
   static async createInstance(
@@ -268,19 +199,21 @@ class DAOClient implements zDAO {
       numberOfResults = results.length;
     }
 
-    // update the immediate scores
-    const snapshotPromises: Promise<SnapshotProposal>[] = snapshotProposals.map(
-      (proposal: SnapshotProposal) =>
-        this._snapshotClient.updateScores(proposal, {
-          spaceId: (this.options as unknown as ZDAOOptions).ens,
-          network: this.network.toString(),
-          strategies: this._options.strategies,
-        })
-    );
-    const proposals = await Promise.all(snapshotPromises);
+    // The scores in voted proposal was updated immediately after voting,
+    // so we don't need to call `updateScore`.
+    // // update the immediate scores
+    // const snapshotPromises: Promise<SnapshotProposal>[] = snapshotProposals.map(
+    //   (proposal: SnapshotProposal) =>
+    //     this._snapshotClient.updateScores(proposal, {
+    //       spaceId: (this.options as unknown as ZDAOOptions).ens,
+    //       network: this.network.toString(),
+    //       strategies: this._options.strategies,
+    //     })
+    // );
+    // const proposals = await Promise.all(snapshotPromises);
 
     // create all instances
-    const promises: Promise<Proposal>[] = proposals.map(
+    const promises: Promise<Proposal>[] = snapshotProposals.map(
       (proposal: SnapshotProposal): Promise<Proposal> =>
         ProposalClient.createInstance(
           this,

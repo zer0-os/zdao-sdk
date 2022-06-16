@@ -4,6 +4,7 @@ import { AbstractProposalClient } from '../../client';
 import {
   Choice,
   NotImplementedError,
+  Proposal,
   ProposalProperties,
   Vote,
 } from '../../types';
@@ -26,6 +27,10 @@ class MockProposalClient extends AbstractProposalClient {
     return Promise.resolve('1');
   }
 
+  updateScoresAndVotes(): Promise<Proposal> {
+    return Promise.resolve(this);
+  }
+
   async vote(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
@@ -33,14 +38,22 @@ class MockProposalClient extends AbstractProposalClient {
   ): Promise<void> {
     const address = account;
     const found = this._votes.find((item) => item.voter == address);
+
+    const vp = Number(await this.getVotingPowerOfUser(account));
     if (!found) {
       this._votes.push({
         voter: address,
         choice,
-        votes: '1',
+        votes: vp.toString(),
       });
+      this._properties.voters = (this._properties.voters ?? 0) + vp;
     } else {
       found.choice = choice;
+    }
+    if (this._properties.scores) {
+      this._properties.scores[choice] = (
+        Number(this._properties.scores) + vp
+      ).toString();
     }
   }
 

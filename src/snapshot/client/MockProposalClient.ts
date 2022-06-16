@@ -4,6 +4,7 @@ import { AbstractProposalClient } from '../../client';
 import {
   Choice,
   NotImplementedError,
+  Proposal,
   ProposalProperties,
   Vote,
 } from '../../types';
@@ -24,6 +25,10 @@ class MockProposalClient extends AbstractProposalClient {
 
   getVotingPowerOfUser(_: string): Promise<string> {
     return Promise.resolve('1');
+  }
+
+  updateScoresAndVotes(): Promise<Proposal> {
+    return Promise.resolve(this);
   }
 
   async vote(

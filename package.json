@@ -14,7 +14,8 @@
     "format": "prettier --write ./src/**/*.ts ./test/**/*.test.ts ./src/**/*.json",
     "prepublish": "yarn build",
     "test": "mocha -r ts-node/register 'test/**/*.test.ts' --exit --timeout 150000",
-    "runtime": "ts-node ./test/runtime/main.ts"
+    "runtime:polygon": "ts-node ./test/polygon/runtime/main.ts",
+    "runtime:snapshot": "ts-node ./test/snapshot/runtime/main.ts"
   },
   "repository": {
     "type": "git",

@@ -169,6 +169,12 @@ export interface Proposal extends ProposalProperties {
   getVotingPowerOfUser(account: string): Promise<string>;
 
   /**
+   * Update latest scores and votes
+   * @returns proposal instance itself
+   */
+  updateScoresAndVotes(): Promise<Proposal>;
+
+  /**
    * Cast a vote on proposal
    * @param provider Web3 provider or wallet
    * @param account signer address

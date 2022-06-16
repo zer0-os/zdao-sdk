@@ -119,7 +119,7 @@ class MockDAOClient extends AbstractDAOClient {
     // @ts-ignore
     const signer = provider?.getSigner ? provider.getSigner() : provider;
     const address = await signer.getAddress();
-    const ipfs = await this.uploadToIPFS(signer, payload);
+    const ipfs = await AbstractDAOClient.uploadToIPFS(signer, payload);
 
     const now = new Date();
 
@@ -137,7 +137,7 @@ class MockDAOClient extends AbstractDAOClient {
       snapshot: timestamp(now),
       scores: ['0', '0'],
       voters: 0,
-      metadata: undefined,
+      metadata: payload.transfer,
     };
     this._proposals.push(new MockProposalClient(properties, this));
 

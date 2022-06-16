@@ -68,7 +68,7 @@ class GnosisSafeClient {
     });
 
     const signerAddress = await signer.getAddress();
-    const nonce = await safeService.getNextNonce(gnosisSafe);
+    // const nonce = await safeService.getNextNonce(gnosisSafe);
     const transaction: SafeTransactionDataPartial = {
       to: recipient,
       data: this.EMPTY_DATA,
@@ -79,7 +79,7 @@ class GnosisSafeClient {
       gasPrice: 0, // Optional
       gasToken: '0x0000000000000000000000000000000000000000', // Optional
       refundReceiver: '0x0000000000000000000000000000000000000000', // Optional
-      nonce: Number(nonce), // Optional
+      // nonce: Number(nonce), // Optional
     };
 
     const safeTransaction = await safe.createTransaction(transaction);
@@ -117,7 +117,7 @@ class GnosisSafeClient {
       recipient,
       amount,
     ]);
-    const nonce = await safeService.getNextNonce(gnosisSafe);
+    // const nonce = await safeService.getNextNonce(gnosisSafe);
     const transaction: SafeTransactionDataPartial = {
       to: token,
       data: txData,
@@ -128,7 +128,7 @@ class GnosisSafeClient {
       gasPrice: 0, // Optional
       gasToken: '0x0000000000000000000000000000000000000000', // Optional
       refundReceiver: '0x0000000000000000000000000000000000000000', // Optional
-      nonce: Number(nonce), // Optional
+      // nonce: Number(nonce), // Optional
     };
 
     const safeTransaction = await safe.createTransaction(transaction);

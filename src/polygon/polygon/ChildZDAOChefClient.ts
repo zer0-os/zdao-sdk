@@ -100,10 +100,7 @@ class ChildZDAOChefClient {
     proposalId: ProposalId
   ): Promise<string[]> {
     const currentBlock = await this._contract.provider.getBlockNumber();
-    console.log('currentBlock', currentBlock);
-
     const creationBlock = this._config.blockNumber;
-    console.log('creationBlock', creationBlock);
 
     // event ProposalCalculated(
     //   uint256 indexed _zDAOId,

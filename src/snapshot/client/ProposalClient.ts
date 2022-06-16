@@ -1,25 +1,26 @@
 import { ethers } from 'ethers';
-import { cloneDeep } from 'lodash';
 
-import { GnosisSafeClient } from '../../client';
+import { AbstractProposalClient, GnosisSafeClient } from '../../client';
 import {
   Choice,
   NotImplementedError,
   PaginationParam,
   Proposal,
   ProposalProperties,
+  ProposalState,
   Vote,
 } from '../../types';
 import { errorMessageForError } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
+import { SnapshotProposal } from '../snapshot/types';
 import { ZDAOOptions } from '../types';
 import DAOClient from './DAOClient';
+import GlobalClient from './GlobalClient';
 
-class ProposalClient implements Proposal {
+class ProposalClient extends AbstractProposalClient {
   private readonly _zDAO: DAOClient;
   private readonly _snapshotClient: SnapshotClient;
   private readonly _gnosisSafeClient: GnosisSafeClient;
-  protected readonly _properties: ProposalProperties;
   private readonly _options: any;
 
   private constructor(
@@ -29,67 +30,11 @@ class ProposalClient implements Proposal {
     properties: ProposalProperties,
     options: any
   ) {
+    super(properties);
     this._zDAO = zDAO;
     this._snapshotClient = snapshotClient;
     this._gnosisSafeClient = gnosisSafeClient;
-    this._properties = cloneDeep(properties);
     this._options = options;
-  }
-
-  get id() {
-    return this._properties.id;
-  }
-
-  get createdBy() {
-    return this._properties.createdBy;
-  }
-
-  get title() {
-    return this._properties.title;
-  }
-
-  get body() {
-    return this._properties.body;
-  }
-
-  get ipfs() {
-    return this._properties.ipfs;
-  }
-
-  get choices() {
-    return this._properties.choices;
-  }
-
-  get created() {
-    return this._properties.created;
-  }
-
-  get start() {
-    return this._properties.start;
-  }
-
-  get end() {
-    return this._properties.end;
-  }
-
-  get state() {
-    return this._properties.state;
-  }
-
-  get snapshot() {
-    return this._properties.snapshot;
-  }
-
-  get scores() {
-    return this._properties.scores;
-  }
-
-  get voters() {
-    return this._properties.voters;
-  }
-
-  get metadata() {
-    return this._properties.metadata;
   }
 
   static async createInstance(
@@ -103,52 +48,16 @@ class ProposalClient implements Proposal {
       zDAO,
       snapshotClient,
       gnosisSafeClient,
-      properties,
+      {
+        ...properties,
+        metadata: await AbstractProposalClient.getTokenMetadata(
+          GlobalClient.ipfsGateway,
+          properties.ipfs
+        ),
+      },
       options
     );
-    await proposal.getTokenMetadata();
     return proposal;
-  }
-
-  private async getTokenMetadata() {
-    try {
-      if (!this.ipfs || this.metadata) return;
-
-      const ipfsData = await this._snapshotClient.ipfsGet(this.ipfs);
-      if (!ipfsData.data || !ipfsData.data.message) {
-        throw new Error(errorMessageForError('empty-voting-token'));
-      }
-
-      const metadataJson = JSON.parse(ipfsData.data.message.metadata);
-      if (
-        !metadataJson.sender ||
-        !metadataJson.recipient ||
-        !metadataJson.token ||
-        !metadataJson.amount
-      ) {
-        this._properties.metadata = undefined;
-        return;
-      }
-
-      const abi = metadataJson.abi;
-      const sender = metadataJson.sender;
-      const recipient = metadataJson.recipient;
-      const token = metadataJson.token;
-      const decimals = metadataJson.decimals ?? 18;
-      const symbol = metadataJson.symbol ?? 'zToken';
-      const amount = metadataJson.amount;
-
-      this._properties.metadata = {
-        abi,
-        sender,
-        recipient,
-        token,
-        decimals,
-        symbol,
-        amount,
-      };
-      // eslint-disable-next-line no-empty
-    } catch (error) {}
   }
 
   async listVotes(pagination?: PaginationParam): Promise<Vote[]> {
@@ -193,6 +102,49 @@ class ProposalClient implements Proposal {
         voter: account,
       })
       .then((value) => value.toString());
+  }
+
+  async updateScoresAndVotes(): Promise<Proposal> {
+    const mapState = (
+      state: ProposalState
+    ): 'pending' | 'active' | 'closed' => {
+      if (state === ProposalState.PENDING) {
+        return 'pending';
+      } else if (state === ProposalState.ACTIVE) {
+        return 'active';
+      } else if (state === ProposalState.EXECUTED) {
+        return 'closed';
+      }
+      return 'closed';
+    };
+
+    const snapshotProposal: SnapshotProposal = {
+      id: this._properties.id,
+      type: 'single-choice',
+      author: this._properties.createdBy,
+      title: this._properties.title,
+      body: this._properties.body,
+      ipfs: this._properties.ipfs,
+      choices: this._properties.choices,
+      created: this._properties.created,
+      start: this._properties.start ?? new Date(),
+      end: this._properties.end ?? new Date(),
+      state: mapState(this._properties.state),
+      scores_state: this._options.scores_state,
+      network: this._zDAO.network.toString(),
+      snapshot: Number(this._properties.snapshot),
+      scores: this._properties.scores?.map((score) => Number(score)) ?? [],
+      votes: this._properties.voters ?? 0,
+    };
+
+    const updated = await this._snapshotClient.updateScores(snapshotProposal, {
+      spaceId: (this._zDAO.options as ZDAOOptions).ens,
+      network: this._zDAO.network.toString(),
+      strategies: this._options.strategies,
+    });
+    this._properties.scores = updated.scores.map((score) => score.toString());
+    this._properties.voters = updated.votes;
+    return this;
   }
 
   async vote(

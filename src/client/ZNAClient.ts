@@ -37,6 +37,16 @@ class ZNAClient {
       '0x857f504928e4b0dc98c5e3c04a033d1adc7bc06b1522da2ef5e412b4d223ce0f'
     )
       return Promise.resolve('wilder.breasts');
+    if (
+      zNAId ===
+      '0xa3c02134232f0ff305f7297f1c6cf4c9db1293d4cbb061fdc19419a80c575f39'
+    )
+      return Promise.resolve('zdao-sky.eth');
+    if (
+      zNAId ===
+      '0xf281ebd0f3960561d77d80f40f28cc753078dc41d3f2385c3d2e2835405b4d5f'
+    )
+      return Promise.resolve('joshupgig.eth');
 
     return ZNAClient._znsInstance
       .getDomainById(zNAId)

@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 
 import { PlatformType } from '../..';
-import { ZNAClient } from '../../client';
 import {
   CreateProposalParams,
   CreateZDAOParams,
@@ -87,21 +86,10 @@ class RootZDAOChefClient {
       RootZDAOAbi.abi,
       GlobalClient.etherRpcProvider
     ) as RootZDAO;
-
     const zDAOInfo = await etherZDAO.zDAOInfo();
 
     const token = await getToken(GlobalClient.etherRpcProvider, zDAOInfo.token);
-
-    const promises: Promise<zNA>[] = [];
-    const zNAIds: string[] = zDAORecord.associatedzNAs.map((associated) =>
-      associated.toString()
-    );
-    for (const zNAId of zNAIds) {
-      promises.push(
-        ZNAClient.zNAIdTozNA(ethers.BigNumber.from(zNAId).toHexString())
-      );
-    }
-    const zNAs: zNA[] = await Promise.all(promises);
+    const zNAs: zNA[] = zDAORecord.associatedzNAs;
 
     return {
       id: zDAOInfo.zDAOId.toString(),

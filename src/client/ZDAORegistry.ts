@@ -15,7 +15,7 @@ export interface ZDAORecord {
   zDAOOwnedBy: string; // zDAO owner and created by
   gnosisSafe: string; // Gnosis safe address where collected treasuries are stored
   destroyed: boolean;
-  associatedzNAs: string[];
+  associatedzNAs: zNA[];
 }
 
 export interface RootZDAOProperties extends Omit<zDAOProperties, 'state'> {

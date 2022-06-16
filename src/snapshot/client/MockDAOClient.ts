@@ -94,7 +94,7 @@ class MockDAOClient extends AbstractDAOClient {
     // @ts-ignore
     const signer = provider?.getSigner ? provider.getSigner() : provider;
     const address = await signer.getAddress();
-    const ipfs = await this.uploadToIPFS(signer, payload);
+    const ipfs = await AbstractDAOClient.uploadToIPFS(signer, payload);
 
     const now = new Date();
 

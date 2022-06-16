@@ -7,6 +7,7 @@ import {
   FailedTxError,
   InvalidError,
   NotSyncStateError,
+  Proposal,
   ProposalProperties,
   ProposalState,
   Vote,
@@ -20,9 +21,26 @@ import GlobalClient from './GlobalClient';
 class ProposalClient extends AbstractProposalClient {
   private readonly _zDAO: DAOClient;
 
-  constructor(properties: ProposalProperties, zDAO: DAOClient) {
+  private constructor(properties: ProposalProperties, zDAO: DAOClient) {
     super(properties);
     this._zDAO = zDAO;
+  }
+
+  static async createInstance(
+    zDAO: DAOClient,
+    properties: ProposalProperties
+  ): Promise<Proposal> {
+    const proposal = new ProposalClient(
+      {
+        ...properties,
+        metadata: await AbstractProposalClient.getTokenMetadata(
+          GlobalClient.ipfsGateway,
+          properties.ipfs
+        ),
+      },
+      zDAO
+    );
+    return proposal;
   }
 
   async listVotes(): Promise<Vote[]> {
@@ -59,6 +77,31 @@ class ProposalClient extends AbstractProposalClient {
     }
 
     return (await childZDAO.votingPowerOfVoter(this.id, account)).toString();
+  }
+
+  async updateScoresAndVotes(): Promise<Proposal> {
+    const childZDAO = await this._zDAO.getChildZDAO();
+    if (!childZDAO) {
+      throw new NotSyncStateError();
+    }
+
+    const polyProposal = childZDAO ? await childZDAO.proposals(this.id) : null;
+    const isSyncedProposal = polyProposal
+      ? polyProposal.proposalId.eq(this.id)
+      : false;
+
+    const scores =
+      childZDAO && polyProposal && isSyncedProposal
+        ? [polyProposal.yes.toString(), polyProposal.no.toString()]
+        : undefined;
+    const voters =
+      childZDAO && polyProposal && isSyncedProposal
+        ? polyProposal.voters.toNumber()
+        : undefined;
+    this._properties.scores = scores;
+    this._properties.voters = voters;
+
+    return this;
   }
 
   async vote(

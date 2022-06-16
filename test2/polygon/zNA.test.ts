@@ -11,7 +11,7 @@ import {
   zDAO,
 } from '../../src/types';
 import { errorMessageForError } from '../../src/utilities/messages';
-import { setEnvPolygon as setEnv } from '../shared/setupEnv';
+import { setEnv } from '../shared/setupEnv';
 
 use(chaiAsPromised.default);
 
@@ -33,7 +33,6 @@ describe('zNA test', async () => {
       env.rpc.rinkeby,
       SupportedChainId.RINKEBY
     );
-
     const config = developmentConfiguration({
       ethereum: {
         zDAOChef: env.contract.zDAOChef.goerli,
@@ -68,9 +67,9 @@ describe('zNA test', async () => {
     const params: CreateZDAOParams = {
       zNA: 'zDAO.eth',
       title: 'zDAO Testing Space 1',
-      network: SupportedChainId.GOERLI,
-      gnosisSafe: env.gnosisSafe.goerli.address,
-      token: env.contract.token.goerli,
+      network: SupportedChainId.RINKEBY,
+      gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+      token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
       amount: ethers.BigNumber.from(10000).toString(),
       duration: 3000,
       options: {
@@ -89,9 +88,9 @@ describe('zNA test', async () => {
     const params: CreateZDAOParams = {
       zNA: 'zDAO.eth',
       title: 'zDAO',
-      network: SupportedChainId.GOERLI,
-      gnosisSafe: env.gnosisSafe.goerli.address,
-      token: env.contract.token.goerli,
+      network: SupportedChainId.RINKEBY,
+      gnosisSafe: 'gnosisSafe',
+      token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
       amount: ethers.BigNumber.from(10000).toString(),
       duration: 3000,
       options: {

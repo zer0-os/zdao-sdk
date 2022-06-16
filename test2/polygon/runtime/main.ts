@@ -1,12 +1,13 @@
+import assert from 'assert';
 import { BigNumber, ethers } from 'ethers';
 
-import { ZNAClient } from '../../../src/client';
-// import TransferAbi from '../../../src/config/abi/transfer.json';
 import { createSDKInstance } from '../../../src/polygon';
+import ZNAClient from '../../../src/polygon/client/ZNAClient';
 import { developmentConfiguration } from '../../../src/polygon/config';
 import { ProposalState, SupportedChainId } from '../../../src/types';
+// import TransferAbi from '../../src/config/abi/transfer.json';
 import { sleep } from '../../../src/utilities/date';
-import { setEnvPolygon as setEnv } from '../../shared/setupEnv';
+import { setEnv } from '../shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
 
@@ -22,7 +23,7 @@ const main = async () => {
   );
 
   const goerliGnosisOwnerSigner = new ethers.Wallet(
-    env.gnosisSafe.goerli.ownerPrivateKey,
+    env.wallet.gnosisSafeOwner,
     new ethers.providers.JsonRpcProvider(
       env.rpc.goerli,
       SupportedChainId.GOERLI
@@ -33,25 +34,18 @@ const main = async () => {
     env.rpc.rinkeby,
     SupportedChainId.RINKEBY
   );
-
   const config = developmentConfiguration({
     ethereum: {
       zDAOChef: env.contract.zDAOChef.goerli,
       rpcUrl: env.rpc.goerli,
       network: SupportedChainId.GOERLI,
-      blockNumber: env.contract.zDAOChef.goerliBlock,
+      blockNumber: 6828764,
     },
     polygon: {
       zDAOChef: env.contract.zDAOChef.mumbai,
       rpcUrl: env.rpc.mumbai,
       network: SupportedChainId.MUMBAI,
-      blockNumber: env.contract.zDAOChef.mumbaiBlock,
-    },
-    zNA: {
-      zDAORegistry: env.contract.zDAORegistry.goerli,
-      zNSHub: env.contract.zNSHub.goerli,
-      rpcUrl: env.rpc.goerli,
-      network: SupportedChainId.GOERLI,
+      blockNumber: 26198777,
     },
     proof: {
       from: goerliSigner.address,
@@ -98,33 +92,28 @@ const main = async () => {
   const zNAId4 = ZNAClient.zNATozNAId('wilder.breasts');
   console.log('zNAId4', zNAId4);
 
-  if (!(await instance.doesZDAOExist('wilder.kicks'))) {
-    await instance.createZDAO(goerliSigner, {
-      zNA: 'wilder.kicks',
-      title: 'wilder.kicks',
-      network: SupportedChainId.GOERLI,
-      gnosisSafe: env.gnosisSafe.goerli.address,
-      token: env.contract.token.goerli,
-      amount: BigNumber.from(10).pow(18).toString(),
-      duration: 600, // 15 mins
-      options: {
-        votingThreshold: 5001, // 50.01%
-        minimumVotingParticipants: 1,
-        minimumTotalVotingTokens: BigNumber.from(10).pow(18).toString(),
-        isRelativeMajority: true,
-      },
-    });
-  }
+  // await instance.createZDAO(goerliSigner, {
+  //   zNA: 'wilder.kicks',
+  //   title: 'wilder.kicks',
+  //   gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
+  //   token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
+  //   amount: BigNumber.from(10).pow(18).toString(),
+  //   duration: 600, // 15 mins
+  //   votingThreshold: 5001, // 50.01%
+  //   minimumVotingParticipants: 1,
+  //   minimumTotalVotingTokens: BigNumber.from(10).pow(18).toString(),
+  //   isRelativeMajority: true,
+  // });
 
   const zNAs = await instance.listZNAs();
   console.log('zNAs', zNAs);
-  // assert.equal(zNAs.length > 0, true);
+  assert.equal(zNAs.length > 0, true);
 
   const zDAOs = await instance.listZDAOs();
   console.log('zDAOs.length', zDAOs.length);
-  // assert.equal(zDAOs.length > 0, true);
+  assert.equal(zDAOs.length > 0, true);
 
-  const zDAO = await instance.getZDAOByZNA('wilder.kicks');
+  const zDAO = await instance.getZDAOByZNA('wilder.wheels');
   console.log(
     'zDAO',
     zDAO.id,
@@ -137,7 +126,7 @@ const main = async () => {
   const assets = await zDAO.listAssets();
   console.log('assets', assets);
 
-  // await zDAO.createProposal(goerliSigner, goerliSigner.address, {
+  // await zDAO.createProposal(goerliSigner, {
   //   title: 'Hello Proposal',
   //   body: 'Hello World',
   //   transfer: {
@@ -167,7 +156,7 @@ const main = async () => {
       proposal.voters
     );
   });
-  // assert.equal(proposals.length > 0, true);
+  assert.equal(proposals.length > 0, true);
 
   for (const proposal of proposals) {
     console.log('> proposal.id', proposal.id, proposal.state, proposal.ipfs);

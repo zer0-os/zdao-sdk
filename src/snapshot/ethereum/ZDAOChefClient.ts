@@ -1,9 +1,11 @@
 import { ethers } from 'ethers';
 
-import { DAOConfig, zDAOId } from '../../types';
+import { PlatformType } from '../..';
+import { CreateZDAOParams, DAOConfig, zDAOId } from '../../types';
 import GlobalClient from '../client/GlobalClient';
 import SnapshotZDAOChefAbi from '../config/abi/SnapshotZDAOChef.json';
 import { SnapshotZDAOChef } from '../config/types/SnapshotZDAOChef';
+import { CreateZDAOParamsOptions } from '../types';
 import { SnapshotZDAOProperties } from './types';
 
 class ZDAOChefClient {
@@ -35,6 +37,23 @@ class ZDAOChefClient {
       gnosisSafe: zDAOInfo.gnosisSafe,
       destroyed: zDAOInfo.destroyed,
     };
+  }
+
+  async addNewDAO(signer: ethers.Signer, payload: CreateZDAOParams) {
+    await GlobalClient.zDAORegistry.addNewZDAO(
+      signer,
+      PlatformType.Snapshot,
+      payload.zNA,
+      payload.gnosisSafe,
+      ethers.utils.defaultAbiCoder.encode(
+        ['string'],
+        [(payload.options as CreateZDAOParamsOptions).ens]
+      )
+    );
+  }
+
+  async removeDAO(signer: ethers.Signer, zDAOId: zDAOId) {
+    await GlobalClient.zDAORegistry.removeNewZDAO(signer, zDAOId);
   }
 }
 

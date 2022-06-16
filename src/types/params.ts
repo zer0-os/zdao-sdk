@@ -34,7 +34,7 @@ export interface CreateZDAOParams {
   duration: number;
 
   // Additional parameters for Snapshot/Polygon platform
-  options?: CreatePolygonZDAOParamsOptions | CreateSnapshotZDAOParamsOptions;
+  options: CreatePolygonZDAOParamsOptions | CreateSnapshotZDAOParamsOptions;
 }
 
 export interface CreateProposalParams {

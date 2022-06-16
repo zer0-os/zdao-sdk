@@ -2,10 +2,10 @@ import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { BigNumber, ethers } from 'ethers';
 
+import TransferAbi from '../../src/config/abi/transfer.json';
 import { Config, createSDKInstance, ZDAOOptions } from '../../src/snapshot';
 import DAOClient from '../../src/snapshot/client/DAOClient';
 import { developmentConfiguration } from '../../src/snapshot/config';
-import TransferAbi from '../../src/snapshot/config/constants/abi/transfer.json';
 import {
   Proposal,
   SDKInstance,
@@ -14,11 +14,11 @@ import {
   zDAOState,
 } from '../../src/types';
 import { errorMessageForError } from '../../src/utilities/messages';
-import { setEnv } from './shared/setupEnv';
+import { setEnvSnapshot as setEnv } from '../shared/setupEnv';
 
 use(chaiAsPromised.default);
 
-describe('Snapshot test', async () => {
+describe.only('Snapshot test', async () => {
   const env = setEnv();
   const defZNA = 'joshupgig.eth';
 
@@ -28,10 +28,25 @@ describe('Snapshot test', async () => {
 
   before('setup', async () => {
     const provider = new ethers.providers.JsonRpcProvider(
-      env.rpcUrl,
-      env.network
+      env.rpc.rinkeby,
+      SupportedChainId.RINKEBY
     );
-    config = developmentConfiguration(env.zDAORegistry, provider);
+    config = developmentConfiguration({
+      ethereum: {
+        zDAOChef: env.contract.zDAOChef.rinkeby,
+        rpcUrl: env.rpc.rinkeby,
+        network: SupportedChainId.RINKEBY,
+        blockNumber: env.contract.zDAOChef.rinkebyBlock,
+      },
+      zNA: {
+        zDAORegistry: env.contract.zDAORegistry.rinkeby,
+        zNSHub: env.contract.zNSHub.rinkeby,
+        rpcUrl: env.rpc.rinkeby,
+        network: SupportedChainId.RINKEBY,
+      },
+      fleek: env.fleek,
+      ipfsGateway: 'snapshot.mypinata.cloud',
+    });
     const pk = process.env.PRIVATE_KEY;
     if (!pk) throw new Error(errorMessageForError('no-private-key'));
     signer = new ethers.Wallet(pk, provider);
@@ -98,7 +113,7 @@ describe('Snapshot test', async () => {
       '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989'
     );
 
-    expect(proposal.metadata?.token).to.be.equal(daoInstance.votingToken);
+    expect(proposal.metadata?.token).to.be.equal(daoInstance.votingToken.token);
     expect(proposal.metadata?.recipient).to.be.equal(
       '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b'
     );
@@ -129,7 +144,7 @@ describe('Snapshot test', async () => {
     const vp = await proposal.getVotingPowerOfUser(
       '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C'
     );
-    expect(vp).to.be.gt(0);
+    expect(BigNumber.from(vp).gt(BigNumber.from(0))).to.be.true;
   });
 
   it('should create a proposal with `erc20-with-balance` strategy and cast a vote', async () => {

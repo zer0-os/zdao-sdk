@@ -2,10 +2,10 @@ import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { ethers } from 'ethers';
 
-import { multicall } from '../../src/polygon/utilities/multicall';
-import { SupportedChainId } from '../../src/types';
+import { SupportedChainId } from '../src/types';
+import { multicall } from '../src/utilities/multicall';
 import ERC20Abi from './shared/ERC20.json';
-import { setEnv } from './shared/setupEnv';
+import { setEnvSnapshot as setEnv } from './shared/setupEnv';
 
 use(chaiAsPromised.default);
 

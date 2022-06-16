@@ -7,15 +7,15 @@ import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { ethers } from 'ethers';
 
-import { GnosisSafeClient } from '../../src/client';
+import { GnosisSafeClient } from '../src/client';
 import {
   AssetType,
   Coin,
   Collectible,
   GnosisSafeConfig,
   SupportedChainId,
-} from '../../src/types';
-import { setEnv } from './shared/setupEnv';
+} from '../src/types';
+import { setEnvPolygon as setEnv } from './shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
 
@@ -30,10 +30,9 @@ describe('Gnosis Safe test', async () => {
     const config: GnosisSafeConfig = {
       serviceUri: 'https://safe-transaction.goerli.gnosis.io',
       gateway: 'https://safe-client.staging.gnosisdev.com',
-      ipfsGateway: 'snapshot.mypinata.cloud',
     };
 
-    gnosisSafeClient = new GnosisSafeClient(config, config.ipfsGateway);
+    gnosisSafeClient = new GnosisSafeClient(config, 'snapshot.mypinata.cloud');
   });
 
   it('should list assets with test tokens', async () => {
@@ -113,6 +112,7 @@ describe('Gnosis Safe test', async () => {
     const patches = collectibles.filter(
       (collectible) => Object.keys(collectible.metadata).length < 1
     );
+    console.log('patches', patches);
     expect(patches.length).to.be.equal(0);
   });
 
@@ -171,14 +171,17 @@ describe('Gnosis Safe test', async () => {
   });
 
   it('should propose transaction by owner', async () => {
-    const gnosisSafeAddress = '0x7a935d07d097146f143A45aA79FD8624353abD5D';
-    const token = '0xD53C3bddf27b32ad204e859EB677f709c80E6840';
+    const gnosisSafeAddress = env.gnosisSafe.goerli.address;
+    const token = env.contract.token.goerli;
 
     const provider = new ethers.providers.JsonRpcProvider(
-      env.rpc.rinkeby,
-      SupportedChainId.RINKEBY
+      env.rpc.goerli,
+      SupportedChainId.GOERLI
     );
-    const ownerSigner = new ethers.Wallet(env.wallet.gnosisSafeOwner, provider);
+    const ownerSigner = new ethers.Wallet(
+      env.gnosisSafe.goerli.ownerPrivateKey,
+      provider
+    );
 
     await expect(
       gnosisSafeClient.transferEther(

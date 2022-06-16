@@ -210,7 +210,7 @@ class AbstractDAOClient implements zDAO {
     throw new NotImplementedError();
   }
 
-  protected async uploadToIPFS(
+  protected static async uploadToIPFS(
     signer: ethers.Signer,
     payload: CreateProposalParams
   ): Promise<string> {

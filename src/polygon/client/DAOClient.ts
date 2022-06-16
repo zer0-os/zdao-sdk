@@ -222,15 +222,21 @@ class DAOClient extends AbstractDAOClient {
       snapshot,
       scores,
       voters,
-      metadata: {
-        abi: metadataJson.abi,
-        sender: metadataJson.sender,
-        recipient: metadataJson.recipient,
-        token: metadataJson.token,
-        decimals: metadataJson.decimals ?? 18,
-        symbol: metadataJson.symbol ?? 'zToken',
-        amount: metadataJson.amount,
-      },
+      metadata:
+        !metadataJson.sender ||
+        !metadataJson.recipient ||
+        !metadataJson.token ||
+        !metadataJson.amount
+          ? undefined
+          : {
+              abi: metadataJson.abi,
+              sender: metadataJson.sender,
+              recipient: metadataJson.recipient,
+              token: metadataJson.token,
+              decimals: metadataJson.decimals ?? 18,
+              symbol: metadataJson.symbol ?? 'zToken',
+              amount: metadataJson.amount,
+            },
     };
   }
 
@@ -238,7 +244,8 @@ class DAOClient extends AbstractDAOClient {
     const count = 100;
     let from = 0;
     let numberOfResults = count;
-    const proposals: Proposal[] = [];
+
+    const proposalPromises: Promise<Proposal>[] = [];
 
     while (numberOfResults === count) {
       const results: IRootZDAO.ProposalStructOutput[] =
@@ -250,16 +257,16 @@ class DAOClient extends AbstractDAOClient {
       );
 
       const propertiesAll: ProposalProperties[] = await Promise.all(promises);
-      proposals.push(
-        ...propertiesAll.map(
-          (properties) => new ProposalClient(properties, this)
+      proposalPromises.push(
+        ...propertiesAll.map((properties) =>
+          ProposalClient.createInstance(this, properties)
         )
       );
 
       from += results.length;
       numberOfResults = results.length;
     }
-    return proposals;
+    return await Promise.all(proposalPromises);
   }
 
   async getProposal(id: ProposalId): Promise<Proposal> {
@@ -268,7 +275,10 @@ class DAOClient extends AbstractDAOClient {
       throw new NotFoundError(errorMessageForError('not-found-proposal'));
     }
 
-    return new ProposalClient(await this.mapToProperties(proposal), this);
+    return await ProposalClient.createInstance(
+      this,
+      await this.mapToProperties(proposal)
+    );
   }
 
   async createProposal(
@@ -304,7 +314,7 @@ class DAOClient extends AbstractDAOClient {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const signer = provider?.getSigner ? provider.getSigner() : provider;
-      const ipfs = await this.uploadToIPFS(signer, payload);
+      const ipfs = await AbstractDAOClient.uploadToIPFS(signer, payload);
 
       await GlobalClient.rootZDAOChef.createProposal(
         signer,
