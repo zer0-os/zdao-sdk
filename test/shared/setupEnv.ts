@@ -17,8 +17,8 @@ export const setEnvPolygon = () => {
       zDAOChef: {
         goerli: process.env.GOERLI_POLYGON_ZDAOCHEF_ADDRESS!,
         goerliBlock: Number(process.env.GOERLI_POLYGON_ZDAOCHEF_BLOCK_NUMBER!),
-        mumbai: process.env.MUMBAI_POLYGON_ZDAOCHEF_BLOCK_NUMBER!,
-        mumbaiBlock: Number(process.env.MUMBAI_POLYGON_ZDAOCHEF_ADDRESS!),
+        mumbai: process.env.MUMBAI_POLYGON_ZDAOCHEF_ADDRESS!,
+        mumbaiBlock: Number(process.env.MUMBAI_POLYGON_ZDAOCHEF_BLOCK_NUMBER!),
       },
       zNSHub: {
         goerli: process.env.GOERLI_POLYGON_ZNSHUB_ADDRESS!,
@@ -69,9 +69,11 @@ export const setEnvSnapshot = () => {
       },
       zNSHub: {
         rinkeby: process.env.RINKEBY_SNAPSHOT_ZNSHUB_ADDRESS!,
+        mainnet: '', // todo
       },
       token: {
         rinkeby: process.env.RINKEBY_VOTING_TOKEN!,
+        mainnet: '', // todo
       },
     },
     gnosisSafe: {

@@ -5,7 +5,7 @@ import {
   developmentConfiguration,
   productionConfiguration,
 } from '../../../src/snapshot/config';
-import { SDKInstance, SupportedChainId, zDAO, zNA } from '../../../src/types';
+import { SDKInstance, SupportedChainId, zNA } from '../../../src/types';
 import { setEnvSnapshot as setEnv } from '../../shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
@@ -46,21 +46,10 @@ const createToken = async (sdkInstance: SDKInstance, signer: ethers.Wallet) => {
   console.log('new token', token);
 };
 
-const pagination = async (sdkInstance: SDKInstance, signer: ethers.Wallet) => {
-  // isDev should be false
+const pagination = async (sdkInstance: SDKInstance) => {
+  // isDev should be true
 
-  const dao = await sdkInstance.createZDAOFromParams(signer, {
-    zNA: 'aave.eth',
-    title: 'zDAO Testing Space 1',
-    network: SupportedChainId.MAINNET,
-    gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
-    token: '0x514910771af9ca656af840dff83e8264ecf986ca',
-    amount: '0',
-    duration: 180,
-    options: {
-      ens: 'aave.eth',
-    },
-  });
+  const dao = await sdkInstance.getZDAOByZNA('joshupgig.eth');
 
   const count = 50;
   for (let i = 0; i < 1000; i += count) {
@@ -70,13 +59,17 @@ const pagination = async (sdkInstance: SDKInstance, signer: ethers.Wallet) => {
       count,
     });
     console.log('proposals', proposals.length);
+    proposals.forEach((proposal) =>
+      console.log('proposal.metadata', proposal.id, proposal.metadata)
+    );
     console.timeEnd('listProposals');
     if (proposals.length < 1) break;
   }
 
   const proposal = await dao.getProposal(
-    '0x718c496b04017fb82749b68570d12f32c839f59b9f9433df127f48bf99121eb7'
+    '0xf51d5d3b8f81737a001ea7f8bbb0aa426ff46bfc715e6524bf23271592fabea7'
   );
+  console.log('> proposal.metadata', proposal.id, proposal.metadata);
 
   for (let i = 0; i < 1000; i += count) {
     console.time('listVotes');
@@ -96,23 +89,12 @@ const immediateVote = async (
 ) => {
   // isDev should be true
 
-  const dao = await sdkInstance.createZDAOFromParams(signer, {
-    zNA: 'joshupgig.eth',
-    title: 'zDAO Testing Space 1',
-    network: SupportedChainId.RINKEBY,
-    gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
-    token: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
-    amount: '0',
-    duration: 180,
-    options: {
-      ens: 'joshupgig.eth',
-    },
-  });
+  const dao = await sdkInstance.getZDAOByZNA('joshupgig.eth');
 
   const proposalId =
-    '0x041cb64d4bab9f9949198aa91561bd83b120152f9290de2724d2d16d129e3df8';
+    '0xf21ff6d023ead5cddb4937c9a00435d5468cd4c4aed6466a455b8342f4842dc6';
   const proposal = await dao.getProposal(proposalId);
-  await proposal.vote(signer, signer.address, 1);
+  await proposal.vote(signer, signer.address, 2);
 
   const votes = await proposal.listVotes();
   console.log('votes', votes);
@@ -153,15 +135,15 @@ const main = async () => {
     : productionConfiguration({
         ethereum: {
           zDAOChef: env.contract.zDAOChef.mainnet,
-          rpcUrl: env.rpc.rinkeby,
+          rpcUrl: env.rpc.mainnet,
           network: SupportedChainId.RINKEBY,
-          blockNumber: env.contract.zDAOChef.rinkebyBlock,
+          blockNumber: env.contract.zDAOChef.mainnetBlock,
         },
         zNA: {
-          zDAORegistry: env.contract.zDAORegistry.rinkeby,
-          zNSHub: env.contract.zNSHub.rinkeby,
-          rpcUrl: env.rpc.rinkeby,
-          network: SupportedChainId.RINKEBY,
+          zDAORegistry: env.contract.zDAORegistry.mainnet,
+          zNSHub: env.contract.zNSHub.mainnet,
+          rpcUrl: env.rpc.mainnet,
+          network: SupportedChainId.MAINNET,
         },
         fleek: env.fleek,
         ipfsGateway: 'snapshot.mypinata.cloud',
@@ -169,7 +151,7 @@ const main = async () => {
 
   const sdkInstance: SDKInstance = createSDKInstance(config);
 
-  await createZDAO(sdkInstance, signer, env);
+  // await createZDAO(sdkInstance, signer, env);
   // await createToken(sdkInstance, signer);
   // await pagination(sdkInstance);
   // await immediateVote(sdkInstance, signer);
@@ -180,11 +162,11 @@ const main = async () => {
   // create zdao which is associated with `wilder.cats`
   for (const zNA of zNAs) {
     console.log('> zNA:', zNA);
-    const dao: zDAO = await sdkInstance.getZDAOByZNA(zNA);
+    const dao = await sdkInstance.getZDAOByZNA(zNA);
     console.log('zDAO instance', dao);
 
     const proposals = await dao.listProposals();
-    console.log('proposals', proposals);
+    console.log('proposals', proposals.length);
 
     const assets = await dao.listAssets();
     console.log('assets', assets);
