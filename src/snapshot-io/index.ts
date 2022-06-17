@@ -251,7 +251,7 @@ class SnapshotClient {
 
       const votes = voteResponse.map((vote: any) => {
         vote.scores = strategies.map(
-          (strategy: any, i: number) => scores[i][vote.voter] || 0
+          (strategy: any, i: number) => Number(scores[i][vote.voter]) || 0
         );
         vote.balance = vote.scores.reduce((a: any, b: any) => a + b, 0);
         return {
@@ -264,7 +264,7 @@ class SnapshotClient {
       proposalScores = proposal.choices.map((choice: any, i: number) =>
         votes
           .filter((vote: any) => vote.choice === i + 1)
-          .reduce((a: number, b: any) => a + b.power, 0)
+          .reduce((a: number, b: any) => a + Number(b.power), 0)
       );
       numberOfVoters = votes.length;
     }
