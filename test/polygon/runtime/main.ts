@@ -1,26 +1,76 @@
 import { BigNumber, ethers } from 'ethers';
 
 import { ZNAClient } from '../../../src/client';
-// import TransferAbi from '../../../src/config/abi/transfer.json';
+import TransferAbi from '../../../src/config/abi/transfer.json';
 import { createSDKInstance } from '../../../src/polygon';
 import { developmentConfiguration } from '../../../src/polygon/config';
-import { ProposalState, SupportedChainId } from '../../../src/types';
+import {
+  ProposalState,
+  SDKInstance,
+  SupportedChainId,
+  zDAO,
+  zNA,
+} from '../../../src/types';
 import { sleep } from '../../../src/utilities/date';
 import { setEnvPolygon as setEnv } from '../../shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
 
-const main = async () => {
-  const env = setEnv();
+const createZDAO = async (
+  instace: SDKInstance,
+  signer: ethers.Wallet,
+  env: any
+) => {
+  for (const DAO of env.DAOs.goerli) {
+    if (!(await instace.doesZDAOExist(DAO.zNA))) {
+      await instace.createZDAO(signer, {
+        zNA: DAO.zNA,
+        title: DAO.title,
+        network: SupportedChainId.GOERLI,
+        gnosisSafe: env.gnosisSafe.goerli.address,
+        token: env.contract.token.goerli,
+        amount: BigNumber.from(10).pow(18).toString(),
+        duration: DAO.duration,
+        options: {
+          votingThreshold: 5001, // 50.01%
+          minimumVotingParticipants: 1,
+          minimumTotalVotingTokens: BigNumber.from(10).pow(18).toString(),
+          isRelativeMajority: DAO.isRelativeMajority ?? true,
+        },
+      });
+      console.log(`DAO ${DAO.zNA} created`);
+    }
+  }
+};
 
-  const goerliSigner = new ethers.Wallet(
-    env.wallet.privateKey,
-    new ethers.providers.JsonRpcProvider(
-      env.rpc.goerli,
-      SupportedChainId.GOERLI
-    )
-  );
+const createProposal = async (
+  instance: SDKInstance,
+  signer: ethers.Wallet,
+  zDAO: zDAO,
+  env: any
+) => {
+  await zDAO.createProposal(signer, signer.address, {
+    title: 'Hello Proposal',
+    body: 'Hello World',
+    transfer: {
+      abi: JSON.stringify(TransferAbi),
+      sender: zDAO.gnosisSafe,
+      recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+      token: env.contract.token.goerli,
+      decimals: 18,
+      symbol: 'zToken',
+      amount: BigNumber.from(10).pow(18).mul(50).toString(),
+    },
+  });
+  console.log('proposal created');
+};
 
+const iterateZDAO = async (
+  instance: SDKInstance,
+  goerliSigner: ethers.Wallet,
+  zNA: zNA,
+  env: any
+) => {
   const goerliGnosisOwnerSigner = new ethers.Wallet(
     env.gnosisSafe.goerli.ownerPrivateKey,
     new ethers.providers.JsonRpcProvider(
@@ -29,37 +79,6 @@ const main = async () => {
     )
   );
 
-  const rinkebyProvider = new ethers.providers.JsonRpcProvider(
-    env.rpc.rinkeby,
-    SupportedChainId.RINKEBY
-  );
-
-  const config = developmentConfiguration({
-    ethereum: {
-      zDAOChef: env.contract.zDAOChef.goerli,
-      rpcUrl: env.rpc.goerli,
-      network: SupportedChainId.GOERLI,
-      blockNumber: env.contract.zDAOChef.goerliBlock,
-    },
-    polygon: {
-      zDAOChef: env.contract.zDAOChef.mumbai,
-      rpcUrl: env.rpc.mumbai,
-      network: SupportedChainId.MUMBAI,
-      blockNumber: env.contract.zDAOChef.mumbaiBlock,
-    },
-    zNA: {
-      zDAORegistry: env.contract.zDAORegistry.goerli,
-      zNSHub: env.contract.zNSHub.goerli,
-      rpcUrl: env.rpc.goerli,
-      network: SupportedChainId.GOERLI,
-    },
-    proof: {
-      from: goerliSigner.address,
-    },
-    fleek: env.fleek,
-    ipfsGateway: 'snapshot.mypinata.cloud',
-    zNSProvider: rinkebyProvider,
-  });
   const mumbaiSigner = new ethers.Wallet(
     env.wallet.privateKey,
     new ethers.providers.JsonRpcProvider(
@@ -68,63 +87,9 @@ const main = async () => {
     )
   );
 
-  console.log('config', config);
-  console.log('signer.address', goerliSigner.address);
-
-  // // create MockZDAOClient
-  // const zDAO = await MockDAOClient.createInstance(config, goerliSigner, {
-  //   zNA: 'wilder.wheels',
-  //   title: 'wilder.dao',
-  //   gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
-  //   token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
-  //   amount: BigNumber.from(10).pow(18).toString(),
-  //   isRelativeMajority: false,
-  //   minimumTotalVotingTokens: BigNumber.from(10).pow(18).toString(),
-  // });
-  // console.log('zDAO', zDAO);
-
-  // const assets = await zDAO.listAssets();
-  // console.log('assets', assets);
-
-  const instance = await createSDKInstance(config);
-  console.log('instance created');
-
-  const zNAId1 = ZNAClient.zNATozNAId('wilder.wheels');
-  console.log('zNAId1', zNAId1);
-  const zNAId2 = ZNAClient.zNATozNAId('wilder.kicks');
-  console.log('zNAId2', zNAId2);
-  const zNAId3 = ZNAClient.zNATozNAId('wilder.cats');
-  console.log('zNAId3', zNAId3);
-  const zNAId4 = ZNAClient.zNATozNAId('wilder.breasts');
-  console.log('zNAId4', zNAId4);
-
-  if (!(await instance.doesZDAOExist('wilder.kicks'))) {
-    await instance.createZDAO(goerliSigner, {
-      zNA: 'wilder.kicks',
-      title: 'wilder.kicks',
-      network: SupportedChainId.GOERLI,
-      gnosisSafe: env.gnosisSafe.goerli.address,
-      token: env.contract.token.goerli,
-      amount: BigNumber.from(10).pow(18).toString(),
-      duration: 600, // 15 mins
-      options: {
-        votingThreshold: 5001, // 50.01%
-        minimumVotingParticipants: 1,
-        minimumTotalVotingTokens: BigNumber.from(10).pow(18).toString(),
-        isRelativeMajority: true,
-      },
-    });
-  }
-
-  const zNAs = await instance.listZNAs();
-  console.log('zNAs', zNAs);
-  // assert.equal(zNAs.length > 0, true);
-
-  const zDAOs = await instance.listZDAOs();
-  console.log('zDAOs.length', zDAOs.length);
-  // assert.equal(zDAOs.length > 0, true);
-
-  const zDAO = await instance.getZDAOByZNA('wilder.kicks');
+  console.time('getZDAOByZNA');
+  const zDAO = await instance.getZDAOByZNA(zNA);
+  console.timeEnd('getZDAOByZNA');
   console.log(
     'zDAO',
     zDAO.id,
@@ -134,25 +99,16 @@ const main = async () => {
     zDAO.options
   );
 
+  console.time('listAssets');
   const assets = await zDAO.listAssets();
-  console.log('assets', assets);
+  console.timeEnd('listAssets');
+  // console.log('assets', assets);
 
-  // await zDAO.createProposal(goerliSigner, goerliSigner.address, {
-  //   title: 'Hello Proposal',
-  //   body: 'Hello World',
-  //   transfer: {
-  //     abi: JSON.stringify(TransferAbi),
-  //     sender: zDAO.gnosisSafe,
-  //     recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-  //     token: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
-  //     decimals: 18,
-  //     symbol: 'wilder.goerli',
-  //     amount: BigNumber.from(10).pow(18).mul(50).toString(),
-  //   },
-  // });
-  // console.log('proposal created');
+  // await createProposal(instance, goerliSigner, zDAO, env);
 
+  console.time('listProposals');
   const proposals = await zDAO.listProposals();
+  console.timeEnd('listProposals');
   proposals.forEach((proposal) => {
     console.log(
       proposal.id,
@@ -193,6 +149,7 @@ const main = async () => {
 
       for (const hash of hashes) {
         try {
+          console.log('waiting until checkpointed');
           while (!(await zDAO.isCheckPointed(hash))) {
             await sleep(1000);
           }
@@ -209,6 +166,102 @@ const main = async () => {
       console.log('executed', proposal.id);
     }
   }
+};
+
+const main = async () => {
+  const env = setEnv();
+
+  const goerliSigner = new ethers.Wallet(
+    env.wallet.privateKey,
+    new ethers.providers.JsonRpcProvider(
+      env.rpc.goerli,
+      SupportedChainId.GOERLI
+    )
+  );
+
+  const rinkebyProvider = new ethers.providers.JsonRpcProvider(
+    env.rpc.rinkeby,
+    SupportedChainId.RINKEBY
+  );
+
+  const config = developmentConfiguration({
+    ethereum: {
+      zDAOChef: env.contract.zDAOChef.goerli,
+      rpcUrl: env.rpc.goerli,
+      network: SupportedChainId.GOERLI,
+      blockNumber: env.contract.zDAOChef.goerliBlock,
+    },
+    polygon: {
+      zDAOChef: env.contract.zDAOChef.mumbai,
+      rpcUrl: env.rpc.mumbai,
+      network: SupportedChainId.MUMBAI,
+      blockNumber: env.contract.zDAOChef.mumbaiBlock,
+    },
+    zNA: {
+      zDAORegistry: env.contract.zDAORegistry.goerli,
+      zNSHub: env.contract.zNSHub.goerli,
+      rpcUrl: env.rpc.goerli,
+      network: SupportedChainId.GOERLI,
+    },
+    proof: {
+      from: goerliSigner.address,
+    },
+    fleek: env.fleek,
+    ipfsGateway: 'snapshot.mypinata.cloud',
+    zNSProvider: rinkebyProvider,
+  });
+
+  console.log('config', config);
+  console.log('signer.address', goerliSigner.address);
+
+  const instance = await createSDKInstance(config);
+  console.log('instance created');
+
+  const zNAId1 = ZNAClient.zNATozNAId('wilder.wheels');
+  console.log('zNAId1', zNAId1);
+  const zNAId2 = ZNAClient.zNATozNAId('wilder.kicks');
+  console.log('zNAId2', zNAId2);
+  const zNAId3 = ZNAClient.zNATozNAId('wilder.cats');
+  console.log('zNAId3', zNAId3);
+  const zNAId4 = ZNAClient.zNATozNAId('wilder.breasts');
+  console.log('zNAId4', zNAId4);
+
+  await createZDAO(instance, goerliSigner, env);
+
+  console.time('listZNAs');
+  const zNAs = await instance.listZNAs();
+  console.timeEnd('listZNAs');
+  console.log('zNAs', zNAs);
+  // assert.equal(zNAs.length > 0, true);
+
+  console.time('listZDAOs');
+  const zDAOs = await instance.listZDAOs();
+  console.timeEnd('listZDAOs');
+  console.log('zDAOs.length', zDAOs.length);
+  zDAOs.forEach((zDAO) => {
+    console.log(
+      zDAO.id,
+      zDAO.zNAs,
+      zDAO.title,
+      zDAO.createdBy,
+      zDAO.network,
+      zDAO.gnosisSafe,
+      zDAO.votingToken,
+      zDAO.amount,
+      zDAO.duration,
+      zDAO.votingThreshold,
+      zDAO.minimumVotingParticipants,
+      zDAO.minimumTotalVotingTokens,
+      zDAO.isRelativeMajority,
+      zDAO.state,
+      zDAO.snapshot,
+      zDAO.destroyed,
+      zDAO.options
+    );
+  });
+  // assert.equal(zDAOs.length > 0, true);
+
+  await iterateZDAO(instance, goerliSigner, 'wilder.kicks', env);
 
   console.log('Finished successfully');
 };

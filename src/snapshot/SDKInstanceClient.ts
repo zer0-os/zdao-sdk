@@ -21,7 +21,6 @@ import {
   zNAId,
 } from '../types';
 import { errorMessageForError } from '../utilities';
-import { getToken } from '../utilities/calls';
 import DAOClient from './client/DAOClient';
 import GlobalClient from './client/GlobalClient';
 import MockDAOClient from './client/MockDAOClient';
@@ -126,16 +125,15 @@ class SDKInstanceClient implements SDKInstance {
 
     // strategy is used to check if voter holds minimum token amount
     const strategy = space.strategies.find(
-      (strategy) => strategy.params.address && strategy.params.decimals
+      (strategy) =>
+        strategy.name.startsWith('erc20') || strategy.name.startsWith('erc721')
     );
     if (!strategy) {
       throw new Error(errorMessageForError('not-found-strategy-in-snapshot'));
     }
 
-    const token = await getToken(
-      GlobalClient.etherRpcProvider,
-      strategy.params.address
-    );
+    const symbol = strategy.params.symbol;
+    const decimals = strategy.params.decimals ?? 0;
 
     const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
 
@@ -148,7 +146,11 @@ class SDKInstanceClient implements SDKInstance {
         createdBy: '',
         network: Number(space.network),
         gnosisSafe: zDAORecord.gnosisSafe,
-        votingToken: token,
+        votingToken: {
+          token: strategy.params.address,
+          symbol,
+          decimals,
+        },
         amount: '0',
         duration: space.duration ? Number(space.duration) : 0,
         votingThreshold: 5001,

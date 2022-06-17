@@ -41,6 +41,33 @@ export const setEnvPolygon = () => {
       apiKey: process.env.FLEEK_API_KEY!,
       apiSecret: process.env.FLEEK_API_SECRET!,
     },
+    DAOs: {
+      goerli: [
+        {
+          title: 'Wilder Wheels',
+          votingToken: '0xa80152CB820463a1B50228D2b8dE50717E849BBd',
+          gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
+          zNA: 'wilder.wheels',
+          duration: 172800, // 2 days
+        },
+        {
+          title: 'Wilder Kicks',
+          votingToken: '0xa80152CB820463a1B50228D2b8dE50717E849BBd',
+          gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
+          zNA: 'wilder.kicks',
+          duration: 600, // 10 min
+          isRelativeMajority: true,
+        },
+        {
+          title: 'Wilder Cats',
+          votingToken: '0xa80152CB820463a1B50228D2b8dE50717E849BBd',
+          gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
+          zNA: 'wilder.cats',
+          duration: 1800, // 30 min
+          isRelativeMajority: false,
+        },
+      ],
+    },
   };
 };
 
