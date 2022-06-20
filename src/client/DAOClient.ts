@@ -228,7 +228,7 @@ class DAOClient implements zDAO {
     // // update the immediate scores
     // const snapshotPromises: Promise<SnapshotProposal>[] = snapshotProposals.map(
     //   (proposal: SnapshotProposal) =>
-    //     this._snapshotClient.updateScores(proposal, {
+    //     this._snapshotClient.updateScoresAndVotes(proposal, {
     //       spaceId: this.ens,
     //       network: this.network,
     //       strategies: this._options.strategies,
@@ -271,6 +271,8 @@ class DAOClient implements zDAO {
   }
 
   async getProposal(id: ProposalId): Promise<Proposal> {
+    await this._snapshotClient.forceUpdateScoresAndVotes(id);
+
     const proposal: SnapshotProposal = await this._snapshotClient.getProposal({
       spaceId: this.ens,
       network: this.network,
