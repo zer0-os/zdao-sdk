@@ -1,4 +1,4 @@
-import { ENS, Token, TokenMetaData } from '../types';
+import { ENS, ProposalId, Token, TokenMetaData } from '../types';
 
 export interface SpaceParams {
   spaceId: ENS;
@@ -44,7 +44,7 @@ export interface CreateProposalParams extends SpaceParams {
 
 export interface VoteProposalParams {
   spaceId: ENS;
-  proposalId: string;
+  proposalId: ProposalId;
   choice: number;
 }
 
@@ -63,7 +63,7 @@ export interface SnapshotSpaceDetails extends SnapshotSpace {
 }
 
 export interface SnapshotProposal {
-  id: string; // proposal id
+  id: ProposalId; // proposal id
   type: string; // proposal type (e.g. single-choice)
   author: string; // proposal creator
   title: string; // proposal title
@@ -82,7 +82,7 @@ export interface SnapshotProposal {
 }
 
 export interface SnapshotProposalResponse {
-  id: string;
+  id: ProposalId;
   ipfs: string;
 }
 

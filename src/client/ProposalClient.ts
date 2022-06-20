@@ -215,11 +215,14 @@ class ProposalClient implements Proposal {
       votes: this._properties.votes,
     };
 
-    const updated = await this._snapshotClient.updateScores(snapshotProposal, {
-      spaceId: this._zDAO.ens,
-      network: this._zDAO.network,
-      strategies: this._options.strategies,
-    });
+    const updated = await this._snapshotClient.updateScoresAndVotes(
+      snapshotProposal,
+      {
+        spaceId: this._zDAO.ens,
+        network: this._zDAO.network,
+        strategies: this._options.strategies,
+      }
+    );
     this._properties.scores = updated.scores;
     this._properties.votes = updated.votes;
     return this;

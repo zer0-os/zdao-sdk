@@ -6,7 +6,7 @@ import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
 import { cloneDeep, orderBy } from 'lodash';
 
 import verified from '../config/constants/verified.json';
-import { ENS, SnapshotConfig, SupportedChainId } from '../types';
+import { ENS, ProposalId, SnapshotConfig, SupportedChainId } from '../types';
 import { timestamp } from '../utilities/date';
 import { errorMessageForError } from '../utilities/messages';
 import {
@@ -209,7 +209,7 @@ class SnapshotClient {
     );
   }
 
-  async updateScores(
+  async updateScoresAndVotes(
     proposal: SnapshotProposal,
     params: SpaceParams
   ): Promise<SnapshotProposal> {
@@ -305,8 +305,8 @@ class SnapshotClient {
     };
     return proposal;
 
-    // There are tricky method to update proposal scores and voters immediately after voting, no need to call `updateScores
-    // return this.updateScores(proposal, {
+    // There are tricky method to update proposal scores and voters immediately after voting, no need to call `updateScoresAndVotes
+    // return this.updateScoresAndVotes(proposal, {
     //   spaceId: params.spaceId,
     //   network: params.network,
     //   strategies: params.strategies,
@@ -459,13 +459,17 @@ class SnapshotClient {
       metadata: JSON.stringify({}),
     });
 
+    await this.forceUpdateScoresAndVotes(params.proposalId);
+    return response.id;
+  }
+
+  async forceUpdateScoresAndVotes(proposalId: ProposalId) {
     // There are tricky method to update proposal scores and voters immediately after voting
-    const updateScoreApi = `${this._config.serviceUri}/api/scores/${params.proposalId}`;
+    const updateScoreApi = `${this._config.serviceUri}/api/scores/${proposalId}`;
     await fetch(updateScoreApi, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     }); // .then((value) => value.json().then((json) => console.log(json)));
-    return response.id;
   }
 }
 
