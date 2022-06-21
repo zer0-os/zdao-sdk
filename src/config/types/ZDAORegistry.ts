@@ -22,9 +22,9 @@ export declare namespace IZDAORegistry {
   export type ZDAORecordStruct = {
     platformType: BigNumberish;
     id: BigNumberish;
-    zDAO: string;
     zDAOOwnedBy: string;
     gnosisSafe: string;
+    name: string;
     destroyed: boolean;
     associatedzNAs: BigNumberish[];
   };
@@ -40,9 +40,9 @@ export declare namespace IZDAORegistry {
   ] & {
     platformType: BigNumber;
     id: BigNumber;
-    zDAO: string;
     zDAOOwnedBy: string;
     gnosisSafe: string;
+    name: string;
     destroyed: boolean;
     associatedzNAs: BigNumber[];
   };
@@ -53,7 +53,7 @@ export interface ZDAORegistryInterface extends utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "__ZDAORegistry_init(address)": FunctionFragment;
-    "addNewZDAO(uint256,uint256,address,bytes)": FunctionFragment;
+    "addNewZDAO(uint256,uint256,address,string,bytes)": FunctionFragment;
     "addZDAOFactory(uint8,address)": FunctionFragment;
     "addZNAAssociation(uint256,uint256)": FunctionFragment;
     "adminAssociateZNA(uint256,uint256)": FunctionFragment;
@@ -97,7 +97,7 @@ export interface ZDAORegistryInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "addNewZDAO",
-    values: [BigNumberish, BigNumberish, string, BytesLike]
+    values: [BigNumberish, BigNumberish, string, string, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "addZDAOFactory",
@@ -470,6 +470,7 @@ export interface ZDAORegistry extends BaseContract {
       _platformType: BigNumberish,
       _zNA: BigNumberish,
       _gnosisSafe: string,
+      _name: string,
       _options: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -619,9 +620,9 @@ export interface ZDAORegistry extends BaseContract {
       [BigNumber, BigNumber, string, string, string, boolean] & {
         platformType: BigNumber;
         id: BigNumber;
-        zDAO: string;
         zDAOOwnedBy: string;
         gnosisSafe: string;
+        name: string;
         destroyed: boolean;
       }
     >;
@@ -645,6 +646,7 @@ export interface ZDAORegistry extends BaseContract {
     _platformType: BigNumberish,
     _zNA: BigNumberish,
     _gnosisSafe: string,
+    _name: string,
     _options: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -787,9 +789,9 @@ export interface ZDAORegistry extends BaseContract {
     [BigNumber, BigNumber, string, string, string, boolean] & {
       platformType: BigNumber;
       id: BigNumber;
-      zDAO: string;
       zDAOOwnedBy: string;
       gnosisSafe: string;
+      name: string;
       destroyed: boolean;
     }
   >;
@@ -813,6 +815,7 @@ export interface ZDAORegistry extends BaseContract {
       _platformType: BigNumberish,
       _zNA: BigNumberish,
       _gnosisSafe: string,
+      _name: string,
       _options: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -953,9 +956,9 @@ export interface ZDAORegistry extends BaseContract {
       [BigNumber, BigNumber, string, string, string, boolean] & {
         platformType: BigNumber;
         id: BigNumber;
-        zDAO: string;
         zDAOOwnedBy: string;
         gnosisSafe: string;
+        name: string;
         destroyed: boolean;
       }
     >;
@@ -1094,6 +1097,7 @@ export interface ZDAORegistry extends BaseContract {
       _platformType: BigNumberish,
       _zNA: BigNumberish,
       _gnosisSafe: string,
+      _name: string,
       _options: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1262,6 +1266,7 @@ export interface ZDAORegistry extends BaseContract {
       _platformType: BigNumberish,
       _zNA: BigNumberish,
       _gnosisSafe: string,
+      _name: string,
       _options: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

@@ -6,5 +6,6 @@ export interface SnapshotZDAOProperties {
   snapshot: number;
   ensSpace: ENSId;
   gnosisSafe: string;
+  name: string;
   destroyed: boolean;
 }

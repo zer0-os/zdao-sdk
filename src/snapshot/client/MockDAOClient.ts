@@ -45,7 +45,7 @@ class MockDAOClient extends AbstractDAOClient {
     const properties: zDAOProperties = {
       id: shortid.generate(),
       zNAs: [params.zNA],
-      title: params.title,
+      name: params.name,
       createdBy: '',
       network: params.network,
       gnosisSafe: params.gnosisSafe,

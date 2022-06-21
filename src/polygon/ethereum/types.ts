@@ -6,7 +6,4 @@ export interface ZDAORecord {
   zNAs: zNA[];
 }
 
-export interface RootZDAOProperties extends Omit<zDAOProperties, 'state'> {
-  // Address to ZDAO contract
-  address: string;
-}
+export type EthereumZDAOProperties = Omit<zDAOProperties, 'state'>;

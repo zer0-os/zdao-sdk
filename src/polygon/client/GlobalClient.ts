@@ -2,8 +2,8 @@ import { ethers } from 'ethers';
 
 import ZDAORegistryClient from '../../client/ZDAORegistry';
 import { NotInitializedError } from '../../types';
-import { RootZDAOChefClient } from '../ethereum';
-import { ChildZDAOChefClient } from '../polygon';
+import { EthereumZDAOChefClient } from '../ethereum';
+import { PolygonZDAOChefClient } from '../polygon';
 import RegistryClient from './RegistryClient';
 import StakingClient from './StakingClient';
 
@@ -11,8 +11,8 @@ class GlobalClient {
   private static _etherRpcProvider?: ethers.providers.JsonRpcProvider;
   private static _polyRpcProvider?: ethers.providers.JsonRpcProvider;
   private static _zDAORegistry?: ZDAORegistryClient;
-  private static _rootZDAOChef?: RootZDAOChefClient;
-  private static _childZDAOChef?: ChildZDAOChefClient;
+  private static _ethereumZDAOChef?: EthereumZDAOChefClient;
+  private static _polygonZDAOChef?: PolygonZDAOChefClient;
   private static _staking?: StakingClient;
   private static _registry?: RegistryClient;
   private static _ipfsGateway?: string;
@@ -54,26 +54,26 @@ class GlobalClient {
     GlobalClient._zDAORegistry = registry;
   }
 
-  static get rootZDAOChef() {
-    if (!GlobalClient._rootZDAOChef) {
+  static get ethereumZDAOChef() {
+    if (!GlobalClient._ethereumZDAOChef) {
       throw new NotInitializedError();
     }
-    return GlobalClient._rootZDAOChef;
+    return GlobalClient._ethereumZDAOChef;
   }
 
-  static set rootZDAOChef(rootZDAOChef: RootZDAOChefClient) {
-    GlobalClient._rootZDAOChef = rootZDAOChef;
+  static set ethereumZDAOChef(ethereumZDAOChef: EthereumZDAOChefClient) {
+    GlobalClient._ethereumZDAOChef = ethereumZDAOChef;
   }
 
-  static get childZDAOChef() {
-    if (!GlobalClient._childZDAOChef) {
+  static get polygonZDAOChef() {
+    if (!GlobalClient._polygonZDAOChef) {
       throw new NotInitializedError();
     }
-    return GlobalClient._childZDAOChef;
+    return GlobalClient._polygonZDAOChef;
   }
 
-  static set childZDAOChef(polyZdAOChef: ChildZDAOChefClient) {
-    GlobalClient._childZDAOChef = polyZdAOChef;
+  static set polygonZDAOChef(polyZdAOChef: PolygonZDAOChefClient) {
+    GlobalClient._polygonZDAOChef = polyZdAOChef;
   }
 
   static get staking() {

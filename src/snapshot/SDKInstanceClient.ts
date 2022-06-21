@@ -46,7 +46,7 @@ class SDKInstanceClient implements SDKInstance {
       this._config.ethereum.network
     );
     GlobalClient.zDAORegistry = new ZDAORegistryClient(config.zNA);
-    GlobalClient.rootZDAOChef = new ZDAOChefClient(config.ethereum);
+    GlobalClient.ethereumZDAOChef = new ZDAOChefClient(config.ethereum);
     GlobalClient.ipfsGateway = config.ipfsGateway;
   }
 
@@ -64,7 +64,7 @@ class SDKInstanceClient implements SDKInstance {
         throw new InvalidError(errorMessageForError('not-zna-owner'));
       }
 
-      await GlobalClient.rootZDAOChef.addNewDAO(signer, {
+      await GlobalClient.ethereumZDAOChef.addNewDAO(signer, {
         ...params,
         zNA: zNAId,
       });
@@ -76,7 +76,7 @@ class SDKInstanceClient implements SDKInstance {
 
   async deleteZDAO(signer: Signer, zDAOId: zDAOId): Promise<void> {
     try {
-      await GlobalClient.rootZDAOChef.removeDAO(signer, zDAOId);
+      await GlobalClient.ethereumZDAOChef.removeDAO(signer, zDAOId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -113,7 +113,7 @@ class SDKInstanceClient implements SDKInstance {
     const zDAORecord: ZDAORecord =
       await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
 
-    const zDAOInfo = await GlobalClient.rootZDAOChef.getZDAOPropertiesById(
+    const zDAOInfo = await GlobalClient.ethereumZDAOChef.getZDAOPropertiesById(
       zDAORecord.id
     );
 
@@ -142,7 +142,7 @@ class SDKInstanceClient implements SDKInstance {
       {
         id: zDAORecord.id,
         zNAs: zDAORecord.associatedzNAs,
-        title: space.name,
+        name: space.name,
         createdBy: '',
         network: Number(space.network),
         gnosisSafe: zDAORecord.gnosisSafe,
@@ -231,8 +231,8 @@ class SDKInstanceClient implements SDKInstance {
     signer: Signer,
     params: CreateZDAOParams
   ): Promise<zDAO> {
-    if (params.title.length < 1) {
-      throw new Error(errorMessageForError('empty-zdao-title'));
+    if (params.name.length < 1) {
+      throw new Error(errorMessageForError('empty-zdao-name'));
     }
     if (params.gnosisSafe.length < 1) {
       throw new Error(errorMessageForError('empty-gnosis-address'));

@@ -3,24 +3,24 @@ import { ethers } from 'ethers';
 
 import { Choice, DAOConfig, ProposalId, zDAOId } from '../../types';
 import GlobalClient from '../client/GlobalClient';
-import ChildZDAOAbi from '../config/abi/ChildZDAO.json';
-import ChildZDAOChefAbi from '../config/abi/ChildZDAOChef.json';
-import { ChildZDAO } from '../config/types/ChildZDAO';
-import { ChildZDAOChef } from '../config/types/ChildZDAOChef';
+import PolygonZDAOAbi from '../config/abi/PolygonZDAO.json';
+import PolygonZDAOChefAbi from '../config/abi/PolygonZDAOChef.json';
+import { PolygonZDAO } from '../config/types/PolygonZDAO';
+import { PolygonZDAOChef } from '../config/types/PolygonZDAOChef';
 import { StakingProperties } from '../types';
-import { ChildZDAOProperties } from './types';
+import { PolygonZDAOProperties } from './types';
 
-class ChildZDAOChefClient {
+class PolygonZDAOChefClient {
   private readonly _config: DAOConfig;
-  protected readonly _contract: ChildZDAOChef;
+  protected readonly _contract: PolygonZDAOChef;
 
   constructor(config: DAOConfig) {
     this._config = config;
     this._contract = new ethers.Contract(
       config.zDAOChef,
-      ChildZDAOChefAbi.abi,
+      PolygonZDAOChefAbi.abi,
       GlobalClient.polyRpcProvider
-    ) as ChildZDAOChef;
+    ) as PolygonZDAOChef;
   }
 
   get config(): DAOConfig {
@@ -31,30 +31,30 @@ class ChildZDAOChefClient {
     return (await this._contract.numberOfzDAOs()).toNumber();
   }
 
-  async getZDAOById(daoId: zDAOId): Promise<ChildZDAO | null> {
-    const iChildZDAO = await this._contract.getzDAOById(daoId);
-    if (!iChildZDAO || iChildZDAO === AddressZero) return null;
+  async getZDAOById(daoId: zDAOId): Promise<PolygonZDAO | null> {
+    const iPolygonZDAO = await this._contract.getzDAOById(daoId);
+    if (!iPolygonZDAO || iPolygonZDAO === AddressZero) return null;
 
     return new ethers.Contract(
-      iChildZDAO,
-      ChildZDAOAbi.abi,
+      iPolygonZDAO,
+      PolygonZDAOAbi.abi,
       GlobalClient.polyRpcProvider
-    ) as ChildZDAO;
+    ) as PolygonZDAO;
   }
 
-  async getZDAOProperties(daoId: zDAOId): Promise<ChildZDAOProperties> {
+  async getZDAOProperties(daoId: zDAOId): Promise<PolygonZDAOProperties> {
     const address = await this._contract.getzDAOById(daoId);
-    const childZDAO = new ethers.Contract(
+    const polygonZDAO = new ethers.Contract(
       address,
-      ChildZDAOAbi.abi,
+      PolygonZDAOAbi.abi,
       GlobalClient.polyRpcProvider
-    ) as ChildZDAO;
+    ) as PolygonZDAO;
 
-    const zDAOInfo = await childZDAO.zDAOInfo();
+    const zDAOInfo = await polygonZDAO.zDAOInfo();
 
     return {
       id: zDAOInfo.zDAOId.toString(),
-      address: childZDAO.address,
+      address: polygonZDAO.address,
       snapshot: zDAOInfo.snapshot.toNumber(),
       destroyed: zDAOInfo.destroyed,
     };
@@ -132,4 +132,4 @@ class ChildZDAOChefClient {
   }
 }
 
-export default ChildZDAOChefClient;
+export default PolygonZDAOChefClient;

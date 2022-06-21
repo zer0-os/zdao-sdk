@@ -18,7 +18,7 @@ import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export declare namespace IChildZDAO {
+export declare namespace IPolygonZDAO {
   export type ProposalStruct = {
     proposalId: BigNumberish;
     startTimestamp: BigNumberish;
@@ -57,8 +57,8 @@ export declare namespace IChildZDAO {
   };
 }
 
-export interface ChildZDAOInterface extends utils.Interface {
-  contractName: "ChildZDAO";
+export interface PolygonZDAOInterface extends utils.Interface {
+  contractName: "PolygonZDAO";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "__ZDAO_init(address,address,uint256,uint256,address)": FunctionFragment;
@@ -398,13 +398,13 @@ export type UpgradedEvent = TypedEvent<[string], { implementation: string }>;
 
 export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
 
-export interface ChildZDAO extends BaseContract {
-  contractName: "ChildZDAO";
+export interface PolygonZDAO extends BaseContract {
+  contractName: "PolygonZDAO";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: ChildZDAOInterface;
+  interface: PolygonZDAOInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -496,8 +496,8 @@ export interface ChildZDAO extends BaseContract {
       _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [IChildZDAO.ProposalStructOutput[]] & {
-        records: IChildZDAO.ProposalStructOutput[];
+      [IPolygonZDAO.ProposalStructOutput[]] & {
+        records: IPolygonZDAO.ProposalStructOutput[];
       }
     >;
 
@@ -720,7 +720,7 @@ export interface ChildZDAO extends BaseContract {
     _startIndex: BigNumberish,
     _count: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<IChildZDAO.ProposalStructOutput[]>;
+  ): Promise<IPolygonZDAO.ProposalStructOutput[]>;
 
   listVoters(
     _proposalId: BigNumberish,
@@ -944,7 +944,7 @@ export interface ChildZDAO extends BaseContract {
       _startIndex: BigNumberish,
       _count: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<IChildZDAO.ProposalStructOutput[]>;
+    ): Promise<IPolygonZDAO.ProposalStructOutput[]>;
 
     listVoters(
       _proposalId: BigNumberish,

@@ -7,7 +7,7 @@ import { ZDAOChefClient } from '../ethereum';
 class GlobalClient {
   private static _etherRpcProvider?: ethers.providers.JsonRpcProvider;
   private static _zDAORegistry?: ZDAORegistryClient;
-  private static _rootZDAOChef?: ZDAOChefClient;
+  private static _ethereumZDAOChef?: ZDAOChefClient;
   private static _ipfsGateway?: string;
 
   static get etherRpcProvider() {
@@ -34,15 +34,15 @@ class GlobalClient {
     GlobalClient._zDAORegistry = registry;
   }
 
-  static get rootZDAOChef() {
-    if (!GlobalClient._rootZDAOChef) {
+  static get ethereumZDAOChef() {
+    if (!GlobalClient._ethereumZDAOChef) {
       throw new NotInitializedError();
     }
-    return GlobalClient._rootZDAOChef;
+    return GlobalClient._ethereumZDAOChef;
   }
 
-  static set rootZDAOChef(zDAOChef: ZDAOChefClient) {
-    GlobalClient._rootZDAOChef = zDAOChef;
+  static set ethereumZDAOChef(zDAOChef: ZDAOChefClient) {
+    GlobalClient._ethereumZDAOChef = zDAOChef;
   }
 
   static get ipfsGateway() {

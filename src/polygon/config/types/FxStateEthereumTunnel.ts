@@ -17,13 +17,14 @@ import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface FxStateRootTunnelInterface extends utils.Interface {
-  contractName: "FxStateRootTunnel";
+export interface FxStateEthereumTunnelInterface extends utils.Interface {
+  contractName: "FxStateEthereumTunnel";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "SEND_MESSAGE_EVENT_SIG()": FunctionFragment;
-    "__FxStateRootTunnel_init(address,address)": FunctionFragment;
+    "__FxStateEthereumTunnel_init(address,address)": FunctionFragment;
     "checkpointManager()": FunctionFragment;
+    "ethereumStateReceiver()": FunctionFragment;
     "fxChildTunnel()": FunctionFragment;
     "fxRoot()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -36,10 +37,9 @@ export interface FxStateRootTunnelInterface extends utils.Interface {
     "renounceOwnership()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
-    "rootStateReceiver()": FunctionFragment;
     "sendMessageToChild(bytes)": FunctionFragment;
+    "setEthereumStateReceiver(address)": FunctionFragment;
     "setFxChildTunnel(address)": FunctionFragment;
-    "setRootStateReceiver(address)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
@@ -56,11 +56,15 @@ export interface FxStateRootTunnelInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "__FxStateRootTunnel_init",
+    functionFragment: "__FxStateEthereumTunnel_init",
     values: [string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "checkpointManager",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "ethereumStateReceiver",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -103,19 +107,15 @@ export interface FxStateRootTunnelInterface extends utils.Interface {
     values: [BytesLike, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "rootStateReceiver",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "sendMessageToChild",
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "setFxChildTunnel",
+    functionFragment: "setEthereumStateReceiver",
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "setRootStateReceiver",
+    functionFragment: "setFxChildTunnel",
     values: [string]
   ): string;
   encodeFunctionData(
@@ -142,11 +142,15 @@ export interface FxStateRootTunnelInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "__FxStateRootTunnel_init",
+    functionFragment: "__FxStateEthereumTunnel_init",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "checkpointManager",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "ethereumStateReceiver",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -180,19 +184,15 @@ export interface FxStateRootTunnelInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "rootStateReceiver",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "sendMessageToChild",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setFxChildTunnel",
+    functionFragment: "setEthereumStateReceiver",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setRootStateReceiver",
+    functionFragment: "setFxChildTunnel",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -286,13 +286,13 @@ export type UpgradedEvent = TypedEvent<[string], { implementation: string }>;
 
 export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
 
-export interface FxStateRootTunnel extends BaseContract {
-  contractName: "FxStateRootTunnel";
+export interface FxStateEthereumTunnel extends BaseContract {
+  contractName: "FxStateEthereumTunnel";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: FxStateRootTunnelInterface;
+  interface: FxStateEthereumTunnelInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -318,13 +318,15 @@ export interface FxStateRootTunnel extends BaseContract {
 
     SEND_MESSAGE_EVENT_SIG(overrides?: CallOverrides): Promise<[string]>;
 
-    __FxStateRootTunnel_init(
+    __FxStateEthereumTunnel_init(
       _checkpointManager: string,
-      _fxRoot: string,
+      _fxEthereum: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     checkpointManager(overrides?: CallOverrides): Promise<[string]>;
+
+    ethereumStateReceiver(overrides?: CallOverrides): Promise<[string]>;
 
     fxChildTunnel(overrides?: CallOverrides): Promise<[string]>;
 
@@ -374,20 +376,18 @@ export interface FxStateRootTunnel extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    rootStateReceiver(overrides?: CallOverrides): Promise<[string]>;
-
     sendMessageToChild(
       message: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setFxChildTunnel(
-      _fxChildTunnel: string,
+    setEthereumStateReceiver(
+      _ethereumStateReceiver: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setRootStateReceiver(
-      _rootStateReceiver: string,
+    setFxChildTunnel(
+      _fxChildTunnel: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -419,13 +419,15 @@ export interface FxStateRootTunnel extends BaseContract {
 
   SEND_MESSAGE_EVENT_SIG(overrides?: CallOverrides): Promise<string>;
 
-  __FxStateRootTunnel_init(
+  __FxStateEthereumTunnel_init(
     _checkpointManager: string,
-    _fxRoot: string,
+    _fxEthereum: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   checkpointManager(overrides?: CallOverrides): Promise<string>;
+
+  ethereumStateReceiver(overrides?: CallOverrides): Promise<string>;
 
   fxChildTunnel(overrides?: CallOverrides): Promise<string>;
 
@@ -472,20 +474,18 @@ export interface FxStateRootTunnel extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  rootStateReceiver(overrides?: CallOverrides): Promise<string>;
-
   sendMessageToChild(
     message: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setFxChildTunnel(
-    _fxChildTunnel: string,
+  setEthereumStateReceiver(
+    _ethereumStateReceiver: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setRootStateReceiver(
-    _rootStateReceiver: string,
+  setFxChildTunnel(
+    _fxChildTunnel: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -517,13 +517,15 @@ export interface FxStateRootTunnel extends BaseContract {
 
     SEND_MESSAGE_EVENT_SIG(overrides?: CallOverrides): Promise<string>;
 
-    __FxStateRootTunnel_init(
+    __FxStateEthereumTunnel_init(
       _checkpointManager: string,
-      _fxRoot: string,
+      _fxEthereum: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     checkpointManager(overrides?: CallOverrides): Promise<string>;
+
+    ethereumStateReceiver(overrides?: CallOverrides): Promise<string>;
 
     fxChildTunnel(overrides?: CallOverrides): Promise<string>;
 
@@ -571,20 +573,18 @@ export interface FxStateRootTunnel extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    rootStateReceiver(overrides?: CallOverrides): Promise<string>;
-
     sendMessageToChild(
       message: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setFxChildTunnel(
-      _fxChildTunnel: string,
+    setEthereumStateReceiver(
+      _ethereumStateReceiver: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setRootStateReceiver(
-      _rootStateReceiver: string,
+    setFxChildTunnel(
+      _fxChildTunnel: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -684,13 +684,15 @@ export interface FxStateRootTunnel extends BaseContract {
 
     SEND_MESSAGE_EVENT_SIG(overrides?: CallOverrides): Promise<BigNumber>;
 
-    __FxStateRootTunnel_init(
+    __FxStateEthereumTunnel_init(
       _checkpointManager: string,
-      _fxRoot: string,
+      _fxEthereum: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     checkpointManager(overrides?: CallOverrides): Promise<BigNumber>;
+
+    ethereumStateReceiver(overrides?: CallOverrides): Promise<BigNumber>;
 
     fxChildTunnel(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -743,20 +745,18 @@ export interface FxStateRootTunnel extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    rootStateReceiver(overrides?: CallOverrides): Promise<BigNumber>;
-
     sendMessageToChild(
       message: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setFxChildTunnel(
-      _fxChildTunnel: string,
+    setEthereumStateReceiver(
+      _ethereumStateReceiver: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setRootStateReceiver(
-      _rootStateReceiver: string,
+    setFxChildTunnel(
+      _fxChildTunnel: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -793,13 +793,17 @@ export interface FxStateRootTunnel extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    __FxStateRootTunnel_init(
+    __FxStateEthereumTunnel_init(
       _checkpointManager: string,
-      _fxRoot: string,
+      _fxEthereum: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     checkpointManager(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    ethereumStateReceiver(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     fxChildTunnel(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -852,20 +856,18 @@ export interface FxStateRootTunnel extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    rootStateReceiver(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     sendMessageToChild(
       message: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setFxChildTunnel(
-      _fxChildTunnel: string,
+    setEthereumStateReceiver(
+      _ethereumStateReceiver: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setRootStateReceiver(
-      _rootStateReceiver: string,
+    setFxChildTunnel(
+      _fxChildTunnel: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

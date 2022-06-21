@@ -27,8 +27,8 @@ import {
   StakingClient,
 } from './client';
 import GlobalClient from './client/GlobalClient';
-import { RootZDAOChefClient } from './ethereum';
-import { ChildZDAOChefClient } from './polygon';
+import { EthereumZDAOChefClient } from './ethereum';
+import { PolygonZDAOChefClient } from './polygon';
 import { Config, CreateZDAOParamsOptions } from './types';
 
 class SDKInstanceClient implements SDKInstance {
@@ -54,15 +54,17 @@ class SDKInstanceClient implements SDKInstance {
     GlobalClient.ipfsGateway = config.ipfsGateway;
 
     return (async (config: Config): Promise<SDKInstanceClient> => {
-      GlobalClient.rootZDAOChef = await new RootZDAOChefClient(config.ethereum);
-      GlobalClient.childZDAOChef = new ChildZDAOChefClient(config.polygon);
+      GlobalClient.ethereumZDAOChef = await new EthereumZDAOChefClient(
+        config.ethereum
+      );
+      GlobalClient.polygonZDAOChef = new PolygonZDAOChefClient(config.polygon);
 
       const stakingProperties =
-        await GlobalClient.childZDAOChef.getStakingProperties();
+        await GlobalClient.polygonZDAOChef.getStakingProperties();
       GlobalClient.staking = new StakingClient(stakingProperties);
 
       const registryAddress =
-        await GlobalClient.childZDAOChef.getRegistryAddress();
+        await GlobalClient.polygonZDAOChef.getRegistryAddress();
       GlobalClient.registry = new RegistryClient(registryAddress);
       await ProofClient.initialize(config);
 
@@ -95,7 +97,7 @@ class SDKInstanceClient implements SDKInstance {
         throw new InvalidError(errorMessageForError('not-zna-owner'));
       }
 
-      await GlobalClient.rootZDAOChef.addNewDAO(signer, {
+      await GlobalClient.ethereumZDAOChef.addNewDAO(signer, {
         ...params,
         zNA: zNAId,
       });
@@ -107,7 +109,7 @@ class SDKInstanceClient implements SDKInstance {
 
   async deleteZDAO(signer: ethers.Signer, zDAOId: zDAOId): Promise<void> {
     try {
-      await GlobalClient.rootZDAOChef.removeDAO(signer, zDAOId);
+      await GlobalClient.ethereumZDAOChef.removeDAO(signer, zDAOId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -209,8 +211,8 @@ class SDKInstanceClient implements SDKInstance {
     signer: ethers.Signer,
     params: CreateZDAOParams
   ): Promise<zDAO> {
-    if (params.title.length < 1) {
-      throw new InvalidError(errorMessageForError('empty-zdao-title'));
+    if (params.name.length < 1) {
+      throw new InvalidError(errorMessageForError('empty-zdao-name'));
     }
     if (params.gnosisSafe.length < 1) {
       throw new InvalidError(errorMessageForError('empty-gnosis-address'));

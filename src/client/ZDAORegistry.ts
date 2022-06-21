@@ -11,14 +11,14 @@ import ZNAClient from './ZNAClient';
 export interface ZDAORecord {
   platformType: number;
   id: zDAOId;
-  zDAO: string; // address to zDAO contract
   zDAOOwnedBy: string; // zDAO owner and created by
   gnosisSafe: string; // Gnosis safe address where collected treasuries are stored
+  name: string; // zDAO name
   destroyed: boolean;
   associatedzNAs: zNA[];
 }
 
-export interface RootZDAOProperties extends Omit<zDAOProperties, 'state'> {
+export interface EthereumZDAOProperties extends Omit<zDAOProperties, 'state'> {
   // Address to ZDAO contract
   address: string;
 }
@@ -64,9 +64,9 @@ class ZDAORegistryClient {
         zDAORecord.push({
           platformType: record.platformType.toNumber() as PlatformType,
           id: record.id.toString(),
-          zDAO: record.zDAO,
           zDAOOwnedBy: record.zDAOOwnedBy,
           gnosisSafe: record.gnosisSafe,
+          name: record.name,
           destroyed: false,
           associatedzNAs: zNAs,
         });
@@ -92,9 +92,9 @@ class ZDAORegistryClient {
     return {
       platformType: zDAORecord.platformType.toNumber() as PlatformType,
       id: zDAORecord.id.toString(),
-      zDAO: zDAORecord.zDAO,
       zDAOOwnedBy: zDAORecord.zDAOOwnedBy,
       gnosisSafe: zDAORecord.gnosisSafe,
+      name: zDAORecord.name,
       destroyed: false,
       associatedzNAs: zNAs,
     };
@@ -113,9 +113,9 @@ class ZDAORegistryClient {
     return {
       platformType: zDAORecord.platformType.toNumber() as PlatformType,
       id: zDAORecord.id.toString(),
-      zDAO: zDAORecord.zDAO,
       zDAOOwnedBy: zDAORecord.zDAOOwnedBy,
       gnosisSafe: zDAORecord.gnosisSafe,
+      name: zDAORecord.name,
       destroyed: false,
       associatedzNAs: zNAs,
     };
@@ -130,15 +130,22 @@ class ZDAORegistryClient {
     platformType: PlatformType,
     zNA: zNA,
     gnosisSafe: string,
+    name: string,
     options?: string
   ) {
     const gasEstimated = await this._contract
       .connect(signer)
-      .estimateGas.addNewZDAO(platformType, zNA, gnosisSafe, options ?? '0x00');
+      .estimateGas.addNewZDAO(
+        platformType,
+        zNA,
+        gnosisSafe,
+        name,
+        options ?? '0x00'
+      );
 
     const tx = await this._contract
       .connect(signer)
-      .addNewZDAO(platformType, zNA, gnosisSafe, options ?? '0x00', {
+      .addNewZDAO(platformType, zNA, gnosisSafe, name, options ?? '0x00', {
         gasLimit: calculateGasMargin(gasEstimated),
       });
     return await tx.wait();

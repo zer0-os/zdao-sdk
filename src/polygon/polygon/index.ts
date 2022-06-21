@@ -1,3 +1,3 @@
-export { default as ChildRegistryClient } from './ChildRegistryClient';
-export { default as ChildStakingClient } from './ChildStakingClient';
-export { default as ChildZDAOChefClient } from './ChildZDAOChefClient';
+export { default as PolygonRegistryClient } from './PolygonRegistryClient';
+export { default as PolygonStakingClient } from './PolygonStakingClient';
+export { default as PolygonZDAOChefClient } from './PolygonZDAOChefClient';

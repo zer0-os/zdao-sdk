@@ -24,16 +24,16 @@ import {
   getFullDisplayBalance,
   getToken,
 } from '../../utilities';
-import { ChildZDAO } from '../config/types/ChildZDAO';
-import { IRootZDAO, RootZDAO } from '../config/types/RootZDAO';
+import { EthereumZDAO, IEthereumZDAO } from '../config/types/EthereumZDAO';
+import { PolygonZDAO } from '../config/types/PolygonZDAO';
 import { Config, VoteChoice } from '../types';
 import GlobalClient from './GlobalClient';
 import ProofClient from './ProofClient';
 import ProposalClient from './ProposalClient';
 
 class DAOClient extends AbstractDAOClient {
-  protected _rootZDAO!: RootZDAO;
-  protected _childZDAO: ChildZDAO | null = null;
+  protected _ethereumZDAO!: EthereumZDAO;
+  protected _polygonZDAO: PolygonZDAO | null = null;
   protected _rootTokenContract!: ethers.Contract;
   protected _totalSupply!: BigNumber;
 
@@ -51,11 +51,11 @@ class DAOClient extends AbstractDAOClient {
       );
       this._totalSupply = await this._rootTokenContract.totalSupply();
 
-      this._rootZDAO = await GlobalClient.rootZDAOChef.getZDAOById(
+      this._ethereumZDAO = await GlobalClient.ethereumZDAOChef.getZDAOById(
         this._properties.id
       );
-      this._childZDAO = await this.getChildZDAO();
-      if (this._childZDAO) {
+      this._polygonZDAO = await this.getPolygonZDAO();
+      if (this._polygonZDAO) {
         this._properties.state = zDAOState.ACTIVE;
       }
       if (properties.destroyed) {
@@ -65,8 +65,8 @@ class DAOClient extends AbstractDAOClient {
     })() as unknown as DAOClient;
   }
 
-  get rootZDAO() {
-    return this._rootZDAO;
+  get ethereumZDAO() {
+    return this._ethereumZDAO;
   }
 
   get totalSupply() {
@@ -75,14 +75,15 @@ class DAOClient extends AbstractDAOClient {
 
   static async createInstance(config: Config, zDAOId: zDAOId): Promise<zDAO> {
     const zDAOProperties =
-      await GlobalClient.rootZDAOChef.getZDAOPropertiesById(zDAOId);
+      await GlobalClient.ethereumZDAOChef.getZDAOPropertiesById(zDAOId);
 
-    const childTokenAddress = await GlobalClient.registry.rootToChildToken(
-      zDAOProperties.votingToken.token
-    );
-    const childToken = await getToken(
+    const polygonTokenAddress =
+      await GlobalClient.registry.ethereumToPolygonToken(
+        zDAOProperties.votingToken.token
+      );
+    const polygonToken = await getToken(
       GlobalClient.polyRpcProvider,
-      childTokenAddress
+      polygonTokenAddress
     );
 
     return await new DAOClient(
@@ -90,27 +91,27 @@ class DAOClient extends AbstractDAOClient {
         ...zDAOProperties,
         state: zDAOState.PENDING,
         options: {
-          polygonToken: childToken,
+          polygonToken: polygonToken,
         },
       },
       new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
     );
   }
 
-  async getChildZDAO(): Promise<ChildZDAO | null> {
-    if (this._childZDAO) return this._childZDAO;
-    this._childZDAO = await GlobalClient.childZDAOChef.getZDAOById(
+  async getPolygonZDAO(): Promise<PolygonZDAO | null> {
+    if (this._polygonZDAO) return this._polygonZDAO;
+    this._polygonZDAO = await GlobalClient.polygonZDAOChef.getZDAOById(
       this._properties.id
     );
-    return this._childZDAO;
+    return this._polygonZDAO;
   }
 
   private async mapToProperties(
-    raw: IRootZDAO.ProposalStruct
+    raw: IEthereumZDAO.ProposalStruct
   ): Promise<ProposalProperties> {
-    const childZDAO = await this.getChildZDAO();
-    const polyProposal = childZDAO
-      ? await childZDAO.proposals(raw.proposalId)
+    const polygonZDAO = await this.getPolygonZDAO();
+    const polyProposal = polygonZDAO
+      ? await polygonZDAO.proposals(raw.proposalId)
       : null;
     const isSyncedProposal = polyProposal
       ? polyProposal.proposalId.eq(raw.proposalId)
@@ -118,24 +119,24 @@ class DAOClient extends AbstractDAOClient {
 
     const created = new Date(Number(raw.created) * 1000);
     const start =
-        childZDAO && polyProposal && isSyncedProposal
+        polygonZDAO && polyProposal && isSyncedProposal
           ? new Date(Number(polyProposal.startTimestamp) * 1000)
           : undefined,
       end =
-        childZDAO && polyProposal && isSyncedProposal
+        polygonZDAO && polyProposal && isSyncedProposal
           ? new Date(Number(polyProposal.endTimestamp) * 1000)
           : undefined,
       now = new Date();
     const snapshot =
-      childZDAO && polyProposal && isSyncedProposal
+      polygonZDAO && polyProposal && isSyncedProposal
         ? polyProposal.snapshot.toNumber()
         : undefined;
     const scores =
-      childZDAO && polyProposal && isSyncedProposal
+      polygonZDAO && polyProposal && isSyncedProposal
         ? [polyProposal.yes.toString(), polyProposal.no.toString()]
         : undefined;
     const voters =
-      childZDAO && polyProposal && isSyncedProposal
+      polygonZDAO && polyProposal && isSyncedProposal
         ? polyProposal.voters.toNumber()
         : undefined;
 
@@ -178,7 +179,7 @@ class DAOClient extends AbstractDAOClient {
       return false;
     };
 
-    const mapState = (raw: IRootZDAO.ProposalStruct): ProposalState => {
+    const mapState = (raw: IEthereumZDAO.ProposalStruct): ProposalState => {
       if (raw.canceled) {
         return ProposalState.CANCELED;
       } else if (
@@ -248,8 +249,8 @@ class DAOClient extends AbstractDAOClient {
     const proposalPromises: Promise<Proposal>[] = [];
 
     while (numberOfResults === count) {
-      const results: IRootZDAO.ProposalStructOutput[] =
-        await this._rootZDAO.listProposals(from, count);
+      const results: IEthereumZDAO.ProposalStructOutput[] =
+        await this._ethereumZDAO.listProposals(from, count);
 
       const promises: Promise<ProposalProperties>[] = [];
       promises.push(
@@ -270,7 +271,7 @@ class DAOClient extends AbstractDAOClient {
   }
 
   async getProposal(id: ProposalId): Promise<Proposal> {
-    const proposal = await this._rootZDAO.proposals(id);
+    const proposal = await this._ethereumZDAO.proposals(id);
     if (proposal.proposalId.toString() !== id) {
       throw new NotFoundError(errorMessageForError('not-found-proposal'));
     }
@@ -305,8 +306,8 @@ class DAOClient extends AbstractDAOClient {
     }
 
     // zDAO should be synchronized to Polygon prior to create proposal
-    const childZDAO = await this.getChildZDAO();
-    if (!childZDAO) {
+    const polygonZDAO = await this.getPolygonZDAO();
+    if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
 
@@ -316,7 +317,7 @@ class DAOClient extends AbstractDAOClient {
       const signer = provider?.getSigner ? provider.getSigner() : provider;
       const ipfs = await AbstractDAOClient.uploadToIPFS(signer, payload);
 
-      await GlobalClient.rootZDAOChef.createProposal(
+      await GlobalClient.ethereumZDAOChef.createProposal(
         signer,
         this.id,
         payload,
@@ -324,7 +325,9 @@ class DAOClient extends AbstractDAOClient {
       );
 
       // created proposal id
-      const lastProposalId = (await this._rootZDAO.lastProposalId()).toString();
+      const lastProposalId = (
+        await this._ethereumZDAO.lastProposalId()
+      ).toString();
 
       return lastProposalId;
     } catch (error: any) {
@@ -344,7 +347,7 @@ class DAOClient extends AbstractDAOClient {
     }
     try {
       const proof = await ProofClient.generate(txHash);
-      await GlobalClient.rootZDAOChef.receiveMessage(signer, proof);
+      await GlobalClient.ethereumZDAOChef.receiveMessage(signer, proof);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);

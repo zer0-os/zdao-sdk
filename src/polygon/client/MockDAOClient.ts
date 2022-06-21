@@ -46,18 +46,17 @@ class MockDAOClient extends AbstractDAOClient {
     const chainId = await signer.getChainId();
 
     const token = await getToken(GlobalClient.etherRpcProvider, params.token);
-    const childTokenAddress = await GlobalClient.registry.rootToChildToken(
-      params.token
-    );
-    const childToken = await getToken(
+    const polygonTokenAddress =
+      await GlobalClient.registry.ethereumToPolygonToken(params.token);
+    const polygonToken = await getToken(
       GlobalClient.polyRpcProvider,
-      childTokenAddress
+      polygonTokenAddress
     );
 
     const properties: zDAOProperties = {
       id: shortid.generate(),
       zNAs: [params.zNA],
-      title: params.title,
+      name: params.name,
       createdBy: await signer.getAddress(),
       network: chainId,
       gnosisSafe: params.gnosisSafe,
@@ -76,7 +75,7 @@ class MockDAOClient extends AbstractDAOClient {
       snapshot: timestamp(new Date()),
       destroyed: false,
       options: {
-        polygonToken: childToken,
+        polygonToken: polygonToken,
       },
     };
 

@@ -1,6 +1,6 @@
 import { zDAOId } from '../../types';
 
-export interface ChildZDAOProperties {
+export interface PolygonZDAOProperties {
   // Unique id for looking up zDAO
   id: zDAOId;
 

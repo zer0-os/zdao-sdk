@@ -11,39 +11,39 @@ import {
 } from '../../types';
 import { calculateGasMargin, getToken } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
-import FxStateRootTunnelAbi from '../config/abi/FxStateRootTunnel.json';
-import RootZDAOAbi from '../config/abi/RootZDAO.json';
-import RootZDAOChefAbi from '../config/abi/RootZDAOChef.json';
-import { FxStateRootTunnel } from '../config/types/FxStateRootTunnel';
-import { RootZDAO } from '../config/types/RootZDAO';
-import { RootZDAOChef } from '../config/types/RootZDAOChef';
+import EthereumZDAOAbi from '../config/abi/EthereumZDAO.json';
+import EthereumZDAOChefAbi from '../config/abi/EthereumZDAOChef.json';
+import FxStateEthereumTunnelAbi from '../config/abi/FxStateEthereumTunnel.json';
+import { EthereumZDAO } from '../config/types/EthereumZDAO';
+import { EthereumZDAOChef } from '../config/types/EthereumZDAOChef';
+import { FxStateEthereumTunnel } from '../config/types/FxStateEthereumTunnel';
 import { CreateZDAOParamsOptions } from '../types';
-import { RootZDAOProperties } from './types';
+import { EthereumZDAOProperties } from './types';
 
-class RootZDAOChefClient {
+class EthereumZDAOChefClient {
   private readonly _config: DAOConfig;
-  protected _contract!: RootZDAOChef;
-  protected _rootStateSender!: FxStateRootTunnel;
+  protected _contract!: EthereumZDAOChef;
+  protected _rootStateSender!: FxStateEthereumTunnel;
 
   constructor(config: DAOConfig) {
     this._config = config;
 
-    return (async (): Promise<RootZDAOChefClient> => {
+    return (async (): Promise<EthereumZDAOChefClient> => {
       this._contract = new ethers.Contract(
         config.zDAOChef,
-        RootZDAOChefAbi.abi,
+        EthereumZDAOChefAbi.abi,
         GlobalClient.etherRpcProvider
-      ) as RootZDAOChef;
+      ) as EthereumZDAOChef;
 
-      const address = await this._contract.rootStateSender();
+      const address = await this._contract.ethereumStateSender();
       this._rootStateSender = new ethers.Contract(
         address,
-        FxStateRootTunnelAbi.abi,
+        FxStateEthereumTunnelAbi.abi,
         GlobalClient.etherRpcProvider
-      ) as FxStateRootTunnel;
+      ) as FxStateEthereumTunnel;
 
       return this;
-    })() as unknown as RootZDAOChefClient;
+    })() as unknown as EthereumZDAOChefClient;
   }
 
   get config(): DAOConfig {
@@ -51,51 +51,45 @@ class RootZDAOChefClient {
   }
 
   stateSender(): Promise<string> {
-    return this._contract.rootStateSender();
+    return this._contract.ethereumStateSender();
   }
 
-  // async getZDAOByZNA(zNA: zNA): Promise<RootZDAO> {
+  // async getZDAOByZNA(zNA: zNA): Promise<EthereumZDAO> {
   //   const zDAORecord = await this._contract.getzDaoByZNA(
   //     ZNAClient.zNATozNAId(zNA)
   //   );
 
   //   return new ethers.Contract(
   //     zDAORecord.zDAO,
-  //     RootZDAOAbi.abi,
+  //     EthereumZDAOAbi.abi,
   //     GlobalClient.etherRpcProvider
-  //   ) as RootZDAO;
+  //   ) as EthereumZDAO;
   // }
 
-  async getZDAOById(zDAOId: zDAOId): Promise<RootZDAO> {
+  async getZDAOById(zDAOId: zDAOId): Promise<EthereumZDAO> {
     const zDAO = await this._contract.zDAOs(zDAOId);
 
     return new ethers.Contract(
       zDAO,
-      RootZDAOAbi.abi,
+      EthereumZDAOAbi.abi,
       GlobalClient.etherRpcProvider
-    ) as RootZDAO;
+    ) as EthereumZDAO;
   }
 
-  async getZDAOPropertiesById(zDAOId: zDAOId): Promise<RootZDAOProperties> {
+  async getZDAOPropertiesById(zDAOId: zDAOId): Promise<EthereumZDAOProperties> {
     const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordById(
       zDAOId
     );
 
-    const etherZDAO = new ethers.Contract(
-      zDAORecord.zDAO,
-      RootZDAOAbi.abi,
-      GlobalClient.etherRpcProvider
-    ) as RootZDAO;
-    const zDAOInfo = await etherZDAO.zDAOInfo();
+    const zDAOInfo = await this._contract.zDAOInfo(zDAOId);
 
     const token = await getToken(GlobalClient.etherRpcProvider, zDAOInfo.token);
     const zNAs: zNA[] = zDAORecord.associatedzNAs;
 
     return {
       id: zDAOInfo.zDAOId.toString(),
-      address: zDAORecord.zDAO,
       zNAs,
-      title: zDAOInfo.title,
+      name: zDAORecord.name,
       createdBy: zDAOInfo.createdBy,
       network: this._config.network,
       gnosisSafe: zDAOInfo.gnosisSafe,
@@ -117,9 +111,9 @@ class RootZDAOChefClient {
       PlatformType.Polygon,
       payload.zNA,
       payload.gnosisSafe,
+      payload.name,
       ethers.utils.defaultAbiCoder.encode(
         [
-          'string',
           'address',
           'uint256',
           'uint256',
@@ -129,7 +123,6 @@ class RootZDAOChefClient {
           'bool',
         ],
         [
-          payload.title,
           payload.token,
           payload.amount,
           payload.duration,
@@ -195,4 +188,4 @@ class RootZDAOChefClient {
   }
 }
 
-export default RootZDAOChefClient;
+export default EthereumZDAOChefClient;

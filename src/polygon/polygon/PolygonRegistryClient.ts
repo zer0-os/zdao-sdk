@@ -4,7 +4,7 @@ import GlobalClient from '../client/GlobalClient';
 import IChildChainManagerAbi from '../config/abi/IChildChainManager.json';
 import { IChildChainManager } from '../config/types/IChildChainManager';
 
-class ChildRegistryClient {
+class PolygonRegistryClient {
   protected readonly _contract: IChildChainManager;
 
   constructor(address: string) {
@@ -24,4 +24,4 @@ class ChildRegistryClient {
   }
 }
 
-export default ChildRegistryClient;
+export default PolygonRegistryClient;

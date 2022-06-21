@@ -37,7 +37,7 @@ export interface Staking extends StakingProperties {
 }
 
 export interface Registry {
-  rootToChildToken(rootToken: string): Promise<string>;
+  ethereumToPolygonToken(ethereumToken: string): Promise<string>;
 
-  childToRootToken(childToken: string): Promise<string>;
+  polygonToEthereumToken(polygonToken: string): Promise<string>;
 }

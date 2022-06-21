@@ -21,9 +21,9 @@ export declare namespace IZDAORegistry {
   export type ZDAORecordStruct = {
     platformType: BigNumberish;
     id: BigNumberish;
-    zDAO: string;
     zDAOOwnedBy: string;
     gnosisSafe: string;
+    name: string;
     destroyed: boolean;
     associatedzNAs: BigNumberish[];
   };
@@ -39,9 +39,9 @@ export declare namespace IZDAORegistry {
   ] & {
     platformType: BigNumber;
     id: BigNumber;
-    zDAO: string;
     zDAOOwnedBy: string;
     gnosisSafe: string;
+    name: string;
     destroyed: boolean;
     associatedzNAs: BigNumber[];
   };
@@ -50,7 +50,7 @@ export declare namespace IZDAORegistry {
 export interface IZDAORegistryInterface extends utils.Interface {
   contractName: "IZDAORegistry";
   functions: {
-    "addNewZDAO(uint256,uint256,address,bytes)": FunctionFragment;
+    "addNewZDAO(uint256,uint256,address,string,bytes)": FunctionFragment;
     "addZNAAssociation(uint256,uint256)": FunctionFragment;
     "doesZNAExistForZNA(uint256)": FunctionFragment;
     "getZDAOById(uint256)": FunctionFragment;
@@ -58,11 +58,12 @@ export interface IZDAORegistryInterface extends utils.Interface {
     "listZDAOs(uint256,uint256)": FunctionFragment;
     "numberOfzDAOs()": FunctionFragment;
     "removeZNAAssociation(uint256,uint256)": FunctionFragment;
+    "zDAOFactories(uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
     functionFragment: "addNewZDAO",
-    values: [BigNumberish, BigNumberish, string, BytesLike]
+    values: [BigNumberish, BigNumberish, string, string, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "addZNAAssociation",
@@ -92,6 +93,10 @@ export interface IZDAORegistryInterface extends utils.Interface {
     functionFragment: "removeZNAAssociation",
     values: [BigNumberish, BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "zDAOFactories",
+    values: [BigNumberish]
+  ): string;
 
   decodeFunctionResult(functionFragment: "addNewZDAO", data: BytesLike): Result;
   decodeFunctionResult(
@@ -117,6 +122,10 @@ export interface IZDAORegistryInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "removeZNAAssociation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "zDAOFactories",
     data: BytesLike
   ): Result;
 
@@ -205,6 +214,7 @@ export interface IZDAORegistry extends BaseContract {
       _platformType: BigNumberish,
       _zNA: BigNumberish,
       _gnosisSafe: string,
+      _title: string,
       _options: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -243,12 +253,18 @@ export interface IZDAORegistry extends BaseContract {
       _zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    zDAOFactories(
+      _platformType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
   };
 
   addNewZDAO(
     _platformType: BigNumberish,
     _zNA: BigNumberish,
     _gnosisSafe: string,
+    _title: string,
     _options: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -288,11 +304,17 @@ export interface IZDAORegistry extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  zDAOFactories(
+    _platformType: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   callStatic: {
     addNewZDAO(
       _platformType: BigNumberish,
       _zNA: BigNumberish,
       _gnosisSafe: string,
+      _title: string,
       _options: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -331,6 +353,11 @@ export interface IZDAORegistry extends BaseContract {
       _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    zDAOFactories(
+      _platformType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
   };
 
   filters: {
@@ -387,6 +414,7 @@ export interface IZDAORegistry extends BaseContract {
       _platformType: BigNumberish,
       _zNA: BigNumberish,
       _gnosisSafe: string,
+      _title: string,
       _options: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -425,6 +453,11 @@ export interface IZDAORegistry extends BaseContract {
       _zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    zDAOFactories(
+      _platformType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -432,6 +465,7 @@ export interface IZDAORegistry extends BaseContract {
       _platformType: BigNumberish,
       _zNA: BigNumberish,
       _gnosisSafe: string,
+      _title: string,
       _options: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -469,6 +503,11 @@ export interface IZDAORegistry extends BaseContract {
       _zDAOId: BigNumberish,
       _zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    zDAOFactories(
+      _platformType: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

@@ -14,8 +14,8 @@ export interface CreateZDAOParams {
   // zNA, automatically linked with only one zNA
   zNA: zNA;
 
-  // zDAO title
-  title: string;
+  // zDAO name
+  name: string;
 
   // network id where zDAO was created
   network: SupportedChainId;

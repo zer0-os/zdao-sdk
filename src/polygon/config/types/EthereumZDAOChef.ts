@@ -18,14 +18,60 @@ import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface RootZDAOChefInterface extends utils.Interface {
-  contractName: "RootZDAOChef";
+export declare namespace IEthereumZDAO {
+  export type ZDAOInfoStruct = {
+    zDAOId: BigNumberish;
+    createdBy: string;
+    gnosisSafe: string;
+    token: string;
+    amount: BigNumberish;
+    duration: BigNumberish;
+    votingThreshold: BigNumberish;
+    minimumVotingParticipants: BigNumberish;
+    minimumTotalVotingTokens: BigNumberish;
+    snapshot: BigNumberish;
+    isRelativeMajority: boolean;
+    destroyed: boolean;
+  };
+
+  export type ZDAOInfoStructOutput = [
+    BigNumber,
+    string,
+    string,
+    string,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    boolean,
+    boolean
+  ] & {
+    zDAOId: BigNumber;
+    createdBy: string;
+    gnosisSafe: string;
+    token: string;
+    amount: BigNumber;
+    duration: BigNumber;
+    votingThreshold: BigNumber;
+    minimumVotingParticipants: BigNumber;
+    minimumTotalVotingTokens: BigNumber;
+    snapshot: BigNumber;
+    isRelativeMajority: boolean;
+    destroyed: boolean;
+  };
+}
+
+export interface EthereumZDAOChefInterface extends utils.Interface {
+  contractName: "EthereumZDAOChef";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "__ZDAOChef_init(address,address,address)": FunctionFragment;
     "addNewZDAO(uint256,uint256,address,bytes)": FunctionFragment;
     "cancelProposal(uint256,uint256)": FunctionFragment;
     "createProposal(uint256,string)": FunctionFragment;
+    "ethereumStateSender()": FunctionFragment;
     "executeProposal(uint256,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
@@ -38,14 +84,15 @@ export interface RootZDAOChefInterface extends utils.Interface {
     "renounceOwnership()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
-    "rootStateSender()": FunctionFragment;
     "setZDAOBase(address)": FunctionFragment;
+    "setZDAORegistry(address)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
     "upgradeToAndCall(address,bytes)": FunctionFragment;
     "version()": FunctionFragment;
     "zDAOBase()": FunctionFragment;
+    "zDAOInfo(uint256)": FunctionFragment;
     "zDAORegistry()": FunctionFragment;
     "zDAOs(uint256)": FunctionFragment;
   };
@@ -69,6 +116,10 @@ export interface RootZDAOChefInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "createProposal",
     values: [BigNumberish, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "ethereumStateSender",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "executeProposal",
@@ -112,11 +163,11 @@ export interface RootZDAOChefInterface extends utils.Interface {
     functionFragment: "revokeRole",
     values: [BytesLike, string]
   ): string;
-  encodeFunctionData(
-    functionFragment: "rootStateSender",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "setZDAOBase", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "setZDAORegistry",
+    values: [string]
+  ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
@@ -132,6 +183,10 @@ export interface RootZDAOChefInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
   encodeFunctionData(functionFragment: "zDAOBase", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "zDAOInfo",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "zDAORegistry",
     values?: undefined
@@ -153,6 +208,10 @@ export interface RootZDAOChefInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "createProposal",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "ethereumStateSender",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -183,11 +242,11 @@ export interface RootZDAOChefInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "rootStateSender",
+    functionFragment: "setZDAOBase",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setZDAOBase",
+    functionFragment: "setZDAORegistry",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -205,6 +264,7 @@ export interface RootZDAOChefInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOBase", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "zDAOInfo", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "zDAORegistry",
     data: BytesLike
@@ -337,13 +397,13 @@ export type UpgradedEvent = TypedEvent<[string], { implementation: string }>;
 
 export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
 
-export interface RootZDAOChef extends BaseContract {
-  contractName: "RootZDAOChef";
+export interface EthereumZDAOChef extends BaseContract {
+  contractName: "EthereumZDAOChef";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: RootZDAOChefInterface;
+  interface: EthereumZDAOChefInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -369,7 +429,7 @@ export interface RootZDAOChef extends BaseContract {
 
     __ZDAOChef_init(
       _zDAORegistry: string,
-      _rootStateSender: string,
+      _ethereumStateSender: string,
       _zDAOBase: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -393,6 +453,8 @@ export interface RootZDAOChef extends BaseContract {
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    ethereumStateSender(overrides?: CallOverrides): Promise<[string]>;
 
     executeProposal(
       _zDAOId: BigNumberish,
@@ -451,10 +513,13 @@ export interface RootZDAOChef extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    rootStateSender(overrides?: CallOverrides): Promise<[string]>;
-
     setZDAOBase(
       _zDAOBase: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setZDAORegistry(
+      _zDAORgistry: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -483,6 +548,11 @@ export interface RootZDAOChef extends BaseContract {
 
     zDAOBase(overrides?: CallOverrides): Promise<[string]>;
 
+    zDAOInfo(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[IEthereumZDAO.ZDAOInfoStructOutput]>;
+
     zDAORegistry(overrides?: CallOverrides): Promise<[string]>;
 
     zDAOs(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
@@ -492,7 +562,7 @@ export interface RootZDAOChef extends BaseContract {
 
   __ZDAOChef_init(
     _zDAORegistry: string,
-    _rootStateSender: string,
+    _ethereumStateSender: string,
     _zDAOBase: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -516,6 +586,8 @@ export interface RootZDAOChef extends BaseContract {
     _ipfs: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  ethereumStateSender(overrides?: CallOverrides): Promise<string>;
 
   executeProposal(
     _zDAOId: BigNumberish,
@@ -574,10 +646,13 @@ export interface RootZDAOChef extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  rootStateSender(overrides?: CallOverrides): Promise<string>;
-
   setZDAOBase(
     _zDAOBase: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setZDAORegistry(
+    _zDAORgistry: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -606,6 +681,11 @@ export interface RootZDAOChef extends BaseContract {
 
   zDAOBase(overrides?: CallOverrides): Promise<string>;
 
+  zDAOInfo(
+    _zDAOId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<IEthereumZDAO.ZDAOInfoStructOutput>;
+
   zDAORegistry(overrides?: CallOverrides): Promise<string>;
 
   zDAOs(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
@@ -615,7 +695,7 @@ export interface RootZDAOChef extends BaseContract {
 
     __ZDAOChef_init(
       _zDAORegistry: string,
-      _rootStateSender: string,
+      _ethereumStateSender: string,
       _zDAOBase: string,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -639,6 +719,8 @@ export interface RootZDAOChef extends BaseContract {
       _ipfs: string,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    ethereumStateSender(overrides?: CallOverrides): Promise<string>;
 
     executeProposal(
       _zDAOId: BigNumberish,
@@ -692,9 +774,12 @@ export interface RootZDAOChef extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    rootStateSender(overrides?: CallOverrides): Promise<string>;
-
     setZDAOBase(_zDAOBase: string, overrides?: CallOverrides): Promise<void>;
+
+    setZDAORegistry(
+      _zDAORgistry: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     supportsInterface(
       interfaceId: BytesLike,
@@ -720,6 +805,11 @@ export interface RootZDAOChef extends BaseContract {
     version(overrides?: CallOverrides): Promise<BigNumber>;
 
     zDAOBase(overrides?: CallOverrides): Promise<string>;
+
+    zDAOInfo(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<IEthereumZDAO.ZDAOInfoStructOutput>;
 
     zDAORegistry(overrides?: CallOverrides): Promise<string>;
 
@@ -848,7 +938,7 @@ export interface RootZDAOChef extends BaseContract {
 
     __ZDAOChef_init(
       _zDAORegistry: string,
-      _rootStateSender: string,
+      _ethereumStateSender: string,
       _zDAOBase: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -872,6 +962,8 @@ export interface RootZDAOChef extends BaseContract {
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    ethereumStateSender(overrides?: CallOverrides): Promise<BigNumber>;
 
     executeProposal(
       _zDAOId: BigNumberish,
@@ -933,10 +1025,13 @@ export interface RootZDAOChef extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    rootStateSender(overrides?: CallOverrides): Promise<BigNumber>;
-
     setZDAOBase(
       _zDAOBase: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setZDAORegistry(
+      _zDAORgistry: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -965,6 +1060,11 @@ export interface RootZDAOChef extends BaseContract {
 
     zDAOBase(overrides?: CallOverrides): Promise<BigNumber>;
 
+    zDAOInfo(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     zDAORegistry(overrides?: CallOverrides): Promise<BigNumber>;
 
     zDAOs(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
@@ -977,7 +1077,7 @@ export interface RootZDAOChef extends BaseContract {
 
     __ZDAOChef_init(
       _zDAORegistry: string,
-      _rootStateSender: string,
+      _ethereumStateSender: string,
       _zDAOBase: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -1000,6 +1100,10 @@ export interface RootZDAOChef extends BaseContract {
       _zDAOId: BigNumberish,
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    ethereumStateSender(
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     executeProposal(
@@ -1062,10 +1166,13 @@ export interface RootZDAOChef extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    rootStateSender(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     setZDAOBase(
       _zDAOBase: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setZDAORegistry(
+      _zDAORgistry: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1093,6 +1200,11 @@ export interface RootZDAOChef extends BaseContract {
     version(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     zDAOBase(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    zDAOInfo(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     zDAORegistry(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

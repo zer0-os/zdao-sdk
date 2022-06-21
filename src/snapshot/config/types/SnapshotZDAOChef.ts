@@ -22,7 +22,7 @@ export interface SnapshotZDAOChefInterface extends utils.Interface {
   contractName: "SnapshotZDAOChef";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "__SnapshotZDAOChef_init(address)": FunctionFragment;
+    "__ZDAOChef_init(address)": FunctionFragment;
     "addNewZDAO(uint256,uint256,address,bytes)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
@@ -34,7 +34,7 @@ export interface SnapshotZDAOChefInterface extends utils.Interface {
     "renounceOwnership()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
-    "setRegistry(address)": FunctionFragment;
+    "setZDAORegistry(address)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
@@ -49,7 +49,7 @@ export interface SnapshotZDAOChefInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "__SnapshotZDAOChef_init",
+    functionFragment: "__ZDAOChef_init",
     values: [string]
   ): string;
   encodeFunctionData(
@@ -90,7 +90,10 @@ export interface SnapshotZDAOChefInterface extends utils.Interface {
     functionFragment: "revokeRole",
     values: [BytesLike, string]
   ): string;
-  encodeFunctionData(functionFragment: "setRegistry", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "setZDAORegistry",
+    values: [string]
+  ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
@@ -119,7 +122,7 @@ export interface SnapshotZDAOChefInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "__SnapshotZDAOChef_init",
+    functionFragment: "__ZDAOChef_init",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "addNewZDAO", data: BytesLike): Result;
@@ -143,7 +146,7 @@ export interface SnapshotZDAOChefInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setRegistry",
+    functionFragment: "setZDAORegistry",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -272,7 +275,7 @@ export interface SnapshotZDAOChef extends BaseContract {
   functions: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    __SnapshotZDAOChef_init(
+    __ZDAOChef_init(
       _zDAORegistry: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -331,7 +334,7 @@ export interface SnapshotZDAOChef extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setRegistry(
+    setZDAORegistry(
       _zDAORegistry: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -377,7 +380,7 @@ export interface SnapshotZDAOChef extends BaseContract {
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  __SnapshotZDAOChef_init(
+  __ZDAOChef_init(
     _zDAORegistry: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -436,7 +439,7 @@ export interface SnapshotZDAOChef extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setRegistry(
+  setZDAORegistry(
     _zDAORegistry: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -482,7 +485,7 @@ export interface SnapshotZDAOChef extends BaseContract {
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    __SnapshotZDAOChef_init(
+    __ZDAOChef_init(
       _zDAORegistry: string,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -536,7 +539,7 @@ export interface SnapshotZDAOChef extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setRegistry(
+    setZDAORegistry(
       _zDAORegistry: string,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -650,7 +653,7 @@ export interface SnapshotZDAOChef extends BaseContract {
   estimateGas: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    __SnapshotZDAOChef_init(
+    __ZDAOChef_init(
       _zDAORegistry: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -712,7 +715,7 @@ export interface SnapshotZDAOChef extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setRegistry(
+    setZDAORegistry(
       _zDAORegistry: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -753,7 +756,7 @@ export interface SnapshotZDAOChef extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    __SnapshotZDAOChef_init(
+    __ZDAOChef_init(
       _zDAORegistry: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -815,7 +818,7 @@ export interface SnapshotZDAOChef extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setRegistry(
+    setZDAORegistry(
       _zDAORegistry: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

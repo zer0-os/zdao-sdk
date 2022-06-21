@@ -8,8 +8,8 @@ const ErrorMessages = [
     value: 'Not found zDAO',
   },
   {
-    key: 'empty-zdao-title',
-    value: 'Empty zDAO title',
+    key: 'empty-zdao-name',
+    value: 'Empty zDAO name',
   },
   {
     key: 'empty-zdao-creator',

@@ -1,19 +1,19 @@
-import ChildRegistryClient from '../polygon/ChildRegistryClient';
+import PolygonRegistryClient from '../polygon/PolygonRegistryClient';
 import { Registry } from '../types';
 
 class RegistryClient implements Registry {
-  protected _polyRegistry: ChildRegistryClient;
+  protected _polyRegistry: PolygonRegistryClient;
 
   constructor(address: string) {
-    this._polyRegistry = new ChildRegistryClient(address);
+    this._polyRegistry = new PolygonRegistryClient(address);
   }
 
-  rootToChildToken(rootToken: string): Promise<string> {
-    return this._polyRegistry.rootToChildToken(rootToken);
+  ethereumToPolygonToken(ethereumToken: string): Promise<string> {
+    return this._polyRegistry.rootToChildToken(ethereumToken);
   }
 
-  childToRootToken(childToken: string): Promise<string> {
-    return this._polyRegistry.childToRootToken(childToken);
+  polygonToEthereumToken(polygonToken: string): Promise<string> {
+    return this._polyRegistry.childToRootToken(polygonToken);
   }
 }
 

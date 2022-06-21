@@ -44,8 +44,8 @@ class ProposalClient extends AbstractProposalClient {
   }
 
   async listVotes(): Promise<Vote[]> {
-    const childZDAO = await this._zDAO.getChildZDAO();
-    if (!childZDAO) {
+    const polygonZDAO = await this._zDAO.getPolygonZDAO();
+    if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
 
@@ -55,7 +55,7 @@ class ProposalClient extends AbstractProposalClient {
     const votes: Vote[] = [];
 
     while (numberOfResults === count) {
-      const results = await childZDAO.listVoters(this.id, from, count);
+      const results = await polygonZDAO.listVoters(this.id, from, count);
 
       votes.push(
         ...[...Array(results.voters.length).keys()].map((index: number) => ({
@@ -71,31 +71,33 @@ class ProposalClient extends AbstractProposalClient {
   }
 
   async getVotingPowerOfUser(account: string): Promise<string> {
-    const childZDAO = await this._zDAO.getChildZDAO();
-    if (!childZDAO) {
+    const polygonZDAO = await this._zDAO.getPolygonZDAO();
+    if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
 
-    return (await childZDAO.votingPowerOfVoter(this.id, account)).toString();
+    return (await polygonZDAO.votingPowerOfVoter(this.id, account)).toString();
   }
 
   async updateScoresAndVotes(): Promise<Proposal> {
-    const childZDAO = await this._zDAO.getChildZDAO();
-    if (!childZDAO) {
+    const polygonZDAO = await this._zDAO.getPolygonZDAO();
+    if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
 
-    const polyProposal = childZDAO ? await childZDAO.proposals(this.id) : null;
+    const polyProposal = polygonZDAO
+      ? await polygonZDAO.proposals(this.id)
+      : null;
     const isSyncedProposal = polyProposal
       ? polyProposal.proposalId.eq(this.id)
       : false;
 
     const scores =
-      childZDAO && polyProposal && isSyncedProposal
+      polygonZDAO && polyProposal && isSyncedProposal
         ? [polyProposal.yes.toString(), polyProposal.no.toString()]
         : undefined;
     const voters =
-      childZDAO && polyProposal && isSyncedProposal
+      polygonZDAO && polyProposal && isSyncedProposal
         ? polyProposal.voters.toNumber()
         : undefined;
     this._properties.scores = scores;
@@ -115,8 +117,8 @@ class ProposalClient extends AbstractProposalClient {
     }
 
     // zDAO should be synchronized to Polygon prior to create proposal
-    const childZDAO = await this._zDAO.getChildZDAO();
-    if (!childZDAO) {
+    const polygonZDAO = await this._zDAO.getPolygonZDAO();
+    if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
 
@@ -140,7 +142,12 @@ class ProposalClient extends AbstractProposalClient {
 
       const daoId = this._zDAO.id;
       const proposalId = this.id;
-      await GlobalClient.childZDAOChef.vote(signer, daoId, proposalId, choice);
+      await GlobalClient.polygonZDAOChef.vote(
+        signer,
+        daoId,
+        proposalId,
+        choice
+      );
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -152,7 +159,7 @@ class ProposalClient extends AbstractProposalClient {
     const proposalId = this.id;
 
     try {
-      await GlobalClient.childZDAOChef.calculateProposal(
+      await GlobalClient.polygonZDAOChef.calculateProposal(
         signer,
         daoId,
         proposalId
@@ -202,7 +209,7 @@ class ProposalClient extends AbstractProposalClient {
 
       const daoId = this._zDAO.id;
       const proposalId = this.id;
-      await GlobalClient.rootZDAOChef.executeProposal(
+      await GlobalClient.ethereumZDAOChef.executeProposal(
         signer,
         daoId,
         proposalId
@@ -216,7 +223,7 @@ class ProposalClient extends AbstractProposalClient {
   getCheckPointingHashes(): Promise<string[]> {
     try {
       if (this.state === ProposalState.AWAITING_FINALIZATION)
-        return GlobalClient.childZDAOChef.getCheckPointingHashes(
+        return GlobalClient.polygonZDAOChef.getCheckPointingHashes(
           this._zDAO.id,
           this.id
         );

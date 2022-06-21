@@ -50,8 +50,8 @@ class AbstractDAOClient implements zDAO {
     return this._properties.zNAs;
   }
 
-  get title() {
-    return this._properties.title;
+  get name() {
+    return this._properties.name;
   }
 
   get createdBy() {

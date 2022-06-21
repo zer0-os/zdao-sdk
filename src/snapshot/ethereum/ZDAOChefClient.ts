@@ -35,6 +35,7 @@ class ZDAOChefClient {
       snapshot: zDAOInfo.snapshot.toNumber(),
       ensSpace: zDAOInfo.ensSpace,
       gnosisSafe: zDAOInfo.gnosisSafe,
+      name: zDAORecord.name,
       destroyed: zDAOInfo.destroyed,
     };
   }
@@ -45,6 +46,7 @@ class ZDAOChefClient {
       PlatformType.Snapshot,
       payload.zNA,
       payload.gnosisSafe,
+      payload.name,
       ethers.utils.defaultAbiCoder.encode(
         ['string'],
         [(payload.options as CreateZDAOParamsOptions).ens]

@@ -165,8 +165,8 @@ export interface zDAOProperties {
   // Array of zNA ids associated with zDAO
   zNAs: zNA[];
 
-  // Title of the zDAO
-  title: string;
+  // zDAO name
+  name: string;
 
   // Address who created zDAO, is the first zDAO owner
   createdBy: string;
