@@ -245,6 +245,8 @@ class DAOClient extends AbstractDAOClient {
   }
 
   async getProposal(id: ProposalId): Promise<Proposal> {
+    await this._snapshotClient.forceUpdateScoresAndVotes(id);
+
     const proposal: SnapshotProposal = await this._snapshotClient.getProposal({
       spaceId: (this.options as unknown as ZDAOOptions).ens,
       network: this.network.toString(),

@@ -137,11 +137,14 @@ class ProposalClient extends AbstractProposalClient {
       votes: this._properties.voters ?? 0,
     };
 
-    const updated = await this._snapshotClient.updateScores(snapshotProposal, {
-      spaceId: (this._zDAO.options as ZDAOOptions).ens,
-      network: this._zDAO.network.toString(),
-      strategies: this._options.strategies,
-    });
+    const updated = await this._snapshotClient.updateScoresAndVotes(
+      snapshotProposal,
+      {
+        spaceId: (this._zDAO.options as ZDAOOptions).ens,
+        network: this._zDAO.network.toString(),
+        strategies: this._options.strategies,
+      }
+    );
     this._properties.scores = updated.scores.map((score) => score.toString());
     this._properties.voters = updated.votes;
     return this;
