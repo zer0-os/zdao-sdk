@@ -121,7 +121,7 @@ class ZDAORegistryClient {
     };
   }
 
-  async doesZDAOExistForZNA(zNA: zNA): Promise<boolean> {
+  doesZDAOExistForZNA(zNA: zNA): Promise<boolean> {
     return this._contract.doesZDAOExistForZNA(ZNAClient.zNATozNAId(zNA));
   }
 
