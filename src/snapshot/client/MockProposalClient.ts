@@ -52,15 +52,27 @@ class MockProposalClient extends AbstractProposalClient {
     }
   }
 
-  calculate(_: ethers.Signer, _2: CalculateProposalParams): Promise<void> {
+  calculate(
+    _: ethers.providers.Web3Provider | ethers.Wallet,
+    _2: string | undefined,
+    _3: CalculateProposalParams
+  ): Promise<void> {
     throw new NotImplementedError();
   }
 
-  finalize(_: ethers.Signer, _2: FinalizeProposalParams): Promise<void> {
+  finalize(
+    _: ethers.providers.Web3Provider | ethers.Wallet,
+    _2: string | undefined,
+    _3: FinalizeProposalParams
+  ): Promise<void> {
     throw new NotImplementedError();
   }
 
-  execute(_: ethers.Signer, _2: ExecuteProposalParams): Promise<void> {
+  execute(
+    _: ethers.providers.Web3Provider | ethers.Wallet,
+    _2: string | undefined,
+    _3: ExecuteProposalParams
+  ): Promise<void> {
     throw new NotImplementedError();
   }
 }

@@ -24,7 +24,7 @@ const createZDAO = async (
 ) => {
   for (const DAO of env.DAOs.goerli) {
     if (!(await instace.doesZDAOExist(DAO.zNA))) {
-      await instace.createZDAO(signer, {
+      await instace.createZDAO(signer, undefined, {
         zNA: DAO.zNA,
         name: DAO.name,
         network: SupportedChainId.GOERLI,
@@ -50,7 +50,7 @@ const createProposal = async (
   zDAO: zDAO,
   env: any
 ) => {
-  await zDAO.createProposal(signer, signer.address, {
+  await zDAO.createProposal(signer, undefined, {
     title: 'Hello Proposal',
     body: 'Hello World',
     transfer: {
@@ -135,7 +135,7 @@ const iterateZDAO = async (
       );
       console.log('votingPower', votingPower);
       if (BigNumber.from(votingPower).gt(BigNumber.from(0))) {
-        await proposal.vote(mumbaiSigner, mumbaiSigner.address, {
+        await proposal.vote(mumbaiSigner, undefined, {
           choice: 2,
         });
         console.log('successfully voted');
@@ -144,7 +144,7 @@ const iterateZDAO = async (
       const votes = await proposal.listVotes();
       console.log('votes', votes);
     } else if (proposal.state === ProposalState.AWAITING_CALCULATION) {
-      const tx = await proposal.calculate(mumbaiSigner, {});
+      const tx = await proposal.calculate(mumbaiSigner, undefined, {});
       console.log('successfully calculated on polygon');
     } else if (proposal.state === ProposalState.AWAITING_FINALIZATION) {
       const hashes = await (
@@ -159,7 +159,7 @@ const iterateZDAO = async (
             await sleep(1000);
           }
           console.log('tx hash was checkpointed', hash);
-          await proposal.finalize(goerliSigner, {
+          await proposal.finalize(goerliSigner, undefined, {
             options: {
               txHash: hash,
             },
@@ -171,7 +171,7 @@ const iterateZDAO = async (
       }
     } else if (proposal.state === ProposalState.AWAITING_EXECUTION) {
       console.log('executing', proposal.id);
-      await proposal.execute(goerliGnosisOwnerSigner, {});
+      await proposal.execute(goerliGnosisOwnerSigner, undefined, {});
       console.log('executed', proposal.id);
     }
   }

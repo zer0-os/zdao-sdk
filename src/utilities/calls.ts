@@ -5,6 +5,15 @@ import ERC721Abi from '../config/abi/ERC721.json';
 import { Token } from '../types';
 import { errorMessageForError } from './messages';
 
+export const getSigner = (
+  provider: ethers.providers.Web3Provider | ethers.Wallet,
+  account: string | undefined
+): ethers.Signer => {
+  return provider instanceof ethers.Wallet
+    ? provider
+    : provider.getSigner(account).connectUnchecked();
+};
+
 export const getToken = async (
   provider: ethers.providers.Provider,
   token: string

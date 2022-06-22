@@ -16,7 +16,7 @@ import {
   VoteProposalParams,
   ZDAOError,
 } from '../../types';
-import { errorMessageForError } from '../../utilities';
+import { errorMessageForError, getSigner } from '../../utilities';
 import { FinalizeProposalParamsOptions, Proposal, ZDAOOptions } from '../types';
 import DAOClient from './DAOClient';
 import GlobalClient from './GlobalClient';
@@ -140,9 +140,7 @@ class ProposalClient extends AbstractProposalClient implements Proposal {
     }
 
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const signer = provider?.getSigner ? provider.getSigner() : provider;
+      const signer = getSigner(provider, account);
 
       const daoId = this._zDAO.id;
       const proposalId = this.id;
@@ -158,11 +156,17 @@ class ProposalClient extends AbstractProposalClient implements Proposal {
     }
   }
 
-  async calculate(signer: ethers.Signer, _: CalculateProposalParams) {
+  async calculate(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    _: CalculateProposalParams
+  ) {
     const daoId = this._zDAO.id;
     const proposalId = this.id;
 
     try {
+      const signer = getSigner(provider, account);
+
       await GlobalClient.polygonZDAOChef.calculateProposal(
         signer,
         daoId,
@@ -174,13 +178,19 @@ class ProposalClient extends AbstractProposalClient implements Proposal {
     }
   }
 
-  async finalize(signer: ethers.Signer, payload: FinalizeProposalParams) {
+  async finalize(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    payload: FinalizeProposalParams
+  ) {
     // zDAO should be active
     if (this._zDAO.destroyed) {
       throw new AlreadyDestroyedError();
     }
 
     try {
+      const signer = getSigner(provider, account);
+
       const proof = await ProofClient.generate(
         (payload.options as FinalizeProposalParamsOptions).txHash
       );
@@ -191,12 +201,18 @@ class ProposalClient extends AbstractProposalClient implements Proposal {
     }
   }
 
-  async execute(signer: ethers.Signer, _: ExecuteProposalParams) {
-    const address = await signer.getAddress();
+  async execute(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    _: ExecuteProposalParams
+  ) {
+    const signer = getSigner(provider, account);
+
+    const signerAccount = account ?? (await signer.getAddress());
     const isOwner = await this._zDAO.gnosisSafeClient.isOwnerAddress(
       signer,
       this._zDAO.gnosisSafe,
-      address
+      signerAccount
     );
     if (!isOwner) {
       throw new ZDAOError(errorMessageForError('not-gnosis-owner'));

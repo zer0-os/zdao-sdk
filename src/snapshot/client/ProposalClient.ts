@@ -14,7 +14,7 @@ import {
   Vote,
   VoteProposalParams,
 } from '../../types';
-import { errorMessageForError } from '../../utilities';
+import { errorMessageForError, getSigner } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
 import { SnapshotProposal } from '../snapshot/types';
 import { ZDAOOptions } from '../types';
@@ -166,21 +166,32 @@ class ProposalClient extends AbstractProposalClient {
     });
   }
 
-  calculate(_: ethers.Signer, _2: CalculateProposalParams): Promise<void> {
+  calculate(
+    _: ethers.providers.Web3Provider | ethers.Wallet,
+    _2: string | undefined,
+    _3: CalculateProposalParams
+  ): Promise<void> {
     throw new NotImplementedError();
   }
 
-  finalize(_: ethers.Signer, _2: FinalizeProposalParams): Promise<void> {
+  finalize(
+    _: ethers.providers.Web3Provider | ethers.Wallet,
+    _2: string | undefined,
+    _3: FinalizeProposalParams
+  ): Promise<void> {
     throw new NotImplementedError();
   }
 
   async execute(
-    signer: ethers.Signer,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
     _: ExecuteProposalParams
   ): Promise<void> {
     if (!this.metadata) return;
 
-    const address = await signer.getAddress();
+    const signer = getSigner(provider, account);
+
+    const address = account ?? (await signer.getAddress());
     const isOwner = await this._gnosisSafeClient.isOwnerAddress(
       signer,
       (this._zDAO.options as ZDAOOptions).ens,

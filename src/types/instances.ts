@@ -22,17 +22,27 @@ import {
 export interface SDKInstance {
   /**
    * Create zDAO
-   * @param signer
+   * @param provider Web3 provider or wallet
+   * @param account signer address
    * @param params
    */
-  createZDAO(signer: ethers.Signer, params: CreateZDAOParams): Promise<void>;
+  createZDAO(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    params: CreateZDAOParams
+  ): Promise<void>;
 
   /**
    * Delete zDAO
-   * @param signer
+   * @param provider Web3 provider or wallet
+   * @param account signer address
    * @param zDAOId
    */
-  deleteZDAO(signer: ethers.Signer, zDAOId: zDAOId): Promise<void>;
+  deleteZDAO(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    zDAOId: zDAOId
+  ): Promise<void>;
 
   /**
    * Get all the list of zNA
@@ -63,12 +73,15 @@ export interface SDKInstance {
 
   /**
    * Create new zToken with given name and symbol and return deployed address
+   * @param provider Web3 provider or wallet
+   * @param account signer address
    * @param name name of zToken
    * @param symbol symbol of zToken
    * @param options mint options
    */
   createZToken(
-    signer: ethers.Signer,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
     name: string,
     symbol: string,
     options?: TokenMintOptions
@@ -76,13 +89,16 @@ export interface SDKInstance {
 
   /**
    * Create zDAO from parameters for test
-   * @params packaged parameters of zDAO
+   * @param provider Web3 provider or wallet
+   * @param account signer address
+   * @param params packaged parameters of zDAO
    * @exception throw Error if zNA already exists
    * @exception throw Error if owners is empty
    * @exception throw Error if title is empty
    */
   createZDAOFromParams(
-    signer: ethers.Signer,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
     params: CreateZDAOParams
   ): Promise<zDAO>;
 
@@ -140,7 +156,7 @@ export interface zDAO extends zDAOProperties {
    */
   createProposal(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string,
+    account: string | undefined,
     payload: CreateProposalParams
   ): Promise<ProposalId>;
 }
@@ -174,37 +190,46 @@ export interface Proposal extends ProposalProperties {
    */
   vote(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string,
+    account: string | undefined,
     payload: VoteProposalParams
   ): Promise<void>;
 
   /**
    * Calculate voting result and sync to ethereum
-   * @param signer signer wallet
+   * @param provider Web3 provider or wallet
+   * @param account signer address
    * @param payload parameters for proposal calculation
    */
   calculate(
-    signer: ethers.Signer,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
     payload: CalculateProposalParams
   ): Promise<void>;
 
   /**
    * Finalize proposal
-   * @param signer signer wallet
+   * @param provider Web3 provider or wallet
+   * @param account signer address
    * @param payload parameters for proposal finalization
    */
   finalize(
-    signer: ethers.Signer,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
     payload: FinalizeProposalParams
   ): Promise<void>;
 
   /**
    * Execute a proposal in zDAO
-   * @param signer signer wallet
+   * @param provider Web3 provider or wallet
+   * @param account signer address
    * @param payload parameters for proposal execution
    * @returns transaction response
    * @exception throw Error if signer is not Gnosis Safe owner
    * @exception throw Error if proposal does not conain meta data to transfer tokens
    */
-  execute(signer: ethers.Signer, payload: ExecuteProposalParams): Promise<void>;
+  execute(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    payload: ExecuteProposalParams
+  ): Promise<void>;
 }

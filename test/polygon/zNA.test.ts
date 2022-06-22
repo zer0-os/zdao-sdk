@@ -80,7 +80,11 @@ describe('zNA test', async () => {
         isRelativeMajority: true,
       },
     };
-    const zDAO: zDAO = await sdkInstance.createZDAOFromParams(signer, params);
+    const zDAO: zDAO = await sdkInstance.createZDAOFromParams(
+      signer,
+      undefined,
+      params
+    );
 
     expect(zDAO.zNAs[0]).to.be.equal('zDAO.eth');
   });
@@ -101,10 +105,10 @@ describe('zNA test', async () => {
         isRelativeMajority: true,
       },
     };
-    await sdkInstance.createZDAOFromParams(signer, params);
+    await sdkInstance.createZDAOFromParams(signer, undefined, params);
 
     await expect(
-      sdkInstance.createZDAOFromParams(signer, params)
+      sdkInstance.createZDAOFromParams(signer, undefined, params)
     ).to.be.rejectedWith(errorMessageForError('already-exist-zdao'));
   });
 

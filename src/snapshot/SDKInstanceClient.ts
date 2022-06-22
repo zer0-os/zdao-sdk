@@ -1,5 +1,5 @@
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
-import { ethers, Signer } from 'ethers';
+import { ethers } from 'ethers';
 
 import { IPFSClient, ZNAClient } from '../client';
 import ZDAORegistryClient, { ZDAORecord } from '../client/ZDAORegistry';
@@ -20,7 +20,7 @@ import {
   zNA,
   zNAId,
 } from '../types';
-import { errorMessageForError } from '../utilities';
+import { errorMessageForError, getSigner } from '../utilities';
 import DAOClient from './client/DAOClient';
 import GlobalClient from './client/GlobalClient';
 import MockDAOClient from './client/MockDAOClient';
@@ -50,17 +50,22 @@ class SDKInstanceClient implements SDKInstance {
     GlobalClient.ipfsGateway = config.ipfsGateway;
   }
 
-  async createZDAO(signer: Signer, params: CreateZDAOParams): Promise<void> {
+  async createZDAO(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    params: CreateZDAOParams
+  ): Promise<void> {
     if (await this.doesZDAOExist(params.zNA)) {
       throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
     }
 
     try {
+      const signer = getSigner(provider, account);
       const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
 
       // signer should be owner of zNA
-      const account = await signer.getAddress();
-      if (!(await ZNSHubClient.isOwnerOf(zNAId, account))) {
+      const signerAccount = account ?? (await signer.getAddress());
+      if (!(await ZNSHubClient.isOwnerOf(zNAId, signerAccount))) {
         throw new InvalidError(errorMessageForError('not-zna-owner'));
       }
 
@@ -74,8 +79,13 @@ class SDKInstanceClient implements SDKInstance {
     }
   }
 
-  async deleteZDAO(signer: Signer, zDAOId: zDAOId): Promise<void> {
+  async deleteZDAO(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    zDAOId: zDAOId
+  ): Promise<void> {
     try {
+      const signer = getSigner(provider, account);
       await GlobalClient.ethereumZDAOChef.removeDAO(signer, zDAOId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
@@ -175,12 +185,15 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async createZToken(
-    signer: ethers.Signer,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
     name: string,
     symbol: string,
     options?: TokenMintOptions
   ): Promise<string> {
     try {
+      const signer = getSigner(provider, account);
+
       // create implementation of zToken
       const zTokenFactory = new ethers.ContractFactory(
         ZeroTokenAbi.abi,
@@ -228,7 +241,8 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async createZDAOFromParams(
-    signer: Signer,
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
     params: CreateZDAOParams
   ): Promise<zDAO> {
     if (params.name.length < 1) {
@@ -260,10 +274,12 @@ class SDKInstanceClient implements SDKInstance {
       throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
     }
 
+    const signer = getSigner(provider, account);
+
     // const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
 
     // // signer should be owner of zNA
-    // const account = await signer.getAddress();
+    // const account = account ?? (await signer.getAddress());
     // if (!(await ZNSHubClient.isOwnerOf(zNAId, account))) {
     //   throw new InvalidError(errorMessageForError('not-zna-owner'));
     // }

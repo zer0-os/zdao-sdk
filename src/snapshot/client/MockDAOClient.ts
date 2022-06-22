@@ -14,7 +14,12 @@ import {
   zDAOProperties,
   zDAOState,
 } from '../../types';
-import { errorMessageForError, getToken, timestamp } from '../../utilities';
+import {
+  errorMessageForError,
+  getSigner,
+  getToken,
+  timestamp,
+} from '../../utilities';
 import {
   Config,
   CreateProposalParamsOptions,
@@ -89,10 +94,8 @@ class MockDAOClient extends AbstractDAOClient {
     account: string,
     payload: CreateProposalParams
   ): Promise<ProposalId> {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const signer = provider?.getSigner ? provider.getSigner() : provider;
-    const address = await signer.getAddress();
+    const signer = getSigner(provider, account);
+    const address = account ?? (await signer.getAddress());
     const ipfs = await AbstractDAOClient.uploadToIPFS(signer, payload);
 
     const now = new Date();

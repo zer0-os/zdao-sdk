@@ -17,7 +17,7 @@ const createZDAO = async (
     if (await sdkInstance.doesZDAOExist(DAO.ens as zNA)) continue;
 
     console.log('creating zDAO', DAO);
-    await sdkInstance.createZDAO(signer, {
+    await sdkInstance.createZDAO(signer, undefined, {
       zNA: DAO.ens,
       name: DAO.name,
       network: SupportedChainId.RINKEBY,
@@ -35,10 +35,16 @@ const createZDAO = async (
 const createToken = async (sdkInstance: SDKInstance, signer: ethers.Wallet) => {
   // isDev should be true
 
-  const token = await sdkInstance.createZToken(signer, 'zSample', 'ZSAMPLE', {
-    target: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-    amount: BigNumber.from(10).pow(18).mul(10000).toString(),
-  });
+  const token = await sdkInstance.createZToken(
+    signer,
+    undefined,
+    'zSample',
+    'ZSAMPLE',
+    {
+      target: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+      amount: BigNumber.from(10).pow(18).mul(10000).toString(),
+    }
+  );
   console.log('new token', token);
 };
 
@@ -90,7 +96,7 @@ const immediateVote = async (
   const proposalId =
     '0xf21ff6d023ead5cddb4937c9a00435d5468cd4c4aed6466a455b8342f4842dc6';
   const proposal = await dao.getProposal(proposalId);
-  await proposal.vote(signer, signer.address, {
+  await proposal.vote(signer, undefined, {
     choice: 2,
   });
 

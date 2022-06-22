@@ -22,6 +22,7 @@ import {
   errorMessageForError,
   getDecimalAmount,
   getFullDisplayBalance,
+  getSigner,
   getToken,
 } from '../../utilities';
 import { EthereumZDAO, IEthereumZDAO } from '../config/types/EthereumZDAO';
@@ -312,9 +313,7 @@ class DAOClient extends AbstractDAOClient {
     }
 
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const signer = provider?.getSigner ? provider.getSigner() : provider;
+      const signer = getSigner(provider, account);
       const ipfs = await AbstractDAOClient.uploadToIPFS(signer, payload);
 
       await GlobalClient.ethereumZDAOChef.createProposal(
