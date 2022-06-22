@@ -10,7 +10,6 @@ import { ethers } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { cloneDeep } from 'lodash';
 
-import { EIP712Domain } from '../config';
 import {
   AssetType,
   CreateProposalParams,
@@ -219,7 +218,6 @@ class AbstractDAOClient implements zDAO {
     const chainId = await signer.getChainId();
 
     const proposal = JSON.stringify({
-      domain: EIP712Domain,
       payload: {
         createdBy: address,
         createdAt: timestamp(now),
@@ -237,15 +235,14 @@ class AbstractDAOClient implements zDAO {
       address: address,
       hash,
       data: {
-        domain: EIP712Domain,
         types: [
           {
             type: 'address',
-            name: 'signer',
+            name: 'createdBy',
           },
           {
             type: 'uint256',
-            name: 'timestamp',
+            name: 'createdAt',
           },
           {
             type: 'string',
@@ -257,11 +254,11 @@ class AbstractDAOClient implements zDAO {
           },
           {
             type: 'uint256',
-            name: 'value',
+            name: 'network',
           },
           {
-            type: 'bytes',
-            name: 'data',
+            type: 'string',
+            name: 'metadata',
           },
         ],
         message: {

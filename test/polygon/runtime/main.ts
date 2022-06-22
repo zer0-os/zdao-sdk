@@ -1,16 +1,17 @@
 import { BigNumber, ethers } from 'ethers';
 
-import { ZNAClient } from '../../../src/client';
-import TransferAbi from '../../../src/config/abi/transfer.json';
-import { createSDKInstance } from '../../../src/polygon';
-import { developmentConfiguration } from '../../../src/polygon/config';
 import {
+  createSDKInstanceBuilder,
+  PlatformType,
+  Polygon,
   ProposalState,
   SDKInstance,
   SupportedChainId,
   zDAO,
   zNA,
-} from '../../../src/types';
+} from '../../../src';
+import { ZNAClient } from '../../../src/client';
+import TransferAbi from '../../../src/config/abi/transfer.json';
 import { sleep } from '../../../src/utilities/date';
 import { setEnvPolygon as setEnv } from '../../shared/setupEnv';
 
@@ -25,7 +26,7 @@ const createZDAO = async (
     if (!(await instace.doesZDAOExist(DAO.zNA))) {
       await instace.createZDAO(signer, {
         zNA: DAO.zNA,
-        title: DAO.title,
+        name: DAO.name,
         network: SupportedChainId.GOERLI,
         gnosisSafe: env.gnosisSafe.goerli.address,
         token: env.contract.token.goerli,
@@ -93,7 +94,7 @@ const iterateZDAO = async (
   console.log(
     'zDAO',
     zDAO.id,
-    zDAO.title,
+    zDAO.name,
     zDAO.gnosisSafe,
     zDAO.votingToken,
     zDAO.options
@@ -184,7 +185,7 @@ const main = async () => {
     SupportedChainId.RINKEBY
   );
 
-  const config = developmentConfiguration({
+  const config = Polygon.developmentConfiguration({
     ethereum: {
       zDAOChef: env.contract.zDAOChef.goerli,
       rpcUrl: env.rpc.goerli,
@@ -214,6 +215,7 @@ const main = async () => {
   console.log('config', config);
   console.log('signer.address', goerliSigner.address);
 
+  const createSDKInstance = createSDKInstanceBuilder(PlatformType.Polygon);
   const instance = await createSDKInstance(config);
   console.log('instance created');
 
@@ -242,7 +244,7 @@ const main = async () => {
     console.log(
       zDAO.id,
       zDAO.zNAs,
-      zDAO.title,
+      zDAO.name,
       zDAO.createdBy,
       zDAO.network,
       zDAO.gnosisSafe,

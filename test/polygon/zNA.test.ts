@@ -67,7 +67,7 @@ describe('zNA test', async () => {
   it('should create successfully', async () => {
     const params: CreateZDAOParams = {
       zNA: 'zDAO.eth',
-      title: 'zDAO Testing Space 1',
+      name: 'zDAO Testing Space 1',
       network: SupportedChainId.GOERLI,
       gnosisSafe: env.gnosisSafe.goerli.address,
       token: env.contract.token.goerli,
@@ -88,7 +88,7 @@ describe('zNA test', async () => {
   it('should throw error if create same zNA', async () => {
     const params: CreateZDAOParams = {
       zNA: 'zDAO.eth',
-      title: 'zDAO',
+      name: 'zDAO',
       network: SupportedChainId.GOERLI,
       gnosisSafe: env.gnosisSafe.goerli.address,
       token: env.contract.token.goerli,

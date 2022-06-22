@@ -171,7 +171,7 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
-    return await GlobalClient.zDAORegistry.doeszDAOExistForzNA(zNA);
+    return await GlobalClient.zDAORegistry.doesZDAOExistForZNA(zNA);
   }
 
   async createZToken(

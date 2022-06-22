@@ -57,7 +57,7 @@ describe.only('Snapshot test', async () => {
       id: defZNA,
       ens: defZNA,
       zNA: defZNA,
-      title: 'zDAO Testing Space 1',
+      name: 'zDAO Testing Space 1',
       createdBy: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
       network: SupportedChainId.RINKEBY,
       gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
@@ -69,7 +69,7 @@ describe.only('Snapshot test', async () => {
       {
         id: dao.id,
         zNAs: [dao.zNA],
-        title: dao.title,
+        name: dao.name,
         createdBy: dao.createdBy,
         network: dao.network,
         gnosisSafe: dao.gnosisSafe,

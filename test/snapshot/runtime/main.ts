@@ -1,10 +1,6 @@
 import { BigNumber, ethers } from 'ethers';
 
-import { Config, createSDKInstance } from '../../../src/snapshot';
-import {
-  developmentConfiguration,
-  productionConfiguration,
-} from '../../../src/snapshot/config';
+import { createSDKInstanceBuilder, PlatformType, Snapshot } from '../../../src';
 import { SDKInstance, SupportedChainId, zNA } from '../../../src/types';
 import { setEnvSnapshot as setEnv } from '../../shared/setupEnv';
 
@@ -23,7 +19,7 @@ const createZDAO = async (
     console.log('creating zDAO', DAO);
     await sdkInstance.createZDAO(signer, {
       zNA: DAO.ens,
-      title: DAO.title,
+      name: DAO.name,
       network: SupportedChainId.RINKEBY,
       gnosisSafe: DAO.gnosisSafe,
       token: DAO.votingToken,
@@ -115,8 +111,8 @@ const main = async () => {
     )
   );
 
-  const config: Config = isDev
-    ? developmentConfiguration({
+  const config = isDev
+    ? Snapshot.developmentConfiguration({
         ethereum: {
           zDAOChef: env.contract.zDAOChef.rinkeby,
           rpcUrl: env.rpc.rinkeby,
@@ -132,7 +128,7 @@ const main = async () => {
         fleek: env.fleek,
         ipfsGateway: 'snapshot.mypinata.cloud',
       })
-    : productionConfiguration({
+    : Snapshot.productionConfiguration({
         ethereum: {
           zDAOChef: env.contract.zDAOChef.mainnet,
           rpcUrl: env.rpc.mainnet,
@@ -149,7 +145,8 @@ const main = async () => {
         ipfsGateway: 'snapshot.mypinata.cloud',
       });
 
-  const sdkInstance: SDKInstance = createSDKInstance(config);
+  const createSDKInstance = createSDKInstanceBuilder(PlatformType.Snapshot);
+  const sdkInstance: SDKInstance = await createSDKInstance(config);
 
   // await createZDAO(sdkInstance, signer, env);
   // await createToken(sdkInstance, signer);

@@ -1,6 +1,7 @@
+import { DocumentNode } from 'graphql';
 import gql from 'graphql-tag';
 
-export const SPACES_QUERY = gql`
+export const SPACES_QUERY: DocumentNode = gql`
   query Spaces($id_in: [String]) {
     spaces(where: { id_in: $id_in }) {
       id
@@ -25,7 +26,7 @@ export const SPACES_QUERY = gql`
   }
 `;
 
-export const SPACES_STRATEGIES_QUERY = gql`
+export const SPACES_STRATEGIES_QUERY: DocumentNode = gql`
   query Spaces($id_in: [String]) {
     spaces(where: { id_in: $id_in }) {
       id
@@ -37,7 +38,7 @@ export const SPACES_STRATEGIES_QUERY = gql`
   }
 `;
 
-export const PROPOSALS_QUERY = gql`
+export const PROPOSALS_QUERY: DocumentNode = gql`
   query Proposals(
     $spaceId: String!
     $network: String!
@@ -71,7 +72,7 @@ export const PROPOSALS_QUERY = gql`
   }
 `;
 
-export const PROPOSAL_QUERY = gql`
+export const PROPOSAL_QUERY: DocumentNode = gql`
   query Proposal($id: String!) {
     proposal(id: $id) {
       id
@@ -105,7 +106,7 @@ export const PROPOSAL_QUERY = gql`
   }
 `;
 
-export const VOTES_QUERY = gql`
+export const VOTES_QUERY: DocumentNode = gql`
   query Votes(
     $id: String!
     $first: Int

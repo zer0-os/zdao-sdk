@@ -44,14 +44,14 @@ export const setEnvPolygon = () => {
     DAOs: {
       goerli: [
         {
-          title: 'Wilder Wheels',
+          name: 'Wilder Wheels',
           votingToken: '0xa80152CB820463a1B50228D2b8dE50717E849BBd',
           gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
           zNA: 'wilder.wheels',
           duration: 172800, // 2 days
         },
         {
-          title: 'Wilder Kicks',
+          name: 'Wilder Kicks',
           votingToken: '0xa80152CB820463a1B50228D2b8dE50717E849BBd',
           gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
           zNA: 'wilder.kicks',
@@ -59,7 +59,7 @@ export const setEnvPolygon = () => {
           isRelativeMajority: true,
         },
         {
-          title: 'Wilder Cats',
+          name: 'Wilder Cats',
           votingToken: '0xa80152CB820463a1B50228D2b8dE50717E849BBd',
           gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
           zNA: 'wilder.cats',

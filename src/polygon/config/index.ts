@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 import { DAOConfig, FleekConfig, zNAConfig } from '../../types';
 import { Config, ProofConfig } from '../types';
 
-interface ConfigParams {
+export interface ConfigParams {
   /**
    * On the development, ethereum network should be Goerli,
    * On the production, ethereum network should be mainnet
@@ -36,8 +36,6 @@ interface ConfigParams {
    */
   zNSProvider?: ethers.providers.Provider;
 }
-
-// todo, should be able to configure ipfs gateways as configuration parameter
 
 export const developmentConfiguration = ({
   ethereum,

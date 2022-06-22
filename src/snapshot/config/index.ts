@@ -9,7 +9,7 @@ import {
 } from '../../types';
 import { Config } from '../types';
 
-interface ConfigParams {
+export interface ConfigParams {
   /**
    * On the development, ethereum network should be Goerli,
    * On the production, ethereum network should be mainnet

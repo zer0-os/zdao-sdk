@@ -60,7 +60,7 @@ export interface ZDAORegistryInterface extends utils.Interface {
     "adminDisassociateZNA(uint256,uint256)": FunctionFragment;
     "adminModifyZDAO(uint256,address,bytes)": FunctionFragment;
     "adminRemoveZDAO(uint256)": FunctionFragment;
-    "doesZNAExistForZNA(uint256)": FunctionFragment;
+    "doesZDAOExistForZNA(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getZDAOById(uint256)": FunctionFragment;
     "getZDAOByZNA(uint256)": FunctionFragment;
@@ -82,6 +82,7 @@ export interface ZDAORegistryInterface extends utils.Interface {
     "upgradeToAndCall(address,bytes)": FunctionFragment;
     "version()": FunctionFragment;
     "zDAOFactories(uint256)": FunctionFragment;
+    "zDAONames(uint256)": FunctionFragment;
     "zDAORecords(uint256)": FunctionFragment;
     "zNATozDAOId(uint256)": FunctionFragment;
     "znsHub()": FunctionFragment;
@@ -124,7 +125,7 @@ export interface ZDAORegistryInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "doesZNAExistForZNA",
+    functionFragment: "doesZDAOExistForZNA",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -197,6 +198,10 @@ export interface ZDAORegistryInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "zDAONames",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "zDAORecords",
     values: [BigNumberish]
   ): string;
@@ -240,7 +245,7 @@ export interface ZDAORegistryInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "doesZNAExistForZNA",
+    functionFragment: "doesZDAOExistForZNA",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -297,6 +302,7 @@ export interface ZDAORegistryInterface extends utils.Interface {
     functionFragment: "zDAOFactories",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "zDAONames", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "zDAORecords",
     data: BytesLike
@@ -511,7 +517,7 @@ export interface ZDAORegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    doesZNAExistForZNA(
+    doesZDAOExistForZNA(
       _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
@@ -613,6 +619,11 @@ export interface ZDAORegistry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    zDAONames(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     zDAORecords(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -687,7 +698,7 @@ export interface ZDAORegistry extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  doesZNAExistForZNA(
+  doesZDAOExistForZNA(
     _zNA: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
@@ -782,6 +793,8 @@ export interface ZDAORegistry extends BaseContract {
 
   zDAOFactories(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
+  zDAONames(arg0: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+
   zDAORecords(
     arg0: BigNumberish,
     overrides?: CallOverrides
@@ -856,7 +869,7 @@ export interface ZDAORegistry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    doesZNAExistForZNA(
+    doesZDAOExistForZNA(
       _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
@@ -948,6 +961,8 @@ export interface ZDAORegistry extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    zDAONames(arg0: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
     zDAORecords(
       arg0: BigNumberish,
@@ -1138,7 +1153,7 @@ export interface ZDAORegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    doesZNAExistForZNA(
+    doesZDAOExistForZNA(
       _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1239,6 +1254,11 @@ export interface ZDAORegistry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    zDAONames(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     zDAORecords(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1307,7 +1327,7 @@ export interface ZDAORegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    doesZNAExistForZNA(
+    doesZDAOExistForZNA(
       _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1404,6 +1424,11 @@ export interface ZDAORegistry extends BaseContract {
     version(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     zDAOFactories(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    zDAONames(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
