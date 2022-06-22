@@ -1,12 +1,16 @@
 import { ethers } from 'ethers';
 
 import {
+  CalculateProposalParams,
   CreateProposalParams,
   CreateZDAOParams,
+  ExecuteProposalParams,
+  FinalizeProposalParams,
   PaginationParam,
   TokenMintOptions,
+  VoteProposalParams,
 } from './params';
-import { Choice, ProposalId, zDAOId, zNA } from './primitives';
+import { ProposalId, zDAOId, zNA } from './primitives';
 import {
   ProposalProperties,
   Transaction,
@@ -145,13 +149,6 @@ export interface zDAO extends zDAOProperties {
    * @param txHash transaction hash which happened on Polygon to send data to Ethereum
    */
   isCheckPointed(txHash: string): Promise<boolean>;
-
-  /**
-   * If tx is successfully check pointed, create a transaction to receive message
-   * @param signer
-   * @param txHash
-   */
-  syncState(signer: ethers.Signer, txHash: string): Promise<void>;
 }
 
 export interface Proposal extends ProposalProperties {
@@ -178,29 +175,44 @@ export interface Proposal extends ProposalProperties {
    * Cast a vote on proposal
    * @param provider Web3 provider or wallet
    * @param account signer address
-   * @param choice voter's choice
+   * @param payload vote parameters
    * @returns vote id if successfully cast a vote
    */
   vote(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
-    choice: Choice
+    payload: VoteProposalParams
   ): Promise<void>;
 
   /**
    * Calculate voting result and sync to ethereum
    * @param signer signer wallet
+   * @param payload parameters for proposal calculation
    */
-  calculate(signer: ethers.Signer): Promise<void>;
+  calculate(
+    signer: ethers.Signer,
+    payload: CalculateProposalParams
+  ): Promise<void>;
+
+  /**
+   * Finalize proposal
+   * @param signer signer wallet
+   * @param payload parameters for proposal finalization
+   */
+  finalize(
+    signer: ethers.Signer,
+    payload: FinalizeProposalParams
+  ): Promise<void>;
 
   /**
    * Execute a proposal in zDAO
    * @param signer signer wallet
+   * @param payload parameters for proposal execution
    * @returns transaction response
    * @exception throw Error if signer is not Gnosis Safe owner
    * @exception throw Error if proposal does not conain meta data to transfer tokens
    */
-  execute(signer: ethers.Signer): Promise<void>;
+  execute(signer: ethers.Signer, payload: ExecuteProposalParams): Promise<void>;
 
   /**
    * Find all the checkpointing transaction hashes

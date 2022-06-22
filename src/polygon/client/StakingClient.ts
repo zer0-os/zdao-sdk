@@ -84,6 +84,18 @@ class StakingClient implements Staking {
   ): Promise<string> {
     return this._polyStaking.pastStakingPower(account, token, blockNumber);
   }
+
+  stakedERC20Amount(account: string, token: string): Promise<string> {
+    return this._polyStaking.stakedERC20Amount(account, token);
+  }
+
+  isStakedERC721(
+    account: string,
+    token: string,
+    tokenId: string
+  ): Promise<boolean> {
+    return this._polyStaking.isStakedERC721(account, token, tokenId);
+  }
 }
 
 export default StakingClient;

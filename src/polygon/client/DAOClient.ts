@@ -339,20 +339,6 @@ class DAOClient extends AbstractDAOClient {
   async isCheckPointed(txHash: string) {
     return ProofClient.isCheckPointed(txHash);
   }
-
-  async syncState(signer: ethers.Signer, txHash: string) {
-    // zDAO should be active
-    if (this.destroyed) {
-      throw new AlreadyDestroyedError();
-    }
-    try {
-      const proof = await ProofClient.generate(txHash);
-      await GlobalClient.ethereumZDAOChef.receiveMessage(signer, proof);
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
-    }
-  }
 }
 
 export default DAOClient;

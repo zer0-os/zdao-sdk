@@ -16,3 +16,7 @@ export interface CreateZDAOParamsOptions {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface CreateProposalParamsOptions {}
+
+export interface FinalizeProposalParamsOptions {
+  txHash: string;
+}

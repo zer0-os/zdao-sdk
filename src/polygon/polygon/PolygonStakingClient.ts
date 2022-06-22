@@ -68,6 +68,20 @@ class PolygonStakingClient {
       .pastStakingPower(account, token, blockNumber)
       .then((value) => value.toString());
   }
+
+  async stakedERC20Amount(account: string, token: string): Promise<string> {
+    return this._contract
+      .stakedERC20Amount(account, token)
+      .then((value) => value.toString());
+  }
+
+  isStakedERC721(
+    account: string,
+    token: string,
+    tokenId: string
+  ): Promise<boolean> {
+    return this.isStakedERC721(account, token, tokenId);
+  }
 }
 
 export default PolygonStakingClient;

@@ -18,7 +18,7 @@ import { setEnvSnapshot as setEnv } from '../shared/setupEnv';
 
 use(chaiAsPromised.default);
 
-describe.only('Snapshot test', async () => {
+describe('Snapshot test', async () => {
   const env = setEnv();
   const defZNA = 'joshupgig.eth';
 
@@ -51,7 +51,7 @@ describe.only('Snapshot test', async () => {
     if (!pk) throw new Error(errorMessageForError('no-private-key'));
     signer = new ethers.Wallet(pk, provider);
 
-    sdkInstance = createSDKInstance(config);
+    sdkInstance = await createSDKInstance(config);
 
     const dao = {
       id: defZNA,

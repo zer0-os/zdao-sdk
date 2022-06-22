@@ -287,10 +287,6 @@ class AbstractDAOClient implements zDAO {
   isCheckPointed(_: string): Promise<boolean> {
     throw new NotImplementedError();
   }
-
-  syncState(_: ethers.Signer, _2: string): Promise<void> {
-    throw new NotImplementedError();
-  }
 }
 
 export default AbstractDAOClient;

@@ -3,20 +3,25 @@ import { ethers } from 'ethers';
 import { AbstractProposalClient } from '../../client';
 import {
   AlreadyDestroyedError,
+  CalculateProposalParams,
   Choice,
+  ExecuteProposalParams,
   FailedTxError,
+  FinalizeProposalParams,
   InvalidError,
   NotSyncStateError,
   Proposal,
   ProposalProperties,
   ProposalState,
   Vote,
+  VoteProposalParams,
   ZDAOError,
 } from '../../types';
 import { errorMessageForError } from '../../utilities';
-import { ZDAOOptions } from '../types';
+import { FinalizeProposalParamsOptions, ZDAOOptions } from '../types';
 import DAOClient from './DAOClient';
 import GlobalClient from './GlobalClient';
+import ProofClient from './ProofClient';
 
 class ProposalClient extends AbstractProposalClient {
   private readonly _zDAO: DAOClient;
@@ -109,7 +114,7 @@ class ProposalClient extends AbstractProposalClient {
   async vote(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
-    choice: Choice
+    payload: VoteProposalParams
   ) {
     // zDAO should be active
     if (this._zDAO.destroyed) {
@@ -146,7 +151,7 @@ class ProposalClient extends AbstractProposalClient {
         signer,
         daoId,
         proposalId,
-        choice
+        payload.choice
       );
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
@@ -154,7 +159,7 @@ class ProposalClient extends AbstractProposalClient {
     }
   }
 
-  async calculate(signer: ethers.Signer) {
+  async calculate(signer: ethers.Signer, _: CalculateProposalParams) {
     const daoId = this._zDAO.id;
     const proposalId = this.id;
 
@@ -170,7 +175,24 @@ class ProposalClient extends AbstractProposalClient {
     }
   }
 
-  async execute(signer: ethers.Signer) {
+  async finalize(signer: ethers.Signer, payload: FinalizeProposalParams) {
+    // zDAO should be active
+    if (this._zDAO.destroyed) {
+      throw new AlreadyDestroyedError();
+    }
+
+    try {
+      const proof = await ProofClient.generate(
+        (payload.options as FinalizeProposalParamsOptions).txHash
+      );
+      await GlobalClient.ethereumZDAOChef.receiveMessage(signer, proof);
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
+  }
+
+  async execute(signer: ethers.Signer, _: ExecuteProposalParams) {
     const address = await signer.getAddress();
     const isOwner = await this._zDAO.gnosisSafeClient.isOwnerAddress(
       signer,

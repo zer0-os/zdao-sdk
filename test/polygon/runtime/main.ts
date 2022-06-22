@@ -135,14 +135,16 @@ const iterateZDAO = async (
       );
       console.log('votingPower', votingPower);
       if (BigNumber.from(votingPower).gt(BigNumber.from(0))) {
-        await proposal.vote(mumbaiSigner, mumbaiSigner.address, 2);
+        await proposal.vote(mumbaiSigner, mumbaiSigner.address, {
+          choice: 2,
+        });
         console.log('successfully voted');
       }
 
       const votes = await proposal.listVotes();
       console.log('votes', votes);
     } else if (proposal.state === ProposalState.AWAITING_CALCULATION) {
-      const tx = await proposal.calculate(mumbaiSigner);
+      const tx = await proposal.calculate(mumbaiSigner, {});
       console.log('successfully calculated on polygon');
     } else if (proposal.state === ProposalState.AWAITING_FINALIZATION) {
       const hashes = await proposal.getCheckPointingHashes();
@@ -155,7 +157,11 @@ const iterateZDAO = async (
             await sleep(1000);
           }
           console.log('tx hash was checkpointed', hash);
-          await zDAO.syncState(goerliSigner, hash);
+          await proposal.finalize(goerliSigner, {
+            options: {
+              txHash: hash,
+            },
+          });
           console.log('sync state');
         } catch (error) {
           console.error(error);
@@ -163,7 +169,7 @@ const iterateZDAO = async (
       }
     } else if (proposal.state === ProposalState.AWAITING_EXECUTION) {
       console.log('executing', proposal.id);
-      await proposal.execute(goerliGnosisOwnerSigner);
+      await proposal.execute(goerliGnosisOwnerSigner, {});
       console.log('executed', proposal.id);
     }
   }

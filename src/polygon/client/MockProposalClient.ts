@@ -2,11 +2,14 @@ import { ethers } from 'ethers';
 
 import { AbstractProposalClient } from '../../client';
 import {
-  Choice,
+  CalculateProposalParams,
+  ExecuteProposalParams,
+  FinalizeProposalParams,
   NotImplementedError,
   Proposal,
   ProposalProperties,
   Vote,
+  VoteProposalParams,
 } from '../../types';
 import MockDAOClient from './MockDAOClient';
 
@@ -34,7 +37,7 @@ class MockProposalClient extends AbstractProposalClient {
   async vote(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
-    choice: Choice
+    payload: VoteProposalParams
   ): Promise<void> {
     const address = account;
     const found = this._votes.find((item) => item.voter == address);
@@ -43,25 +46,29 @@ class MockProposalClient extends AbstractProposalClient {
     if (!found) {
       this._votes.push({
         voter: address,
-        choice,
+        choice: payload.choice,
         votes: vp.toString(),
       });
       this._properties.voters = (this._properties.voters ?? 0) + vp;
     } else {
-      found.choice = choice;
+      found.choice = payload.choice;
     }
     if (this._properties.scores) {
-      this._properties.scores[choice] = (
+      this._properties.scores[payload.choice] = (
         Number(this._properties.scores) + vp
       ).toString();
     }
   }
 
-  calculate(_: ethers.Signer): Promise<void> {
+  calculate(_: ethers.Signer, _2: CalculateProposalParams): Promise<void> {
     throw new NotImplementedError();
   }
 
-  execute(_: ethers.Signer): Promise<void> {
+  finalize(_: ethers.Signer, _2: FinalizeProposalParams): Promise<void> {
+    throw new NotImplementedError();
+  }
+
+  execute(_: ethers.Signer, _2: ExecuteProposalParams): Promise<void> {
     throw new NotImplementedError();
   }
 

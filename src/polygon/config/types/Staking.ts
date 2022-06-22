@@ -26,6 +26,7 @@ export interface StakingInterface extends utils.Interface {
     "getRoleAdmin(bytes32)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
+    "isStakedERC721(address,address,uint256)": FunctionFragment;
     "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
     "owner()": FunctionFragment;
     "pastStakingPower(address,address,uint256)": FunctionFragment;
@@ -35,6 +36,7 @@ export interface StakingInterface extends utils.Interface {
     "revokeRole(bytes32,address)": FunctionFragment;
     "stakeERC20(address,uint256)": FunctionFragment;
     "stakeERC721(address,uint256)": FunctionFragment;
+    "stakedERC20Amount(address,address)": FunctionFragment;
     "stakingPower(address,address)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
@@ -66,6 +68,10 @@ export interface StakingInterface extends utils.Interface {
     values: [BytesLike, string]
   ): string;
   encodeFunctionData(
+    functionFragment: "isStakedERC721",
+    values: [string, string, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "onERC721Received",
     values: [string, string, BigNumberish, BytesLike]
   ): string;
@@ -94,6 +100,10 @@ export interface StakingInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "stakeERC721",
     values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "stakedERC20Amount",
+    values: [string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "stakingPower",
@@ -137,6 +147,10 @@ export interface StakingInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "isStakedERC721",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "onERC721Received",
     data: BytesLike
   ): Result;
@@ -158,6 +172,10 @@ export interface StakingInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "stakeERC20", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "stakeERC721",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "stakedERC20Amount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -362,6 +380,13 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
+    isStakedERC721(
+      _user: string,
+      _token: string,
+      _tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     onERC721Received(
       arg0: string,
       arg1: string,
@@ -408,6 +433,12 @@ export interface Staking extends BaseContract {
       _tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    stakedERC20Amount(
+      _user: string,
+      _token: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     stakingPower(
       _user: string,
@@ -471,6 +502,13 @@ export interface Staking extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  isStakedERC721(
+    _user: string,
+    _token: string,
+    _tokenId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   onERC721Received(
     arg0: string,
     arg1: string,
@@ -517,6 +555,12 @@ export interface Staking extends BaseContract {
     _tokenId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  stakedERC20Amount(
+    _user: string,
+    _token: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   stakingPower(
     _user: string,
@@ -578,6 +622,13 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    isStakedERC721(
+      _user: string,
+      _token: string,
+      _tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     onERC721Received(
       arg0: string,
       arg1: string,
@@ -622,6 +673,12 @@ export interface Staking extends BaseContract {
       _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    stakedERC20Amount(
+      _user: string,
+      _token: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     stakingPower(
       _user: string,
@@ -813,6 +870,13 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    isStakedERC721(
+      _user: string,
+      _token: string,
+      _tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     onERC721Received(
       arg0: string,
       arg1: string,
@@ -858,6 +922,12 @@ export interface Staking extends BaseContract {
       _token: string,
       _tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    stakedERC20Amount(
+      _user: string,
+      _token: string,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     stakingPower(
@@ -928,6 +998,13 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    isStakedERC721(
+      _user: string,
+      _token: string,
+      _tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     onERC721Received(
       arg0: string,
       arg1: string,
@@ -973,6 +1050,12 @@ export interface Staking extends BaseContract {
       _token: string,
       _tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    stakedERC20Amount(
+      _user: string,
+      _token: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     stakingPower(

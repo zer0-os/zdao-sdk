@@ -1,6 +1,20 @@
 import { ContractReceipt, ethers } from 'ethers';
 
+import { SDKInstance as SDKBaseInstance } from '../../types';
 import { StakingProperties } from './structures';
+
+export interface SDKInstance extends SDKBaseInstance {
+  /**
+   * Staking instance associated with Staking contract
+   */
+  staking: Staking;
+
+  /**
+   * Registry instance associated with the contract which has mapping of tokens
+   * between Ethereum and Polygon
+   */
+  registry: Registry;
+}
 
 export interface Staking extends StakingProperties {
   stakeERC20(
@@ -34,6 +48,14 @@ export interface Staking extends StakingProperties {
     token: string,
     blockNumber: number
   ): Promise<string>;
+
+  stakedERC20Amount(account: string, token: string): Promise<string>;
+
+  isStakedERC721(
+    account: string,
+    token: string,
+    tokenId: string
+  ): Promise<boolean>;
 }
 
 export interface Registry {

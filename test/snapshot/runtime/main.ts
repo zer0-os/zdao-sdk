@@ -90,7 +90,9 @@ const immediateVote = async (
   const proposalId =
     '0xf21ff6d023ead5cddb4937c9a00435d5468cd4c4aed6466a455b8342f4842dc6';
   const proposal = await dao.getProposal(proposalId);
-  await proposal.vote(signer, signer.address, 2);
+  await proposal.vote(signer, signer.address, {
+    choice: 2,
+  });
 
   const votes = await proposal.listVotes();
   console.log('votes', votes);

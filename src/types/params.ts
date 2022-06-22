@@ -1,13 +1,15 @@
 import {
   CreateProposalParamsOptions as CreatePolygonProposalParamsOptions,
   CreateZDAOParamsOptions as CreatePolygonZDAOParamsOptions,
+  FinalizeProposalParamsOptions as FinalizePolygonProposalParamsOptions,
 } from '../polygon';
 import {
   CreateProposalParamsOptions as CreateSnapshotProposalParamsOptions,
   CreateZDAOParamsOptions as CreateSnapshotZDAOParamsOptions,
+  FinalizeProposalParamsOptions as FinalizeSnapshotProposalParamsOptions,
 } from '../snapshot';
 import { SupportedChainId } from './enums';
-import { Choice, ProposalId, zNA } from './primitives';
+import { Choice, zNA } from './primitives';
 import { TokenMetaData } from './structures';
 
 export interface CreateZDAOParams {
@@ -53,16 +55,22 @@ export interface CreateProposalParams {
 }
 
 export interface VoteProposalParams {
-  // Unique id for looking up proposal
-  proposal: ProposalId;
-
   // Yes or No
   choice: Choice;
 }
 
+export interface CalculateProposalParams {
+  options?: any;
+}
+
+export interface FinalizeProposalParams {
+  options?:
+    | FinalizePolygonProposalParamsOptions
+    | FinalizeSnapshotProposalParamsOptions;
+}
+
 export interface ExecuteProposalParams {
-  // Unique id for looking up proposal
-  proposal: ProposalId;
+  options?: any;
 }
 
 export interface TokenMintOptions {

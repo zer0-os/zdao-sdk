@@ -2,12 +2,15 @@ import { ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import {
-  Choice,
+  CalculateProposalParams,
+  ExecuteProposalParams,
+  FinalizeProposalParams,
   NotImplementedError,
   Proposal,
   ProposalProperties,
   TokenMetaData,
   Vote,
+  VoteProposalParams,
 } from '../types';
 import { errorMessageForError } from '../utilities';
 import IPFSClient from './IPFSClient';
@@ -134,16 +137,20 @@ class AbstractProposalClient implements Proposal {
   vote(
     _: ethers.providers.Web3Provider | ethers.Wallet,
     _2: string,
-    _3: Choice
+    _3: VoteProposalParams
   ): Promise<void> {
     throw new NotImplementedError();
   }
 
-  calculate(_: ethers.Signer): Promise<void> {
+  finalize(_: ethers.Signer, _2: FinalizeProposalParams): Promise<void> {
     throw new NotImplementedError();
   }
 
-  execute(_: ethers.Signer): Promise<void> {
+  calculate(_: ethers.Signer, _2: CalculateProposalParams): Promise<void> {
+    throw new NotImplementedError();
+  }
+
+  execute(_: ethers.Signer, _2: ExecuteProposalParams): Promise<void> {
     throw new NotImplementedError();
   }
 

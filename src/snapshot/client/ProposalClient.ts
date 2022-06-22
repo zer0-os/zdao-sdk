@@ -2,13 +2,17 @@ import { ethers } from 'ethers';
 
 import { AbstractProposalClient, GnosisSafeClient } from '../../client';
 import {
+  CalculateProposalParams,
   Choice,
+  ExecuteProposalParams,
+  FinalizeProposalParams,
   NotImplementedError,
   PaginationParam,
   Proposal,
   ProposalProperties,
   ProposalState,
   Vote,
+  VoteProposalParams,
 } from '../../types';
 import { errorMessageForError } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
@@ -153,20 +157,27 @@ class ProposalClient extends AbstractProposalClient {
   async vote(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
-    choice: Choice
+    payload: VoteProposalParams
   ): Promise<void> {
     await this._snapshotClient.voteProposal(provider, account, {
       spaceId: (this._zDAO.options as ZDAOOptions).ens,
       proposalId: this.id,
-      choice,
+      choice: payload.choice,
     });
   }
 
-  async calculate(_: ethers.Signer): Promise<void> {
+  calculate(_: ethers.Signer, _2: CalculateProposalParams): Promise<void> {
     throw new NotImplementedError();
   }
 
-  async execute(signer: ethers.Signer): Promise<void> {
+  finalize(_: ethers.Signer, _2: FinalizeProposalParams): Promise<void> {
+    throw new NotImplementedError();
+  }
+
+  async execute(
+    signer: ethers.Signer,
+    _: ExecuteProposalParams
+  ): Promise<void> {
     if (!this.metadata) return;
 
     const address = await signer.getAddress();
