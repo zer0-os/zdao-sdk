@@ -5,7 +5,6 @@ import {
   PlatformType,
   Polygon,
   ProposalState,
-  SDKInstance,
   SupportedChainId,
   zDAO,
   zNA,
@@ -18,7 +17,7 @@ import { setEnvPolygon as setEnv } from '../../shared/setupEnv';
 (global as any).XMLHttpRequest = require('xhr2');
 
 const createZDAO = async (
-  instace: SDKInstance,
+  instace: Polygon.SDKInstance,
   signer: ethers.Wallet,
   env: any
 ) => {
@@ -45,7 +44,7 @@ const createZDAO = async (
 };
 
 const createProposal = async (
-  instance: SDKInstance,
+  instance: Polygon.SDKInstance,
   signer: ethers.Wallet,
   zDAO: zDAO,
   env: any
@@ -67,7 +66,7 @@ const createProposal = async (
 };
 
 const iterateZDAO = async (
-  instance: SDKInstance,
+  instance: Polygon.SDKInstance,
   goerliSigner: ethers.Wallet,
   zNA: zNA,
   env: any
@@ -89,7 +88,7 @@ const iterateZDAO = async (
   );
 
   console.time('getZDAOByZNA');
-  const zDAO = await instance.getZDAOByZNA(zNA);
+  const zDAO = (await instance.getZDAOByZNA(zNA)) as Polygon.zDAO;
   console.timeEnd('getZDAOByZNA');
   console.log(
     'zDAO',
@@ -98,6 +97,14 @@ const iterateZDAO = async (
     zDAO.gnosisSafe,
     zDAO.votingToken,
     zDAO.options
+  );
+
+  console.log(
+    'staked amount',
+    await instance.staking.stakedERC20Amount(
+      mumbaiSigner.address,
+      zDAO.votingToken.token
+    )
   );
 
   console.time('listAssets');
@@ -224,7 +231,7 @@ const main = async () => {
   console.log('signer.address', goerliSigner.address);
 
   const createSDKInstance = createSDKInstanceBuilder(PlatformType.Polygon);
-  const instance = await createSDKInstance(config);
+  const instance = (await createSDKInstance(config)) as Polygon.SDKInstance;
   console.log('instance created');
 
   const zNAId1 = ZNAClient.zNATozNAId('wilder.wheels');

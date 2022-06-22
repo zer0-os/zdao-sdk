@@ -13,7 +13,6 @@ import {
   ProposalId,
   ProposalProperties,
   ProposalState,
-  zDAO,
   zDAOId,
   zDAOProperties,
   zDAOState,
@@ -27,12 +26,12 @@ import {
 } from '../../utilities';
 import { EthereumZDAO, IEthereumZDAO } from '../config/types/EthereumZDAO';
 import { PolygonZDAO } from '../config/types/PolygonZDAO';
-import { Config, VoteChoice } from '../types';
+import { Config, VoteChoice, zDAO } from '../types';
 import GlobalClient from './GlobalClient';
 import ProofClient from './ProofClient';
 import ProposalClient from './ProposalClient';
 
-class DAOClient extends AbstractDAOClient {
+class DAOClient extends AbstractDAOClient implements zDAO {
   protected _ethereumZDAO!: EthereumZDAO;
   protected _polygonZDAO: PolygonZDAO | null = null;
   protected _rootTokenContract!: ethers.Contract;
