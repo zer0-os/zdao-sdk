@@ -215,10 +215,6 @@ class ProposalClient extends AbstractProposalClient {
       );
     }
   }
-
-  getCheckPointingHashes(): Promise<string[]> {
-    throw new NotImplementedError();
-  }
 }
 
 export default ProposalClient;

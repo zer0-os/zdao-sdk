@@ -153,10 +153,6 @@ class AbstractProposalClient implements Proposal {
   execute(_: ethers.Signer, _2: ExecuteProposalParams): Promise<void> {
     throw new NotImplementedError();
   }
-
-  getCheckPointingHashes(): Promise<string[]> {
-    throw new NotImplementedError();
-  }
 }
 
 export default AbstractProposalClient;

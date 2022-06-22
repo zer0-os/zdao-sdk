@@ -143,12 +143,6 @@ export interface zDAO extends zDAOProperties {
     account: string,
     payload: CreateProposalParams
   ): Promise<ProposalId>;
-
-  /**
-   * Check if transaction has been verified by Matic validators
-   * @param txHash transaction hash which happened on Polygon to send data to Ethereum
-   */
-  isCheckPointed(txHash: string): Promise<boolean>;
 }
 
 export interface Proposal extends ProposalProperties {
@@ -213,9 +207,4 @@ export interface Proposal extends ProposalProperties {
    * @exception throw Error if proposal does not conain meta data to transfer tokens
    */
   execute(signer: ethers.Signer, payload: ExecuteProposalParams): Promise<void>;
-
-  /**
-   * Find all the checkpointing transaction hashes
-   */
-  getCheckPointingHashes(): Promise<string[]>;
 }

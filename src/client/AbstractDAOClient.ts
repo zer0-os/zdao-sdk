@@ -283,10 +283,6 @@ class AbstractDAOClient implements zDAO {
   ): Promise<ProposalId> {
     throw new NotImplementedError();
   }
-
-  isCheckPointed(_: string): Promise<boolean> {
-    throw new NotImplementedError();
-  }
 }
 
 export default AbstractDAOClient;

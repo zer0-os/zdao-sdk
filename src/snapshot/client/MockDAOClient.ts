@@ -6,7 +6,6 @@ import {
   CreateProposalParams,
   CreateZDAOParams,
   NotFoundError,
-  NotImplementedError,
   Proposal,
   ProposalId,
   ProposalProperties,
@@ -119,14 +118,6 @@ class MockDAOClient extends AbstractDAOClient {
     this._proposals.push(new MockProposalClient(properties, this));
 
     return Promise.resolve(properties.id);
-  }
-
-  isCheckPointed(_: string): Promise<boolean> {
-    return Promise.resolve(true);
-  }
-
-  syncState(_: ethers.Signer, _2: string): Promise<void> {
-    throw new NotImplementedError();
   }
 }
 

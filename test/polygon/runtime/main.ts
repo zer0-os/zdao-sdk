@@ -115,7 +115,7 @@ const iterateZDAO = async (
       proposal.id,
       proposal.createdBy,
       proposal.title,
-      proposal.body,
+      // proposal.body,
       proposal.ipfs,
       proposal.state,
       proposal.start,
@@ -147,13 +147,15 @@ const iterateZDAO = async (
       const tx = await proposal.calculate(mumbaiSigner, {});
       console.log('successfully calculated on polygon');
     } else if (proposal.state === ProposalState.AWAITING_FINALIZATION) {
-      const hashes = await proposal.getCheckPointingHashes();
+      const hashes = await (
+        proposal as Polygon.Proposal
+      ).getCheckPointingHashes();
       console.log('tx hashes', hashes);
 
       for (const hash of hashes) {
         try {
           console.log('waiting until checkpointed');
-          while (!(await zDAO.isCheckPointed(hash))) {
+          while (!(await (zDAO as Polygon.zDAO).isCheckPointed(hash))) {
             await sleep(1000);
           }
           console.log('tx hash was checkpointed', hash);

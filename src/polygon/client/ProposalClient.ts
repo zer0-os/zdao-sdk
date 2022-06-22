@@ -10,7 +10,6 @@ import {
   FinalizeProposalParams,
   InvalidError,
   NotSyncStateError,
-  Proposal,
   ProposalProperties,
   ProposalState,
   Vote,
@@ -18,12 +17,12 @@ import {
   ZDAOError,
 } from '../../types';
 import { errorMessageForError } from '../../utilities';
-import { FinalizeProposalParamsOptions, ZDAOOptions } from '../types';
+import { FinalizeProposalParamsOptions, Proposal, ZDAOOptions } from '../types';
 import DAOClient from './DAOClient';
 import GlobalClient from './GlobalClient';
 import ProofClient from './ProofClient';
 
-class ProposalClient extends AbstractProposalClient {
+class ProposalClient extends AbstractProposalClient implements Proposal {
   private readonly _zDAO: DAOClient;
 
   private constructor(properties: ProposalProperties, zDAO: DAOClient) {

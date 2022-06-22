@@ -13,7 +13,6 @@ import { AbstractDAOClient, GnosisSafeClient } from '../../client';
 import {
   AssetType,
   CreateProposalParams,
-  NotImplementedError,
   PaginationParam,
   Proposal,
   ProposalId,
@@ -318,10 +317,6 @@ class DAOClient extends AbstractDAOClient {
     );
 
     return proposalId;
-  }
-
-  isCheckPointed(_: string): Promise<boolean> {
-    throw new NotImplementedError();
   }
 }
 
