@@ -119,14 +119,14 @@ export const setEnvSnapshot = () => {
     DAOs: {
       rinkeby: [
         {
-          title: 'zDAO Testnet',
+          name: 'Fixed Duration',
           votingToken: '0x10F6A2795B14f13771d885D72e5925Aff647B565',
           gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
           ens: 'zdao-sky.eth',
           duration: 172800,
         },
         {
-          title: 'zDAO Testnet',
+          name: 'Flexible Duration',
           votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
           gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
           ens: 'joshupgig.eth',
@@ -134,13 +134,13 @@ export const setEnvSnapshot = () => {
       ],
       mainnet: [
         {
-          title: 'Wilder Wheels',
+          name: 'Wilder Wheels',
           votingToken: '0x2a3bff78b79a009976eea096a51a948a3dc00e34',
           gnosisSafe: '0xEe7Ad892Fdf8d95223d7E94E4fF42E9d0cfeCAFA',
           ens: 'zdao-wilderwheels.eth',
         },
         {
-          title: 'Wilder World',
+          name: 'Wilder World',
           votingToken: '0x2a3bff78b79a009976eea096a51a948a3dc00e34',
           gnosisSafe: '0xeD42f85554530B6D5f149d60E5656715BCd4AfdA',
           ens: 'zdao-wilderworld.eth',

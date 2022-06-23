@@ -116,8 +116,6 @@ class ProposalClient extends AbstractProposalClient {
         return 'pending';
       } else if (state === ProposalState.ACTIVE) {
         return 'active';
-      } else if (state === ProposalState.EXECUTED) {
-        return 'closed';
       }
       return 'closed';
     };

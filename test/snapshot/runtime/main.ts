@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 
 import { createSDKInstanceBuilder, PlatformType, Snapshot } from '../../../src';
 import { SDKInstance, SupportedChainId, zNA } from '../../../src/types';
@@ -30,22 +30,6 @@ const createZDAO = async (
       },
     });
   }
-};
-
-const createToken = async (sdkInstance: SDKInstance, signer: ethers.Wallet) => {
-  // isDev should be true
-
-  const token = await sdkInstance.createZToken(
-    signer,
-    undefined,
-    'zSample',
-    'ZSAMPLE',
-    {
-      target: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-      amount: BigNumber.from(10).pow(18).mul(10000).toString(),
-    }
-  );
-  console.log('new token', token);
 };
 
 const pagination = async (sdkInstance: SDKInstance) => {

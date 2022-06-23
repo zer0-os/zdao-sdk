@@ -73,14 +73,6 @@ export interface ExecuteProposalParams {
   options?: any;
 }
 
-export interface TokenMintOptions {
-  // Target address to mint for
-  target: string;
-
-  // Mint amount (as big number)
-  amount: string;
-}
-
 export interface PaginationParam {
   // From number, starting at 1
   from: number;

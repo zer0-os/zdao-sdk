@@ -168,10 +168,8 @@ class DAOClient extends AbstractDAOClient {
       return ProposalState.PENDING;
     } else if (state === 'active') {
       return ProposalState.ACTIVE;
-    } else if (state === 'closed') {
-      return ProposalState.EXECUTED;
     }
-    return ProposalState.FAILED;
+    return ProposalState.CLOSED;
   }
 
   async listProposals(pagination?: PaginationParam): Promise<Proposal[]> {

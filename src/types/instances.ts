@@ -7,7 +7,6 @@ import {
   ExecuteProposalParams,
   FinalizeProposalParams,
   PaginationParam,
-  TokenMintOptions,
   VoteProposalParams,
 } from './params';
 import { ProposalId, zDAOId, zNA } from './primitives';
@@ -70,22 +69,6 @@ export interface SDKInstance {
    * @returns true if zNA exists
    */
   doesZDAOExist(zNA: zNA): Promise<boolean>;
-
-  /**
-   * Create new zToken with given name and symbol and return deployed address
-   * @param provider Web3 provider or wallet
-   * @param account signer address
-   * @param name name of zToken
-   * @param symbol symbol of zToken
-   * @param options mint options
-   */
-  createZToken(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string | undefined,
-    name: string,
-    symbol: string,
-    options?: TokenMintOptions
-  ): Promise<string>;
 
   /**
    * Create zDAO from parameters for test

@@ -4,8 +4,6 @@ import { ethers } from 'ethers';
 import { IPFSClient, ZNAClient } from '../client';
 import ZDAORegistryClient from '../client/ZDAORegistry';
 import ZNSHubClient from '../client/ZNSHubClient';
-import ERC1967ProxyAbi from '../config/abi/ERC1967Proxy.json';
-import ZeroTokenAbi from '../config/abi/ZeroToken.json';
 import {
   AlreadyExistError,
   CreateZDAOParams,
@@ -13,7 +11,6 @@ import {
   InvalidError,
   NotFoundError,
   SDKInstance,
-  TokenMintOptions,
   zDAO,
   zDAOId,
 } from '../types';
@@ -159,61 +156,6 @@ class SDKInstanceClient implements SDKInstance {
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
     return await GlobalClient.zDAORegistry.doesZDAOExistForZNA(zNA);
-  }
-
-  async createZToken(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string | undefined,
-    name: string,
-    symbol: string,
-    options?: TokenMintOptions
-  ): Promise<string> {
-    try {
-      const signer = getSigner(provider, account);
-      // create implementation of zToken
-      const zTokenFactory = new ethers.ContractFactory(
-        ZeroTokenAbi.abi,
-        ZeroTokenAbi.bytecode,
-        signer
-      );
-      const zTokenImplementation = await zTokenFactory.deploy();
-      await zTokenImplementation.deployed();
-
-      // create ERC1967 proxy contract
-      const zTokenInterface = new ethers.utils.Interface(ZeroTokenAbi.abi);
-      const proxyData = zTokenInterface.encodeFunctionData('initialize', [
-        name,
-        symbol,
-      ]);
-
-      const proxyFactory = new ethers.ContractFactory(
-        ERC1967ProxyAbi.abi,
-        ERC1967ProxyAbi.bytecode,
-        signer
-      );
-
-      const proxyContract = await proxyFactory.deploy(
-        zTokenImplementation.address,
-        proxyData
-      );
-      await proxyContract.deployed();
-
-      if (options) {
-        const contract = new ethers.Contract(
-          proxyContract.address,
-          ZeroTokenAbi.abi,
-          signer.provider
-        );
-
-        // mint tokens
-        await contract.connect(signer).mint(options.target, options.amount);
-      }
-
-      return proxyContract.address;
-    } catch (error) {
-      console.error(error);
-      throw new Error(errorMessageForError('failed-create-token'));
-    }
   }
 
   async createZDAOFromParams(
