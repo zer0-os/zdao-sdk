@@ -132,7 +132,6 @@ class ProposalClient implements Proposal {
         return;
       }
 
-      const abi = metadataJson.abi;
       const sender = metadataJson.sender;
       const recipient = metadataJson.recipient;
       const token = metadataJson.token;
@@ -141,7 +140,6 @@ class ProposalClient implements Proposal {
       const amount = metadataJson.amount;
 
       this._properties.metadata = {
-        abi,
         sender,
         recipient,
         token,
