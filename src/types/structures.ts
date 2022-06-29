@@ -149,8 +149,6 @@ export interface Token {
 }
 
 export interface TokenMetaData extends Token {
-  abi: string;
-
   sender: string;
 
   recipient: string; // asset recipient address

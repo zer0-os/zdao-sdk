@@ -2,7 +2,6 @@ import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { BigNumber, ethers } from 'ethers';
 
-import TransferAbi from '../../src/config/abi/transfer.json';
 import { Config, createSDKInstance, ZDAOOptions } from '../../src/snapshot';
 import DAOClient from '../../src/snapshot/client/DAOClient';
 import { developmentConfiguration } from '../../src/snapshot/config';
@@ -156,7 +155,6 @@ describe('Snapshot test', async () => {
         title: 'test proposal',
         body: 'body',
         transfer: {
-          abi: JSON.stringify(TransferAbi),
           sender: daoInstance.gnosisSafe,
           recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
           token: daoInstance.votingToken.token,
@@ -193,7 +191,6 @@ describe('Snapshot test', async () => {
         title: 'test proposal',
         body: 'body',
         transfer: {
-          abi: JSON.stringify(TransferAbi),
           sender: daoInstance.gnosisSafe,
           recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
           token: daoInstance.votingToken.token,

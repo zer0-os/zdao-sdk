@@ -10,7 +10,6 @@ import {
   zNA,
 } from '../../../src';
 import { ZNAClient } from '../../../src/client';
-import TransferAbi from '../../../src/config/abi/transfer.json';
 import { sleep } from '../../../src/utilities/date';
 import { setEnvPolygon as setEnv } from '../../shared/setupEnv';
 
@@ -53,7 +52,6 @@ const createProposal = async (
     title: 'Hello Proposal',
     body: 'Hello World',
     transfer: {
-      abi: JSON.stringify(TransferAbi),
       sender: zDAO.gnosisSafe,
       recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
       token: env.contract.token.goerli,

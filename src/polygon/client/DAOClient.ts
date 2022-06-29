@@ -230,7 +230,6 @@ class DAOClient extends AbstractDAOClient implements zDAO {
         !metadataJson.amount
           ? undefined
           : {
-              abi: metadataJson.abi,
               sender: metadataJson.sender,
               recipient: metadataJson.recipient,
               token: metadataJson.token,

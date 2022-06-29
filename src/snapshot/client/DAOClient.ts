@@ -303,7 +303,6 @@ class DAOClient extends AbstractDAOClient {
         strategies: this._options.strategies,
         token: this.votingToken,
         transfer: payload.transfer && {
-          abi: payload.transfer.abi,
           sender: this.gnosisSafe,
           recipient: payload.transfer.recipient,
           token: payload.transfer.token,

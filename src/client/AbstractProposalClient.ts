@@ -100,7 +100,6 @@ class AbstractProposalClient implements Proposal {
         return undefined;
       }
 
-      const abi = metadataJson.abi;
       const sender = metadataJson.sender;
       const recipient = metadataJson.recipient;
       const token = metadataJson.token;
@@ -109,7 +108,6 @@ class AbstractProposalClient implements Proposal {
       const amount = metadataJson.amount;
 
       return {
-        abi,
         sender,
         recipient,
         token,
