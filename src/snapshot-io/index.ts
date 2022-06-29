@@ -426,7 +426,6 @@ class SnapshotClient {
       plugins: '{}',
       metadata: params.transfer
         ? JSON.stringify({
-            abi: params.transfer.abi,
             sender: params.transfer.sender,
             recipient: params.transfer.recipient,
             token: params.transfer.token,

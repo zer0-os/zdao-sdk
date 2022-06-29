@@ -5,7 +5,6 @@ import { BigNumber, ethers } from 'ethers';
 import { createSDKInstance } from '../src';
 import DAOClient from '../src/client/DAOClient';
 import { developmentConfiguration } from '../src/config';
-import TransferAbi from '../src/config/constants/abi/transfer.json';
 import {
   Config,
   Proposal,
@@ -131,7 +130,6 @@ describe('Snapshot test', async () => {
       snapshot: blockNumber,
       choices: ['Yes', 'No', 'Absent'],
       transfer: {
-        abi: JSON.stringify(TransferAbi),
         sender: daoInstance.safeAddress,
         recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
         token: daoInstance.votingToken.token,
@@ -159,7 +157,6 @@ describe('Snapshot test', async () => {
       snapshot: blockNumber,
       choices: ['Yes', 'No', 'Absent'],
       transfer: {
-        abi: JSON.stringify(TransferAbi),
         sender: daoInstance.safeAddress,
         recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
         token: daoInstance.votingToken.token,

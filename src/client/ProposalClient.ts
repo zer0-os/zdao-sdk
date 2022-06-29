@@ -132,7 +132,6 @@ class ProposalClient implements Proposal {
         return;
       }
 
-      const abi = metadataJson.abi;
       const sender = metadataJson.sender;
       const recipient = metadataJson.recipient;
       const token = metadataJson.token;
@@ -141,7 +140,6 @@ class ProposalClient implements Proposal {
       const amount = metadataJson.amount;
 
       this._properties.metadata = {
-        abi,
         sender,
         recipient,
         token,
@@ -257,7 +255,11 @@ class ProposalClient implements Proposal {
       throw new Error(errorMessageForError('empty-metadata'));
     }
 
-    if (!this.metadata?.token || this.metadata.token.length < 1) {
+    if (
+      !this.metadata?.token ||
+      this.metadata.token.length < 1 ||
+      this.metadata.token === ethers.constants.AddressZero
+    ) {
       // Ether transfer
       await this._gnosisSafeClient.transferEther(
         this._zDAO.safeAddress,

@@ -331,7 +331,6 @@ class DAOClient implements zDAO {
         strategies: this._options.strategies,
         token: this.votingToken,
         transfer: payload.transfer && {
-          abi: payload.transfer.abi,
           sender: this.safeAddress,
           recipient: payload.transfer.recipient,
           token: payload.transfer.token,
