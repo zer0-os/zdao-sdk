@@ -29,6 +29,12 @@ export const setEnv = (isDev = true): Env => {
             safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
             ens: 'zdao-sky.eth',
           },
+          {
+            title: 'zDAO Testnet',
+            votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+            safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+            ens: 'joshupgig.eth',
+          },
         ],
       }
     : {

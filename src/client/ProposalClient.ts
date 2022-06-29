@@ -257,7 +257,11 @@ class ProposalClient implements Proposal {
       throw new Error(errorMessageForError('empty-metadata'));
     }
 
-    if (!this.metadata?.token || this.metadata.token.length < 1) {
+    if (
+      !this.metadata?.token ||
+      this.metadata.token.length < 1 ||
+      this.metadata.token === ethers.constants.AddressZero
+    ) {
       // Ether transfer
       await this._gnosisSafeClient.transferEther(
         this._zDAO.safeAddress,
