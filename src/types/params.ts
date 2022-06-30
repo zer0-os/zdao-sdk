@@ -1,13 +1,3 @@
-import {
-  CreateProposalParamsOptions as CreatePolygonProposalParamsOptions,
-  CreateZDAOParamsOptions as CreatePolygonZDAOParamsOptions,
-  FinalizeProposalParamsOptions as FinalizePolygonProposalParamsOptions,
-} from '../polygon';
-import {
-  CreateProposalParamsOptions as CreateSnapshotProposalParamsOptions,
-  CreateZDAOParamsOptions as CreateSnapshotZDAOParamsOptions,
-  FinalizeProposalParamsOptions as FinalizeSnapshotProposalParamsOptions,
-} from '../snapshot';
 import { SupportedChainId } from './enums';
 import { Choice, zNA } from './primitives';
 import { TokenMetaData } from './structures';
@@ -34,9 +24,6 @@ export interface CreateZDAOParams {
 
   // Time duration of this proposal in seconds
   duration: number;
-
-  // Additional parameters for Snapshot/Polygon platform
-  options: CreatePolygonZDAOParamsOptions | CreateSnapshotZDAOParamsOptions;
 }
 
 export interface CreateProposalParams {
@@ -48,10 +35,6 @@ export interface CreateProposalParams {
 
   // Token meta data to be transfered if this proposal has been succeeded
   transfer?: TokenMetaData;
-
-  options?:
-    | CreatePolygonProposalParamsOptions
-    | CreateSnapshotProposalParamsOptions;
 }
 
 export interface VoteProposalParams {
@@ -59,19 +42,14 @@ export interface VoteProposalParams {
   choice: Choice;
 }
 
-export interface CalculateProposalParams {
-  options?: any;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface CalculateProposalParams {}
 
-export interface FinalizeProposalParams {
-  options?:
-    | FinalizePolygonProposalParamsOptions
-    | FinalizeSnapshotProposalParamsOptions;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface FinalizeProposalParams {}
 
-export interface ExecuteProposalParams {
-  options?: any;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface ExecuteProposalParams {}
 
 export interface PaginationParam {
   // From number, starting at 1

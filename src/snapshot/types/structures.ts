@@ -1,5 +1,5 @@
 import { ENS } from './primitives';
 
-export interface ZDAOOptions {
+export interface zDAOOptions {
   ens: ENS;
 }

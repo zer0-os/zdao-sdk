@@ -3,7 +3,6 @@ import { ethers } from 'ethers';
 import { PlatformType } from '../..';
 import {
   CreateProposalParams,
-  CreateZDAOParams,
   DAOConfig,
   ProposalId,
   zDAOId,
@@ -17,7 +16,7 @@ import FxStateEthereumTunnelAbi from '../config/abi/FxStateEthereumTunnel.json';
 import { EthereumZDAO } from '../config/types/EthereumZDAO';
 import { EthereumZDAOChef } from '../config/types/EthereumZDAOChef';
 import { FxStateEthereumTunnel } from '../config/types/FxStateEthereumTunnel';
-import { CreateZDAOParamsOptions } from '../types';
+import { CreateZDAOParams } from '../types';
 import { EthereumZDAOProperties } from './types';
 
 class EthereumZDAOChefClient {
@@ -53,18 +52,6 @@ class EthereumZDAOChefClient {
   stateSender(): Promise<string> {
     return this._contract.ethereumStateSender();
   }
-
-  // async getZDAOByZNA(zNA: zNA): Promise<EthereumZDAO> {
-  //   const zDAORecord = await this._contract.getzDaoByZNA(
-  //     ZNAClient.zNATozNAId(zNA)
-  //   );
-
-  //   return new ethers.Contract(
-  //     zDAORecord.zDAO,
-  //     EthereumZDAOAbi.abi,
-  //     GlobalClient.etherRpcProvider
-  //   ) as EthereumZDAO;
-  // }
 
   async getZDAOById(zDAOId: zDAOId): Promise<EthereumZDAO> {
     const zDAO = await this._contract.zDAOs(zDAOId);
@@ -126,11 +113,10 @@ class EthereumZDAOChefClient {
           payload.token,
           payload.amount,
           payload.duration,
-          (payload.options as CreateZDAOParamsOptions).votingThreshold,
-          (payload.options as CreateZDAOParamsOptions)
-            .minimumVotingParticipants,
-          (payload.options as CreateZDAOParamsOptions).minimumTotalVotingTokens,
-          (payload.options as CreateZDAOParamsOptions).isRelativeMajority,
+          payload.votingThreshold,
+          payload.minimumVotingParticipants,
+          payload.minimumTotalVotingTokens,
+          payload.isRelativeMajority,
         ]
       )
     );

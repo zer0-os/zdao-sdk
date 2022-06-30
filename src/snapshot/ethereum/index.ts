@@ -1,1 +1,1 @@
-export { default as ZDAOChefClient } from './ZDAOChefClient';
+export { default as EthereumZDAOChefClient } from './EthereumZDAOChefClient';

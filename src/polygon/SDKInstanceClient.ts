@@ -6,15 +6,13 @@ import ZDAORegistryClient from '../client/ZDAORegistry';
 import ZNSHubClient from '../client/ZNSHubClient';
 import {
   AlreadyExistError,
-  CreateZDAOParams,
   FailedTxError,
   InvalidError,
   NotFoundError,
-  SDKInstance,
-  zDAO,
   zDAOId,
+  zNA,
+  zNAId,
 } from '../types';
-import { zNA, zNAId } from '../types';
 import { errorMessageForError, getSigner } from '../utilities';
 import {
   DAOClient,
@@ -26,7 +24,7 @@ import {
 import GlobalClient from './client/GlobalClient';
 import { EthereumZDAOChefClient } from './ethereum';
 import { PolygonZDAOChefClient } from './polygon';
-import { Config, CreateZDAOParamsOptions } from './types';
+import { Config, CreateZDAOParams, SDKInstance, zDAO } from './types';
 
 class SDKInstanceClient implements SDKInstance {
   private readonly _config: Config;
@@ -180,13 +178,8 @@ class SDKInstanceClient implements SDKInstance {
         errorMessageForError('invalid-proposal-token-amount')
       );
     }
-    if (!params.options) {
-      throw new InvalidError(errorMessageForError('invalid-zdao-options'));
-    }
     if (
-      !isBigNumberish(
-        (params.options as CreateZDAOParamsOptions).minimumTotalVotingTokens
-      ) ||
+      !isBigNumberish(params.minimumTotalVotingTokens) ||
       ethers.BigNumber.from(params.amount).eq(ethers.BigNumber.from(0))
     ) {
       throw new InvalidError(errorMessageForError('invalid-quorum-amount'));

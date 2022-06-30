@@ -2,14 +2,10 @@ import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { ethers } from 'ethers';
 
+import { Polygon } from '../../src';
+import { SupportedChainId } from '../../src';
 import { createSDKInstance } from '../../src/polygon';
 import { developmentConfiguration } from '../../src/polygon/config';
-import {
-  CreateZDAOParams,
-  SDKInstance,
-  SupportedChainId,
-  zDAO,
-} from '../../src/types';
 import { errorMessageForError } from '../../src/utilities/messages';
 import { setEnvPolygon as setEnv } from '../shared/setupEnv';
 
@@ -17,7 +13,7 @@ use(chaiAsPromised.default);
 
 describe('zNA test', async () => {
   const env = setEnv();
-  let sdkInstance: SDKInstance;
+  let sdkInstance: Polygon.SDKInstance;
   let signer: ethers.Wallet;
 
   beforeEach('setup', async () => {
@@ -65,7 +61,7 @@ describe('zNA test', async () => {
   });
 
   it('should create successfully', async () => {
-    const params: CreateZDAOParams = {
+    const params: Polygon.CreateZDAOParams = {
       zNA: 'zDAO.eth',
       name: 'zDAO Testing Space 1',
       network: SupportedChainId.GOERLI,
@@ -73,14 +69,12 @@ describe('zNA test', async () => {
       token: env.contract.token.goerli,
       amount: ethers.BigNumber.from(10000).toString(),
       duration: 3000,
-      options: {
-        votingThreshold: 5001,
-        minimumVotingParticipants: 1,
-        minimumTotalVotingTokens: ethers.BigNumber.from(10000).toString(),
-        isRelativeMajority: true,
-      },
+      votingThreshold: 5001,
+      minimumVotingParticipants: 1,
+      minimumTotalVotingTokens: ethers.BigNumber.from(10000).toString(),
+      isRelativeMajority: true,
     };
-    const zDAO: zDAO = await sdkInstance.createZDAOFromParams(
+    const zDAO: Polygon.zDAO = await sdkInstance.createZDAOFromParams(
       signer,
       undefined,
       params
@@ -90,7 +84,7 @@ describe('zNA test', async () => {
   });
 
   it('should throw error if create same zNA', async () => {
-    const params: CreateZDAOParams = {
+    const params: Polygon.CreateZDAOParams = {
       zNA: 'zDAO.eth',
       name: 'zDAO',
       network: SupportedChainId.GOERLI,
@@ -98,12 +92,10 @@ describe('zNA test', async () => {
       token: env.contract.token.goerli,
       amount: ethers.BigNumber.from(10000).toString(),
       duration: 3000,
-      options: {
-        votingThreshold: 5001,
-        minimumVotingParticipants: 1,
-        minimumTotalVotingTokens: ethers.BigNumber.from(10000).toString(),
-        isRelativeMajority: true,
-      },
+      votingThreshold: 5001,
+      minimumVotingParticipants: 1,
+      minimumTotalVotingTokens: ethers.BigNumber.from(10000).toString(),
+      isRelativeMajority: true,
     };
     await sdkInstance.createZDAOFromParams(signer, undefined, params);
 
@@ -123,21 +115,21 @@ describe('zNA test', async () => {
   });
 
   it('should create zDAO from zNA', async () => {
-    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.wheels');
+    const dao: Polygon.zDAO = await sdkInstance.getZDAOByZNA('wilder.wheels');
     expect(dao).to.be.not.equal(undefined);
     const found = dao.zNAs.find((zNA) => zNA === 'wilder.cats');
     expect(found).to.be.not.undefined;
   });
 
   it('should associated with zNA', async () => {
-    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.wheels');
+    const dao: Polygon.zDAO = await sdkInstance.getZDAOByZNA('wilder.wheels');
 
     const found = dao.zNAs.find((zNA) => zNA === 'wilder.wheels');
     expect(found).to.be.not.undefined;
   });
 
   it('should associated with multiple zNA', async () => {
-    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.wheels');
+    const dao: Polygon.zDAO = await sdkInstance.getZDAOByZNA('wilder.wheels');
 
     const found = dao.zNAs.filter(
       (zNA) => zNA === 'wilder.kicks' || zNA === 'wilder.wheels'

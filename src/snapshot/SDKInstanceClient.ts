@@ -6,12 +6,9 @@ import ZDAORegistryClient, { ZDAORecord } from '../client/ZDAORegistry';
 import ZNSHubClient from '../client/ZNSHubClient';
 import {
   AlreadyExistError,
-  CreateZDAOParams,
   FailedTxError,
   InvalidError,
   NotFoundError,
-  SDKInstance,
-  zDAO,
   zDAOId,
   zDAOState,
   zNA,
@@ -21,9 +18,9 @@ import { errorMessageForError, getSigner } from '../utilities';
 import DAOClient from './client/DAOClient';
 import GlobalClient from './client/GlobalClient';
 import MockDAOClient from './client/MockDAOClient';
-import { ZDAOChefClient } from './ethereum';
+import { EthereumZDAOChefClient } from './ethereum';
 import { SnapshotClient } from './snapshot';
-import { Config, CreateZDAOParamsOptions } from './types';
+import { Config, CreateZDAOParams, SDKInstance, zDAO } from './types';
 
 class SDKInstanceClient implements SDKInstance {
   private readonly _config: Config;
@@ -43,7 +40,7 @@ class SDKInstanceClient implements SDKInstance {
       this._config.ethereum.network
     );
     GlobalClient.zDAORegistry = new ZDAORegistryClient(config.zNA);
-    GlobalClient.ethereumZDAOChef = new ZDAOChefClient(config.ethereum);
+    GlobalClient.ethereumZDAOChef = new EthereumZDAOChefClient(config.ethereum);
     GlobalClient.ipfsGateway = config.ipfsGateway;
   }
 
@@ -169,9 +166,7 @@ class SDKInstanceClient implements SDKInstance {
         state: zDAOState.ACTIVE,
         snapshot,
         destroyed: false,
-        options: {
-          ens: space.id,
-        },
+        ens: space.id,
       },
       {
         strategies: space.strategies,
@@ -205,10 +200,7 @@ class SDKInstanceClient implements SDKInstance {
         errorMessageForError('invalid-proposal-token-amount')
       );
     }
-    if (!params.options) {
-      throw new InvalidError(errorMessageForError('invalid-zdao-options'));
-    }
-    if (!(params.options as CreateZDAOParamsOptions).ens) {
+    if (!params.ens) {
       throw new InvalidError(errorMessageForError('empty-ens'));
     }
 

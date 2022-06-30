@@ -15,7 +15,9 @@ import {
 import { errorMessageForError } from '../utilities';
 import IPFSClient from './IPFSClient';
 
-class AbstractProposalClient implements Proposal {
+abstract class AbstractProposalClient<VoteT extends Vote>
+  implements Proposal<VoteT>
+{
   protected readonly _properties: ProposalProperties;
 
   constructor(properties: ProposalProperties) {
@@ -120,7 +122,7 @@ class AbstractProposalClient implements Proposal {
     }
   }
 
-  listVotes(): Promise<Vote[]> {
+  listVotes(): Promise<VoteT[]> {
     throw new NotImplementedError();
   }
 
@@ -128,7 +130,7 @@ class AbstractProposalClient implements Proposal {
     throw new NotImplementedError();
   }
 
-  updateScoresAndVotes(): Promise<Proposal> {
+  updateScoresAndVotes(): Promise<Proposal<VoteT>> {
     throw new NotImplementedError();
   }
 

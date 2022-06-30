@@ -1,4 +1,13 @@
-export interface CreateZDAOParamsOptions {
+import {
+  CalculateProposalParams as CalculateProposalBaseParams,
+  CreateProposalParams as CreateProposalBaseParams,
+  CreateZDAOParams as CreateZDAOBaseParams,
+  ExecuteProposalParams as ExecuteProposalBaseParams,
+  FinalizeProposalParams as FinalizeProposalBaseParams,
+  VoteProposalParams as VoteProposalBaseParams,
+} from '../../types';
+
+export interface CreateZDAOParams extends CreateZDAOBaseParams {
   // Threshold in 100% as 10000 required to check if proposal is succeeded
   votingThreshold: number;
 
@@ -14,9 +23,14 @@ export interface CreateZDAOParamsOptions {
   minimumTotalVotingTokens: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface CreateProposalParamsOptions {}
+export type CreateProposalParams = CreateProposalBaseParams;
 
-export interface FinalizeProposalParamsOptions {
+export type VoteProposalParams = VoteProposalBaseParams;
+
+export type CalculateProposalParams = CalculateProposalBaseParams;
+
+export interface FinalizeProposalParams extends FinalizeProposalBaseParams {
   txHash: string;
 }
+
+export type ExecuteProposalParams = ExecuteProposalBaseParams;

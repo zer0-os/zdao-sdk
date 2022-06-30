@@ -1,14 +1,6 @@
 import { BigNumber, ethers } from 'ethers';
 
-import {
-  createSDKInstanceBuilder,
-  PlatformType,
-  Polygon,
-  ProposalState,
-  SupportedChainId,
-  zDAO,
-  zNA,
-} from '../../../src';
+import { Polygon, ProposalState, SupportedChainId, zNA } from '../../../src';
 import { ZNAClient } from '../../../src/client';
 import { sleep } from '../../../src/utilities/date';
 import { setEnvPolygon as setEnv } from '../../shared/setupEnv';
@@ -22,7 +14,7 @@ const createZDAO = async (
 ) => {
   for (const DAO of env.DAOs.goerli) {
     if (!(await instace.doesZDAOExist(DAO.zNA))) {
-      await instace.createZDAO(signer, undefined, {
+      const params: Polygon.CreateZDAOParams = {
         zNA: DAO.zNA,
         name: DAO.name,
         network: SupportedChainId.GOERLI,
@@ -30,13 +22,12 @@ const createZDAO = async (
         token: env.contract.token.goerli,
         amount: BigNumber.from(10).pow(18).toString(),
         duration: DAO.duration,
-        options: {
-          votingThreshold: 5001, // 50.01%
-          minimumVotingParticipants: 1,
-          minimumTotalVotingTokens: BigNumber.from(10).pow(18).toString(),
-          isRelativeMajority: DAO.isRelativeMajority ?? true,
-        },
-      });
+        votingThreshold: 5001, // 50.01%
+        minimumVotingParticipants: 1,
+        minimumTotalVotingTokens: BigNumber.from(10).pow(18).toString(),
+        isRelativeMajority: DAO.isRelativeMajority ?? true,
+      };
+      await instace.createZDAO(signer, undefined, params);
       console.log(`DAO ${DAO.zNA} created`);
     }
   }
@@ -45,7 +36,7 @@ const createZDAO = async (
 const createProposal = async (
   instance: Polygon.SDKInstance,
   signer: ethers.Wallet,
-  zDAO: zDAO,
+  zDAO: Polygon.zDAO,
   env: any
 ) => {
   await zDAO.createProposal(signer, undefined, {
@@ -86,7 +77,7 @@ const iterateZDAO = async (
   );
 
   console.time('getZDAOByZNA');
-  const zDAO = (await instance.getZDAOByZNA(zNA)) as Polygon.zDAO;
+  const zDAO: Polygon.zDAO = await instance.getZDAOByZNA(zNA);
   console.timeEnd('getZDAOByZNA');
   console.log(
     'zDAO',
@@ -94,7 +85,7 @@ const iterateZDAO = async (
     zDAO.name,
     zDAO.gnosisSafe,
     zDAO.votingToken,
-    zDAO.options
+    zDAO.polygonToken
   );
 
   console.log(
@@ -113,7 +104,7 @@ const iterateZDAO = async (
   // await createProposal(instance, goerliSigner, zDAO, env);
 
   console.time('listProposals');
-  const proposals = await zDAO.listProposals();
+  const proposals: Polygon.Proposal[] = await zDAO.listProposals();
   console.timeEnd('listProposals');
   proposals.forEach((proposal) => {
     console.log(
@@ -165,9 +156,7 @@ const iterateZDAO = async (
           }
           console.log('tx hash was checkpointed', hash);
           await proposal.finalize(goerliSigner, undefined, {
-            options: {
-              txHash: hash,
-            },
+            txHash: hash,
           });
           console.log('sync state');
         } catch (error) {
@@ -228,8 +217,8 @@ const main = async () => {
   console.log('config', config);
   console.log('signer.address', goerliSigner.address);
 
-  const createSDKInstance = createSDKInstanceBuilder(PlatformType.Polygon);
-  const instance = (await createSDKInstance(config)) as Polygon.SDKInstance;
+  const instance: Polygon.SDKInstance = await Polygon.createSDKInstance(config);
+
   console.log('instance created');
 
   const zNAId1 = ZNAClient.zNATozNAId('wilder.wheels');
@@ -250,7 +239,7 @@ const main = async () => {
   // assert.equal(zNAs.length > 0, true);
 
   console.time('listZDAOs');
-  const zDAOs = await instance.listZDAOs();
+  const zDAOs: Polygon.zDAO[] = await instance.listZDAOs();
   console.timeEnd('listZDAOs');
   console.log('zDAOs.length', zDAOs.length);
   zDAOs.forEach((zDAO) => {
@@ -271,7 +260,7 @@ const main = async () => {
       zDAO.state,
       zDAO.snapshot,
       zDAO.destroyed,
-      zDAO.options
+      zDAO.polygonToken
     );
   });
   // assert.equal(zDAOs.length > 0, true);

@@ -18,7 +18,29 @@ import {
   zDAOProperties,
 } from './structures';
 
-export interface SDKInstance {
+type CreateZDAOParamsType<T extends CreateZDAOParams> =
+  T extends CreateZDAOParams ? T : CreateZDAOParams;
+
+type CreateProposalParamsType<T extends CreateProposalParams> =
+  T extends CreateProposalParams ? T : CreateProposalParams;
+
+type VoteProposalParamsType<T extends VoteProposalParams> =
+  T extends VoteProposalParams ? T : VoteProposalParams;
+
+type CalculateProposalParamsType<T extends CalculateProposalParams> =
+  T extends CalculateProposalParams ? T : CalculateProposalParams;
+
+type FinalizeProposalParamsType<T extends FinalizeProposalParams> =
+  T extends FinalizeProposalParams ? T : FinalizeProposalParams;
+
+type ExecuteProposalParamsType<T extends ExecuteProposalParams> =
+  T extends ExecuteProposalParams ? T : ExecuteProposalParams;
+
+export interface SDKInstance<
+  VoteT extends Vote,
+  ProposalT extends Proposal<VoteT>,
+  zDAOT extends zDAO<VoteT, ProposalT>
+> {
   /**
    * Create zDAO
    * @param provider Web3 provider or wallet
@@ -28,7 +50,7 @@ export interface SDKInstance {
   createZDAO(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    params: CreateZDAOParams
+    params: CreateZDAOParamsType<CreateZDAOParams>
   ): Promise<void>;
 
   /**
@@ -53,7 +75,7 @@ export interface SDKInstance {
    * Get all the list of zDAO instance
    * @returns list of zDAO
    */
-  listZDAOs(): Promise<zDAO[]>;
+  listZDAOs(): Promise<zDAOT[]>;
 
   /**
    * Create an zDAO instance by zNA
@@ -61,7 +83,7 @@ export interface SDKInstance {
    * @returns created zDAO instance
    * @exception throw Error if zNA does not exist
    */
-  getZDAOByZNA(zNA: zNA): Promise<zDAO>;
+  getZDAOByZNA(zNA: zNA): Promise<zDAOT>;
 
   /**
    * Check if zDAO exists which associated with given zNA
@@ -82,8 +104,8 @@ export interface SDKInstance {
   createZDAOFromParams(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    params: CreateZDAOParams
-  ): Promise<zDAO>;
+    params: CreateZDAOParamsType<CreateZDAOParams>
+  ): Promise<zDAOT>;
 
   /**
    * List all associated zNAs, only used for test
@@ -94,7 +116,7 @@ export interface SDKInstance {
    * Get zDAO by zNA, only used for test
    * @param zNA
    */
-  getZDAOByZNAFromParams(zNA: zNA): Promise<zDAO>;
+  getZDAOByZNAFromParams(zNA: zNA): Promise<zDAOT>;
 
   /**
    * Check if zDAO exists which associated with given zNA, only used for test
@@ -103,7 +125,8 @@ export interface SDKInstance {
   doesZDAOExistFromParams(zNA: zNA): Promise<boolean>;
 }
 
-export interface zDAO extends zDAOProperties {
+export interface zDAO<VoteT extends Vote, ProposalT extends Proposal<VoteT>>
+  extends zDAOProperties {
   /**
    * Get the list of zDAO assets and amount in USD
    * @returns assets in zDAO
@@ -120,7 +143,7 @@ export interface zDAO extends zDAOProperties {
    * Get the list of the proposals created in the zDAO
    * @return list of proposals
    */
-  listProposals(pagination?: PaginationParam): Promise<Proposal[]>;
+  listProposals(pagination?: PaginationParam): Promise<ProposalT[]>;
 
   /**
    * Get the specific proposal
@@ -128,7 +151,7 @@ export interface zDAO extends zDAOProperties {
    * @returns proposal instance
    * @exception throw Error if not exist proposal id
    */
-  getProposal(id: ProposalId): Promise<Proposal>;
+  getProposal(id: ProposalId): Promise<ProposalT>;
 
   /**
    * Create a proposal in zDAO
@@ -140,16 +163,16 @@ export interface zDAO extends zDAOProperties {
   createProposal(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    payload: CreateProposalParams
+    payload: CreateProposalParamsType<CreateProposalParams>
   ): Promise<ProposalId>;
 }
 
-export interface Proposal extends ProposalProperties {
+export interface Proposal<VoteT extends Vote> extends ProposalProperties {
   /**
    * Get all the votes by proposal id filtering with the function parameter
    * @returns list of votes
    */
-  listVotes(pagination?: PaginationParam): Promise<Vote[]>;
+  listVotes(pagination?: PaginationParam): Promise<VoteT[]>;
 
   /**
    * Get voting power of the user in zDAO
@@ -162,7 +185,7 @@ export interface Proposal extends ProposalProperties {
    * Update latest scores and votes
    * @returns proposal instance itself
    */
-  updateScoresAndVotes(): Promise<Proposal>;
+  updateScoresAndVotes(): Promise<Proposal<VoteT>>;
 
   /**
    * Cast a vote on proposal
@@ -174,7 +197,7 @@ export interface Proposal extends ProposalProperties {
   vote(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    payload: VoteProposalParams
+    payload: VoteProposalParamsType<VoteProposalParams>
   ): Promise<void>;
 
   /**
@@ -186,7 +209,7 @@ export interface Proposal extends ProposalProperties {
   calculate(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    payload: CalculateProposalParams
+    payload: CalculateProposalParamsType<CalculateProposalParams>
   ): Promise<void>;
 
   /**
@@ -198,7 +221,7 @@ export interface Proposal extends ProposalProperties {
   finalize(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    payload: FinalizeProposalParams
+    payload: FinalizeProposalParamsType<FinalizeProposalParams>
   ): Promise<void>;
 
   /**
@@ -213,6 +236,6 @@ export interface Proposal extends ProposalProperties {
   execute(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    payload: ExecuteProposalParams
+    payload: ExecuteProposalParamsType<ExecuteProposalParams>
   ): Promise<void>;
 }

@@ -36,10 +36,6 @@ const ErrorMessages = [
     value: 'Empty ERC20 Voting Token address',
   },
   {
-    key: 'invalid-zdao-options',
-    value: 'Invalid zDAO options',
-  },
-  {
     key: 'invalid-quorum-amount',
     value: 'Invalid minimum total voting tokens',
   },

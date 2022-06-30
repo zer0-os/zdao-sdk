@@ -2,16 +2,11 @@ import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { BigNumber, ethers } from 'ethers';
 
-import { Config, createSDKInstance, ZDAOOptions } from '../../src/snapshot';
+import { Snapshot } from '../../src';
+import { Config, createSDKInstance } from '../../src/snapshot';
 import DAOClient from '../../src/snapshot/client/DAOClient';
 import { developmentConfiguration } from '../../src/snapshot/config';
-import {
-  Proposal,
-  SDKInstance,
-  SupportedChainId,
-  zDAO,
-  zDAOState,
-} from '../../src/types';
+import { SupportedChainId, zDAOState } from '../../src/types';
 import { errorMessageForError } from '../../src/utilities/messages';
 import { setEnvSnapshot as setEnv } from '../shared/setupEnv';
 
@@ -23,7 +18,7 @@ describe('Snapshot test', async () => {
 
   let config: Config;
   let signer: ethers.Wallet;
-  let daoInstance: zDAO, sdkInstance: SDKInstance;
+  let daoInstance: Snapshot.zDAO, sdkInstance: Snapshot.SDKInstance;
 
   before('setup', async () => {
     const provider = new ethers.providers.JsonRpcProvider(
@@ -86,21 +81,19 @@ describe('Snapshot test', async () => {
         state: zDAOState.ACTIVE,
         snapshot: 0,
         destroyed: false,
-        options: {
-          ens: dao.ens,
-        },
+        ens: dao.ens,
       },
       undefined
     );
   });
 
   it('should list proposals', async () => {
-    const list = await daoInstance.listProposals();
+    const list: Snapshot.Proposal[] = await daoInstance.listProposals();
 
     expect(list.length).to.be.gt(0);
 
     const found = list.filter(
-      (item: Proposal) =>
+      (item: Snapshot.Proposal) =>
         item.id ===
         '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989'
     );
@@ -108,7 +101,7 @@ describe('Snapshot test', async () => {
   });
 
   it('should get proposal detail', async () => {
-    const proposal = await daoInstance.getProposal(
+    const proposal: Snapshot.Proposal = await daoInstance.getProposal(
       '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989'
     );
 
@@ -122,11 +115,11 @@ describe('Snapshot test', async () => {
   });
 
   it('should get votes from proposal', async () => {
-    const proposal = await daoInstance.getProposal(
+    const proposal: Snapshot.Proposal = await daoInstance.getProposal(
       '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989'
     );
 
-    const votes = await proposal.listVotes();
+    const votes: Snapshot.Vote[] = await proposal.listVotes();
 
     expect(votes.length).to.be.equal(1);
     expect(votes[0].choice).to.be.equal(1);
@@ -136,7 +129,7 @@ describe('Snapshot test', async () => {
   });
 
   it('should get voting power', async () => {
-    const proposal = await daoInstance.getProposal(
+    const proposal: Snapshot.Proposal = await daoInstance.getProposal(
       '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989'
     );
 
@@ -148,27 +141,29 @@ describe('Snapshot test', async () => {
 
   it('should create a proposal with `erc20-with-balance` strategy and cast a vote', async () => {
     const blockNumber = await signer.provider.getBlockNumber();
+
+    const params: Snapshot.CreateProposalParams = {
+      title: 'test proposal',
+      body: 'body',
+      transfer: {
+        sender: daoInstance.gnosisSafe,
+        recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
+        token: daoInstance.votingToken.token,
+        decimals: daoInstance.votingToken.decimals,
+        symbol: daoInstance.votingToken.symbol,
+        amount: BigNumber.from(10).pow(18).mul(3000).toString(),
+      },
+      choices: ['Yes', 'No', 'Absent'],
+      snapshot: blockNumber,
+    };
     const proposalId = await daoInstance.createProposal(
       signer,
       signer.address,
-      {
-        title: 'test proposal',
-        body: 'body',
-        transfer: {
-          sender: daoInstance.gnosisSafe,
-          recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
-          token: daoInstance.votingToken.token,
-          decimals: daoInstance.votingToken.decimals,
-          symbol: daoInstance.votingToken.symbol,
-          amount: BigNumber.from(10).pow(18).mul(3000).toString(),
-        },
-        options: {
-          choices: ['Yes', 'No', 'Absent'],
-          snapshot: blockNumber,
-        },
-      }
+      params
     );
-    const proposal = await daoInstance.getProposal(proposalId);
+    const proposal: Snapshot.Proposal = await daoInstance.getProposal(
+      proposalId
+    );
     expect(proposal.title).to.be.eq('test proposal');
 
     // const vote = await proposal.vote(signer, 1);
@@ -179,32 +174,33 @@ describe('Snapshot test', async () => {
     const blockNumber = await signer.provider.getBlockNumber();
 
     // 'zdao-sky.eth' ENS name is associated with 'wilder.cats', 'wilder.skydao'
-    const daoInstance2 = await sdkInstance.getZDAOByZNA('wilder.cats');
-    expect((daoInstance2.options as ZDAOOptions).ens).to.be.equal(
-      'zdao-sky.eth'
+    const daoInstance2: Snapshot.zDAO = await sdkInstance.getZDAOByZNA(
+      'wilder.cats'
     );
+    expect(daoInstance2.ens).to.be.equal('zdao-sky.eth');
 
+    const params: Snapshot.CreateProposalParams = {
+      title: 'test proposal',
+      body: 'body',
+      transfer: {
+        sender: daoInstance.gnosisSafe,
+        recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
+        token: daoInstance.votingToken.token,
+        decimals: daoInstance.votingToken.decimals,
+        symbol: daoInstance.votingToken.symbol,
+        amount: BigNumber.from(10).pow(18).mul(3000).toString(),
+      },
+      choices: ['Yes', 'No', 'Absent'],
+      snapshot: blockNumber,
+    };
     const proposalId = await daoInstance2.createProposal(
       signer,
       signer.address,
-      {
-        title: 'test proposal',
-        body: 'body',
-        transfer: {
-          sender: daoInstance.gnosisSafe,
-          recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
-          token: daoInstance.votingToken.token,
-          decimals: daoInstance.votingToken.decimals,
-          symbol: daoInstance.votingToken.symbol,
-          amount: BigNumber.from(10).pow(18).mul(3000).toString(),
-        },
-        options: {
-          choices: ['Yes', 'No', 'Absent'],
-          snapshot: blockNumber,
-        },
-      }
+      params
     );
-    const proposal = await daoInstance.getProposal(proposalId);
+    const proposal: Snapshot.Proposal = await daoInstance.getProposal(
+      proposalId
+    );
     expect(proposal.title).to.be.eq('test proposal');
   });
 });

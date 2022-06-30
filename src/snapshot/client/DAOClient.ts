@@ -12,35 +12,39 @@ import { cloneDeep } from 'lodash';
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
 import {
   AssetType,
-  CreateProposalParams,
   PaginationParam,
-  Proposal,
   ProposalId,
   ProposalState,
   Transaction,
   TransactionStatus,
   TransactionType,
   TransferInfo,
-  zDAO,
   zDAOAssets,
   zDAOProperties,
 } from '../../types';
 import { errorMessageForError } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
 import { SnapshotProposal } from '../snapshot/types';
-import { Config, CreateProposalParamsOptions, ZDAOOptions } from '../types';
+import {
+  Config,
+  CreateProposalParams,
+  Proposal,
+  Vote,
+  zDAO,
+  zDAOOptions,
+} from '../types';
 import GlobalClient from './GlobalClient';
 import ProposalClient from './ProposalClient';
 
-class DAOClient extends AbstractDAOClient {
+class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
   private readonly _config: Config;
   protected readonly _snapshotClient: SnapshotClient;
-  protected readonly _properties: zDAOProperties;
+  protected readonly _zDAOOptions: zDAOOptions;
   private readonly _options: any;
 
   private constructor(
     config: Config,
-    properties: zDAOProperties,
+    properties: zDAOProperties & zDAOOptions,
     options: any
   ) {
     super(
@@ -48,21 +52,25 @@ class DAOClient extends AbstractDAOClient {
       new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
     );
     this._config = config;
-    this._properties = cloneDeep(properties);
+    this._zDAOOptions = cloneDeep(properties);
     this._options = options;
 
     this._snapshotClient = new SnapshotClient(config.snapshot);
   }
 
+  get ens() {
+    return this._zDAOOptions.ens;
+  }
+
   static async createInstance(
     config: Config,
-    properties: zDAOProperties,
+    properties: zDAOProperties & zDAOOptions,
     options: any
   ): Promise<zDAO> {
     if (options === undefined) {
       const snapshotClient = new SnapshotClient(config.snapshot);
       const strategies = await snapshotClient.getSpaceStrategies(
-        (properties.options as unknown as ZDAOOptions).ens
+        properties.ens
       );
       options = { strategies };
     }
@@ -183,7 +191,7 @@ class DAOClient extends AbstractDAOClient {
     while (numberOfResults === limit) {
       const results: SnapshotProposal[] =
         await this._snapshotClient.listProposals(
-          (this.options as unknown as ZDAOOptions).ens,
+          this.ens,
           this.network.toString(),
           from,
           count >= limit ? limit : count
@@ -195,19 +203,6 @@ class DAOClient extends AbstractDAOClient {
       count -= results.length;
       numberOfResults = results.length;
     }
-
-    // The scores in voted proposal was updated immediately after voting,
-    // so we don't need to call `updateScore`.
-    // // update the immediate scores
-    // const snapshotPromises: Promise<SnapshotProposal>[] = snapshotProposals.map(
-    //   (proposal: SnapshotProposal) =>
-    //     this._snapshotClient.updateScores(proposal, {
-    //       spaceId: (this.options as unknown as ZDAOOptions).ens,
-    //       network: this.network.toString(),
-    //       strategies: this._options.strategies,
-    //     })
-    // );
-    // const proposals = await Promise.all(snapshotPromises);
 
     // create all instances
     const promises: Promise<Proposal>[] = snapshotProposals.map(
@@ -245,7 +240,7 @@ class DAOClient extends AbstractDAOClient {
     await this._snapshotClient.forceUpdateScoresAndVotes(id);
 
     const proposal: SnapshotProposal = await this._snapshotClient.getProposal({
-      spaceId: (this.options as unknown as ZDAOOptions).ens,
+      spaceId: this.ens,
       network: this.network.toString(),
       strategies: this._options.strategies,
       proposalId: id,
@@ -292,11 +287,10 @@ class DAOClient extends AbstractDAOClient {
       provider,
       account,
       {
-        spaceId: (this.options as unknown as ZDAOOptions).ens,
+        spaceId: this.ens,
         title: payload.title,
         body: payload.body ?? '',
-        choices: (payload.options as unknown as CreateProposalParamsOptions)
-          .choices,
+        choices: payload.choices,
         duration: this.duration,
         snapshot,
         network: this.network.toString(),

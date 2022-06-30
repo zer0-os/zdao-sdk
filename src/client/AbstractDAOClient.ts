@@ -10,6 +10,7 @@ import { ethers } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { cloneDeep } from 'lodash';
 
+import { Vote } from '../polygon';
 import {
   AssetType,
   CreateProposalParams,
@@ -28,7 +29,11 @@ import { timestamp } from '../utilities';
 import GnosisSafeClient from './GnosisSafeClient';
 import IPFSClient from './IPFSClient';
 
-class AbstractDAOClient implements zDAO {
+abstract class AbstractDAOClient<
+  VoteT extends Vote,
+  ProposalT extends Proposal<VoteT>
+> implements zDAO<VoteT, ProposalT>
+{
   protected readonly _properties: zDAOProperties;
   protected _gnosisSafeClient!: GnosisSafeClient;
 
@@ -103,10 +108,6 @@ class AbstractDAOClient implements zDAO {
 
   get destroyed() {
     return this._properties.destroyed;
-  }
-
-  get options() {
-    return this._properties.options;
   }
 
   async listAssets(): Promise<zDAOAssets> {
@@ -201,11 +202,11 @@ class AbstractDAOClient implements zDAO {
     });
   }
 
-  listProposals(): Promise<Proposal[]> {
+  listProposals(): Promise<ProposalT[]> {
     throw new NotImplementedError();
   }
 
-  getProposal(_: ProposalId): Promise<Proposal> {
+  getProposal(_: ProposalId): Promise<ProposalT> {
     throw new NotImplementedError();
   }
 
@@ -219,13 +220,10 @@ class AbstractDAOClient implements zDAO {
 
     const proposal = JSON.stringify({
       payload: {
+        ...payload,
         createdBy: address,
         createdAt: timestamp(now),
-        title: payload.title,
-        body: payload.body,
         network: chainId,
-        metadata: JSON.stringify(payload.transfer),
-        ...payload.options,
       },
     });
 
@@ -245,30 +243,15 @@ class AbstractDAOClient implements zDAO {
             name: 'createdAt',
           },
           {
-            type: 'string',
-            name: 'title',
-          },
-          {
-            type: 'string',
-            name: 'body',
-          },
-          {
             type: 'uint256',
             name: 'network',
           },
-          {
-            type: 'string',
-            name: 'metadata',
-          },
         ],
         message: {
+          ...payload,
           createdBy: address,
           createdAt: timestamp(now),
-          title: payload.title,
-          body: payload.body,
           network: chainId,
-          metadata: JSON.stringify(payload.transfer),
-          ...payload.options,
         },
       },
     });

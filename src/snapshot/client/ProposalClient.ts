@@ -2,26 +2,27 @@ import { ethers } from 'ethers';
 
 import { AbstractProposalClient, GnosisSafeClient } from '../../client';
 import {
-  CalculateProposalParams,
   Choice,
-  ExecuteProposalParams,
-  FinalizeProposalParams,
   NotImplementedError,
   PaginationParam,
-  Proposal,
   ProposalProperties,
   ProposalState,
-  Vote,
-  VoteProposalParams,
 } from '../../types';
 import { errorMessageForError, getSigner } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
 import { SnapshotProposal } from '../snapshot/types';
-import { ZDAOOptions } from '../types';
+import {
+  CalculateProposalParams,
+  ExecuteProposalParams,
+  FinalizeProposalParams,
+  Proposal,
+  Vote,
+  VoteProposalParams,
+} from '../types';
 import DAOClient from './DAOClient';
 import GlobalClient from './GlobalClient';
 
-class ProposalClient extends AbstractProposalClient {
+class ProposalClient extends AbstractProposalClient<Vote> {
   private readonly _zDAO: DAOClient;
   private readonly _snapshotClient: SnapshotClient;
   private readonly _gnosisSafeClient: GnosisSafeClient;
@@ -73,7 +74,7 @@ class ProposalClient extends AbstractProposalClient {
 
     while (numberOfResults === limit) {
       const results = await this._snapshotClient.listVotes({
-        spaceId: (this._zDAO.options as ZDAOOptions).ens,
+        spaceId: this._zDAO.ens,
         network: this._zDAO.network.toString(),
         strategies: this._options.strategies,
         proposalId: this.id,
@@ -100,7 +101,7 @@ class ProposalClient extends AbstractProposalClient {
   async getVotingPowerOfUser(account: string): Promise<string> {
     return this._snapshotClient
       .getVotingPower({
-        spaceId: (this._zDAO.options as ZDAOOptions).ens,
+        spaceId: this._zDAO.ens,
         network: this._zDAO.network.toString(),
         snapshot: Number(this.snapshot),
         voter: account,
@@ -142,7 +143,7 @@ class ProposalClient extends AbstractProposalClient {
     const updated = await this._snapshotClient.updateScoresAndVotes(
       snapshotProposal,
       {
-        spaceId: (this._zDAO.options as ZDAOOptions).ens,
+        spaceId: this._zDAO.ens,
         network: this._zDAO.network.toString(),
         strategies: this._options.strategies,
       }
@@ -158,7 +159,7 @@ class ProposalClient extends AbstractProposalClient {
     payload: VoteProposalParams
   ): Promise<void> {
     await this._snapshotClient.voteProposal(provider, account, {
-      spaceId: (this._zDAO.options as ZDAOOptions).ens,
+      spaceId: this._zDAO.ens,
       proposalId: this.id,
       choice: payload.choice,
     });
@@ -192,7 +193,7 @@ class ProposalClient extends AbstractProposalClient {
     const address = account ?? (await signer.getAddress());
     const isOwner = await this._gnosisSafeClient.isOwnerAddress(
       signer,
-      (this._zDAO.options as ZDAOOptions).ens,
+      this._zDAO.ens,
       address
     );
     if (!isOwner) {

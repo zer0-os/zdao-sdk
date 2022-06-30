@@ -1,16 +1,13 @@
 import { ethers } from 'ethers';
+import { cloneDeep } from 'lodash';
 import shortid from 'shortid';
 
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
 import {
-  CreateProposalParams,
-  CreateZDAOParams,
   NotFoundError,
-  Proposal,
   ProposalId,
   ProposalProperties,
   ProposalState,
-  zDAO,
   zDAOProperties,
   zDAOState,
 } from '../../types';
@@ -22,20 +19,30 @@ import {
 } from '../../utilities';
 import {
   Config,
-  CreateProposalParamsOptions,
-  CreateZDAOParamsOptions,
+  CreateProposalParams,
+  CreateZDAOParams,
+  Proposal,
+  Vote,
+  zDAO,
+  zDAOOptions,
 } from '../types';
 import GlobalClient from './GlobalClient';
 import MockProposalClient from './MockProposalClient';
 
-class MockDAOClient extends AbstractDAOClient {
+class MockDAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
+  protected readonly _zDAOOptions: zDAOOptions;
   private _proposals: MockProposalClient[] = [];
 
   private constructor(
-    properties: zDAOProperties,
+    properties: zDAOProperties & zDAOOptions,
     gnosisSafeClient: GnosisSafeClient
   ) {
     super(properties, gnosisSafeClient);
+    this._zDAOOptions = cloneDeep(properties);
+  }
+
+  get ens() {
+    return this._zDAOOptions.ens;
   }
 
   static async createInstance(
@@ -46,7 +53,7 @@ class MockDAOClient extends AbstractDAOClient {
     const token = await getToken(GlobalClient.etherRpcProvider, params.token);
     const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
 
-    const properties: zDAOProperties = {
+    const properties: zDAOProperties & zDAOOptions = {
       id: shortid.generate(),
       zNAs: [params.zNA],
       name: params.name,
@@ -63,9 +70,7 @@ class MockDAOClient extends AbstractDAOClient {
       state: zDAOState.ACTIVE,
       snapshot,
       destroyed: false,
-      options: {
-        ens: (params.options as unknown as CreateZDAOParamsOptions).ens,
-      },
+      ens: params.ens,
     };
 
     return new MockDAOClient(
@@ -106,15 +111,13 @@ class MockDAOClient extends AbstractDAOClient {
       title: payload.title,
       body: payload.body,
       ipfs,
-      choices: (payload.options as CreateProposalParamsOptions).choices,
+      choices: payload.choices,
       created: now,
       start: now,
       end: new Date(now.getTime() + this.duration * 1000),
       state: ProposalState.ACTIVE,
       snapshot: timestamp(now),
-      scores: (payload.options as CreateProposalParamsOptions).choices.map(
-        (_) => '0'
-      ),
+      scores: payload.choices.map((_) => '0'),
       voters: 0,
       metadata: undefined,
     };

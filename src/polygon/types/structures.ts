@@ -8,6 +8,6 @@ export interface StakingProperties {
   address: string;
 }
 
-export interface ZDAOOptions {
+export interface zDAOOptions {
   polygonToken: Token;
 }

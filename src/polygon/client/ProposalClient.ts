@@ -3,26 +3,28 @@ import { ethers } from 'ethers';
 import { AbstractProposalClient } from '../../client';
 import {
   AlreadyDestroyedError,
-  CalculateProposalParams,
   Choice,
-  ExecuteProposalParams,
   FailedTxError,
-  FinalizeProposalParams,
   InvalidError,
   NotSyncStateError,
   ProposalProperties,
   ProposalState,
-  Vote,
-  VoteProposalParams,
   ZDAOError,
 } from '../../types';
 import { errorMessageForError, getSigner } from '../../utilities';
-import { FinalizeProposalParamsOptions, Proposal, ZDAOOptions } from '../types';
+import {
+  CalculateProposalParams,
+  ExecuteProposalParams,
+  FinalizeProposalParams,
+  Proposal,
+  Vote,
+  VoteProposalParams,
+} from '../types';
 import DAOClient from './DAOClient';
 import GlobalClient from './GlobalClient';
 import ProofClient from './ProofClient';
 
-class ProposalClient extends AbstractProposalClient implements Proposal {
+class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
   private readonly _zDAO: DAOClient;
 
   private constructor(properties: ProposalProperties, zDAO: DAOClient) {
@@ -132,7 +134,7 @@ class ProposalClient extends AbstractProposalClient implements Proposal {
 
     const sp = await GlobalClient.staking.pastStakingPower(
       account,
-      (this._zDAO.options as ZDAOOptions).polygonToken.token,
+      this._zDAO.polygonToken.token,
       this.snapshot!
     );
     if (ethers.BigNumber.from(sp).eq(ethers.BigNumber.from(0))) {
@@ -191,9 +193,7 @@ class ProposalClient extends AbstractProposalClient implements Proposal {
     try {
       const signer = getSigner(provider, account);
 
-      const proof = await ProofClient.generate(
-        (payload.options as FinalizeProposalParamsOptions).txHash
-      );
+      const proof = await ProofClient.generate(payload.txHash);
       await GlobalClient.ethereumZDAOChef.receiveMessage(signer, proof);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;

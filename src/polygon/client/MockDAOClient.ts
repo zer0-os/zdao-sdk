@@ -1,17 +1,15 @@
 import { ethers } from 'ethers';
+import { cloneDeep } from 'lodash';
 import shortid from 'shortid';
 
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
 import IERC20UpgradeableAbi from '../../config/abi/IERC20Upgradeable.json';
 import {
   CreateProposalParams,
-  CreateZDAOParams,
   NotFoundError,
-  Proposal,
   ProposalId,
   ProposalProperties,
   ProposalState,
-  zDAO,
   zDAOProperties,
   zDAOState,
 } from '../../types';
@@ -21,21 +19,35 @@ import {
   getToken,
   timestamp,
 } from '../../utilities';
-import { Config, CreateZDAOParamsOptions, VoteChoice } from '../types';
+import {
+  Config,
+  CreateZDAOParams,
+  Proposal,
+  Vote,
+  VoteChoice,
+  zDAO,
+  zDAOOptions,
+} from '../types';
 import GlobalClient from './GlobalClient';
 import MockProposalClient from './MockProposalClient';
 
-class MockDAOClient extends AbstractDAOClient {
+class MockDAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
+  protected readonly _zDAOOptions: zDAOOptions;
   private _proposals: MockProposalClient[] = [];
   protected _totalSupply: ethers.BigNumber;
 
   private constructor(
-    properties: zDAOProperties,
+    properties: zDAOProperties & zDAOOptions,
     gnosisSafeClient: GnosisSafeClient,
     totalSupply: ethers.BigNumber
   ) {
     super(properties, gnosisSafeClient);
+    this._zDAOOptions = cloneDeep(properties);
     this._totalSupply = totalSupply;
+  }
+
+  get polygonToken() {
+    return this._zDAOOptions.polygonToken;
   }
 
   get totalSupply() {
@@ -57,7 +69,7 @@ class MockDAOClient extends AbstractDAOClient {
       polygonTokenAddress
     );
 
-    const properties: zDAOProperties = {
+    const properties: zDAOProperties & zDAOOptions = {
       id: shortid.generate(),
       zNAs: [params.zNA],
       name: params.name,
@@ -67,20 +79,14 @@ class MockDAOClient extends AbstractDAOClient {
       votingToken: token,
       amount: params.amount,
       duration: params.duration,
-      votingThreshold: (params.options as CreateZDAOParamsOptions)
-        .votingThreshold,
-      minimumVotingParticipants: (params.options as CreateZDAOParamsOptions)
-        .minimumVotingParticipants,
-      minimumTotalVotingTokens: (params.options as CreateZDAOParamsOptions)
-        .minimumTotalVotingTokens,
-      isRelativeMajority: (params.options as CreateZDAOParamsOptions)
-        .isRelativeMajority,
+      votingThreshold: params.votingThreshold,
+      minimumVotingParticipants: params.minimumVotingParticipants,
+      minimumTotalVotingTokens: params.minimumTotalVotingTokens,
+      isRelativeMajority: params.isRelativeMajority,
       state: zDAOState.ACTIVE,
       snapshot: timestamp(new Date()),
       destroyed: false,
-      options: {
-        polygonToken: polygonToken,
-      },
+      polygonToken: polygonToken,
     };
 
     const tokenContract = new ethers.Contract(

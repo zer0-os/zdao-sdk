@@ -1,17 +1,29 @@
+import {
+  CalculateProposalParams as CalculateProposalBaseParams,
+  CreateProposalParams as CreateProposalBaseParams,
+  CreateZDAOParams as CreateZDAOBaseParams,
+  ExecuteProposalParams as ExecuteProposalBaseParams,
+  FinalizeProposalParams as FinalizeProposalBaseParams,
+  VoteProposalParams as VoteProposalBaseParams,
+} from '../../types';
 import { ENS } from './primitives';
 
-export interface CreateZDAOParamsOptions {
+export interface CreateZDAOParams extends CreateZDAOBaseParams {
   ens: ENS;
 }
 
-export interface CreateProposalParamsOptions {
+export interface CreateProposalParams extends CreateProposalBaseParams {
   // Array of choices
   choices: string[];
 
   // Block number
-  // todo, check again
   snapshot: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface FinalizeProposalParamsOptions {}
+export type VoteProposalParams = VoteProposalBaseParams;
+
+export type CalculateProposalParams = CalculateProposalBaseParams;
+
+export type FinalizeProposalParams = FinalizeProposalBaseParams;
+
+export type ExecuteProposalParams = ExecuteProposalBaseParams;

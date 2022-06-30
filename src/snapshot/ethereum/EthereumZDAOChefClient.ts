@@ -1,14 +1,14 @@
 import { ethers } from 'ethers';
 
 import { PlatformType } from '../..';
-import { CreateZDAOParams, DAOConfig, zDAOId } from '../../types';
+import { DAOConfig, zDAOId } from '../../types';
 import GlobalClient from '../client/GlobalClient';
 import SnapshotZDAOChefAbi from '../config/abi/SnapshotZDAOChef.json';
 import { SnapshotZDAOChef } from '../config/types/SnapshotZDAOChef';
-import { CreateZDAOParamsOptions } from '../types';
+import { CreateZDAOParams } from '../types';
 import { SnapshotZDAOProperties } from './types';
 
-class ZDAOChefClient {
+class EthereumZDAOChefClient {
   private readonly _config: DAOConfig;
   protected _contract: SnapshotZDAOChef;
 
@@ -47,10 +47,7 @@ class ZDAOChefClient {
       payload.zNA,
       payload.gnosisSafe,
       payload.name,
-      ethers.utils.defaultAbiCoder.encode(
-        ['string'],
-        [(payload.options as CreateZDAOParamsOptions).ens]
-      )
+      ethers.utils.defaultAbiCoder.encode(['string'], [payload.ens])
     );
   }
 
@@ -59,4 +56,4 @@ class ZDAOChefClient {
   }
 }
 
-export default ZDAOChefClient;
+export default EthereumZDAOChefClient;

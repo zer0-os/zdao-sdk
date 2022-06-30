@@ -2,12 +2,12 @@ import { ethers } from 'ethers';
 
 import ZDAORegistryClient from '../../client/ZDAORegistry';
 import { NotInitializedError } from '../../types';
-import { ZDAOChefClient } from '../ethereum';
+import { EthereumZDAOChefClient } from '../ethereum';
 
 class GlobalClient {
   private static _etherRpcProvider?: ethers.providers.JsonRpcProvider;
   private static _zDAORegistry?: ZDAORegistryClient;
-  private static _ethereumZDAOChef?: ZDAOChefClient;
+  private static _ethereumZDAOChef?: EthereumZDAOChefClient;
   private static _ipfsGateway?: string;
 
   static get etherRpcProvider() {
@@ -41,7 +41,7 @@ class GlobalClient {
     return GlobalClient._ethereumZDAOChef;
   }
 
-  static set ethereumZDAOChef(zDAOChef: ZDAOChefClient) {
+  static set ethereumZDAOChef(zDAOChef: EthereumZDAOChefClient) {
     GlobalClient._ethereumZDAOChef = zDAOChef;
   }
 

@@ -1,12 +1,11 @@
-import { BaseConfig, SDKInstance } from '../types';
 import SDKInstanceClient from './SDKInstanceClient';
-import { Config } from './types';
+import { Config, SDKInstance } from './types';
 
 export * from './config';
 export * from './types';
 
 export const createSDKInstance = async (
-  config: BaseConfig
+  config: Config
 ): Promise<SDKInstance> => {
-  return await new SDKInstanceClient(config as Config);
+  return await new SDKInstanceClient(config);
 };

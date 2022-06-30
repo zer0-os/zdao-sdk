@@ -1,15 +1,14 @@
 import { BigNumber, ethers } from 'ethers';
+import { cloneDeep } from 'lodash';
 
 import { AbstractDAOClient, GnosisSafeClient, IPFSClient } from '../../client';
 import IERC20UpgradeableAbi from '../../config/abi/IERC20Upgradeable.json';
 import {
   AlreadyDestroyedError,
-  CreateProposalParams,
   FailedTxError,
   InvalidError,
   NotFoundError,
   NotSyncStateError,
-  Proposal,
   ProposalId,
   ProposalProperties,
   ProposalState,
@@ -26,22 +25,32 @@ import {
 } from '../../utilities';
 import { EthereumZDAO, IEthereumZDAO } from '../config/types/EthereumZDAO';
 import { PolygonZDAO } from '../config/types/PolygonZDAO';
-import { Config, VoteChoice, zDAO } from '../types';
+import {
+  Config,
+  CreateProposalParams,
+  Proposal,
+  Vote,
+  VoteChoice,
+  zDAO,
+  zDAOOptions,
+} from '../types';
 import GlobalClient from './GlobalClient';
 import ProofClient from './ProofClient';
 import ProposalClient from './ProposalClient';
 
-class DAOClient extends AbstractDAOClient implements zDAO {
+class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
+  protected readonly _zDAOOptions: zDAOOptions;
   protected _ethereumZDAO!: EthereumZDAO;
   protected _polygonZDAO: PolygonZDAO | null = null;
   protected _rootTokenContract!: ethers.Contract;
   protected _totalSupply!: BigNumber;
 
   private constructor(
-    properties: zDAOProperties,
+    properties: zDAOProperties & zDAOOptions,
     gnosisSafeClient: GnosisSafeClient
   ) {
     super(properties, gnosisSafeClient);
+    this._zDAOOptions = cloneDeep(properties);
 
     return (async (): Promise<DAOClient> => {
       this._rootTokenContract = new ethers.Contract(
@@ -63,6 +72,10 @@ class DAOClient extends AbstractDAOClient implements zDAO {
       }
       return this;
     })() as unknown as DAOClient;
+  }
+
+  get polygonToken() {
+    return this._zDAOOptions.polygonToken;
   }
 
   get ethereumZDAO() {
@@ -90,9 +103,7 @@ class DAOClient extends AbstractDAOClient implements zDAO {
       {
         ...zDAOProperties,
         state: zDAOState.PENDING,
-        options: {
-          polygonToken: polygonToken,
-        },
+        polygonToken: polygonToken,
       },
       new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
     );
@@ -266,7 +277,9 @@ class DAOClient extends AbstractDAOClient implements zDAO {
       from += results.length;
       numberOfResults = results.length;
     }
-    return await Promise.all(proposalPromises);
+    return await Promise.all(proposalPromises).then((values) =>
+      values.reverse()
+    );
   }
 
   async getProposal(id: ProposalId): Promise<Proposal> {

@@ -7,13 +7,15 @@ import {
   FinalizeProposalParams,
   NotImplementedError,
   ProposalProperties,
-  Vote,
   VoteProposalParams,
 } from '../../types';
-import { Proposal } from '../types';
+import { Proposal, Vote } from '../types';
 import MockDAOClient from './MockDAOClient';
 
-class MockProposalClient extends AbstractProposalClient implements Proposal {
+class MockProposalClient
+  extends AbstractProposalClient<Vote>
+  implements Proposal
+{
   private _votes: Vote[] = [];
   private readonly _zDAO: MockDAOClient;
 

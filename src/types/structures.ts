@@ -1,5 +1,3 @@
-import { ZDAOOptions as PolygonZDAOOptions } from '../polygon';
-import { ZDAOOptions as SnapshotZDAOOptions } from '../snapshot';
 import {
   AssetType,
   ProposalState,
@@ -207,8 +205,6 @@ export interface zDAOProperties {
 
   // Flag marking whether the zDAO has been destroyed
   destroyed: boolean;
-
-  options?: SnapshotZDAOOptions | PolygonZDAOOptions;
 }
 
 export interface ProposalProperties {

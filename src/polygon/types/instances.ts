@@ -3,11 +3,12 @@ import { ContractReceipt, ethers } from 'ethers';
 import {
   Proposal as BaseProposal,
   SDKInstance as SDKBaseInstance,
+  Vote as BaseVote,
   zDAO as BaseZDAO,
 } from '../../types';
-import { StakingProperties } from './structures';
+import { StakingProperties, zDAOOptions } from './structures';
 
-export interface SDKInstance extends SDKBaseInstance {
+export interface SDKInstance extends SDKBaseInstance<Vote, Proposal, zDAO> {
   /**
    * Staking instance associated with Staking contract
    */
@@ -68,7 +69,7 @@ export interface Registry {
   polygonToEthereumToken(polygonToken: string): Promise<string>;
 }
 
-export interface zDAO extends BaseZDAO {
+export interface zDAO extends BaseZDAO<Vote, Proposal>, zDAOOptions {
   /**
    * Check if transaction has been verified by Matic validators
    * @param txHash transaction hash which happened on Polygon to send data to Ethereum
@@ -76,9 +77,11 @@ export interface zDAO extends BaseZDAO {
   isCheckPointed(txHash: string): Promise<boolean>;
 }
 
-export interface Proposal extends BaseProposal {
+export interface Proposal extends BaseProposal<Vote> {
   /**
    * Find all the checkpointing transaction hashes
    */
   getCheckPointingHashes(): Promise<string[]>;
 }
+
+export type Vote = BaseVote;
