@@ -7,7 +7,7 @@ import {
   SupportedChainId,
   zNAConfig,
 } from '../../types';
-import { Config } from '../types';
+import { SnapshotConfig } from '../types';
 
 export interface ConfigParams {
   /**
@@ -31,7 +31,7 @@ export const developmentConfiguration = ({
   zNA,
   fleek,
   ipfsGateway,
-}: ConfigParams): Config => ({
+}: ConfigParams): SnapshotConfig => ({
   ethereum,
   zNA,
   gnosisSafe: {
@@ -55,7 +55,7 @@ export const productionConfiguration = ({
   zNA,
   fleek,
   ipfsGateway,
-}: ConfigParams): Config => ({
+}: ConfigParams): SnapshotConfig => ({
   ethereum,
   zNA,
   gnosisSafe: {

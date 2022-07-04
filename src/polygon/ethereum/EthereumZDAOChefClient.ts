@@ -1,13 +1,7 @@
 import { ethers } from 'ethers';
 
 import { PlatformType } from '../..';
-import {
-  CreateProposalParams,
-  DAOConfig,
-  ProposalId,
-  zDAOId,
-  zNA,
-} from '../../types';
+import { DAOConfig, ProposalId, zDAOId, zNA } from '../../types';
 import { calculateGasMargin, getToken } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import EthereumZDAOAbi from '../config/abi/EthereumZDAO.json';
@@ -16,7 +10,7 @@ import FxStateEthereumTunnelAbi from '../config/abi/FxStateEthereumTunnel.json';
 import { EthereumZDAO } from '../config/types/EthereumZDAO';
 import { EthereumZDAOChef } from '../config/types/EthereumZDAOChef';
 import { FxStateEthereumTunnel } from '../config/types/FxStateEthereumTunnel';
-import { CreateZDAOParams } from '../types';
+import { CreatePolygonProposalParams, CreatePolygonZDAOParams } from '../types';
 import { EthereumZDAOProperties } from './types';
 
 class EthereumZDAOChefClient {
@@ -92,7 +86,7 @@ class EthereumZDAOChefClient {
     };
   }
 
-  async addNewDAO(signer: ethers.Signer, payload: CreateZDAOParams) {
+  async addNewDAO(signer: ethers.Signer, payload: CreatePolygonZDAOParams) {
     await GlobalClient.zDAORegistry.addNewZDAO(
       signer,
       PlatformType.Polygon,
@@ -129,7 +123,7 @@ class EthereumZDAOChefClient {
   async createProposal(
     signer: ethers.Signer,
     zDAOId: zDAOId,
-    payload: CreateProposalParams,
+    payload: CreatePolygonProposalParams,
     ipfs: string
   ) {
     const gasEstimated = await this._contract

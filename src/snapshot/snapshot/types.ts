@@ -63,7 +63,7 @@ export interface SnapshotSpaceDetails extends SnapshotSpace {
   admins: string[];
 }
 
-export interface SnapshotProposal {
+export interface SnapshotProposalProperties {
   id: ProposalId; // proposal id
   type: string; // proposal type (e.g. single-choice)
   author: string; // proposal creator
@@ -87,12 +87,12 @@ export interface SnapshotProposalResponse {
   ipfs: string;
 }
 
-export interface ProposalResult {
-  resultsByVoteBalance: number[];
-  sumOfResultsBalance: number;
-}
+// export interface SnapshotProposalResult {
+//   resultsByVoteBalance: number[];
+//   sumOfResultsBalance: number;
+// }
 
-export interface SnapshotVote {
+export interface SnapshotVoteProperties {
   voter: string;
   choice: number[];
   power: number; // voting power

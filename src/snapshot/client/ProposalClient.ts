@@ -10,19 +10,19 @@ import {
 } from '../../types';
 import { errorMessageForError, getSigner } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
-import { SnapshotProposal } from '../snapshot/types';
+import { SnapshotProposalProperties } from '../snapshot/types';
 import {
-  CalculateProposalParams,
-  ExecuteProposalParams,
-  FinalizeProposalParams,
-  Proposal,
-  Vote,
-  VoteProposalParams,
+  CalculateSnapshotProposalParams,
+  ExecuteSnapshotProposalParams,
+  FinalizeSnapshotProposalParams,
+  SnapshotProposal,
+  SnapshotVote,
+  VoteSnapshotProposalParams,
 } from '../types';
 import DAOClient from './DAOClient';
 import GlobalClient from './GlobalClient';
 
-class ProposalClient extends AbstractProposalClient<Vote> {
+class ProposalClient extends AbstractProposalClient<SnapshotVote> {
   private readonly _zDAO: DAOClient;
   private readonly _snapshotClient: SnapshotClient;
   private readonly _gnosisSafeClient: GnosisSafeClient;
@@ -48,7 +48,7 @@ class ProposalClient extends AbstractProposalClient<Vote> {
     gnosisSafeClient: GnosisSafeClient,
     properties: ProposalProperties,
     options: any
-  ): Promise<Proposal> {
+  ): Promise<SnapshotProposal> {
     const proposal = new ProposalClient(
       zDAO,
       snapshotClient,
@@ -65,12 +65,12 @@ class ProposalClient extends AbstractProposalClient<Vote> {
     return proposal;
   }
 
-  async listVotes(pagination?: PaginationParam): Promise<Vote[]> {
+  async listVotes(pagination?: PaginationParam): Promise<SnapshotVote[]> {
     const limit = 30000;
     let from = pagination?.from ?? 0;
     let count = pagination?.count ?? limit;
     let numberOfResults = limit;
-    const votes: Vote[] = [];
+    const votes: SnapshotVote[] = [];
 
     while (numberOfResults === limit) {
       const results = await this._snapshotClient.listVotes({
@@ -109,7 +109,7 @@ class ProposalClient extends AbstractProposalClient<Vote> {
       .then((value) => value.toString());
   }
 
-  async updateScoresAndVotes(): Promise<Proposal> {
+  async updateScoresAndVotes(): Promise<SnapshotProposal> {
     const mapState = (
       state: ProposalState
     ): 'pending' | 'active' | 'closed' => {
@@ -121,7 +121,7 @@ class ProposalClient extends AbstractProposalClient<Vote> {
       return 'closed';
     };
 
-    const snapshotProposal: SnapshotProposal = {
+    const snapshotProposal: SnapshotProposalProperties = {
       id: this._properties.id,
       type: 'single-choice',
       author: this._properties.createdBy,
@@ -155,10 +155,12 @@ class ProposalClient extends AbstractProposalClient<Vote> {
 
   async vote(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string,
-    payload: VoteProposalParams
+    account: string | undefined,
+    payload: VoteSnapshotProposalParams
   ): Promise<void> {
-    await this._snapshotClient.voteProposal(provider, account, {
+    const signer = getSigner(provider, account);
+    const accountAddress = account ? account : await signer.getAddress();
+    await this._snapshotClient.voteProposal(provider, accountAddress, {
       spaceId: this._zDAO.ens,
       proposalId: this.id,
       choice: payload.choice,
@@ -168,7 +170,7 @@ class ProposalClient extends AbstractProposalClient<Vote> {
   calculate(
     _: ethers.providers.Web3Provider | ethers.Wallet,
     _2: string | undefined,
-    _3: CalculateProposalParams
+    _3: CalculateSnapshotProposalParams
   ): Promise<void> {
     throw new NotImplementedError();
   }
@@ -176,7 +178,7 @@ class ProposalClient extends AbstractProposalClient<Vote> {
   finalize(
     _: ethers.providers.Web3Provider | ethers.Wallet,
     _2: string | undefined,
-    _3: FinalizeProposalParams
+    _3: FinalizeSnapshotProposalParams
   ): Promise<void> {
     throw new NotImplementedError();
   }
@@ -184,7 +186,7 @@ class ProposalClient extends AbstractProposalClient<Vote> {
   async execute(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    _: ExecuteProposalParams
+    _: ExecuteSnapshotProposalParams
   ): Promise<void> {
     if (!this.metadata) return;
 

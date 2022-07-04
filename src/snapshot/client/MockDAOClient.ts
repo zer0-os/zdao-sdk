@@ -18,18 +18,21 @@ import {
   timestamp,
 } from '../../utilities';
 import {
-  Config,
-  CreateProposalParams,
-  CreateZDAOParams,
-  Proposal,
-  Vote,
-  zDAO,
+  CreateSnapshotProposalParams,
+  CreateSnapshotZDAOParams,
+  SnapshotConfig,
+  SnapshotProposal,
+  SnapshotVote,
+  SnapshotZDAO,
   zDAOOptions,
 } from '../types';
 import GlobalClient from './GlobalClient';
 import MockProposalClient from './MockProposalClient';
 
-class MockDAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
+class MockDAOClient
+  extends AbstractDAOClient<SnapshotVote, SnapshotProposal>
+  implements SnapshotZDAO
+{
   protected readonly _zDAOOptions: zDAOOptions;
   private _proposals: MockProposalClient[] = [];
 
@@ -46,10 +49,10 @@ class MockDAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
   }
 
   static async createInstance(
-    config: Config,
+    config: SnapshotConfig,
     signer: ethers.Signer,
-    params: CreateZDAOParams
-  ): Promise<zDAO> {
+    params: CreateSnapshotZDAOParams
+  ): Promise<SnapshotZDAO> {
     const token = await getToken(GlobalClient.etherRpcProvider, params.token);
     const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
 
@@ -79,11 +82,11 @@ class MockDAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
     );
   }
 
-  listProposals(): Promise<Proposal[]> {
+  listProposals(): Promise<SnapshotProposal[]> {
     return Promise.resolve(this._proposals);
   }
 
-  getProposal(proposalId: ProposalId): Promise<Proposal> {
+  getProposal(proposalId: ProposalId): Promise<SnapshotProposal> {
     const found = this._proposals.find(
       (proposal) => proposal.id === proposalId
     );
@@ -97,7 +100,7 @@ class MockDAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
   async createProposal(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
-    payload: CreateProposalParams
+    payload: CreateSnapshotProposalParams
   ): Promise<ProposalId> {
     const signer = getSigner(provider, account);
     const address = account ?? (await signer.getAddress());

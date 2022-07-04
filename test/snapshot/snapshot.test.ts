@@ -3,7 +3,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 import { BigNumber, ethers } from 'ethers';
 
 import { Snapshot } from '../../src';
-import { Config, createSDKInstance } from '../../src/snapshot';
+import { createSDKInstance, SnapshotConfig } from '../../src/snapshot';
 import DAOClient from '../../src/snapshot/client/DAOClient';
 import { developmentConfiguration } from '../../src/snapshot/config';
 import { SupportedChainId, zDAOState } from '../../src/types';
@@ -16,9 +16,10 @@ describe('Snapshot test', async () => {
   const env = setEnv();
   const defZNA = 'joshupgig.eth';
 
-  let config: Config;
+  let config: SnapshotConfig;
   let signer: ethers.Wallet;
-  let daoInstance: Snapshot.zDAO, sdkInstance: Snapshot.SDKInstance;
+  let daoInstance: Snapshot.SnapshotZDAO,
+    sdkInstance: Snapshot.SnapshotSDKInstance;
 
   before('setup', async () => {
     const provider = new ethers.providers.JsonRpcProvider(
@@ -88,12 +89,12 @@ describe('Snapshot test', async () => {
   });
 
   it('should list proposals', async () => {
-    const list: Snapshot.Proposal[] = await daoInstance.listProposals();
+    const list: Snapshot.SnapshotProposal[] = await daoInstance.listProposals();
 
     expect(list.length).to.be.gt(0);
 
     const found = list.filter(
-      (item: Snapshot.Proposal) =>
+      (item: Snapshot.SnapshotProposal) =>
         item.id ===
         '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989'
     );
@@ -101,7 +102,7 @@ describe('Snapshot test', async () => {
   });
 
   it('should get proposal detail', async () => {
-    const proposal: Snapshot.Proposal = await daoInstance.getProposal(
+    const proposal: Snapshot.SnapshotProposal = await daoInstance.getProposal(
       '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989'
     );
 
@@ -115,11 +116,11 @@ describe('Snapshot test', async () => {
   });
 
   it('should get votes from proposal', async () => {
-    const proposal: Snapshot.Proposal = await daoInstance.getProposal(
+    const proposal: Snapshot.SnapshotProposal = await daoInstance.getProposal(
       '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989'
     );
 
-    const votes: Snapshot.Vote[] = await proposal.listVotes();
+    const votes: Snapshot.SnapshotVote[] = await proposal.listVotes();
 
     expect(votes.length).to.be.equal(1);
     expect(votes[0].choice).to.be.equal(1);
@@ -129,7 +130,7 @@ describe('Snapshot test', async () => {
   });
 
   it('should get voting power', async () => {
-    const proposal: Snapshot.Proposal = await daoInstance.getProposal(
+    const proposal: Snapshot.SnapshotProposal = await daoInstance.getProposal(
       '0xc0d0f0dfa6ede919e64c06a06d52ce4daf6d2e194042980f30b6c3800d60d989'
     );
 
@@ -142,7 +143,7 @@ describe('Snapshot test', async () => {
   it('should create a proposal with `erc20-with-balance` strategy and cast a vote', async () => {
     const blockNumber = await signer.provider.getBlockNumber();
 
-    const params: Snapshot.CreateProposalParams = {
+    const params: Snapshot.CreateSnapshotProposalParams = {
       title: 'test proposal',
       body: 'body',
       transfer: {
@@ -161,7 +162,7 @@ describe('Snapshot test', async () => {
       signer.address,
       params
     );
-    const proposal: Snapshot.Proposal = await daoInstance.getProposal(
+    const proposal: Snapshot.SnapshotProposal = await daoInstance.getProposal(
       proposalId
     );
     expect(proposal.title).to.be.eq('test proposal');
@@ -174,12 +175,12 @@ describe('Snapshot test', async () => {
     const blockNumber = await signer.provider.getBlockNumber();
 
     // 'zdao-sky.eth' ENS name is associated with 'wilder.cats', 'wilder.skydao'
-    const daoInstance2: Snapshot.zDAO = await sdkInstance.getZDAOByZNA(
+    const daoInstance2: Snapshot.SnapshotZDAO = await sdkInstance.getZDAOByZNA(
       'wilder.cats'
     );
     expect(daoInstance2.ens).to.be.equal('zdao-sky.eth');
 
-    const params: Snapshot.CreateProposalParams = {
+    const params: Snapshot.CreateSnapshotProposalParams = {
       title: 'test proposal',
       body: 'body',
       transfer: {
@@ -198,7 +199,7 @@ describe('Snapshot test', async () => {
       signer.address,
       params
     );
-    const proposal: Snapshot.Proposal = await daoInstance.getProposal(
+    const proposal: Snapshot.SnapshotProposal = await daoInstance.getProposal(
       proposalId
     );
     expect(proposal.title).to.be.eq('test proposal');

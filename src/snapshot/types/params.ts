@@ -1,18 +1,18 @@
 import {
-  CalculateProposalParams as CalculateProposalBaseParams,
-  CreateProposalParams as CreateProposalBaseParams,
-  CreateZDAOParams as CreateZDAOBaseParams,
-  ExecuteProposalParams as ExecuteProposalBaseParams,
-  FinalizeProposalParams as FinalizeProposalBaseParams,
-  VoteProposalParams as VoteProposalBaseParams,
+  CalculateProposalParams,
+  CreateProposalParams,
+  CreateZDAOParams,
+  ExecuteProposalParams,
+  FinalizeProposalParams,
+  VoteProposalParams,
 } from '../../types';
 import { ENS } from './primitives';
 
-export interface CreateZDAOParams extends CreateZDAOBaseParams {
+export interface CreateSnapshotZDAOParams extends CreateZDAOParams {
   ens: ENS;
 }
 
-export interface CreateProposalParams extends CreateProposalBaseParams {
+export interface CreateSnapshotProposalParams extends CreateProposalParams {
   // Array of choices
   choices: string[];
 
@@ -20,10 +20,10 @@ export interface CreateProposalParams extends CreateProposalBaseParams {
   snapshot: number;
 }
 
-export type VoteProposalParams = VoteProposalBaseParams;
+export type VoteSnapshotProposalParams = VoteProposalParams;
 
-export type CalculateProposalParams = CalculateProposalBaseParams;
+export type CalculateSnapshotProposalParams = CalculateProposalParams;
 
-export type FinalizeProposalParams = FinalizeProposalBaseParams;
+export type FinalizeSnapshotProposalParams = FinalizeProposalParams;
 
-export type ExecuteProposalParams = ExecuteProposalBaseParams;
+export type ExecuteSnapshotProposalParams = ExecuteProposalParams;

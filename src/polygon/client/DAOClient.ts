@@ -24,24 +24,27 @@ import {
   getToken,
 } from '../../utilities';
 import { EthereumZDAO, IEthereumZDAO } from '../config/types/EthereumZDAO';
-import { PolygonZDAO } from '../config/types/PolygonZDAO';
+import { PolygonZDAO as PolygonZDAOContract } from '../config/types/PolygonZDAO';
 import {
-  Config,
-  CreateProposalParams,
-  Proposal,
-  Vote,
+  CreatePolygonProposalParams,
+  PolygonConfig,
+  PolygonProposal,
+  PolygonVote,
+  PolygonZDAO,
   VoteChoice,
-  zDAO,
   zDAOOptions,
 } from '../types';
 import GlobalClient from './GlobalClient';
 import ProofClient from './ProofClient';
 import ProposalClient from './ProposalClient';
 
-class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
+class DAOClient
+  extends AbstractDAOClient<PolygonVote, PolygonProposal>
+  implements PolygonZDAO
+{
   protected readonly _zDAOOptions: zDAOOptions;
   protected _ethereumZDAO!: EthereumZDAO;
-  protected _polygonZDAO: PolygonZDAO | null = null;
+  protected _PolygonZDAOContract: PolygonZDAOContract | null = null;
   protected _rootTokenContract!: ethers.Contract;
   protected _totalSupply!: BigNumber;
 
@@ -63,8 +66,8 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
       this._ethereumZDAO = await GlobalClient.ethereumZDAOChef.getZDAOById(
         this._properties.id
       );
-      this._polygonZDAO = await this.getPolygonZDAO();
-      if (this._polygonZDAO) {
+      this._PolygonZDAOContract = await this.getPolygonZDAOContract();
+      if (this._PolygonZDAOContract) {
         this._properties.state = zDAOState.ACTIVE;
       }
       if (properties.destroyed) {
@@ -86,7 +89,10 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
     return this._totalSupply;
   }
 
-  static async createInstance(config: Config, zDAOId: zDAOId): Promise<zDAO> {
+  static async createInstance(
+    config: PolygonConfig,
+    zDAOId: zDAOId
+  ): Promise<PolygonZDAO> {
     const zDAOProperties =
       await GlobalClient.ethereumZDAOChef.getZDAOPropertiesById(zDAOId);
 
@@ -109,20 +115,20 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
     );
   }
 
-  async getPolygonZDAO(): Promise<PolygonZDAO | null> {
-    if (this._polygonZDAO) return this._polygonZDAO;
-    this._polygonZDAO = await GlobalClient.polygonZDAOChef.getZDAOById(
+  async getPolygonZDAOContract(): Promise<PolygonZDAOContract | null> {
+    if (this._PolygonZDAOContract) return this._PolygonZDAOContract;
+    this._PolygonZDAOContract = await GlobalClient.polygonZDAOChef.getZDAOById(
       this._properties.id
     );
-    return this._polygonZDAO;
+    return this._PolygonZDAOContract;
   }
 
   private async mapToProperties(
     raw: IEthereumZDAO.ProposalStruct
   ): Promise<ProposalProperties> {
-    const polygonZDAO = await this.getPolygonZDAO();
-    const polyProposal = polygonZDAO
-      ? await polygonZDAO.proposals(raw.proposalId)
+    const polygonZDAOContract = await this.getPolygonZDAOContract();
+    const polyProposal = polygonZDAOContract
+      ? await polygonZDAOContract.proposals(raw.proposalId)
       : null;
     const isSyncedProposal = polyProposal
       ? polyProposal.proposalId.eq(raw.proposalId)
@@ -130,24 +136,24 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
 
     const created = new Date(Number(raw.created) * 1000);
     const start =
-        polygonZDAO && polyProposal && isSyncedProposal
+        polygonZDAOContract && polyProposal && isSyncedProposal
           ? new Date(Number(polyProposal.startTimestamp) * 1000)
           : undefined,
       end =
-        polygonZDAO && polyProposal && isSyncedProposal
+        polygonZDAOContract && polyProposal && isSyncedProposal
           ? new Date(Number(polyProposal.endTimestamp) * 1000)
           : undefined,
       now = new Date();
     const snapshot =
-      polygonZDAO && polyProposal && isSyncedProposal
+      polygonZDAOContract && polyProposal && isSyncedProposal
         ? polyProposal.snapshot.toNumber()
         : undefined;
     const scores =
-      polygonZDAO && polyProposal && isSyncedProposal
+      polygonZDAOContract && polyProposal && isSyncedProposal
         ? [polyProposal.yes.toString(), polyProposal.no.toString()]
         : undefined;
     const voters =
-      polygonZDAO && polyProposal && isSyncedProposal
+      polygonZDAOContract && polyProposal && isSyncedProposal
         ? polyProposal.voters.toNumber()
         : undefined;
 
@@ -251,12 +257,12 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
     };
   }
 
-  async listProposals(): Promise<Proposal[]> {
+  async listProposals(): Promise<PolygonProposal[]> {
     const count = 100;
     let from = 0;
     let numberOfResults = count;
 
-    const proposalPromises: Promise<Proposal>[] = [];
+    const proposalPromises: Promise<PolygonProposal>[] = [];
 
     while (numberOfResults === count) {
       const results: IEthereumZDAO.ProposalStructOutput[] =
@@ -282,7 +288,7 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
     );
   }
 
-  async getProposal(id: ProposalId): Promise<Proposal> {
+  async getProposal(id: ProposalId): Promise<PolygonProposal> {
     const proposal = await this._ethereumZDAO.proposals(id);
     if (proposal.proposalId.toString() !== id) {
       throw new NotFoundError(errorMessageForError('not-found-proposal'));
@@ -296,8 +302,8 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
 
   async createProposal(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string,
-    payload: CreateProposalParams
+    account: string | undefined,
+    payload: CreatePolygonProposalParams
   ): Promise<ProposalId> {
     // zDAO should be active
     if (this.destroyed) {
@@ -318,8 +324,8 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
     }
 
     // zDAO should be synchronized to Polygon prior to create proposal
-    const polygonZDAO = await this.getPolygonZDAO();
-    if (!polygonZDAO) {
+    const PolygonZDAOContract = await this.getPolygonZDAOContract();
+    if (!PolygonZDAOContract) {
       throw new NotSyncStateError();
     }
 

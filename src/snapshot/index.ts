@@ -1,9 +1,11 @@
 import SDKInstanceClient from './SDKInstanceClient';
-import { Config, SDKInstance } from './types';
+import { SnapshotConfig, SnapshotSDKInstance } from './types';
 
 export * from './config';
 export * from './types';
 
-export const createSDKInstance = (config: Config): Promise<SDKInstance> => {
-  return Promise.resolve(new SDKInstanceClient(config as Config));
+export const createSDKInstance = (
+  config: SnapshotConfig
+): Promise<SnapshotSDKInstance> => {
+  return Promise.resolve(new SDKInstanceClient(config));
 };

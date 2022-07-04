@@ -5,7 +5,7 @@ import { DAOConfig, zDAOId } from '../../types';
 import GlobalClient from '../client/GlobalClient';
 import SnapshotZDAOChefAbi from '../config/abi/SnapshotZDAOChef.json';
 import { SnapshotZDAOChef } from '../config/types/SnapshotZDAOChef';
-import { CreateZDAOParams } from '../types';
+import { CreateSnapshotZDAOParams } from '../types';
 import { SnapshotZDAOProperties } from './types';
 
 class EthereumZDAOChefClient {
@@ -40,7 +40,7 @@ class EthereumZDAOChefClient {
     };
   }
 
-  async addNewDAO(signer: ethers.Signer, payload: CreateZDAOParams) {
+  async addNewDAO(signer: ethers.Signer, payload: CreateSnapshotZDAOParams) {
     await GlobalClient.zDAORegistry.addNewZDAO(
       signer,
       PlatformType.Snapshot,

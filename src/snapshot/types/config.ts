@@ -1,14 +1,14 @@
-import { BaseConfig } from '../../types';
+import { Config } from '../../types';
 
-export interface SnapshotConfig {
-  // uri to Snaphost Hub
+export interface SnapshotNetworkConfig {
+  // uri to Snapshot Hub
   serviceUri: string;
 
   // chain id as string where space created
   network: string;
 }
 
-export interface Config extends BaseConfig {
+export interface SnapshotConfig extends Config {
   // snapshot.org configuration
-  snapshot: SnapshotConfig;
+  snapshot: SnapshotNetworkConfig;
 }

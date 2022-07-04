@@ -20,14 +20,19 @@ import GlobalClient from './client/GlobalClient';
 import MockDAOClient from './client/MockDAOClient';
 import { EthereumZDAOChefClient } from './ethereum';
 import { SnapshotClient } from './snapshot';
-import { Config, CreateZDAOParams, SDKInstance, zDAO } from './types';
+import {
+  CreateSnapshotZDAOParams,
+  SnapshotConfig,
+  SnapshotSDKInstance,
+  SnapshotZDAO,
+} from './types';
 
-class SDKInstanceClient implements SDKInstance {
-  private readonly _config: Config;
+class SDKInstanceClient implements SnapshotSDKInstance {
+  private readonly _config: SnapshotConfig;
   private readonly _snapshotClient: SnapshotClient;
-  protected _mockZDAOClients: zDAO[] = [];
+  protected _mockZDAOClients: SnapshotZDAO[] = [];
 
-  constructor(config: Config) {
+  constructor(config: SnapshotConfig) {
     this._config = config;
     this._snapshotClient = new SnapshotClient(config.snapshot);
 
@@ -47,7 +52,7 @@ class SDKInstanceClient implements SDKInstance {
   async createZDAO(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    params: CreateZDAOParams
+    params: CreateSnapshotZDAOParams
   ): Promise<void> {
     if (await this.doesZDAOExist(params.zNA)) {
       throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
@@ -100,14 +105,16 @@ class SDKInstanceClient implements SDKInstance {
     return zNAs.filter((value, index) => zNAs.indexOf(value) === index);
   }
 
-  async listZDAOs(): Promise<zDAO[]> {
+  async listZDAOs(): Promise<SnapshotZDAO[]> {
     const zNAs = await this.listZNAs();
 
-    const promises: Promise<zDAO>[] = zNAs.map((zNA) => this.getZDAOByZNA(zNA));
+    const promises: Promise<SnapshotZDAO>[] = zNAs.map((zNA) =>
+      this.getZDAOByZNA(zNA)
+    );
     return await Promise.all(promises);
   }
 
-  async getZDAOByZNA(zNA: zNA): Promise<zDAO> {
+  async getZDAOByZNA(zNA: zNA): Promise<SnapshotZDAO> {
     // check if zDAO exists
     if (!(await this.doesZDAOExist(zNA))) {
       throw new Error(errorMessageForError('not-found-zdao'));
@@ -181,8 +188,8 @@ class SDKInstanceClient implements SDKInstance {
   async createZDAOFromParams(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    params: CreateZDAOParams
-  ): Promise<zDAO> {
+    params: CreateSnapshotZDAOParams
+  ): Promise<SnapshotZDAO> {
     if (params.name.length < 1) {
       throw new Error(errorMessageForError('empty-zdao-name'));
     }
@@ -242,7 +249,7 @@ class SDKInstanceClient implements SDKInstance {
     );
   }
 
-  async getZDAOByZNAFromParams(zNA: zNA): Promise<zDAO> {
+  async getZDAOByZNAFromParams(zNA: zNA): Promise<SnapshotZDAO> {
     if (!this.doesZDAOExistFromParams(zNA)) {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }

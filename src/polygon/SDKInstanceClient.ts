@@ -24,13 +24,18 @@ import {
 import GlobalClient from './client/GlobalClient';
 import { EthereumZDAOChefClient } from './ethereum';
 import { PolygonZDAOChefClient } from './polygon';
-import { Config, CreateZDAOParams, SDKInstance, zDAO } from './types';
+import {
+  CreatePolygonZDAOParams,
+  PolygonConfig,
+  PolygonSDKInstance,
+  PolygonZDAO,
+} from './types';
 
-class SDKInstanceClient implements SDKInstance {
-  private readonly _config: Config;
-  protected _mockZDAOClients: zDAO[] = [];
+class SDKInstanceClient implements PolygonSDKInstance {
+  private readonly _config: PolygonConfig;
+  protected _mockZDAOClients: PolygonZDAO[] = [];
 
-  constructor(config: Config) {
+  constructor(config: PolygonConfig) {
     this._config = config;
 
     IPFSClient.initialize(this._config.fleek);
@@ -48,7 +53,7 @@ class SDKInstanceClient implements SDKInstance {
     GlobalClient.zDAORegistry = new ZDAORegistryClient(config.zNA);
     GlobalClient.ipfsGateway = config.ipfsGateway;
 
-    return (async (config: Config): Promise<SDKInstanceClient> => {
+    return (async (config: PolygonConfig): Promise<SDKInstanceClient> => {
       GlobalClient.ethereumZDAOChef = await new EthereumZDAOChefClient(
         config.ethereum
       );
@@ -78,7 +83,7 @@ class SDKInstanceClient implements SDKInstance {
   async createZDAO(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    params: CreateZDAOParams
+    params: CreatePolygonZDAOParams
   ): Promise<void> {
     if (await this.doesZDAOExist(params.zNA)) {
       throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
@@ -131,10 +136,10 @@ class SDKInstanceClient implements SDKInstance {
     return zNAs.filter((value, index) => zNAs.indexOf(value) === index);
   }
 
-  async listZDAOs(): Promise<zDAO[]> {
+  async listZDAOs(): Promise<PolygonZDAO[]> {
     const zDAORecords = await GlobalClient.zDAORegistry.listZDAOs();
 
-    const promises: Promise<zDAO>[] = [];
+    const promises: Promise<PolygonZDAO>[] = [];
     for (const zDAORecord of zDAORecords) {
       promises.push(DAOClient.createInstance(this._config, zDAORecord.id));
     }
@@ -142,7 +147,7 @@ class SDKInstanceClient implements SDKInstance {
     return await Promise.all(promises);
   }
 
-  async getZDAOByZNA(zNA: zNA): Promise<zDAO> {
+  async getZDAOByZNA(zNA: zNA): Promise<PolygonZDAO> {
     // check if zDAO exists
     if (!(await this.doesZDAOExist(zNA))) {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
@@ -159,8 +164,8 @@ class SDKInstanceClient implements SDKInstance {
   async createZDAOFromParams(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    params: CreateZDAOParams
-  ): Promise<zDAO> {
+    params: CreatePolygonZDAOParams
+  ): Promise<PolygonZDAO> {
     if (params.name.length < 1) {
       throw new InvalidError(errorMessageForError('empty-zdao-name'));
     }
@@ -223,7 +228,7 @@ class SDKInstanceClient implements SDKInstance {
     );
   }
 
-  getZDAOByZNAFromParams(zNA: zNA): Promise<zDAO> {
+  getZDAOByZNAFromParams(zNA: zNA): Promise<PolygonZDAO> {
     if (!this.doesZDAOExistFromParams(zNA)) {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }

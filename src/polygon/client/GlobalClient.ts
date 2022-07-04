@@ -72,8 +72,8 @@ class GlobalClient {
     return GlobalClient._polygonZDAOChef;
   }
 
-  static set polygonZDAOChef(polyZdAOChef: PolygonZDAOChefClient) {
-    GlobalClient._polygonZDAOChef = polyZdAOChef;
+  static set polygonZDAOChef(polyZDAOChef: PolygonZDAOChefClient) {
+    GlobalClient._polygonZDAOChef = polyZDAOChef;
   }
 
   static get staking() {

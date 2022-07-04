@@ -1,7 +1,7 @@
 import { POSClient, setProofApi, use } from '@maticnetwork/maticjs';
 import { Web3ClientPlugin } from '@maticnetwork/maticjs-web3';
 
-import { Config } from '../types';
+import { PolygonConfig } from '../types';
 
 class ProofClient {
   static proofApi = 'https://apis.matic.network/';
@@ -10,7 +10,7 @@ class ProofClient {
 
   static _posClient: POSClient;
 
-  static async initialize(config: Config) {
+  static async initialize(config: PolygonConfig) {
     setProofApi(ProofClient.proofApi);
     use(Web3ClientPlugin);
 

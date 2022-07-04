@@ -1,14 +1,18 @@
 import { ContractReceipt, ethers } from 'ethers';
 
+import { Proposal, ProposalId, SDKInstance, Vote, zDAO } from '../../types';
 import {
-  Proposal as BaseProposal,
-  SDKInstance as SDKBaseInstance,
-  Vote as BaseVote,
-  zDAO as BaseZDAO,
-} from '../../types';
+  CalculatePolygonProposalParams,
+  CreatePolygonProposalParams,
+  CreatePolygonZDAOParams,
+  ExecutePolygonProposalParams,
+  FinalizePolygonProposalParams,
+  VotePolygonProposalParams,
+} from './params';
 import { StakingProperties, zDAOOptions } from './structures';
 
-export interface SDKInstance extends SDKBaseInstance<Vote, Proposal, zDAO> {
+export interface PolygonSDKInstance
+  extends SDKInstance<PolygonVote, PolygonProposal, PolygonZDAO> {
   /**
    * Staking instance associated with Staking contract
    */
@@ -19,6 +23,24 @@ export interface SDKInstance extends SDKBaseInstance<Vote, Proposal, zDAO> {
    * between Ethereum and Polygon
    */
   registry: Registry;
+
+  /**
+   * Override the createZDAO function from SDKInstance
+   * @param provider
+   * @param account
+   * @param params
+   */
+  createZDAO(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    params: CreatePolygonZDAOParams
+  ): Promise<void>;
+
+  createZDAOFromParams(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    params: CreatePolygonZDAOParams
+  ): Promise<PolygonZDAO>;
 }
 
 export interface Staking extends StakingProperties {
@@ -69,19 +91,81 @@ export interface Registry {
   polygonToEthereumToken(polygonToken: string): Promise<string>;
 }
 
-export interface zDAO extends BaseZDAO<Vote, Proposal>, zDAOOptions {
+export interface PolygonZDAO
+  extends zDAO<PolygonVote, PolygonProposal>,
+    zDAOOptions {
   /**
    * Check if transaction has been verified by Matic validators
    * @param txHash transaction hash which happened on Polygon to send data to Ethereum
    */
   isCheckPointed(txHash: string): Promise<boolean>;
+
+  /**
+   * Override the createProposal function from zDAO
+   * @param provider
+   * @param account
+   * @param payload
+   */
+  createProposal(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    payload: CreatePolygonProposalParams
+  ): Promise<ProposalId>;
 }
 
-export interface Proposal extends BaseProposal<Vote> {
+export interface PolygonProposal extends Proposal<PolygonVote> {
   /**
    * Find all the checkpointing transaction hashes
    */
   getCheckPointingHashes(): Promise<string[]>;
+
+  /**
+   * Override vote function in Proposal
+   * @param provider
+   * @param account
+   * @param payload
+   */
+  vote(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    payload: VotePolygonProposalParams
+  ): Promise<void>;
+
+  /**
+   * Override calculate function in Proposal
+   * @param provider
+   * @param account
+   * @param payload
+   */
+  calculate(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    payload: CalculatePolygonProposalParams
+  ): Promise<void>;
+
+  /**
+   * Override finalize function in Proposal
+   * @param provider
+   * @param account
+   * @param payload
+   */
+  finalize(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    payload: FinalizePolygonProposalParams
+  ): Promise<void>;
+
+  /**
+   * Override execute function in Proposal
+   * @param provider
+   * @param account
+   * @param payload
+   */
+  execute(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    payload: ExecutePolygonProposalParams
+  ): Promise<void>;
 }
 
-export type Vote = BaseVote;
+export type PolygonVote = Vote;

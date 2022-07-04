@@ -7,7 +7,7 @@ import { setEnvSnapshot as setEnv } from '../../shared/setupEnv';
 (global as any).XMLHttpRequest = require('xhr2');
 
 const createZDAO = async (
-  sdkInstance: Snapshot.SDKInstance,
+  sdkInstance: Snapshot.SnapshotSDKInstance,
   signer: ethers.Wallet,
   env: any
 ) => {
@@ -17,7 +17,7 @@ const createZDAO = async (
     if (await sdkInstance.doesZDAOExist(DAO.ens as zNA)) continue;
 
     console.log('creating zDAO', DAO);
-    const params: Snapshot.CreateZDAOParams = {
+    const params: Snapshot.CreateSnapshotZDAOParams = {
       zNA: DAO.ens,
       name: DAO.name,
       network: SupportedChainId.RINKEBY,
@@ -31,15 +31,17 @@ const createZDAO = async (
   }
 };
 
-const pagination = async (sdkInstance: Snapshot.SDKInstance) => {
+const pagination = async (sdkInstance: Snapshot.SnapshotSDKInstance) => {
   // isDev should be true
 
-  const dao: Snapshot.zDAO = await sdkInstance.getZDAOByZNA('joshupgig.eth');
+  const dao: Snapshot.SnapshotZDAO = await sdkInstance.getZDAOByZNA(
+    'joshupgig.eth'
+  );
 
   const count = 50;
   for (let i = 0; i < 1000; i += count) {
     console.time('listProposals');
-    const proposals: Snapshot.Proposal[] = await dao.listProposals({
+    const proposals: Snapshot.SnapshotProposal[] = await dao.listProposals({
       from: i,
       count,
     });
@@ -51,14 +53,14 @@ const pagination = async (sdkInstance: Snapshot.SDKInstance) => {
     if (proposals.length < 1) break;
   }
 
-  const proposal: Snapshot.Proposal = await dao.getProposal(
+  const proposal: Snapshot.SnapshotProposal = await dao.getProposal(
     '0xf51d5d3b8f81737a001ea7f8bbb0aa426ff46bfc715e6524bf23271592fabea7'
   );
   console.log('> proposal.metadata', proposal.id, proposal.metadata);
 
   for (let i = 0; i < 1000; i += count) {
     console.time('listVotes');
-    const votes: Snapshot.Vote[] = await proposal.listVotes({
+    const votes: Snapshot.SnapshotVote[] = await proposal.listVotes({
       from: i,
       count,
     });
@@ -69,24 +71,28 @@ const pagination = async (sdkInstance: Snapshot.SDKInstance) => {
 };
 
 const immediateVote = async (
-  sdkInstance: Snapshot.SDKInstance,
+  sdkInstance: Snapshot.SnapshotSDKInstance,
   signer: ethers.Wallet
 ) => {
   // isDev should be true
 
-  const dao: Snapshot.zDAO = await sdkInstance.getZDAOByZNA('joshupgig.eth');
+  const dao: Snapshot.SnapshotZDAO = await sdkInstance.getZDAOByZNA(
+    'joshupgig.eth'
+  );
 
   const proposalId =
     '0xf21ff6d023ead5cddb4937c9a00435d5468cd4c4aed6466a455b8342f4842dc6';
-  const proposal: Snapshot.Proposal = await dao.getProposal(proposalId);
+  const proposal: Snapshot.SnapshotProposal = await dao.getProposal(proposalId);
   await proposal.vote(signer, undefined, {
     choice: 2,
   });
 
-  const votes: Snapshot.Vote[] = await proposal.listVotes();
+  const votes: Snapshot.SnapshotVote[] = await proposal.listVotes();
   console.log('votes', votes);
 
-  const proposal1: Snapshot.Proposal = await dao.getProposal(proposalId);
+  const proposal1: Snapshot.SnapshotProposal = await dao.getProposal(
+    proposalId
+  );
   console.log('proposal.scores', proposal1.scores);
 };
 
@@ -136,9 +142,8 @@ const main = async () => {
         ipfsGateway: 'snapshot.mypinata.cloud',
       });
 
-  const sdkInstance: Snapshot.SDKInstance = await Snapshot.createSDKInstance(
-    config
-  );
+  const sdkInstance: Snapshot.SnapshotSDKInstance =
+    await Snapshot.createSDKInstance(config);
 
   // await createZDAO(sdkInstance, signer, env);
   // await createToken(sdkInstance, signer);
@@ -154,7 +159,7 @@ const main = async () => {
     const dao = await sdkInstance.getZDAOByZNA(zNA);
     console.log('zDAO instance', dao);
 
-    const proposals: Snapshot.Proposal[] = await dao.listProposals();
+    const proposals: Snapshot.SnapshotProposal[] = await dao.listProposals();
     console.log('proposals', proposals.length);
 
     const assets = await dao.listAssets();

@@ -22,28 +22,30 @@ import {
   zDAOAssets,
   zDAOProperties,
 } from '../../types';
-import { errorMessageForError } from '../../utilities';
+import { errorMessageForError, getSigner } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
-import { SnapshotProposal } from '../snapshot/types';
 import {
-  Config,
-  CreateProposalParams,
-  Proposal,
-  Vote,
-  zDAO,
+  CreateSnapshotProposalParams,
+  SnapshotConfig,
+  SnapshotProposal,
+  SnapshotVote,
+  SnapshotZDAO,
   zDAOOptions,
 } from '../types';
 import GlobalClient from './GlobalClient';
 import ProposalClient from './ProposalClient';
 
-class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
-  private readonly _config: Config;
+class DAOClient
+  extends AbstractDAOClient<SnapshotVote, SnapshotProposal>
+  implements SnapshotZDAO
+{
+  private readonly _config: SnapshotConfig;
   protected readonly _snapshotClient: SnapshotClient;
   protected readonly _zDAOOptions: zDAOOptions;
   private readonly _options: any;
 
   private constructor(
-    config: Config,
+    config: SnapshotConfig,
     properties: zDAOProperties & zDAOOptions,
     options: any
   ) {
@@ -63,10 +65,10 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
   }
 
   static async createInstance(
-    config: Config,
+    config: SnapshotConfig,
     properties: zDAOProperties & zDAOOptions,
     options: any
-  ): Promise<zDAO> {
+  ): Promise<SnapshotZDAO> {
     if (options === undefined) {
       const snapshotClient = new SnapshotClient(config.snapshot);
       const strategies = await snapshotClient.getSpaceStrategies(
@@ -180,22 +182,23 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
     return ProposalState.CLOSED;
   }
 
-  async listProposals(pagination?: PaginationParam): Promise<Proposal[]> {
+  async listProposals(
+    pagination?: PaginationParam
+  ): Promise<SnapshotProposal[]> {
     const limit = 3000;
     let from = pagination?.from ?? 0;
     let count = pagination?.count ?? limit;
     let numberOfResults = limit;
-    const snapshotProposals: SnapshotProposal[] = [];
+    const snapshotProposals = [];
 
     // get the list of proposals
     while (numberOfResults === limit) {
-      const results: SnapshotProposal[] =
-        await this._snapshotClient.listProposals(
-          this.ens,
-          this.network.toString(),
-          from,
-          count >= limit ? limit : count
-        );
+      const results = await this._snapshotClient.listProposals(
+        this.ens,
+        this.network.toString(),
+        from,
+        count >= limit ? limit : count
+      );
 
       snapshotProposals.push(...results);
 
@@ -205,8 +208,8 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
     }
 
     // create all instances
-    const promises: Promise<Proposal>[] = snapshotProposals.map(
-      (proposal: SnapshotProposal): Promise<Proposal> =>
+    const promises: Promise<SnapshotProposal>[] = snapshotProposals.map(
+      (proposal): Promise<SnapshotProposal> =>
         ProposalClient.createInstance(
           this,
           this._snapshotClient,
@@ -236,10 +239,10 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
     return await Promise.all(promises);
   }
 
-  async getProposal(id: ProposalId): Promise<Proposal> {
+  async getProposal(id: ProposalId): Promise<SnapshotProposal> {
     await this._snapshotClient.forceUpdateScoresAndVotes(id);
 
-    const proposal: SnapshotProposal = await this._snapshotClient.getProposal({
+    const proposal = await this._snapshotClient.getProposal({
       spaceId: this.ens,
       network: this.network.toString(),
       strategies: this._options.strategies,
@@ -274,8 +277,8 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
 
   async createProposal(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string,
-    payload: CreateProposalParams
+    account: string | undefined,
+    payload: CreateSnapshotProposalParams
   ): Promise<ProposalId> {
     if (!this.duration) {
       throw new Error(errorMessageForError('invalid-proposal-duration'));
@@ -283,9 +286,11 @@ class DAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
 
     const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
 
+    const signer = getSigner(provider, account);
+    const accountAddress = account ? account : await signer.getAddress();
     const { id: proposalId } = await this._snapshotClient.createProposal(
       provider,
-      account,
+      accountAddress,
       {
         spaceId: this.ens,
         title: payload.title,

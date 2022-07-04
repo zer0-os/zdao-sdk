@@ -13,18 +13,21 @@ import {
 } from '../../types';
 import { errorMessageForError, getSigner } from '../../utilities';
 import {
-  CalculateProposalParams,
-  ExecuteProposalParams,
-  FinalizeProposalParams,
-  Proposal,
-  Vote,
-  VoteProposalParams,
+  CalculatePolygonProposalParams,
+  ExecutePolygonProposalParams,
+  FinalizePolygonProposalParams,
+  PolygonProposal,
+  PolygonVote,
+  VotePolygonProposalParams,
 } from '../types';
 import DAOClient from './DAOClient';
 import GlobalClient from './GlobalClient';
 import ProofClient from './ProofClient';
 
-class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
+class ProposalClient
+  extends AbstractProposalClient<PolygonVote>
+  implements PolygonProposal
+{
   private readonly _zDAO: DAOClient;
 
   private constructor(properties: ProposalProperties, zDAO: DAOClient) {
@@ -35,7 +38,7 @@ class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
   static async createInstance(
     zDAO: DAOClient,
     properties: ProposalProperties
-  ): Promise<Proposal> {
+  ): Promise<PolygonProposal> {
     const proposal = new ProposalClient(
       {
         ...properties,
@@ -49,8 +52,8 @@ class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
     return proposal;
   }
 
-  async listVotes(): Promise<Vote[]> {
-    const polygonZDAO = await this._zDAO.getPolygonZDAO();
+  async listVotes(): Promise<PolygonVote[]> {
+    const polygonZDAO = await this._zDAO.getPolygonZDAOContract();
     if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
@@ -58,7 +61,7 @@ class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
     const count = 30000;
     let from = 0;
     let numberOfResults = count;
-    const votes: Vote[] = [];
+    const votes: PolygonVote[] = [];
 
     while (numberOfResults === count) {
       const results = await polygonZDAO.listVoters(this.id, from, count);
@@ -77,7 +80,7 @@ class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
   }
 
   async getVotingPowerOfUser(account: string): Promise<string> {
-    const polygonZDAO = await this._zDAO.getPolygonZDAO();
+    const polygonZDAO = await this._zDAO.getPolygonZDAOContract();
     if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
@@ -85,8 +88,8 @@ class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
     return (await polygonZDAO.votingPowerOfVoter(this.id, account)).toString();
   }
 
-  async updateScoresAndVotes(): Promise<Proposal> {
-    const polygonZDAO = await this._zDAO.getPolygonZDAO();
+  async updateScoresAndVotes(): Promise<PolygonProposal> {
+    const polygonZDAO = await this._zDAO.getPolygonZDAOContract();
     if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
@@ -114,8 +117,8 @@ class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
 
   async vote(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string,
-    payload: VoteProposalParams
+    account: string | undefined,
+    payload: VotePolygonProposalParams
   ) {
     // zDAO should be active
     if (this._zDAO.destroyed) {
@@ -123,7 +126,7 @@ class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
     }
 
     // zDAO should be synchronized to Polygon prior to create proposal
-    const polygonZDAO = await this._zDAO.getPolygonZDAO();
+    const polygonZDAO = await this._zDAO.getPolygonZDAOContract();
     if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
@@ -132,8 +135,11 @@ class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
       throw new InvalidError(errorMessageForError('not-active-proposal'));
     }
 
+    const signer = getSigner(provider, account);
+    const accountAddress = account ? account : await signer.getAddress();
+
     const sp = await GlobalClient.staking.pastStakingPower(
-      account,
+      accountAddress,
       this._zDAO.polygonToken.token,
       this.snapshot!
     );
@@ -142,8 +148,6 @@ class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
     }
 
     try {
-      const signer = getSigner(provider, account);
-
       const daoId = this._zDAO.id;
       const proposalId = this.id;
       await GlobalClient.polygonZDAOChef.vote(
@@ -161,7 +165,7 @@ class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
   async calculate(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    _: CalculateProposalParams
+    _: CalculatePolygonProposalParams
   ) {
     const daoId = this._zDAO.id;
     const proposalId = this.id;
@@ -183,7 +187,7 @@ class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
   async finalize(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    payload: FinalizeProposalParams
+    payload: FinalizePolygonProposalParams
   ) {
     // zDAO should be active
     if (this._zDAO.destroyed) {
@@ -204,7 +208,7 @@ class ProposalClient extends AbstractProposalClient<Vote> implements Proposal {
   async execute(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
-    _: ExecuteProposalParams
+    _: ExecutePolygonProposalParams
   ) {
     const signer = getSigner(provider, account);
 

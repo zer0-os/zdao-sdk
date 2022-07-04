@@ -46,7 +46,7 @@ export interface FleekConfig {
   apiSecret: string;
 }
 
-export interface BaseConfig {
+export interface Config {
   // zDAOChef contract configuration
   ethereum: DAOConfig;
 

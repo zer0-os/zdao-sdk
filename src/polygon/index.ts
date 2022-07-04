@@ -1,11 +1,11 @@
 import SDKInstanceClient from './SDKInstanceClient';
-import { Config, SDKInstance } from './types';
+import { PolygonConfig, PolygonSDKInstance } from './types';
 
 export * from './config';
 export * from './types';
 
 export const createSDKInstance = async (
-  config: Config
-): Promise<SDKInstance> => {
+  config: PolygonConfig
+): Promise<PolygonSDKInstance> => {
   return await new SDKInstanceClient(config);
 };

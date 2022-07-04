@@ -1,22 +1,23 @@
 import { ethers } from 'ethers';
 
 import { AbstractProposalClient } from '../../client';
+import { NotImplementedError, ProposalProperties } from '../../types';
+import { getSigner } from '../../utilities';
 import {
-  CalculateProposalParams,
-  ExecuteProposalParams,
-  FinalizeProposalParams,
-  NotImplementedError,
-  ProposalProperties,
-  VoteProposalParams,
-} from '../../types';
-import { Proposal, Vote } from '../types';
+  CalculatePolygonProposalParams,
+  ExecutePolygonProposalParams,
+  FinalizePolygonProposalParams,
+  PolygonProposal,
+  PolygonVote,
+  VotePolygonProposalParams,
+} from '../types';
 import MockDAOClient from './MockDAOClient';
 
 class MockProposalClient
-  extends AbstractProposalClient<Vote>
-  implements Proposal
+  extends AbstractProposalClient<PolygonVote>
+  implements PolygonProposal
 {
-  private _votes: Vote[] = [];
+  private _votes: PolygonVote[] = [];
   private readonly _zDAO: MockDAOClient;
 
   constructor(properties: ProposalProperties, zDAO: MockDAOClient) {
@@ -24,7 +25,7 @@ class MockProposalClient
     this._zDAO = zDAO;
   }
 
-  listVotes(): Promise<Vote[]> {
+  listVotes(): Promise<PolygonVote[]> {
     return Promise.resolve(this._votes);
   }
 
@@ -32,22 +33,23 @@ class MockProposalClient
     return Promise.resolve('1');
   }
 
-  updateScoresAndVotes(): Promise<Proposal> {
+  updateScoresAndVotes(): Promise<PolygonProposal> {
     return Promise.resolve(this);
   }
 
   async vote(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string,
-    payload: VoteProposalParams
+    account: string | undefined,
+    payload: VotePolygonProposalParams
   ): Promise<void> {
-    const address = account;
-    const found = this._votes.find((item) => item.voter == address);
+    const signer = getSigner(provider, account);
+    const accountAddress = account ? account : await signer.getAddress();
+    const found = this._votes.find((item) => item.voter == accountAddress);
 
-    const vp = Number(await this.getVotingPowerOfUser(account));
+    const vp = Number(await this.getVotingPowerOfUser(accountAddress));
     if (!found) {
       this._votes.push({
-        voter: address,
+        voter: accountAddress,
         choice: payload.choice,
         votes: vp.toString(),
       });
@@ -65,7 +67,7 @@ class MockProposalClient
   calculate(
     _: ethers.providers.Web3Provider | ethers.Wallet,
     _2: string | undefined,
-    _3: CalculateProposalParams
+    _3: CalculatePolygonProposalParams
   ): Promise<void> {
     throw new NotImplementedError();
   }
@@ -73,7 +75,7 @@ class MockProposalClient
   finalize(
     _: ethers.providers.Web3Provider | ethers.Wallet,
     _2: string | undefined,
-    _3: FinalizeProposalParams
+    _3: FinalizePolygonProposalParams
   ): Promise<void> {
     throw new NotImplementedError();
   }
@@ -81,7 +83,7 @@ class MockProposalClient
   execute(
     _: ethers.providers.Web3Provider | ethers.Wallet,
     _2: string | undefined,
-    _3: ExecuteProposalParams
+    _3: ExecutePolygonProposalParams
   ): Promise<void> {
     throw new NotImplementedError();
   }

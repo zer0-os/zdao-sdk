@@ -5,7 +5,6 @@ import shortid from 'shortid';
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
 import IERC20UpgradeableAbi from '../../config/abi/IERC20Upgradeable.json';
 import {
-  CreateProposalParams,
   NotFoundError,
   ProposalId,
   ProposalProperties,
@@ -20,18 +19,22 @@ import {
   timestamp,
 } from '../../utilities';
 import {
-  Config,
-  CreateZDAOParams,
-  Proposal,
-  Vote,
+  CreatePolygonProposalParams,
+  CreatePolygonZDAOParams,
+  PolygonConfig,
+  PolygonProposal,
+  PolygonVote,
+  PolygonZDAO,
   VoteChoice,
-  zDAO,
   zDAOOptions,
 } from '../types';
 import GlobalClient from './GlobalClient';
 import MockProposalClient from './MockProposalClient';
 
-class MockDAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
+class MockDAOClient
+  extends AbstractDAOClient<PolygonVote, PolygonProposal>
+  implements PolygonZDAO
+{
   protected readonly _zDAOOptions: zDAOOptions;
   private _proposals: MockProposalClient[] = [];
   protected _totalSupply: ethers.BigNumber;
@@ -55,10 +58,10 @@ class MockDAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
   }
 
   static async createInstance(
-    config: Config,
+    config: PolygonConfig,
     signer: ethers.Signer,
-    params: CreateZDAOParams
-  ): Promise<zDAO> {
+    params: CreatePolygonZDAOParams
+  ): Promise<PolygonZDAO> {
     const chainId = await signer.getChainId();
 
     const token = await getToken(GlobalClient.etherRpcProvider, params.token);
@@ -104,11 +107,11 @@ class MockDAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
     );
   }
 
-  listProposals(): Promise<Proposal[]> {
+  listProposals(): Promise<PolygonProposal[]> {
     return Promise.resolve(this._proposals);
   }
 
-  getProposal(proposalId: ProposalId): Promise<Proposal> {
+  getProposal(proposalId: ProposalId): Promise<PolygonProposal> {
     const found = this._proposals.find(
       (proposal) => proposal.id === proposalId
     );
@@ -121,8 +124,8 @@ class MockDAOClient extends AbstractDAOClient<Vote, Proposal> implements zDAO {
 
   async createProposal(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string,
-    payload: CreateProposalParams
+    account: string | undefined,
+    payload: CreatePolygonProposalParams
   ): Promise<ProposalId> {
     const signer = getSigner(provider, account);
     const address = account ?? (await signer.getAddress());

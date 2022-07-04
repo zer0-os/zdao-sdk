@@ -2,7 +2,7 @@ import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
 import { DAOConfig, FleekConfig, zNAConfig } from '../../types';
-import { Config, ProofConfig } from '../types';
+import { PolygonConfig, ProofConfig } from '../types';
 
 export interface ConfigParams {
   /**
@@ -45,7 +45,7 @@ export const developmentConfiguration = ({
   fleek,
   ipfsGateway,
   zNSProvider,
-}: ConfigParams): Config => ({
+}: ConfigParams): PolygonConfig => ({
   ethereum,
   polygon,
   zNA,
@@ -68,7 +68,7 @@ export const productionConfiguration = ({
   proof,
   fleek,
   ipfsGateway,
-}: ConfigParams): Config => ({
+}: ConfigParams): PolygonConfig => ({
   ethereum,
   polygon,
   zNA,

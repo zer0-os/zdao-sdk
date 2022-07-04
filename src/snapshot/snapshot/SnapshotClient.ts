@@ -9,7 +9,7 @@ import { ProposalId, SupportedChainId } from '../../types';
 import { errorMessageForError, timestamp } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import verified from '../config/verified.json';
-import { ENS, SnapshotConfig } from '../types';
+import { ENS, SnapshotNetworkConfig } from '../types';
 import {
   PROPOSAL_QUERY,
   PROPOSALS_QUERY,
@@ -22,23 +22,23 @@ import {
   ERC20BalanceOfParams,
   GetProposalParams,
   ListVotesParams,
-  SnapshotProposal,
+  SnapshotProposalProperties,
   SnapshotProposalResponse,
   SnapshotSpace,
   SnapshotSpaceDetails,
-  SnapshotVote,
+  SnapshotVoteProperties,
   SpaceParams,
   VoteProposalParams,
   VotingPowerParams,
 } from './types';
 
 class SnapshotClient {
-  private readonly _config: SnapshotConfig;
+  private readonly _config: SnapshotNetworkConfig;
   private readonly _clientEIP712;
   private readonly _graphQLClient;
   private _spaces: SnapshotSpace[] = [];
 
-  constructor(config: SnapshotConfig) {
+  constructor(config: SnapshotNetworkConfig) {
     this._config = config;
 
     this._clientEIP712 = new Client.Client712(config.serviceUri);
@@ -177,7 +177,7 @@ class SnapshotClient {
     network: string,
     from = 0,
     count = 30000
-  ): Promise<SnapshotProposal[]> {
+  ): Promise<SnapshotProposalProperties[]> {
     const response = await this.graphQLQuery(
       PROPOSALS_QUERY,
       {
@@ -189,7 +189,7 @@ class SnapshotClient {
       'proposals'
     );
     return response.map(
-      (response: any): SnapshotProposal => ({
+      (response: any): SnapshotProposalProperties => ({
         id: response.id,
         type: response.type,
         author: response.author,
@@ -211,9 +211,9 @@ class SnapshotClient {
   }
 
   async updateScoresAndVotes(
-    proposal: SnapshotProposal,
+    proposal: SnapshotProposalProperties,
     params: SpaceParams
-  ): Promise<SnapshotProposal> {
+  ): Promise<SnapshotProposalProperties> {
     let proposalScores = proposal.scores;
     let numberOfVoters = proposal.votes;
     if (
@@ -277,7 +277,9 @@ class SnapshotClient {
     };
   }
 
-  async getProposal(params: GetProposalParams): Promise<SnapshotProposal> {
+  async getProposal(
+    params: GetProposalParams
+  ): Promise<SnapshotProposalProperties> {
     const response = await this.graphQLQuery(
       PROPOSAL_QUERY,
       {
@@ -286,7 +288,7 @@ class SnapshotClient {
       'proposal'
     );
 
-    const proposal: SnapshotProposal = {
+    const proposal: SnapshotProposalProperties = {
       id: response.id,
       type: response.type,
       author: response.author,
@@ -314,7 +316,7 @@ class SnapshotClient {
     // });
   }
 
-  async listVotes(params: ListVotesParams): Promise<SnapshotVote[]> {
+  async listVotes(params: ListVotesParams): Promise<SnapshotVoteProperties[]> {
     const response = await this.graphQLQuery(
       VOTES_QUERY,
       {

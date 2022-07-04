@@ -10,7 +10,6 @@ import { ethers } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { cloneDeep } from 'lodash';
 
-import { Vote } from '../polygon';
 import {
   AssetType,
   CreateProposalParams,
@@ -21,6 +20,7 @@ import {
   TransactionStatus,
   TransactionType,
   TransferInfo,
+  Vote,
   zDAO,
   zDAOAssets,
   zDAOProperties,

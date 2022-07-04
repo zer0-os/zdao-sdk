@@ -1,13 +1,13 @@
 import {
-  CalculateProposalParams as CalculateProposalBaseParams,
-  CreateProposalParams as CreateProposalBaseParams,
-  CreateZDAOParams as CreateZDAOBaseParams,
-  ExecuteProposalParams as ExecuteProposalBaseParams,
-  FinalizeProposalParams as FinalizeProposalBaseParams,
-  VoteProposalParams as VoteProposalBaseParams,
+  CalculateProposalParams,
+  CreateProposalParams,
+  CreateZDAOParams,
+  ExecuteProposalParams,
+  FinalizeProposalParams,
+  VoteProposalParams,
 } from '../../types';
 
-export interface CreateZDAOParams extends CreateZDAOBaseParams {
+export interface CreatePolygonZDAOParams extends CreateZDAOParams {
   // Threshold in 100% as 10000 required to check if proposal is succeeded
   votingThreshold: number;
 
@@ -23,14 +23,14 @@ export interface CreateZDAOParams extends CreateZDAOBaseParams {
   minimumTotalVotingTokens: string;
 }
 
-export type CreateProposalParams = CreateProposalBaseParams;
+export type CreatePolygonProposalParams = CreateProposalParams;
 
-export type VoteProposalParams = VoteProposalBaseParams;
+export type VotePolygonProposalParams = VoteProposalParams;
 
-export type CalculateProposalParams = CalculateProposalBaseParams;
+export type CalculatePolygonProposalParams = CalculateProposalParams;
 
-export interface FinalizeProposalParams extends FinalizeProposalBaseParams {
+export interface FinalizePolygonProposalParams extends FinalizeProposalParams {
   txHash: string;
 }
 
-export type ExecuteProposalParams = ExecuteProposalBaseParams;
+export type ExecutePolygonProposalParams = ExecuteProposalParams;
