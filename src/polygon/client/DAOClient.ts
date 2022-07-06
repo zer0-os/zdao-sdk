@@ -224,7 +224,10 @@ class DAOClient
       raw.ipfs.toString(),
       GlobalClient.ipfsGateway
     );
-    const metadataJson = JSON.parse(ipfsData.data.message.metadata);
+    const metadataJson =
+      ipfsData.data.message &&
+      ipfsData.data.message.metadata &&
+      JSON.parse(ipfsData.data.message.metadata);
 
     return {
       id: raw.proposalId.toString(),
@@ -240,20 +243,14 @@ class DAOClient
       snapshot,
       scores,
       voters,
-      metadata:
-        !metadataJson.sender ||
-        !metadataJson.recipient ||
-        !metadataJson.token ||
-        !metadataJson.amount
-          ? undefined
-          : {
-              sender: metadataJson.sender,
-              recipient: metadataJson.recipient,
-              token: metadataJson.token,
-              decimals: metadataJson.decimals ?? 18,
-              symbol: metadataJson.symbol ?? 'zToken',
-              amount: metadataJson.amount,
-            },
+      metadata: metadataJson && {
+        sender: metadataJson.sender,
+        recipient: metadataJson.recipient,
+        token: metadataJson.token,
+        decimals: metadataJson.decimals ?? 18,
+        symbol: metadataJson.symbol ?? 'zToken',
+        amount: metadataJson.amount,
+      },
     };
   }
 
