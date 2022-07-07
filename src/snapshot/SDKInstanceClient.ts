@@ -146,8 +146,6 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     const symbol = strategy.params.symbol;
     const decimals = strategy.params.decimals ?? 0;
 
-    const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
-
     return await DAOClient.createInstance(
       this._config,
       {
@@ -171,7 +169,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
           .toString(),
         isRelativeMajority: false,
         state: zDAOState.ACTIVE,
-        snapshot,
+        snapshot: 0,
         destroyed: false,
         ens: space.id,
       },

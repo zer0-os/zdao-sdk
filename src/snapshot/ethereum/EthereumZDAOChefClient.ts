@@ -26,16 +26,12 @@ class EthereumZDAOChefClient {
   }
 
   async getZDAOPropertiesById(zDAOId: zDAOId): Promise<SnapshotZDAOProperties> {
-    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordById(
-      zDAOId
-    );
-    const zDAOInfo = await this._contract.zDAOInfos(zDAORecord.id);
+    const zDAOInfo = await this._contract.zDAOInfos(zDAOId);
     return {
       id: zDAOInfo.id.toString(),
       snapshot: zDAOInfo.snapshot.toNumber(),
       ensSpace: zDAOInfo.ensSpace,
       gnosisSafe: zDAOInfo.gnosisSafe,
-      name: zDAORecord.name,
       destroyed: zDAOInfo.destroyed,
     };
   }
