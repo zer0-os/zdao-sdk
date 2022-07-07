@@ -115,12 +115,12 @@ describe('zNA test', async () => {
   });
 
   it('should create zDAO from zNA', async () => {
-    // wilder.wheels zDAO should have three zNAs association: wilder.wheels, wilder.cats, wilder.wheels
+    // wilder.wheels zDAO should have three zNAs association: wilder.wheels, wilder.cats, wilder.breasts
     const dao: Polygon.PolygonZDAO = await sdkInstance.getZDAOByZNA(
       'wilder.wheels'
     );
     expect(dao).to.be.not.equal(undefined);
-    const found = dao.zNAs.find((zNA) => zNA === 'wilder.cats');
+    const found = dao.zNAs.find((zNA) => zNA === 'wilder.breasts');
     expect(found).to.be.not.undefined;
   });
 
@@ -134,7 +134,7 @@ describe('zNA test', async () => {
   });
 
   it('should associated with multiple zNA', async () => {
-    // wilder.wheels zDAO should have three zNAs association: wilder.wheels, wilder.cats, wilder.wheels
+    // wilder.wheels zDAO should have three zNAs association: wilder.wheels, wilder.cats, wilder.breasts
     const dao: Polygon.PolygonZDAO = await sdkInstance.getZDAOByZNA(
       'wilder.wheels'
     );

@@ -2,16 +2,20 @@ import { ethers } from 'ethers';
 
 import ERC20Abi from '../config/abi/ERC20.json';
 import ERC721Abi from '../config/abi/ERC721.json';
-import { Token } from '../types';
+import { InvalidSignerError, Token } from '../types';
 import { errorMessageForError } from './messages';
 
 export const getSigner = (
   provider: ethers.providers.Web3Provider | ethers.Wallet,
   account: string | undefined
 ): ethers.Signer => {
-  return provider instanceof ethers.Wallet
-    ? provider
-    : provider.getSigner(account).connectUnchecked();
+  if (provider instanceof ethers.Wallet) {
+    return provider;
+  }
+  if (!account) {
+    throw new InvalidSignerError();
+  }
+  return provider.getSigner(account).connectUnchecked();
 };
 
 export const getToken = async (

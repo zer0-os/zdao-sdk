@@ -9,6 +9,12 @@ class ZDAOError extends Error {
   }
 }
 
+class InvalidSignerError extends ZDAOError {
+  constructor() {
+    super(errorMessageForError('no-found-signer'), 'InvalidSignerError');
+  }
+}
+
 class NotImplementedError extends ZDAOError {
   constructor() {
     super(errorMessageForError('not-implemented'), 'FailedTxError');
@@ -62,6 +68,7 @@ export {
   AlreadyExistError,
   FailedTxError,
   InvalidError,
+  InvalidSignerError,
   NotFoundError,
   NotImplementedError,
   NotInitializedError,

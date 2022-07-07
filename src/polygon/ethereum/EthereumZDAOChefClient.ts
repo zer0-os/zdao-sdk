@@ -143,9 +143,15 @@ class EthereumZDAOChefClient {
     zDAOId: zDAOId,
     proposalId: ProposalId
   ) {
+    const gasEstimated = await this._contract
+      .connect(signer)
+      .estimateGas.cancelProposal(zDAOId, proposalId);
+
     const tx = await this._contract
       .connect(signer)
-      .cancelProposal(zDAOId, proposalId);
+      .cancelProposal(zDAOId, proposalId, {
+        gasLimit: calculateGasMargin(gasEstimated),
+      });
     return await tx.wait();
   }
 
@@ -154,16 +160,28 @@ class EthereumZDAOChefClient {
     zDAOId: zDAOId,
     proposalId: ProposalId
   ) {
+    const gasEstimated = await this._contract
+      .connect(signer)
+      .estimateGas.cancelProposal(zDAOId, proposalId);
+
     const tx = await this._contract
       .connect(signer)
-      .executeProposal(zDAOId, proposalId);
+      .executeProposal(zDAOId, proposalId, {
+        gasLimit: calculateGasMargin(gasEstimated),
+      });
     return await tx.wait();
   }
 
   async receiveMessage(signer: ethers.Signer, proof: string) {
+    const gasEstimated = await this._rootStateSender
+      .connect(signer)
+      .estimateGas.receiveMessage(proof);
+
     const tx = await this._rootStateSender
       .connect(signer)
-      .receiveMessage(proof);
+      .receiveMessage(proof, {
+        gasLimit: calculateGasMargin(gasEstimated),
+      });
     return await tx.wait();
   }
 }

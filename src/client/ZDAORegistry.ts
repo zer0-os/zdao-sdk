@@ -152,7 +152,13 @@ class ZDAORegistryClient {
   }
 
   async removeNewZDAO(signer: ethers.Signer, zDAOId: zDAOId) {
-    const tx = await this._contract.connect(signer).adminRemoveZDAO(zDAOId);
+    const gasEstimated = await this._contract
+      .connect(signer)
+      .estimateGas.adminRemoveZDAO(zDAOId);
+
+    const tx = await this._contract.connect(signer).adminRemoveZDAO(zDAOId, {
+      gasLimit: calculateGasMargin(gasEstimated),
+    });
     return await tx.wait();
   }
 }

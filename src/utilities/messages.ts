@@ -4,6 +4,10 @@ const ErrorMessages = [
     value: 'No private key',
   },
   {
+    key: 'no-found-signer',
+    value: 'Not found signer',
+  },
+  {
     key: 'not-found-zdao',
     value: 'Not found zDAO',
   },

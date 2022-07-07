@@ -1,5 +1,6 @@
 import { ContractReceipt, ethers } from 'ethers';
 
+import { calculateGasMargin } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import StakingAbi from '../config/abi/Staking.json';
 import { Staking } from '../config/types/Staking';
@@ -20,7 +21,13 @@ class PolygonStakingClient {
     token: string,
     amount: string
   ): Promise<ContractReceipt> {
-    const tx = await this._contract.connect(signer).stakeERC20(token, amount);
+    const gasEstimated = await this._contract
+      .connect(signer)
+      .estimateGas.stakeERC20(token, amount);
+
+    const tx = await this._contract.connect(signer).stakeERC20(token, amount, {
+      gasLimit: calculateGasMargin(gasEstimated),
+    });
     return await tx.wait();
   }
 
@@ -29,7 +36,15 @@ class PolygonStakingClient {
     token: string,
     tokenId: string
   ): Promise<ContractReceipt> {
-    const tx = await this._contract.connect(signer).stakeERC721(token, tokenId);
+    const gasEstimated = await this._contract
+      .connect(signer)
+      .estimateGas.stakeERC721(token, tokenId);
+
+    const tx = await this._contract
+      .connect(signer)
+      .stakeERC721(token, tokenId, {
+        gasLimit: calculateGasMargin(gasEstimated),
+      });
     return await tx.wait();
   }
 
@@ -38,7 +53,15 @@ class PolygonStakingClient {
     token: string,
     amount: string
   ): Promise<ContractReceipt> {
-    const tx = await this._contract.connect(signer).unstakeERC20(token, amount);
+    const gasEstimated = await this._contract
+      .connect(signer)
+      .estimateGas.unstakeERC20(token, amount);
+
+    const tx = await this._contract
+      .connect(signer)
+      .unstakeERC20(token, amount, {
+        gasLimit: calculateGasMargin(gasEstimated),
+      });
     return await tx.wait();
   }
 
@@ -47,9 +70,15 @@ class PolygonStakingClient {
     token: string,
     tokenId: string
   ): Promise<ContractReceipt> {
+    const gasEstimated = await this._contract
+      .connect(signer)
+      .estimateGas.unstakeERC721(token, tokenId);
+
     const tx = await this._contract
       .connect(signer)
-      .unstakeERC721(token, tokenId);
+      .unstakeERC721(token, tokenId, {
+        gasLimit: calculateGasMargin(gasEstimated),
+      });
     return await tx.wait();
   }
 

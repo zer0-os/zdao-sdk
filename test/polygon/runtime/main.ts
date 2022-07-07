@@ -1,21 +1,20 @@
 import { BigNumber, ethers } from 'ethers';
 
 import { Polygon, ProposalState, SupportedChainId, zNA } from '../../../src';
-import { ZNAClient } from '../../../src/client';
 import { sleep } from '../../../src/utilities/date';
 import { setEnvPolygon as setEnv } from '../../shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
 
 const createZDAO = async (
-  instace: Polygon.PolygonSDKInstance,
+  instance: Polygon.PolygonSDKInstance,
   signer: ethers.Wallet,
   env: any
 ) => {
   for (const DAO of env.DAOs.goerli) {
-    if (!(await instace.doesZDAOExist(DAO.zNA))) {
-      await instace.createZDAO(signer, undefined, {
-        zNA: DAO.zNA,
+    if (!(await instance.doesZDAOExist(DAO.zNAs[0]))) {
+      await instance.createZDAO(signer, undefined, {
+        zNA: DAO.zNAs[0],
         name: DAO.name,
         network: SupportedChainId.GOERLI,
         gnosisSafe: env.gnosisSafe.goerli.address,
@@ -132,7 +131,7 @@ const iterateZDAO = async (
       console.log('votingPower', votingPower);
       if (BigNumber.from(votingPower).gt(BigNumber.from(0))) {
         await proposal.vote(mumbaiSigner, undefined, {
-          choice: 2,
+          choice: 1,
         });
         console.log('successfully voted');
       }
@@ -223,15 +222,6 @@ const main = async () => {
 
   console.log('instance created');
 
-  const zNAId1 = ZNAClient.zNATozNAId('wilder.wheels');
-  console.log('zNAId1', zNAId1);
-  const zNAId2 = ZNAClient.zNATozNAId('wilder.kicks');
-  console.log('zNAId2', zNAId2);
-  const zNAId3 = ZNAClient.zNATozNAId('wilder.cats');
-  console.log('zNAId3', zNAId3);
-  const zNAId4 = ZNAClient.zNATozNAId('wilder.breasts');
-  console.log('zNAId4', zNAId4);
-
   await createZDAO(instance, goerliSigner, env);
 
   console.time('listZNAs');
@@ -267,7 +257,11 @@ const main = async () => {
   });
   // assert.equal(zDAOs.length > 0, true);
 
-  await iterateZDAO(instance, goerliSigner, 'wilder.kicks', env);
+  try {
+    await iterateZDAO(instance, goerliSigner, 'wilder.wheels', env);
+  } catch (error) {
+    console.error(error);
+  }
 
   console.log('Finished successfully');
 };

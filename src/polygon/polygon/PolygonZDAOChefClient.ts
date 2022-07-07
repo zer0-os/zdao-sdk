@@ -2,6 +2,7 @@ import { AddressZero } from '@ethersproject/constants';
 import { ethers } from 'ethers';
 
 import { Choice, DAOConfig, ProposalId, zDAOId } from '../../types';
+import { calculateGasMargin } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import PolygonZDAOAbi from '../config/abi/PolygonZDAO.json';
 import PolygonZDAOChefAbi from '../config/abi/PolygonZDAOChef.json';
@@ -78,9 +79,15 @@ class PolygonZDAOChefClient {
     proposalId: ProposalId,
     choice: Choice
   ) {
+    const gasEstimated = await this._contract
+      .connect(signer)
+      .estimateGas.vote(daoId, proposalId, choice);
+
     const tx = await this._contract
       .connect(signer)
-      .vote(daoId, proposalId, choice);
+      .vote(daoId, proposalId, choice, {
+        gasLimit: calculateGasMargin(gasEstimated),
+      });
     return await tx.wait();
   }
 
@@ -89,9 +96,15 @@ class PolygonZDAOChefClient {
     daoId: zDAOId,
     proposalId: ProposalId
   ) {
+    const gasEstimated = await this._contract
+      .connect(signer)
+      .estimateGas.calculateProposal(daoId, proposalId);
+
     const tx = await this._contract
       .connect(signer)
-      .calculateProposal(daoId, proposalId);
+      .calculateProposal(daoId, proposalId, {
+        gasLimit: calculateGasMargin(gasEstimated),
+      });
     return await tx.wait();
   }
 
