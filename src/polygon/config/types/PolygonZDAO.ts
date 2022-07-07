@@ -84,6 +84,7 @@ export interface PolygonZDAOInterface extends utils.Interface {
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "setDestroyed(bool)": FunctionFragment;
+    "setStaking(address)": FunctionFragment;
     "staking()": FunctionFragment;
     "state(uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
@@ -187,6 +188,7 @@ export interface PolygonZDAOInterface extends utils.Interface {
     functionFragment: "setDestroyed",
     values: [boolean]
   ): string;
+  encodeFunctionData(functionFragment: "setStaking", values: [string]): string;
   encodeFunctionData(functionFragment: "staking", values?: undefined): string;
   encodeFunctionData(functionFragment: "state", values: [BigNumberish]): string;
   encodeFunctionData(
@@ -289,6 +291,7 @@ export interface PolygonZDAOInterface extends utils.Interface {
     functionFragment: "setDestroyed",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setStaking", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "staking", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "state", data: BytesLike): Result;
   decodeFunctionResult(
@@ -575,6 +578,11 @@ export interface PolygonZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setStaking(
+      _staking: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     staking(overrides?: CallOverrides): Promise<[string]>;
 
     state(
@@ -796,6 +804,11 @@ export interface PolygonZDAO extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setStaking(
+    _staking: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   staking(overrides?: CallOverrides): Promise<string>;
 
   state(_proposalId: BigNumberish, overrides?: CallOverrides): Promise<number>;
@@ -1014,6 +1027,8 @@ export interface PolygonZDAO extends BaseContract {
     ): Promise<void>;
 
     setDestroyed(_destroyed: boolean, overrides?: CallOverrides): Promise<void>;
+
+    setStaking(_staking: string, overrides?: CallOverrides): Promise<void>;
 
     staking(overrides?: CallOverrides): Promise<string>;
 
@@ -1274,6 +1289,11 @@ export interface PolygonZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setStaking(
+      _staking: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     staking(overrides?: CallOverrides): Promise<BigNumber>;
 
     state(
@@ -1452,6 +1472,11 @@ export interface PolygonZDAO extends BaseContract {
 
     setDestroyed(
       _destroyed: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setStaking(
+      _staking: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

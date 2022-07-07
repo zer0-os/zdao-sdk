@@ -39,7 +39,7 @@ export interface FxStateEthereumTunnelInterface extends utils.Interface {
     "revokeRole(bytes32,address)": FunctionFragment;
     "sendMessageToChild(bytes)": FunctionFragment;
     "setEthereumStateReceiver(address)": FunctionFragment;
-    "setFxChildTunnel(address)": FunctionFragment;
+    "setPolygonStateTunnel(address)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
@@ -115,7 +115,7 @@ export interface FxStateEthereumTunnelInterface extends utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "setFxChildTunnel",
+    functionFragment: "setPolygonStateTunnel",
     values: [string]
   ): string;
   encodeFunctionData(
@@ -192,7 +192,7 @@ export interface FxStateEthereumTunnelInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setFxChildTunnel",
+    functionFragment: "setPolygonStateTunnel",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -320,7 +320,7 @@ export interface FxStateEthereumTunnel extends BaseContract {
 
     __FxStateEthereumTunnel_init(
       _checkpointManager: string,
-      _fxEthereum: string,
+      _fxRoot: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -386,8 +386,8 @@ export interface FxStateEthereumTunnel extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setFxChildTunnel(
-      _fxChildTunnel: string,
+    setPolygonStateTunnel(
+      _polygonTunnel: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -421,7 +421,7 @@ export interface FxStateEthereumTunnel extends BaseContract {
 
   __FxStateEthereumTunnel_init(
     _checkpointManager: string,
-    _fxEthereum: string,
+    _fxRoot: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -484,8 +484,8 @@ export interface FxStateEthereumTunnel extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setFxChildTunnel(
-    _fxChildTunnel: string,
+  setPolygonStateTunnel(
+    _polygonTunnel: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -519,7 +519,7 @@ export interface FxStateEthereumTunnel extends BaseContract {
 
     __FxStateEthereumTunnel_init(
       _checkpointManager: string,
-      _fxEthereum: string,
+      _fxRoot: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -583,8 +583,8 @@ export interface FxStateEthereumTunnel extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setFxChildTunnel(
-      _fxChildTunnel: string,
+    setPolygonStateTunnel(
+      _polygonTunnel: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -686,7 +686,7 @@ export interface FxStateEthereumTunnel extends BaseContract {
 
     __FxStateEthereumTunnel_init(
       _checkpointManager: string,
-      _fxEthereum: string,
+      _fxRoot: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -755,8 +755,8 @@ export interface FxStateEthereumTunnel extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setFxChildTunnel(
-      _fxChildTunnel: string,
+    setPolygonStateTunnel(
+      _polygonTunnel: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -795,7 +795,7 @@ export interface FxStateEthereumTunnel extends BaseContract {
 
     __FxStateEthereumTunnel_init(
       _checkpointManager: string,
-      _fxEthereum: string,
+      _fxRoot: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -866,8 +866,8 @@ export interface FxStateEthereumTunnel extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setFxChildTunnel(
-      _fxChildTunnel: string,
+    setPolygonStateTunnel(
+      _polygonTunnel: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

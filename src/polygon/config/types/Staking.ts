@@ -213,11 +213,11 @@ export interface StakingInterface extends utils.Interface {
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
-    "StakedERC20(address,address,uint256)": EventFragment;
+    "StakedERC20(address,address,uint256,uint256)": EventFragment;
     "StakedERC721(address,address,uint256)": EventFragment;
     "StakingPowerChanged(address,address,uint256,uint256)": EventFragment;
     "Unpaused(address)": EventFragment;
-    "UnstakedERC20(address,address,uint256)": EventFragment;
+    "UnstakedERC20(address,address,uint256,uint256)": EventFragment;
     "UnstakedERC721(address,address,uint256)": EventFragment;
     "Upgraded(address)": EventFragment;
   };
@@ -284,8 +284,8 @@ export type RoleRevokedEvent = TypedEvent<
 export type RoleRevokedEventFilter = TypedEventFilter<RoleRevokedEvent>;
 
 export type StakedERC20Event = TypedEvent<
-  [string, string, BigNumber],
-  { _user: string; _token: string; _amount: BigNumber }
+  [string, string, BigNumber, BigNumber],
+  { _user: string; _token: string; _decimals: BigNumber; _amount: BigNumber }
 >;
 
 export type StakedERC20EventFilter = TypedEventFilter<StakedERC20Event>;
@@ -315,8 +315,8 @@ export type UnpausedEvent = TypedEvent<[string], { account: string }>;
 export type UnpausedEventFilter = TypedEventFilter<UnpausedEvent>;
 
 export type UnstakedERC20Event = TypedEvent<
-  [string, string, BigNumber],
-  { _user: string; _token: string; _amount: BigNumber }
+  [string, string, BigNumber, BigNumber],
+  { _user: string; _token: string; _decimals: BigNumber; _amount: BigNumber }
 >;
 
 export type UnstakedERC20EventFilter = TypedEventFilter<UnstakedERC20Event>;
@@ -782,15 +782,17 @@ export interface Staking extends BaseContract {
       sender?: string | null
     ): RoleRevokedEventFilter;
 
-    "StakedERC20(address,address,uint256)"(
+    "StakedERC20(address,address,uint256,uint256)"(
       _user?: string | null,
       _token?: string | null,
-      _amount?: BigNumberish | null
+      _decimals?: BigNumberish | null,
+      _amount?: null
     ): StakedERC20EventFilter;
     StakedERC20(
       _user?: string | null,
       _token?: string | null,
-      _amount?: BigNumberish | null
+      _decimals?: BigNumberish | null,
+      _amount?: null
     ): StakedERC20EventFilter;
 
     "StakedERC721(address,address,uint256)"(
@@ -820,15 +822,17 @@ export interface Staking extends BaseContract {
     "Unpaused(address)"(account?: null): UnpausedEventFilter;
     Unpaused(account?: null): UnpausedEventFilter;
 
-    "UnstakedERC20(address,address,uint256)"(
+    "UnstakedERC20(address,address,uint256,uint256)"(
       _user?: string | null,
       _token?: string | null,
-      _amount?: BigNumberish | null
+      _decimals?: BigNumberish | null,
+      _amount?: null
     ): UnstakedERC20EventFilter;
     UnstakedERC20(
       _user?: string | null,
       _token?: string | null,
-      _amount?: BigNumberish | null
+      _decimals?: BigNumberish | null,
+      _amount?: null
     ): UnstakedERC20EventFilter;
 
     "UnstakedERC721(address,address,uint256)"(

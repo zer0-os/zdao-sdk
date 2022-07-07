@@ -41,6 +41,7 @@ export interface PolygonZDAOChefInterface extends utils.Interface {
     "setChildChainManager(address)": FunctionFragment;
     "setStaking(address)": FunctionFragment;
     "setZDAOBase(address)": FunctionFragment;
+    "setZDAOStaking(uint256,address)": FunctionFragment;
     "staking()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
@@ -121,6 +122,10 @@ export interface PolygonZDAOChefInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "setStaking", values: [string]): string;
   encodeFunctionData(functionFragment: "setZDAOBase", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "setZDAOStaking",
+    values: [BigNumberish, string]
+  ): string;
   encodeFunctionData(functionFragment: "staking", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
@@ -206,6 +211,10 @@ export interface PolygonZDAOChefInterface extends utils.Interface {
     functionFragment: "setZDAOBase",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "setZDAOStaking",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "staking", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
@@ -232,6 +241,7 @@ export interface PolygonZDAOChefInterface extends utils.Interface {
     "CastVote(uint256,uint256,address,uint256)": EventFragment;
     "DAOCreated(address,uint256,uint256)": EventFragment;
     "DAODestroyed(uint256)": EventFragment;
+    "DAOStakingUpdated(uint256,address)": EventFragment;
     "DAOTokenUpdated(uint256,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
@@ -242,6 +252,7 @@ export interface PolygonZDAOChefInterface extends utils.Interface {
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
+    "StakingUpdated(address)": EventFragment;
     "Unpaused(address)": EventFragment;
     "Upgraded(address)": EventFragment;
   };
@@ -251,6 +262,7 @@ export interface PolygonZDAOChefInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "CastVote"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAODestroyed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DAOStakingUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAOTokenUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
@@ -261,6 +273,7 @@ export interface PolygonZDAOChefInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "StakingUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
 }
@@ -298,6 +311,14 @@ export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
 export type DAODestroyedEvent = TypedEvent<[BigNumber], { _daoId: BigNumber }>;
 
 export type DAODestroyedEventFilter = TypedEventFilter<DAODestroyedEvent>;
+
+export type DAOStakingUpdatedEvent = TypedEvent<
+  [BigNumber, string],
+  { _daoId: BigNumber; _staking: string }
+>;
+
+export type DAOStakingUpdatedEventFilter =
+  TypedEventFilter<DAOStakingUpdatedEvent>;
 
 export type DAOTokenUpdatedEvent = TypedEvent<
   [BigNumber, string],
@@ -376,6 +397,10 @@ export type RoleRevokedEvent = TypedEvent<
 >;
 
 export type RoleRevokedEventFilter = TypedEventFilter<RoleRevokedEvent>;
+
+export type StakingUpdatedEvent = TypedEvent<[string], { _staking: string }>;
+
+export type StakingUpdatedEventFilter = TypedEventFilter<StakingUpdatedEvent>;
 
 export type UnpausedEvent = TypedEvent<[string], { account: string }>;
 
@@ -497,6 +522,12 @@ export interface PolygonZDAOChef extends BaseContract {
 
     setZDAOBase(
       _zDAOBase: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setZDAOStaking(
+      _daoId: BigNumberish,
+      _staking: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -626,6 +657,12 @@ export interface PolygonZDAOChef extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setZDAOStaking(
+    _daoId: BigNumberish,
+    _staking: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   staking(overrides?: CallOverrides): Promise<string>;
 
   supportsInterface(
@@ -744,6 +781,12 @@ export interface PolygonZDAOChef extends BaseContract {
 
     setZDAOBase(_zDAOBase: string, overrides?: CallOverrides): Promise<void>;
 
+    setZDAOStaking(
+      _daoId: BigNumberish,
+      _staking: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     staking(overrides?: CallOverrides): Promise<string>;
 
     supportsInterface(
@@ -826,6 +869,15 @@ export interface PolygonZDAOChef extends BaseContract {
       _daoId?: BigNumberish | null
     ): DAODestroyedEventFilter;
     DAODestroyed(_daoId?: BigNumberish | null): DAODestroyedEventFilter;
+
+    "DAOStakingUpdated(uint256,address)"(
+      _daoId?: BigNumberish | null,
+      _staking?: string | null
+    ): DAOStakingUpdatedEventFilter;
+    DAOStakingUpdated(
+      _daoId?: BigNumberish | null,
+      _staking?: string | null
+    ): DAOStakingUpdatedEventFilter;
 
     "DAOTokenUpdated(uint256,address)"(
       _daoId?: BigNumberish | null,
@@ -925,6 +977,11 @@ export interface PolygonZDAOChef extends BaseContract {
       sender?: string | null
     ): RoleRevokedEventFilter;
 
+    "StakingUpdated(address)"(
+      _staking?: string | null
+    ): StakingUpdatedEventFilter;
+    StakingUpdated(_staking?: string | null): StakingUpdatedEventFilter;
+
     "Unpaused(address)"(account?: null): UnpausedEventFilter;
     Unpaused(account?: null): UnpausedEventFilter;
 
@@ -1020,6 +1077,12 @@ export interface PolygonZDAOChef extends BaseContract {
 
     setZDAOBase(
       _zDAOBase: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setZDAOStaking(
+      _daoId: BigNumberish,
+      _staking: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1154,6 +1217,12 @@ export interface PolygonZDAOChef extends BaseContract {
 
     setZDAOBase(
       _zDAOBase: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setZDAOStaking(
+      _daoId: BigNumberish,
+      _staking: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
