@@ -329,6 +329,9 @@ class DAOClient
     if (this.destroyed) {
       throw new AlreadyDestroyedError();
     }
+    if (!this.duration) {
+      throw new Error(errorMessageForError('invalid-proposal-duration'));
+    }
 
     // signer should have valid amount of voting token on Ethereum
     const balance = await this._rootTokenContract.balanceOf(account);

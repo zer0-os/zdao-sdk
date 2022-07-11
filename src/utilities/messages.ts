@@ -120,6 +120,10 @@ const ErrorMessages = [
     value: 'Invalid ENS',
   },
   {
+    key: 'invalid-zdao-duration',
+    value: 'Not found zDAO duration',
+  },
+  {
     key: 'invalid-proposal-duration',
     value: 'Not found proposal duration',
   },

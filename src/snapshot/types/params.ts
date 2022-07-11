@@ -18,6 +18,9 @@ export interface CreateSnapshotProposalParams extends CreateProposalParams {
 
   // Block number
   snapshot: number;
+
+  // Time duration of this proposal in seconds
+  duration?: number;
 }
 
 export type VoteSnapshotProposalParams = VoteProposalParams;

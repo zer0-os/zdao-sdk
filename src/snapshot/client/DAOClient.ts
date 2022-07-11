@@ -280,7 +280,8 @@ class DAOClient
     account: string | undefined,
     payload: CreateSnapshotProposalParams
   ): Promise<ProposalId> {
-    if (!this.duration) {
+    const duration = this.duration > 0 ? this.duration : payload.duration ?? 0;
+    if (!duration) {
       throw new Error(errorMessageForError('invalid-proposal-duration'));
     }
 
@@ -296,7 +297,7 @@ class DAOClient
         title: payload.title,
         body: payload.body ?? '',
         choices: payload.choices,
-        duration: this.duration,
+        duration,
         snapshot,
         network: this.network.toString(),
         strategies: this._options.strategies,

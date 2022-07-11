@@ -88,6 +88,9 @@ class SDKInstanceClient implements PolygonSDKInstance {
     if (await this.doesZDAOExist(params.zNA)) {
       throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
     }
+    if (!params.duration) {
+      throw new Error(errorMessageForError('invalid-zdao-duration'));
+    }
 
     try {
       const signer = getSigner(provider, account);
