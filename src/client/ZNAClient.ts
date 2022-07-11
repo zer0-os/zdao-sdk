@@ -48,6 +48,12 @@ class ZNAClient {
     )
       return Promise.resolve('joshupgig.eth');
 
+    if (
+      zNAId ===
+      '0xf0142b0fe9dceca45b0855af027129b798a130146ccfd7d238ce9e151b6feb56'
+    )
+      return Promise.resolve('dappchain.eth');
+
     return ZNAClient._znsInstance
       .getDomainById(zNAId)
       .then((domain: Domain) => domain.name);
@@ -63,6 +69,8 @@ class ZNAClient {
       return '0x617b3c878abfceb89eb62b7a24f393569c822946bbc9175c6c65a7d2647c5402';
     if (zNA === 'wilder.breasts')
       return '0x857f504928e4b0dc98c5e3c04a033d1adc7bc06b1522da2ef5e412b4d223ce0f';
+    if (zNA === 'dappchain.eth')
+      return '0xf0142b0fe9dceca45b0855af027129b798a130146ccfd7d238ce9e151b6feb56';
 
     return domains.domainNameToId(zNA);
   }
