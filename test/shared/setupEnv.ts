@@ -131,6 +131,12 @@ export const setEnvSnapshot = () => {
           gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
           ens: 'joshupgig.eth',
         },
+        {
+          name: 'Game Guilds DAO',
+          votingToken: '0x676cEf263a2954DB6829383aa9d683c9cBc6B67c',
+          gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+          ens: 'dappchain.eth',
+        },
       ],
       mainnet: [
         {

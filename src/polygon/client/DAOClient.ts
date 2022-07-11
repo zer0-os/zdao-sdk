@@ -2,6 +2,7 @@ import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import { AbstractDAOClient, GnosisSafeClient, IPFSClient } from '../../client';
+import { ZDAORecord } from '../../client/ZDAORegistry';
 import IERC20UpgradeableAbi from '../../config/abi/IERC20Upgradeable.json';
 import {
   AlreadyDestroyedError,
@@ -12,7 +13,6 @@ import {
   ProposalId,
   ProposalProperties,
   ProposalState,
-  zDAOId,
   zDAOProperties,
   zDAOState,
 } from '../../types';
@@ -44,7 +44,7 @@ class DAOClient
 {
   protected readonly _zDAOOptions: zDAOOptions;
   protected _ethereumZDAO!: EthereumZDAO;
-  protected _PolygonZDAOContract: PolygonZDAOContract | null = null;
+  protected _polygonZDAOContract: PolygonZDAOContract | null = null;
   protected _rootTokenContract!: ethers.Contract;
   protected _totalSupply!: BigNumber;
 
@@ -61,13 +61,25 @@ class DAOClient
         IERC20UpgradeableAbi.abi,
         GlobalClient.etherRpcProvider
       );
-      this._totalSupply = await this._rootTokenContract.totalSupply();
 
-      this._ethereumZDAO = await GlobalClient.ethereumZDAOChef.getZDAOById(
-        this._properties.id
-      );
-      this._PolygonZDAOContract = await this.getPolygonZDAOContract();
-      if (this._PolygonZDAOContract) {
+      const promises: Promise<any>[] = [
+        this._rootTokenContract.totalSupply(),
+        GlobalClient.ethereumZDAOChef.getZDAOById(this._properties.id),
+        this.getPolygonZDAOContract(),
+      ];
+      const results = await Promise.all(promises);
+
+      this._totalSupply = results[0] as BigNumber;
+      this._ethereumZDAO = results[1] as EthereumZDAO;
+      this._polygonZDAOContract = results[2] as PolygonZDAOContract;
+
+      // this._totalSupply = await this._rootTokenContract.totalSupply()
+
+      // this._ethereumZDAO = await GlobalClient.ethereumZDAOChef.getZDAOById(
+      //   this._properties.id
+      // );
+      // this._polygonZDAOContract = await this.getPolygonZDAOContract();
+      if (this._polygonZDAOContract) {
         this._properties.state = zDAOState.ACTIVE;
       }
       if (properties.destroyed) {
@@ -91,21 +103,29 @@ class DAOClient
 
   static async createInstance(
     config: PolygonConfig,
-    zDAOId: zDAOId
+    zDAORecord: ZDAORecord
   ): Promise<PolygonZDAO> {
+    console.time('getZDAOPropertiesById');
     const zDAOProperties =
-      await GlobalClient.ethereumZDAOChef.getZDAOPropertiesById(zDAOId);
+      await GlobalClient.ethereumZDAOChef.getZDAOPropertiesById(zDAORecord);
+    console.timeEnd('getZDAOPropertiesById');
 
+    console.time('ethereumToPolygonToken');
     const polygonTokenAddress =
       await GlobalClient.registry.ethereumToPolygonToken(
         zDAOProperties.votingToken.token
       );
+    console.timeEnd('ethereumToPolygonToken');
+
+    console.time('getToken');
     const polygonToken = await getToken(
       GlobalClient.polyRpcProvider,
       polygonTokenAddress
     );
+    console.timeEnd('getToken');
 
-    return await new DAOClient(
+    console.time('DAOClient');
+    const instance = await new DAOClient(
       {
         ...zDAOProperties,
         state: zDAOState.PENDING,
@@ -113,14 +133,16 @@ class DAOClient
       },
       new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
     );
+    console.timeEnd('DAOClient');
+    return instance;
   }
 
   async getPolygonZDAOContract(): Promise<PolygonZDAOContract | null> {
-    if (this._PolygonZDAOContract) return this._PolygonZDAOContract;
-    this._PolygonZDAOContract = await GlobalClient.polygonZDAOChef.getZDAOById(
+    if (this._polygonZDAOContract) return this._polygonZDAOContract;
+    this._polygonZDAOContract = await GlobalClient.polygonZDAOChef.getZDAOById(
       this._properties.id
     );
-    return this._PolygonZDAOContract;
+    return this._polygonZDAOContract;
   }
 
   private async mapToProperties(
@@ -160,8 +182,9 @@ class DAOClient
     const canExecute = (): boolean => {
       if (!scores || !voters) return false;
 
-      const yes = BigNumber.from(scores[0]),
-        no = BigNumber.from(scores[1]),
+      const BIG_POW = BigNumber.from(10).pow(this.votingToken.decimals);
+      const yes = BigNumber.from(scores[0]).mul(BIG_POW),
+        no = BigNumber.from(scores[1]).mul(BIG_POW),
         zero = BigNumber.from(0);
       if (
         voters < this.minimumVotingParticipants ||

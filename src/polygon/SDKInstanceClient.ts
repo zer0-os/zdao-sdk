@@ -141,20 +141,21 @@ class SDKInstanceClient implements PolygonSDKInstance {
 
     const promises: Promise<PolygonZDAO>[] = [];
     for (const zDAORecord of zDAORecords) {
-      promises.push(DAOClient.createInstance(this._config, zDAORecord.id));
+      promises.push(DAOClient.createInstance(this._config, zDAORecord));
     }
 
     return await Promise.all(promises);
   }
 
   async getZDAOByZNA(zNA: zNA): Promise<PolygonZDAO> {
-    // check if zDAO exists
-    if (!(await this.doesZDAOExist(zNA))) {
+    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
+
+    if (zDAORecord.id === '0') {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 
-    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
-    return await DAOClient.createInstance(this._config, zDAORecord.id);
+    const instance = await DAOClient.createInstance(this._config, zDAORecord);
+    return instance;
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {

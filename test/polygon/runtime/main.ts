@@ -7,13 +7,13 @@ import { setEnvPolygon as setEnv } from '../../shared/setupEnv';
 (global as any).XMLHttpRequest = require('xhr2');
 
 const createZDAO = async (
-  instance: Polygon.PolygonSDKInstance,
+  sdkInstance: Polygon.PolygonSDKInstance,
   signer: ethers.Wallet,
   env: any
 ) => {
   for (const DAO of env.DAOs.goerli) {
-    if (!(await instance.doesZDAOExist(DAO.zNAs[0]))) {
-      await instance.createZDAO(signer, undefined, {
+    if (!(await sdkInstance.doesZDAOExist(DAO.zNAs[0]))) {
+      await sdkInstance.createZDAO(signer, undefined, {
         zNA: DAO.zNAs[0],
         name: DAO.name,
         network: SupportedChainId.GOERLI,
@@ -33,7 +33,7 @@ const createZDAO = async (
 };
 
 const createProposal = async (
-  instance: Polygon.PolygonSDKInstance,
+  sdkInstance: Polygon.PolygonSDKInstance,
   signer: ethers.Wallet,
   zDAO: Polygon.PolygonZDAO,
   env: any
@@ -53,8 +53,42 @@ const createProposal = async (
   console.log('proposal created');
 };
 
+const iterateZNAs = async (sdkInstance: Polygon.PolygonSDKInstance) => {
+  console.time('listZNAs');
+  const zNAs = await sdkInstance.listZNAs();
+  console.timeEnd('listZNAs');
+  console.log('zNAs', zNAs);
+  // assert.equal(zNAs.length > 0, true);
+
+  console.time('listZDAOs');
+  const zDAOs: Polygon.PolygonZDAO[] = await sdkInstance.listZDAOs();
+  console.timeEnd('listZDAOs');
+  console.log('zDAOs.length', zDAOs.length);
+  zDAOs.forEach((zDAO) => {
+    console.log(
+      zDAO.id,
+      zDAO.zNAs,
+      zDAO.name,
+      zDAO.createdBy,
+      zDAO.network,
+      zDAO.gnosisSafe,
+      zDAO.votingToken,
+      zDAO.amount,
+      zDAO.duration,
+      zDAO.votingThreshold,
+      zDAO.minimumVotingParticipants,
+      zDAO.minimumTotalVotingTokens,
+      zDAO.isRelativeMajority,
+      zDAO.state,
+      zDAO.snapshot,
+      zDAO.destroyed,
+      zDAO.polygonToken
+    );
+  });
+};
+
 const iterateZDAO = async (
-  instance: Polygon.PolygonSDKInstance,
+  sdkInstance: Polygon.PolygonSDKInstance,
   goerliSigner: ethers.Wallet,
   zNA: zNA,
   env: any
@@ -76,7 +110,7 @@ const iterateZDAO = async (
   );
 
   console.time('getZDAOByZNA');
-  const zDAO: Polygon.PolygonZDAO = await instance.getZDAOByZNA(zNA);
+  const zDAO: Polygon.PolygonZDAO = await sdkInstance.getZDAOByZNA(zNA);
   console.timeEnd('getZDAOByZNA');
   console.log(
     'zDAO',
@@ -89,7 +123,7 @@ const iterateZDAO = async (
 
   console.log(
     'staked amount',
-    await instance.staking.stakedERC20Amount(
+    await sdkInstance.staking.stakedERC20Amount(
       mumbaiSigner.address,
       zDAO.votingToken.token
     )
@@ -100,7 +134,7 @@ const iterateZDAO = async (
   console.timeEnd('listAssets');
   // console.log('assets', assets);
 
-  // await createProposal(instance, goerliSigner, zDAO, env);
+  // await createProposal(sdkInstance, goerliSigner, zDAO, env);
 
   console.time('listProposals');
   const proposals: Polygon.PolygonProposal[] = await zDAO.listProposals();
@@ -125,10 +159,11 @@ const iterateZDAO = async (
     console.log('> proposal.id', proposal.id, proposal.state, proposal.ipfs);
 
     if (proposal.state === ProposalState.ACTIVE) {
+      console.log('... voting');
       const votingPower = await proposal.getVotingPowerOfUser(
         mumbaiSigner.address
       );
-      console.log('votingPower', votingPower);
+      console.log('your votingPower', votingPower);
       if (BigNumber.from(votingPower).gt(BigNumber.from(0))) {
         await proposal.vote(mumbaiSigner, undefined, {
           choice: 1,
@@ -139,9 +174,13 @@ const iterateZDAO = async (
       const votes = await proposal.listVotes();
       console.log('votes', votes);
     } else if (proposal.state === ProposalState.AWAITING_CALCULATION) {
+      console.log('... calculating');
+
       const tx = await proposal.calculate(mumbaiSigner, undefined, {});
       console.log('successfully calculated on polygon');
     } else if (proposal.state === ProposalState.AWAITING_FINALIZATION) {
+      console.log('... finalizing');
+
       const hashes = await (
         proposal as Polygon.PolygonProposal
       ).getCheckPointingHashes();
@@ -163,10 +202,25 @@ const iterateZDAO = async (
         }
       }
     } else if (proposal.state === ProposalState.AWAITING_EXECUTION) {
-      console.log('executing', proposal.id);
+      console.log('... executing');
       await proposal.execute(goerliGnosisOwnerSigner, undefined, {});
       console.log('executed', proposal.id);
     }
+  }
+};
+
+const performance = async (
+  sdkInstance: Polygon.PolygonSDKInstance,
+  goerliSigner: ethers.Wallet
+) => {
+  console.time('>listZNAs');
+  await sdkInstance.listZNAs();
+  console.timeEnd('>listZNAs');
+
+  for (let i = 0; i < 1; i++) {
+    console.time('>getZDAOByZNA');
+    await sdkInstance.getZDAOByZNA('wilder.cats');
+    console.timeEnd('>getZDAOByZNA');
   }
 };
 
@@ -222,46 +276,10 @@ const main = async () => {
 
   console.log('instance created');
 
-  await createZDAO(instance, goerliSigner, env);
-
-  console.time('listZNAs');
-  const zNAs = await instance.listZNAs();
-  console.timeEnd('listZNAs');
-  console.log('zNAs', zNAs);
-  // assert.equal(zNAs.length > 0, true);
-
-  console.time('listZDAOs');
-  const zDAOs: Polygon.PolygonZDAO[] = await instance.listZDAOs();
-  console.timeEnd('listZDAOs');
-  console.log('zDAOs.length', zDAOs.length);
-  zDAOs.forEach((zDAO) => {
-    console.log(
-      zDAO.id,
-      zDAO.zNAs,
-      zDAO.name,
-      zDAO.createdBy,
-      zDAO.network,
-      zDAO.gnosisSafe,
-      zDAO.votingToken,
-      zDAO.amount,
-      zDAO.duration,
-      zDAO.votingThreshold,
-      zDAO.minimumVotingParticipants,
-      zDAO.minimumTotalVotingTokens,
-      zDAO.isRelativeMajority,
-      zDAO.state,
-      zDAO.snapshot,
-      zDAO.destroyed,
-      zDAO.polygonToken
-    );
-  });
-  // assert.equal(zDAOs.length > 0, true);
-
-  try {
-    await iterateZDAO(instance, goerliSigner, 'wilder.wheels', env);
-  } catch (error) {
-    console.error(error);
-  }
+  // await createZDAO(instance, goerliSigner, env);
+  // await iterateZNAs(instance);
+  // await iterateZDAO(instance, goerliSigner, 'wilder.kicks', env);
+  await performance(instance, goerliSigner);
 
   console.log('Finished successfully');
 };

@@ -1,9 +1,3 @@
-import { zDAOId, zDAOProperties, zNA } from '../../types';
-
-export interface ZDAORecord {
-  id: zDAOId;
-  zDAO: string;
-  zNAs: zNA[];
-}
+import { zDAOProperties } from '../../types';
 
 export type EthereumZDAOProperties = Omit<zDAOProperties, 'state'>;

@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 
 import { PlatformType } from '../..';
+import { ZDAORecord } from '../../client/ZDAORegistry';
 import { DAOConfig, ProposalId, zDAOId, zNA } from '../../types';
 import { calculateGasMargin, getToken } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
@@ -57,12 +58,10 @@ class EthereumZDAOChefClient {
     ) as EthereumZDAO;
   }
 
-  async getZDAOPropertiesById(zDAOId: zDAOId): Promise<EthereumZDAOProperties> {
-    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordById(
-      zDAOId
-    );
-
-    const zDAOInfo = await this._contract.zDAOInfo(zDAOId);
+  async getZDAOPropertiesById(
+    zDAORecord: ZDAORecord
+  ): Promise<EthereumZDAOProperties> {
+    const zDAOInfo = await this._contract.zDAOInfo(zDAORecord.id);
 
     const token = await getToken(GlobalClient.etherRpcProvider, zDAOInfo.token);
     const zNAs: zNA[] = zDAORecord.associatedzNAs;

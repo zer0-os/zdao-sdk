@@ -96,6 +96,35 @@ const immediateVote = async (
   console.log('proposal.scores', proposal1.scores);
 };
 
+const iterateZNAs = async (sdkInstance: Snapshot.SnapshotSDKInstance) => {
+  const zNAs: zNA[] = await sdkInstance.listZNAs();
+  console.log('zNAs', zNAs);
+
+  // create zdao which is associated with `wilder.cats`
+  for (const zNA of zNAs) {
+    console.log('> zNA:', zNA);
+    const dao = await sdkInstance.getZDAOByZNA(zNA);
+    console.log('zDAO instance', dao);
+
+    const proposals: Snapshot.SnapshotProposal[] = await dao.listProposals();
+    console.log('proposals', proposals.length);
+
+    const assets = await dao.listAssets();
+    console.log('assets', assets);
+
+    const txs = await dao.listTransactions();
+    console.log('transactions', txs);
+  }
+};
+
+const performance = async (sdkInstance: Snapshot.SnapshotSDKInstance) => {
+  for (let i = 0; i < 10; i++) {
+    console.time('getZDAOByZNA');
+    await sdkInstance.getZDAOByZNA('wilder.cats');
+    console.timeEnd('getZDAOByZNA');
+  }
+};
+
 const main = async () => {
   const isDev = true;
   const env = setEnv();
@@ -145,29 +174,14 @@ const main = async () => {
   const sdkInstance: Snapshot.SnapshotSDKInstance =
     await Snapshot.createSDKInstance(config);
 
-  // await createZDAO(sdkInstance, signer, env);
+  await createZDAO(sdkInstance, signer, env);
   // await createToken(sdkInstance, signer);
   // await pagination(sdkInstance);
   // await immediateVote(sdkInstance, signer);
+  // await iterateZNAs(sdkInstance);
 
-  const zNAs: zNA[] = await sdkInstance.listZNAs();
-  console.log('zNAs', zNAs);
+  // await performance(sdkInstance);
 
-  // create zdao which is associated with `wilder.cats`
-  for (const zNA of zNAs) {
-    console.log('> zNA:', zNA);
-    const dao = await sdkInstance.getZDAOByZNA(zNA);
-    console.log('zDAO instance', dao);
-
-    const proposals: Snapshot.SnapshotProposal[] = await dao.listProposals();
-    console.log('proposals', proposals.length);
-
-    const assets = await dao.listAssets();
-    console.log('assets', assets);
-
-    const txs = await dao.listTransactions();
-    console.log('transactions', txs);
-  }
   console.log('Finished successfully');
 };
 
