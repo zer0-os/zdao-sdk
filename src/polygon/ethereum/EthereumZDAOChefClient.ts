@@ -161,7 +161,7 @@ class EthereumZDAOChefClient {
   ) {
     const gasEstimated = await this._contract
       .connect(signer)
-      .estimateGas.cancelProposal(zDAOId, proposalId);
+      .estimateGas.executeProposal(zDAOId, proposalId);
 
     const tx = await this._contract
       .connect(signer)

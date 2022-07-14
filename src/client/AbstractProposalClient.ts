@@ -8,12 +8,9 @@ import {
   NotImplementedError,
   Proposal,
   ProposalProperties,
-  TokenMetaData,
   Vote,
   VoteProposalParams,
 } from '../types';
-import { errorMessageForError } from '../utilities';
-import IPFSClient from './IPFSClient';
 
 abstract class AbstractProposalClient<VoteT extends Vote>
   implements Proposal<VoteT>
@@ -78,48 +75,6 @@ abstract class AbstractProposalClient<VoteT extends Vote>
 
   get metadata() {
     return this._properties.metadata;
-  }
-
-  protected static async getTokenMetadata(
-    ipfsGateway: string,
-    ipfs: string
-  ): Promise<TokenMetaData | undefined> {
-    try {
-      if (!ipfs) return undefined;
-
-      const ipfsData = await IPFSClient.getJson(ipfs, ipfsGateway);
-      if (!ipfsData.data || !ipfsData.data.message) {
-        throw new Error(errorMessageForError('empty-voting-token'));
-      }
-
-      const metadataJson = JSON.parse(ipfsData.data.message.metadata);
-      if (
-        !metadataJson.sender ||
-        !metadataJson.recipient ||
-        !metadataJson.token ||
-        !metadataJson.amount
-      ) {
-        return undefined;
-      }
-
-      const sender = metadataJson.sender;
-      const recipient = metadataJson.recipient;
-      const token = metadataJson.token;
-      const decimals = metadataJson.decimals ?? 18;
-      const symbol = metadataJson.symbol ?? 'zToken';
-      const amount = metadataJson.amount;
-
-      return {
-        sender,
-        recipient,
-        token,
-        decimals,
-        symbol,
-        amount,
-      };
-    } catch (error) {
-      return undefined;
-    }
   }
 
   listVotes(): Promise<VoteT[]> {

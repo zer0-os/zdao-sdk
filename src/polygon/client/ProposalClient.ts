@@ -39,16 +39,7 @@ class ProposalClient
     zDAO: DAOClient,
     properties: ProposalProperties
   ): Promise<PolygonProposal> {
-    const proposal = new ProposalClient(
-      {
-        ...properties,
-        metadata: await AbstractProposalClient.getTokenMetadata(
-          GlobalClient.ipfsGateway,
-          properties.ipfs
-        ),
-      },
-      zDAO
-    );
+    const proposal = new ProposalClient(properties, zDAO);
     return proposal;
   }
 

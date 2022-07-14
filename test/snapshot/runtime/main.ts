@@ -14,11 +14,11 @@ const createZDAO = async (
   // isDev should be true
 
   for (const DAO of env.DAOs.rinkeby) {
-    if (await sdkInstance.doesZDAOExist(DAO.ens as zNA)) continue;
+    if (await sdkInstance.doesZDAOExist(DAO.zNAs[0])) continue;
 
     console.log('creating zDAO', DAO);
     const params: Snapshot.CreateSnapshotZDAOParams = {
-      zNA: DAO.ens,
+      zNA: DAO.zNAs[0],
       name: DAO.name,
       network: SupportedChainId.RINKEBY,
       gnosisSafe: DAO.gnosisSafe,

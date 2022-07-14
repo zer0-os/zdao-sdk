@@ -182,9 +182,8 @@ class DAOClient
     const canExecute = (): boolean => {
       if (!scores || !voters) return false;
 
-      const BIG_POW = BigNumber.from(10).pow(this.votingToken.decimals);
-      const yes = BigNumber.from(scores[0]).mul(BIG_POW),
-        no = BigNumber.from(scores[1]).mul(BIG_POW),
+      const yes = BigNumber.from(scores[0]),
+        no = BigNumber.from(scores[1]),
         zero = BigNumber.from(0);
       if (
         voters < this.minimumVotingParticipants ||
@@ -248,9 +247,7 @@ class DAOClient
       GlobalClient.ipfsGateway
     );
     const metadataJson =
-      ipfsData.data.message &&
-      ipfsData.data.message.metadata &&
-      JSON.parse(ipfsData.data.message.metadata);
+      ipfsData.data.message && ipfsData.data.message.transfer;
 
     return {
       id: raw.proposalId.toString(),

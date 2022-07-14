@@ -123,6 +123,7 @@ export const setEnvSnapshot = () => {
           votingToken: '0x10F6A2795B14f13771d885D72e5925Aff647B565',
           gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
           ens: 'zdao-sky.eth',
+          zNAs: ['zdao-sky.eth'],
           duration: 172800,
         },
         {
@@ -130,12 +131,14 @@ export const setEnvSnapshot = () => {
           votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
           gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
           ens: 'joshupgig.eth',
+          zNAs: ['joshupgig.eth'],
         },
         {
           name: 'Game Guilds DAO',
           votingToken: '0x676cEf263a2954DB6829383aa9d683c9cBc6B67c',
           gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
           ens: 'dappchain.eth',
+          zNAs: ['wilder.kicks'],
         },
       ],
       mainnet: [

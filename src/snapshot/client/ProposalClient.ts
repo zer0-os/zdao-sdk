@@ -1,12 +1,17 @@
 import { ethers } from 'ethers';
 
-import { AbstractProposalClient, GnosisSafeClient } from '../../client';
+import {
+  AbstractProposalClient,
+  GnosisSafeClient,
+  IPFSClient,
+} from '../../client';
 import {
   Choice,
   NotImplementedError,
   PaginationParam,
   ProposalProperties,
   ProposalState,
+  TokenMetaData,
 } from '../../types';
 import { errorMessageForError, getSigner } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
@@ -55,7 +60,7 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
       gnosisSafeClient,
       {
         ...properties,
-        metadata: await AbstractProposalClient.getTokenMetadata(
+        metadata: await this.getTokenMetadata(
           GlobalClient.ipfsGateway,
           properties.ipfs
         ),
@@ -63,6 +68,48 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
       options
     );
     return proposal;
+  }
+
+  private static async getTokenMetadata(
+    ipfsGateway: string,
+    ipfs: string
+  ): Promise<TokenMetaData | undefined> {
+    try {
+      if (!ipfs) return undefined;
+
+      const ipfsData = await IPFSClient.getJson(ipfs, ipfsGateway);
+      if (!ipfsData.data || !ipfsData.data.message) {
+        throw new Error(errorMessageForError('empty-voting-token'));
+      }
+
+      const metadataJson = JSON.parse(ipfsData.data.message.metadata);
+      if (
+        !metadataJson.sender ||
+        !metadataJson.recipient ||
+        !metadataJson.token ||
+        !metadataJson.amount
+      ) {
+        return undefined;
+      }
+
+      const sender = metadataJson.sender;
+      const recipient = metadataJson.recipient;
+      const token = metadataJson.token;
+      const decimals = metadataJson.decimals ?? 18;
+      const symbol = metadataJson.symbol ?? 'zToken';
+      const amount = metadataJson.amount;
+
+      return {
+        sender,
+        recipient,
+        token,
+        decimals,
+        symbol,
+        amount,
+      };
+    } catch (error) {
+      return undefined;
+    }
   }
 
   async listVotes(pagination?: PaginationParam): Promise<SnapshotVote[]> {
