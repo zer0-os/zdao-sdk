@@ -21,7 +21,7 @@ zDAO supports multiple platforms, e.g. Snapshot, and Polygon.
 
 Every platform has different properties, so while building `zDAO` voting system on different platforms may have different interfaces.
 
-![Collaboration](docs/Collaboration.png)
+[<img src="docs/Collaboration.png" width="560px"/>](docs/Collaboration.png)
 
 - `zDAO-sdk` is using `zNS-sdk` to convert `zNA` to `zNAId`, and is using `@gnosis.pm` to transfer funds from Gnosis Safe wallet to user.
 - `zNSHub`: Only `zNA` owner can create `zDAO`, `zNSHub` is used to check if user is owning given `zNA`.
@@ -33,7 +33,7 @@ Every platform has different properties, so while building `zDAO` voting system 
 
 `zDAO-sdk` defines the common interfaces for `zDAO`, `Proposal`, and `Vote`. Each platform extends from the parent interfaces and adds additional properties.
 
-![Class Diagram](docs/ClassDiagram.png)
+![ClassDiagram](docs/ClassDiagram.png)
 
 ## `zDAO` on Snapshot
 

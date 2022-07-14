@@ -40,4 +40,4 @@ The proposal has the following proposal states:
 
 ## How to check if a proposal is succeeded
 
-![FlowChart](./FlowChart.png)
+[<img src="./FlowChart.png" width="600px"/>](./FlowChart.png)
