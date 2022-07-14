@@ -15,7 +15,7 @@ zDAO supports multiple platforms, e.g. Snapshot, and Polygon.
 - [x] Create funding proposal in zDAO
 - [x] List all the votes and voting result of proposal
 - [x] Cast a vote on proposal who has holding of certain amount of voting token
-- [x] Execute a proposal by Gnosis Safe owners
+- [x] Execute a proposal by Gnosis Safe owners if succeed
 
 ### Collaboration Diagram
 
