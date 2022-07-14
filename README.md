@@ -4,7 +4,20 @@ zDAO supports multiple platforms, e.g. Snapshot, and Polygon.
 
 ## Overview
 
-## Collaboration Diagram
+### Common Functionality Requirements
+
+- [x] Create zDAO with parameters
+- [x] List all the associated zNAs
+- [x] Get zDAO by associated zNA
+- [x] List all the assets(coin, collectibles) of zDAO from associated Gnosis Safe
+- [x] List all the transactions of zDAO from associated Gnosis Safe
+- [x] List all the proposals of zDAO
+- [x] Create funding proposal in zDAO
+- [x] List all the votes and voting result of proposal
+- [x] Cast a vote on proposal who has holding of certain amount of voting token
+- [x] Execute a proposal by Gnosis Safe owners
+
+### Collaboration Diagram
 
 Every platform has different properties, so while building `zDAO` voting system on different platforms may have different interfaces.
 
@@ -16,7 +29,7 @@ Every platform has different properties, so while building `zDAO` voting system 
 - `EthereumZDAOChef` on Polygon: Main contract for Polygon voting, extends from `IZDAOFactory` and contains the list of `zDAO`s and address to Polygon Smart Contracts.
 - `EthereumZDAOChef` on Snapshot: Main contract for Snapshot voting, extends from `IZDAOFactory` and contains the list of `ENS` of Spaces in Snapshot.
 
-## Class Diagram
+### Class Diagram
 
 `zDAO-sdk` defines the common interfaces for `zDAO`, `Proposal`, and `Vote`. Each platform extends from the parent interfaces and adds additional properties.
 
