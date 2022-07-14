@@ -14,29 +14,29 @@ export enum zDAOState {
 }
 
 export enum ProposalState {
-  // The proposal was created and waiting to synchronized to Polygon
+  // The proposal was created and waiting to be synchronized to Polygon.
   PENDING = 'PENDING',
   // The proposal was canceled before calculation
   CANCELED = 'CANCELED',
-  // The proposal was successfully created and sychronized to Polygon,
-  // voters can participate a voting.
+  // The proposal was successfully created and synchronized to Polygon, voters
+  // can participate in voting.
   ACTIVE = 'ACTIVE',
-  // The proposal was ended and ready to calculate voting result on Polygon
-  // and send it to Ethereum
+  // The proposal was ended and ready to calculate the voting result on Polygon
+  // and send it to Ethereum.
   AWAITING_CALCULATION = 'AWAITING_CALCULATION',
-  // The proposal was triggerred the calculation of voting result on Polygon
-  // and sending it to Ethereum
+  // The proposal triggered the calculation of the voting result on Polygon and
+  // sent it to Ethereum.
   BRIDGING = 'BRIDGING',
-  // The calculated voting result was arrived on Ethereum and ready to
-  // finalize result
+  // The calculated voting result arrived on Ethereum and is ready to finalize
+  // the result.
   AWAITING_FINALIZATION = 'AWAITING_FINALIZATION',
-  // The proposal was succeeded on voting and ready to execute proposal
+  // The proposal is succeeded in voting and is ready to execute the proposal.
   AWAITING_EXECUTION = 'AWAITING_EXECUTING',
-  // The proposal was failed on voting
+  // The proposal failed on voting.
   FAILED = 'FAILED',
   // The proposal was closed without execution, Gnosis Owners can execute as they decide, this state is only available on Snapshot.org
   CLOSED = 'CLOSED',
-  // The proposal was successfully executed
+  // The proposal is successfully executed
   EXECUTED = 'EXECUTED',
 }
 
