@@ -18,7 +18,6 @@ import {
 } from '../../types';
 import {
   errorMessageForError,
-  getDecimalAmount,
   getFullDisplayBalance,
   getSigner,
   getToken,
@@ -333,11 +332,11 @@ class DAOClient
     // signer should have valid amount of voting token on Ethereum
     const balance = await this._rootTokenContract.balanceOf(account);
     if (balance.lt(this.amount)) {
-      const decimals = await this._rootTokenContract.decimals();
       throw new InvalidError(
         errorMessageForError('should-hold-token', {
           amount: getFullDisplayBalance(
-            getDecimalAmount(BigNumber.from(this.amount), decimals)
+            BigNumber.from(this.amount),
+            this.votingToken.decimals
           ),
         })
       );

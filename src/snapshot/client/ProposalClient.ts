@@ -7,11 +7,13 @@ import {
 } from '../../client';
 import {
   Choice,
+  InvalidError,
   NotImplementedError,
   PaginationParam,
   ProposalProperties,
   ProposalState,
   TokenMetaData,
+  ZDAOError,
 } from '../../types';
 import { errorMessageForError, getSigner } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
@@ -79,7 +81,7 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
 
       const ipfsData = await IPFSClient.getJson(ipfs, ipfsGateway);
       if (!ipfsData.data || !ipfsData.data.message) {
-        throw new Error(errorMessageForError('empty-voting-token'));
+        throw new InvalidError(errorMessageForError('empty-voting-token'));
       }
 
       const metadataJson = JSON.parse(ipfsData.data.message.metadata);
@@ -246,11 +248,14 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
       address
     );
     if (!isOwner) {
-      throw new Error(errorMessageForError('not-gnosis-owner'));
+      throw new ZDAOError(errorMessageForError('not-gnosis-owner'));
     }
 
     if (!this.metadata) {
-      throw new Error(errorMessageForError('empty-metadata'));
+      throw new ZDAOError(errorMessageForError('empty-metadata'));
+    }
+    if (this.state !== ProposalState.AWAITING_EXECUTION) {
+      throw new ZDAOError(errorMessageForError('not-executable-proposal'));
     }
 
     if (!this.metadata?.token || this.metadata.token.length < 1) {

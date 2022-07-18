@@ -127,6 +127,10 @@ const ErrorMessages = [
     key: 'invalid-proposal-duration',
     value: 'Not found proposal duration',
   },
+  {
+    key: 'not-executable-proposal',
+    value: 'Not a executable   proposal',
+  },
 ] as const;
 
 export type ErrorType = typeof ErrorMessages[number]['key'];

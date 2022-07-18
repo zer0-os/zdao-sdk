@@ -216,6 +216,9 @@ class ProposalClient
     if (!this.metadata) {
       throw new ZDAOError(errorMessageForError('empty-metadata'));
     }
+    if (this.state !== ProposalState.AWAITING_EXECUTION) {
+      throw new ZDAOError(errorMessageForError('not-executable-proposal'));
+    }
 
     try {
       if (!this.metadata?.token || this.metadata.token.length < 1) {

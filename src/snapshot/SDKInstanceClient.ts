@@ -117,7 +117,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
   async getZDAOByZNA(zNA: zNA): Promise<SnapshotZDAO> {
     // check if zDAO exists
     if (!(await this.doesZDAOExist(zNA))) {
-      throw new Error(errorMessageForError('not-found-zdao'));
+      throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 
     // get zDAO information associated with zNA
@@ -131,7 +131,9 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     // should be found by ens in snapshot
     const space = await this._snapshotClient.getSpaceDetails(zDAOInfo.ensSpace);
     if (!space) {
-      throw new Error(errorMessageForError('not-found-ens-in-snapshot'));
+      throw new NotFoundError(
+        errorMessageForError('not-found-ens-in-snapshot')
+      );
     }
 
     // strategy is used to check if voter holds minimum token amount
@@ -140,7 +142,9 @@ class SDKInstanceClient implements SnapshotSDKInstance {
         strategy.name.startsWith('erc20') || strategy.name.startsWith('erc721')
     );
     if (!strategy) {
-      throw new Error(errorMessageForError('not-found-strategy-in-snapshot'));
+      throw new NotFoundError(
+        errorMessageForError('not-found-strategy-in-snapshot')
+      );
     }
 
     const symbol = strategy.params.symbol;
@@ -189,13 +193,13 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     params: CreateSnapshotZDAOParams
   ): Promise<SnapshotZDAO> {
     if (params.name.length < 1) {
-      throw new Error(errorMessageForError('empty-zdao-name'));
+      throw new InvalidError(errorMessageForError('empty-zdao-name'));
     }
     if (params.gnosisSafe.length < 1) {
-      throw new Error(errorMessageForError('empty-gnosis-address'));
+      throw new InvalidError(errorMessageForError('empty-gnosis-address'));
     }
     if (params.token.length < 1) {
-      throw new Error(errorMessageForError('empty-proposal-token'));
+      throw new InvalidError(errorMessageForError('empty-proposal-token'));
     }
     if (
       !isBigNumberish(params.amount) ||

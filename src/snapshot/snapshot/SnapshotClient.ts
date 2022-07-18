@@ -5,7 +5,7 @@ import { ethers } from 'ethers';
 import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
 import { cloneDeep, orderBy } from 'lodash';
 
-import { ProposalId, SupportedChainId } from '../../types';
+import { NotFoundError, ProposalId, SupportedChainId } from '../../types';
 import { errorMessageForError, timestamp } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import verified from '../config/verified.json';
@@ -139,7 +139,9 @@ class SnapshotClient {
       'spaces'
     );
     if (response.length < 1) {
-      throw Error(errorMessageForError('not-found-ens-in-snapshot'));
+      throw new NotFoundError(
+        errorMessageForError('not-found-ens-in-snapshot')
+      );
     }
     const item = response[0];
     return {
@@ -165,7 +167,9 @@ class SnapshotClient {
     const filter = response.filter((item: any) => item.id === spaceId);
 
     if (filter.length < 1) {
-      throw Error(errorMessageForError('not-found-ens-in-snapshot'));
+      throw new NotFoundError(
+        errorMessageForError('not-found-ens-in-snapshot')
+      );
     }
     return filter[0].strategies;
   }
@@ -439,7 +443,7 @@ class SnapshotClient {
     });
 
     if (!response.id || !response.ipfs) {
-      throw Error(errorMessageForError('failed-create-proposal'));
+      throw new NotFoundError(errorMessageForError('failed-create-proposal'));
     }
 
     return {

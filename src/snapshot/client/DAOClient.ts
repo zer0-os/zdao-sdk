@@ -12,6 +12,7 @@ import { cloneDeep } from 'lodash';
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
 import {
   AssetType,
+  InvalidError,
   PaginationParam,
   ProposalId,
   ProposalState,
@@ -282,7 +283,7 @@ class DAOClient
   ): Promise<ProposalId> {
     const duration = this.duration > 0 ? this.duration : payload.duration ?? 0;
     if (!duration) {
-      throw new Error(errorMessageForError('invalid-proposal-duration'));
+      throw new InvalidError(errorMessageForError('invalid-proposal-duration'));
     }
 
     const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
