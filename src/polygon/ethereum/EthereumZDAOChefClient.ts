@@ -15,22 +15,22 @@ import { CreatePolygonProposalParams, CreatePolygonZDAOParams } from '../types';
 import { EthereumZDAOProperties } from './types';
 
 class EthereumZDAOChefClient {
-  private readonly _config: DAOConfig;
-  protected _contract!: EthereumZDAOChef;
-  protected _rootStateSender!: FxStateEthereumTunnel;
+  private readonly config: DAOConfig;
+  protected contract!: EthereumZDAOChef;
+  protected rootStateSender!: FxStateEthereumTunnel;
 
   constructor(config: DAOConfig) {
-    this._config = config;
+    this.config = config;
 
     return (async (): Promise<EthereumZDAOChefClient> => {
-      this._contract = new ethers.Contract(
+      this.contract = new ethers.Contract(
         config.zDAOChef,
         EthereumZDAOChefAbi.abi,
         GlobalClient.etherRpcProvider
       ) as EthereumZDAOChef;
 
-      const address = await this._contract.ethereumStateSender();
-      this._rootStateSender = new ethers.Contract(
+      const address = await this.contract.ethereumStateSender();
+      this.rootStateSender = new ethers.Contract(
         address,
         FxStateEthereumTunnelAbi.abi,
         GlobalClient.etherRpcProvider
@@ -40,16 +40,8 @@ class EthereumZDAOChefClient {
     })() as unknown as EthereumZDAOChefClient;
   }
 
-  get config(): DAOConfig {
-    return this._config;
-  }
-
-  stateSender(): Promise<string> {
-    return this._contract.ethereumStateSender();
-  }
-
   async getZDAOById(zDAOId: zDAOId): Promise<EthereumZDAO> {
-    const zDAO = await this._contract.zDAOs(zDAOId);
+    const zDAO = await this.contract.zDAOs(zDAOId);
 
     return new ethers.Contract(
       zDAO,
@@ -61,7 +53,7 @@ class EthereumZDAOChefClient {
   async getZDAOPropertiesById(
     zDAORecord: ZDAORecord
   ): Promise<EthereumZDAOProperties> {
-    const zDAOInfo = await this._contract.zDAOInfo(zDAORecord.id);
+    const zDAOInfo = await this.contract.zDAOInfo(zDAORecord.id);
 
     const token = await getToken(GlobalClient.etherRpcProvider, zDAOInfo.token);
     const zNAs: zNA[] = zDAORecord.associatedzNAs;
@@ -71,7 +63,7 @@ class EthereumZDAOChefClient {
       zNAs,
       name: zDAORecord.name,
       createdBy: zDAOInfo.createdBy,
-      network: this._config.network,
+      network: this.config.network,
       gnosisSafe: zDAOInfo.gnosisSafe,
       votingToken: token,
       amount: zDAOInfo.amount.toString(),
@@ -125,11 +117,11 @@ class EthereumZDAOChefClient {
     payload: CreatePolygonProposalParams,
     ipfs: string
   ) {
-    const gasEstimated = await this._contract
+    const gasEstimated = await this.contract
       .connect(signer)
       .estimateGas.createProposal(zDAOId, ipfs);
 
-    const tx = await this._contract
+    const tx = await this.contract
       .connect(signer)
       .createProposal(zDAOId, ipfs, {
         gasLimit: calculateGasMargin(gasEstimated),
@@ -142,11 +134,11 @@ class EthereumZDAOChefClient {
     zDAOId: zDAOId,
     proposalId: ProposalId
   ) {
-    const gasEstimated = await this._contract
+    const gasEstimated = await this.contract
       .connect(signer)
       .estimateGas.cancelProposal(zDAOId, proposalId);
 
-    const tx = await this._contract
+    const tx = await this.contract
       .connect(signer)
       .cancelProposal(zDAOId, proposalId, {
         gasLimit: calculateGasMargin(gasEstimated),
@@ -159,11 +151,11 @@ class EthereumZDAOChefClient {
     zDAOId: zDAOId,
     proposalId: ProposalId
   ) {
-    const gasEstimated = await this._contract
+    const gasEstimated = await this.contract
       .connect(signer)
       .estimateGas.executeProposal(zDAOId, proposalId);
 
-    const tx = await this._contract
+    const tx = await this.contract
       .connect(signer)
       .executeProposal(zDAOId, proposalId, {
         gasLimit: calculateGasMargin(gasEstimated),
@@ -172,11 +164,11 @@ class EthereumZDAOChefClient {
   }
 
   async receiveMessage(signer: ethers.Signer, proof: string) {
-    const gasEstimated = await this._rootStateSender
+    const gasEstimated = await this.rootStateSender
       .connect(signer)
       .estimateGas.receiveMessage(proof);
 
-    const tx = await this._rootStateSender
+    const tx = await this.rootStateSender
       .connect(signer)
       .receiveMessage(proof, {
         gasLimit: calculateGasMargin(gasEstimated),

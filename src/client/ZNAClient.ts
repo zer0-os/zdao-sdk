@@ -9,10 +9,10 @@ import {
 import { zNA, zNAId } from '../types';
 
 class ZNAClient {
-  private static _znsInstance: zNSInstance;
+  private static znsInstance: zNSInstance;
 
   static initialize(config: zNSConfig) {
-    ZNAClient._znsInstance = createZNSInstance(config);
+    ZNAClient.znsInstance = createZNSInstance(config);
   }
 
   static async zNAIdTozNA(zNAId: zNAId): Promise<zNA> {
@@ -54,7 +54,7 @@ class ZNAClient {
     )
       return Promise.resolve('dappchain.eth');
 
-    return ZNAClient._znsInstance
+    return ZNAClient.znsInstance
       .getDomainById(zNAId)
       .then((domain: Domain) => domain.name);
   }

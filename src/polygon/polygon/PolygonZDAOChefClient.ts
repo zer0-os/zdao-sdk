@@ -12,28 +12,24 @@ import { StakingProperties } from '../types';
 import { PolygonZDAOProperties } from './types';
 
 class PolygonZDAOChefClient {
-  private readonly _config: DAOConfig;
-  protected readonly _contract: PolygonZDAOChef;
+  private readonly config: DAOConfig;
+  protected readonly contract: PolygonZDAOChef;
 
   constructor(config: DAOConfig) {
-    this._config = config;
-    this._contract = new ethers.Contract(
+    this.config = config;
+    this.contract = new ethers.Contract(
       config.zDAOChef,
       PolygonZDAOChefAbi.abi,
       GlobalClient.polyRpcProvider
     ) as PolygonZDAOChef;
   }
 
-  get config(): DAOConfig {
-    return this._config;
-  }
-
   async numberOfzDAOs(): Promise<number> {
-    return (await this._contract.numberOfzDAOs()).toNumber();
+    return (await this.contract.numberOfzDAOs()).toNumber();
   }
 
   async getZDAOById(daoId: zDAOId): Promise<PolygonZDAO | null> {
-    const iPolygonZDAO = await this._contract.getzDAOById(daoId);
+    const iPolygonZDAO = await this.contract.getzDAOById(daoId);
     if (!iPolygonZDAO || iPolygonZDAO === AddressZero) return null;
 
     return new ethers.Contract(
@@ -44,7 +40,7 @@ class PolygonZDAOChefClient {
   }
 
   async getZDAOProperties(daoId: zDAOId): Promise<PolygonZDAOProperties> {
-    const address = await this._contract.getzDAOById(daoId);
+    const address = await this.contract.getzDAOById(daoId);
     const polygonZDAO = new ethers.Contract(
       address,
       PolygonZDAOAbi.abi,
@@ -62,15 +58,15 @@ class PolygonZDAOChefClient {
   }
 
   async getStakingProperties(): Promise<StakingProperties> {
-    const address = await this._contract.staking();
+    const address = await this.contract.staking();
     return {
-      network: this._config.network,
+      network: this.config.network,
       address,
     };
   }
 
   getRegistryAddress(): Promise<string> {
-    return this._contract.childChainManager();
+    return this.contract.childChainManager();
   }
 
   async vote(
@@ -79,11 +75,11 @@ class PolygonZDAOChefClient {
     proposalId: ProposalId,
     choice: Choice
   ) {
-    const gasEstimated = await this._contract
+    const gasEstimated = await this.contract
       .connect(signer)
       .estimateGas.vote(daoId, proposalId, choice);
 
-    const tx = await this._contract
+    const tx = await this.contract
       .connect(signer)
       .vote(daoId, proposalId, choice, {
         gasLimit: calculateGasMargin(gasEstimated),
@@ -96,11 +92,11 @@ class PolygonZDAOChefClient {
     daoId: zDAOId,
     proposalId: ProposalId
   ) {
-    const gasEstimated = await this._contract
+    const gasEstimated = await this.contract
       .connect(signer)
       .estimateGas.calculateProposal(daoId, proposalId);
 
-    const tx = await this._contract
+    const tx = await this.contract
       .connect(signer)
       .calculateProposal(daoId, proposalId, {
         gasLimit: calculateGasMargin(gasEstimated),
@@ -112,8 +108,8 @@ class PolygonZDAOChefClient {
     daoId: zDAOId,
     proposalId: ProposalId
   ): Promise<string[]> {
-    const currentBlock = await this._contract.provider.getBlockNumber();
-    const creationBlock = this._config.blockNumber;
+    const currentBlock = await this.contract.provider.getBlockNumber();
+    const creationBlock = this.config.blockNumber;
 
     // event ProposalCalculated(
     //   uint256 indexed _zDAOId,
@@ -125,14 +121,14 @@ class PolygonZDAOChefClient {
 
     const blockCount = 3490;
 
-    const filter = this._contract.filters.ProposalCalculated(
+    const filter = this.contract.filters.ProposalCalculated(
       ethers.BigNumber.from(daoId),
       ethers.BigNumber.from(proposalId)
     );
     const events = [];
     let fromBlock = creationBlock;
     while (fromBlock < currentBlock) {
-      const filtered = await this._contract.queryFilter(
+      const filtered = await this.contract.queryFilter(
         filter,
         fromBlock,
         Math.min(fromBlock + blockCount, currentBlock)

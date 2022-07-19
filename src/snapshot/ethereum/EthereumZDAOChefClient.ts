@@ -9,24 +9,20 @@ import { CreateSnapshotZDAOParams } from '../types';
 import { SnapshotZDAOProperties } from './types';
 
 class EthereumZDAOChefClient {
-  private readonly _config: DAOConfig;
-  protected _contract: SnapshotZDAOChef;
+  private readonly config: DAOConfig;
+  protected readonly contract: SnapshotZDAOChef;
 
   constructor(config: DAOConfig) {
-    this._config = config;
-    this._contract = new ethers.Contract(
+    this.config = config;
+    this.contract = new ethers.Contract(
       config.zDAOChef,
       SnapshotZDAOChefAbi.abi,
       GlobalClient.etherRpcProvider
     ) as SnapshotZDAOChef;
   }
 
-  get config(): DAOConfig {
-    return this._config;
-  }
-
   async getZDAOPropertiesById(zDAOId: zDAOId): Promise<SnapshotZDAOProperties> {
-    const zDAOInfo = await this._contract.zDAOInfos(zDAOId);
+    const zDAOInfo = await this.contract.zDAOInfos(zDAOId);
     return {
       id: zDAOInfo.id.toString(),
       snapshot: zDAOInfo.snapshot.toNumber(),

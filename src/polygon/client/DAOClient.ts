@@ -41,89 +41,76 @@ class DAOClient
   extends AbstractDAOClient<PolygonVote, PolygonProposal>
   implements PolygonZDAO
 {
-  protected readonly _zDAOOptions: zDAOOptions;
-  protected _ethereumZDAO!: EthereumZDAO;
-  protected _polygonZDAOContract: PolygonZDAOContract | null = null;
-  protected _rootTokenContract!: ethers.Contract;
-  protected _totalSupply!: BigNumber;
+  protected readonly zDAOOptions: zDAOOptions;
+  protected ethereumZDAO!: EthereumZDAO;
+  protected polygonZDAOContract: PolygonZDAOContract | null = null;
+  protected rootTokenContract!: ethers.Contract;
+  protected totalSupplyAsBN!: BigNumber;
 
   private constructor(
     properties: zDAOProperties & zDAOOptions,
     gnosisSafeClient: GnosisSafeClient
   ) {
     super(properties, gnosisSafeClient);
-    this._zDAOOptions = cloneDeep(properties);
+    this.zDAOOptions = cloneDeep(properties);
 
     return (async (): Promise<DAOClient> => {
-      this._rootTokenContract = new ethers.Contract(
+      this.rootTokenContract = new ethers.Contract(
         properties.votingToken.token,
         IERC20UpgradeableAbi.abi,
         GlobalClient.etherRpcProvider
       );
 
       const promises: Promise<any>[] = [
-        this._rootTokenContract.totalSupply(),
-        GlobalClient.ethereumZDAOChef.getZDAOById(this._properties.id),
+        this.rootTokenContract.totalSupply(),
+        GlobalClient.ethereumZDAOChef.getZDAOById(this.properties.id),
         this.getPolygonZDAOContract(),
       ];
       const results = await Promise.all(promises);
 
-      this._totalSupply = results[0] as BigNumber;
-      this._ethereumZDAO = results[1] as EthereumZDAO;
-      this._polygonZDAOContract = results[2] as PolygonZDAOContract;
+      this.totalSupplyAsBN = results[0] as BigNumber;
+      this.ethereumZDAO = results[1] as EthereumZDAO;
+      this.polygonZDAOContract = results[2] as PolygonZDAOContract;
 
-      // this._totalSupply = await this._rootTokenContract.totalSupply()
+      // this.totalSupplyAsBN = await this.rootTokenContract.totalSupply()
 
-      // this._ethereumZDAO = await GlobalClient.ethereumZDAOChef.getZDAOById(
-      //   this._properties.id
+      // this.ethereumZDAO = await GlobalClient.ethereumZDAOChef.getZDAOById(
+      //   this.properties.id
       // );
-      // this._polygonZDAOContract = await this.getPolygonZDAOContract();
-      if (this._polygonZDAOContract) {
-        this._properties.state = zDAOState.ACTIVE;
+      // this.polygonZDAOContract = await this.getPolygonZDAOContract();
+      if (this.polygonZDAOContract) {
+        this.properties.state = zDAOState.ACTIVE;
       }
       if (properties.destroyed) {
-        this._properties.state = zDAOState.CANCELED;
+        this.properties.state = zDAOState.CANCELED;
       }
       return this;
     })() as unknown as DAOClient;
   }
 
   get polygonToken() {
-    return this._zDAOOptions.polygonToken;
-  }
-
-  get ethereumZDAO() {
-    return this._ethereumZDAO;
+    return this.zDAOOptions.polygonToken;
   }
 
   get totalSupply() {
-    return this._totalSupply;
+    return this.totalSupplyAsBN;
   }
 
   static async createInstance(
     config: PolygonConfig,
     zDAORecord: ZDAORecord
   ): Promise<PolygonZDAO> {
-    console.time('getZDAOPropertiesById');
     const zDAOProperties =
       await GlobalClient.ethereumZDAOChef.getZDAOPropertiesById(zDAORecord);
-    console.timeEnd('getZDAOPropertiesById');
-
-    console.time('ethereumToPolygonToken');
     const polygonTokenAddress =
       await GlobalClient.registry.ethereumToPolygonToken(
         zDAOProperties.votingToken.token
       );
-    console.timeEnd('ethereumToPolygonToken');
 
-    console.time('getToken');
     const polygonToken = await getToken(
       GlobalClient.polyRpcProvider,
       polygonTokenAddress
     );
-    console.timeEnd('getToken');
-
-    console.time('DAOClient');
     const instance = await new DAOClient(
       {
         ...zDAOProperties,
@@ -132,16 +119,15 @@ class DAOClient
       },
       new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
     );
-    console.timeEnd('DAOClient');
     return instance;
   }
 
   async getPolygonZDAOContract(): Promise<PolygonZDAOContract | null> {
-    if (this._polygonZDAOContract) return this._polygonZDAOContract;
-    this._polygonZDAOContract = await GlobalClient.polygonZDAOChef.getZDAOById(
-      this._properties.id
+    if (this.polygonZDAOContract) return this.polygonZDAOContract;
+    this.polygonZDAOContract = await GlobalClient.polygonZDAOChef.getZDAOById(
+      this.properties.id
     );
-    return this._polygonZDAOContract;
+    return this.polygonZDAOContract;
   }
 
   private async mapToProperties(
@@ -282,7 +268,7 @@ class DAOClient
 
     while (numberOfResults === count) {
       const results: IEthereumZDAO.ProposalStructOutput[] =
-        await this._ethereumZDAO.listProposals(from, count);
+        await this.ethereumZDAO.listProposals(from, count);
 
       const promises: Promise<ProposalProperties>[] = [];
       promises.push(
@@ -305,7 +291,7 @@ class DAOClient
   }
 
   async getProposal(id: ProposalId): Promise<PolygonProposal> {
-    const proposal = await this._ethereumZDAO.proposals(id);
+    const proposal = await this.ethereumZDAO.proposals(id);
     if (proposal.proposalId.toString() !== id) {
       throw new NotFoundError(errorMessageForError('not-found-proposal'));
     }
@@ -330,7 +316,7 @@ class DAOClient
     }
 
     // signer should have valid amount of voting token on Ethereum
-    const balance = await this._rootTokenContract.balanceOf(account);
+    const balance = await this.rootTokenContract.balanceOf(account);
     if (balance.lt(this.amount)) {
       throw new InvalidError(
         errorMessageForError('should-hold-token', {
@@ -361,7 +347,7 @@ class DAOClient
 
       // created proposal id
       const lastProposalId = (
-        await this._ethereumZDAO.lastProposalId()
+        await this.ethereumZDAO.lastProposalId()
       ).toString();
 
       return lastProposalId;

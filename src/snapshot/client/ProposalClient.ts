@@ -30,10 +30,10 @@ import DAOClient from './DAOClient';
 import GlobalClient from './GlobalClient';
 
 class ProposalClient extends AbstractProposalClient<SnapshotVote> {
-  private readonly _zDAO: DAOClient;
-  private readonly _snapshotClient: SnapshotClient;
-  private readonly _gnosisSafeClient: GnosisSafeClient;
-  private readonly _options: any;
+  private readonly zDAO: DAOClient;
+  private readonly snapshotClient: SnapshotClient;
+  private readonly gnosisSafeClient: GnosisSafeClient;
+  private readonly options: any;
 
   private constructor(
     zDAO: DAOClient,
@@ -43,10 +43,10 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     options: any
   ) {
     super(properties);
-    this._zDAO = zDAO;
-    this._snapshotClient = snapshotClient;
-    this._gnosisSafeClient = gnosisSafeClient;
-    this._options = options;
+    this.zDAO = zDAO;
+    this.snapshotClient = snapshotClient;
+    this.gnosisSafeClient = gnosisSafeClient;
+    this.options = options;
   }
 
   static async createInstance(
@@ -122,12 +122,12 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     const votes: SnapshotVote[] = [];
 
     while (numberOfResults === limit) {
-      const results = await this._snapshotClient.listVotes({
-        spaceId: this._zDAO.ens,
-        network: this._zDAO.network.toString(),
-        strategies: this._options.strategies,
+      const results = await this.snapshotClient.listVotes({
+        spaceId: this.zDAO.ens,
+        network: this.zDAO.network.toString(),
+        strategies: this.options.strategies,
         proposalId: this.id,
-        scores_state: this._options.scores_state,
+        scores_state: this.options.scores_state,
         snapshot: Number(this.snapshot),
         from,
         count: count >= limit ? limit : count,
@@ -148,10 +148,10 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
   }
 
   async getVotingPowerOfUser(account: string): Promise<string> {
-    return this._snapshotClient
+    return this.snapshotClient
       .getVotingPower({
-        spaceId: this._zDAO.ens,
-        network: this._zDAO.network.toString(),
+        spaceId: this.zDAO.ens,
+        network: this.zDAO.network.toString(),
         snapshot: Number(this.snapshot),
         voter: account,
       })
@@ -171,34 +171,34 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     };
 
     const snapshotProposal: SnapshotProposalProperties = {
-      id: this._properties.id,
+      id: this.properties.id,
       type: 'single-choice',
-      author: this._properties.createdBy,
-      title: this._properties.title,
-      body: this._properties.body,
-      ipfs: this._properties.ipfs,
-      choices: this._properties.choices,
-      created: this._properties.created,
-      start: this._properties.start ?? new Date(),
-      end: this._properties.end ?? new Date(),
-      state: mapState(this._properties.state),
-      scores_state: this._options.scores_state,
-      network: this._zDAO.network.toString(),
-      snapshot: Number(this._properties.snapshot),
-      scores: this._properties.scores?.map((score) => Number(score)) ?? [],
-      votes: this._properties.voters ?? 0,
+      author: this.properties.createdBy,
+      title: this.properties.title,
+      body: this.properties.body,
+      ipfs: this.properties.ipfs,
+      choices: this.properties.choices,
+      created: this.properties.created,
+      start: this.properties.start ?? new Date(),
+      end: this.properties.end ?? new Date(),
+      state: mapState(this.properties.state),
+      scores_state: this.options.scores_state,
+      network: this.zDAO.network.toString(),
+      snapshot: Number(this.properties.snapshot),
+      scores: this.properties.scores?.map((score) => Number(score)) ?? [],
+      votes: this.properties.voters ?? 0,
     };
 
-    const updated = await this._snapshotClient.updateScoresAndVotes(
+    const updated = await this.snapshotClient.updateScoresAndVotes(
       snapshotProposal,
       {
-        spaceId: this._zDAO.ens,
-        network: this._zDAO.network.toString(),
-        strategies: this._options.strategies,
+        spaceId: this.zDAO.ens,
+        network: this.zDAO.network.toString(),
+        strategies: this.options.strategies,
       }
     );
-    this._properties.scores = updated.scores.map((score) => score.toString());
-    this._properties.voters = updated.votes;
+    this.properties.scores = updated.scores.map((score) => score.toString());
+    this.properties.voters = updated.votes;
     return this;
   }
 
@@ -209,8 +209,8 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
   ): Promise<void> {
     const signer = getSigner(provider, account);
     const accountAddress = account ? account : await signer.getAddress();
-    await this._snapshotClient.voteProposal(provider, accountAddress, {
-      spaceId: this._zDAO.ens,
+    await this.snapshotClient.voteProposal(provider, accountAddress, {
+      spaceId: this.zDAO.ens,
       proposalId: this.id,
       choice: payload.choice,
     });
@@ -242,9 +242,9 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     const signer = getSigner(provider, account);
 
     const address = account ?? (await signer.getAddress());
-    const isOwner = await this._gnosisSafeClient.isOwnerAddress(
+    const isOwner = await this.gnosisSafeClient.isOwnerAddress(
       signer,
-      this._zDAO.ens,
+      this.zDAO.ens,
       address
     );
     if (!isOwner) {
@@ -260,8 +260,8 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
 
     if (!this.metadata?.token || this.metadata.token.length < 1) {
       // Ether transfer
-      await this._gnosisSafeClient.transferEther(
-        this._zDAO.gnosisSafe,
+      await this.gnosisSafeClient.transferEther(
+        this.zDAO.gnosisSafe,
         signer,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.metadata!.recipient,
@@ -270,8 +270,8 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
       );
     } else {
       // ERC20 transfer
-      await this._gnosisSafeClient.transferERC20(
-        this._zDAO.gnosisSafe,
+      await this.gnosisSafeClient.transferERC20(
+        this.zDAO.gnosisSafe,
         signer,
         this.metadata.token,
         this.metadata.recipient,

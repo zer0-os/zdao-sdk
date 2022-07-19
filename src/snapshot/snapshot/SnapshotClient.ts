@@ -33,16 +33,16 @@ import {
 } from './types';
 
 class SnapshotClient {
-  private readonly _config: SnapshotNetworkConfig;
-  private readonly _clientEIP712;
-  private readonly _graphQLClient;
-  private _spaces: SnapshotSpace[] = [];
+  private readonly config: SnapshotNetworkConfig;
+  private readonly clientEIP712;
+  private readonly graphQLClient;
+  private spaces: SnapshotSpace[] = [];
 
   constructor(config: SnapshotNetworkConfig) {
-    this._config = config;
+    this.config = config;
 
-    this._clientEIP712 = new Client.Client712(config.serviceUri);
-    this._graphQLClient = new GraphQLClient(`${config.serviceUri}/graphql`);
+    this.clientEIP712 = new Client.Client712(config.serviceUri);
+    this.graphQLClient = new GraphQLClient(`${config.serviceUri}/graphql`);
   }
 
   private async graphQLQuery(
@@ -50,7 +50,7 @@ class SnapshotClient {
     variables?: Variables,
     path = ''
   ) {
-    const response = await this._graphQLClient.request(query, variables);
+    const response = await this.graphQLClient.request(query, variables);
 
     return cloneDeep(!path ? response : response[path]);
   }
@@ -77,11 +77,11 @@ class SnapshotClient {
   }
 
   async listSpaces(network: string): Promise<SnapshotSpace[]> {
-    if (this._spaces.length > 0) {
-      return this._spaces;
+    if (this.spaces.length > 0) {
+      return this.spaces;
     }
     const exploreObj: any = await fetch(
-      `${this._config.serviceUri}/api/explore`
+      `${this.config.serviceUri}/api/explore`
     ).then((res) => res.json());
     const spaces2 = Object.entries(exploreObj.spaces).map(
       ([id, space]: any) => {
@@ -117,7 +117,7 @@ class SnapshotClient {
       )
       .filter((space) => space.network === network);
     const list = orderBy(filters, ['followers', 'score'], ['desc', 'desc']);
-    this._spaces = list.map((item: any) => ({
+    this.spaces = list.map((item: any) => ({
       id: item.id,
       name: item.name,
       avatar: item.avatarUri,
@@ -127,7 +127,7 @@ class SnapshotClient {
       strategies: item.strategies,
       followers: item.followers,
     }));
-    return this._spaces;
+    return this.spaces;
   }
 
   async getSpaceDetails(spaceId: ENS): Promise<SnapshotSpaceDetails> {
@@ -409,7 +409,7 @@ class SnapshotClient {
   ): Promise<SnapshotProposalResponse> {
     const startDateTime = new Date();
 
-    const response: any = await this._clientEIP712.proposal(provider, account, {
+    const response: any = await this.clientEIP712.proposal(provider, account, {
       from: account,
       space: params.spaceId,
       timestamp: timestamp(new Date()),
@@ -457,7 +457,7 @@ class SnapshotClient {
     account: string,
     params: VoteProposalParams
   ): Promise<string> {
-    const response: any = await this._clientEIP712.vote(provider, account, {
+    const response: any = await this.clientEIP712.vote(provider, account, {
       space: params.spaceId,
       proposal: params.proposalId,
       type: 'single-choice', // payload.proposalType,
@@ -471,7 +471,7 @@ class SnapshotClient {
 
   async forceUpdateScoresAndVotes(proposalId: ProposalId) {
     // There are tricky method to update proposal scores and voters immediately after voting
-    const updateScoreApi = `${this._config.serviceUri}/api/scores/${proposalId}`;
+    const updateScoreApi = `${this.config.serviceUri}/api/scores/${proposalId}`;
     await fetch(updateScoreApi, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },

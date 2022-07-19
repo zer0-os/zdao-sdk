@@ -15,66 +15,66 @@ import {
 abstract class AbstractProposalClient<VoteT extends Vote>
   implements Proposal<VoteT>
 {
-  protected readonly _properties: ProposalProperties;
+  protected readonly properties: ProposalProperties;
 
   constructor(properties: ProposalProperties) {
-    this._properties = cloneDeep(properties);
+    this.properties = cloneDeep(properties);
   }
 
   get id() {
-    return this._properties.id;
+    return this.properties.id;
   }
 
   get createdBy() {
-    return this._properties.createdBy;
+    return this.properties.createdBy;
   }
 
   get title() {
-    return this._properties.title;
+    return this.properties.title;
   }
 
   get body() {
-    return this._properties.body;
+    return this.properties.body;
   }
 
   get ipfs() {
-    return this._properties.ipfs;
+    return this.properties.ipfs;
   }
 
   get choices() {
-    return this._properties.choices;
+    return this.properties.choices;
   }
 
   get created() {
-    return this._properties.created;
+    return this.properties.created;
   }
 
   get start() {
-    return this._properties.start;
+    return this.properties.start;
   }
 
   get end() {
-    return this._properties.end;
+    return this.properties.end;
   }
 
   get state() {
-    return this._properties.state;
+    return this.properties.state;
   }
 
   get snapshot() {
-    return this._properties.snapshot;
+    return this.properties.snapshot;
   }
 
   get scores() {
-    return this._properties.scores;
+    return this.properties.scores;
   }
 
   get voters() {
-    return this._properties.voters;
+    return this.properties.voters;
   }
 
   get metadata() {
-    return this._properties.metadata;
+    return this.properties.metadata;
   }
 
   listVotes(): Promise<VoteT[]> {

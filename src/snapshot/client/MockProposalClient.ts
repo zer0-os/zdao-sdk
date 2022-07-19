@@ -13,16 +13,16 @@ import {
 import MockDAOClient from './MockDAOClient';
 
 class MockProposalClient extends AbstractProposalClient<SnapshotVote> {
-  private _votes: SnapshotVote[] = [];
-  private readonly _zDAO: MockDAOClient;
+  private readonly zDAO: MockDAOClient;
+  private votes: SnapshotVote[] = [];
 
   constructor(properties: ProposalProperties, zDAO: MockDAOClient) {
     super(properties);
-    this._zDAO = zDAO;
+    this.zDAO = zDAO;
   }
 
   listVotes(): Promise<SnapshotVote[]> {
-    return Promise.resolve(this._votes);
+    return Promise.resolve(this.votes);
   }
 
   getVotingPowerOfUser(_: string): Promise<string> {
@@ -39,9 +39,9 @@ class MockProposalClient extends AbstractProposalClient<SnapshotVote> {
     payload: VoteSnapshotProposalParams
   ): Promise<void> {
     const address = account;
-    const found = this._votes.find((item) => item.voter == address);
+    const found = this.votes.find((item) => item.voter == address);
     if (!found) {
-      this._votes.push({
+      this.votes.push({
         voter: address,
         choice: payload.choice,
         votes: '1',

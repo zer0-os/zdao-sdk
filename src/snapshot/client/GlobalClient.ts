@@ -5,55 +5,55 @@ import { NotInitializedError } from '../../types';
 import { EthereumZDAOChefClient } from '../ethereum';
 
 class GlobalClient {
-  private static _etherRpcProvider?: ethers.providers.JsonRpcProvider;
-  private static _zDAORegistry?: ZDAORegistryClient;
-  private static _ethereumZDAOChef?: EthereumZDAOChefClient;
-  private static _ipfsGateway?: string;
+  private static etherRpcProviderInst?: ethers.providers.JsonRpcProvider;
+  private static zDAORegistryInst?: ZDAORegistryClient;
+  private static ethereumZDAOChefInst?: EthereumZDAOChefClient;
+  private static ipfsGatewayHost?: string;
 
   static get etherRpcProvider() {
-    if (!GlobalClient._etherRpcProvider) {
+    if (!GlobalClient.etherRpcProviderInst) {
       throw new NotInitializedError();
     }
-    return GlobalClient._etherRpcProvider;
+    return GlobalClient.etherRpcProviderInst;
   }
 
   static set etherRpcProvider(
     etherRpcProvider: ethers.providers.JsonRpcProvider
   ) {
-    GlobalClient._etherRpcProvider = etherRpcProvider;
+    GlobalClient.etherRpcProviderInst = etherRpcProvider;
   }
 
   static get zDAORegistry() {
-    if (!GlobalClient._zDAORegistry) {
+    if (!GlobalClient.zDAORegistryInst) {
       throw new NotInitializedError();
     }
-    return GlobalClient._zDAORegistry;
+    return GlobalClient.zDAORegistryInst;
   }
 
   static set zDAORegistry(registry: ZDAORegistryClient) {
-    GlobalClient._zDAORegistry = registry;
+    GlobalClient.zDAORegistryInst = registry;
   }
 
   static get ethereumZDAOChef() {
-    if (!GlobalClient._ethereumZDAOChef) {
+    if (!GlobalClient.ethereumZDAOChefInst) {
       throw new NotInitializedError();
     }
-    return GlobalClient._ethereumZDAOChef;
+    return GlobalClient.ethereumZDAOChefInst;
   }
 
   static set ethereumZDAOChef(zDAOChef: EthereumZDAOChefClient) {
-    GlobalClient._ethereumZDAOChef = zDAOChef;
+    GlobalClient.ethereumZDAOChefInst = zDAOChef;
   }
 
   static get ipfsGateway() {
-    if (!GlobalClient._ipfsGateway) {
+    if (!GlobalClient.ipfsGatewayHost) {
       throw new NotInitializedError();
     }
-    return GlobalClient._ipfsGateway;
+    return GlobalClient.ipfsGatewayHost;
   }
 
   static set ipfsGateway(ipfsGateway: string) {
-    GlobalClient._ipfsGateway = ipfsGateway;
+    GlobalClient.ipfsGatewayHost = ipfsGateway;
   }
 }
 

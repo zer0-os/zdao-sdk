@@ -5,10 +5,10 @@ import IChildChainManagerAbi from '../config/abi/IChildChainManager.json';
 import { IChildChainManager } from '../config/types/IChildChainManager';
 
 class PolygonRegistryClient {
-  protected readonly _contract: IChildChainManager;
+  protected readonly contract: IChildChainManager;
 
   constructor(address: string) {
-    this._contract = new ethers.Contract(
+    this.contract = new ethers.Contract(
       address,
       IChildChainManagerAbi.abi,
       GlobalClient.polyRpcProvider
@@ -16,11 +16,11 @@ class PolygonRegistryClient {
   }
 
   rootToChildToken(rootToken: string): Promise<string> {
-    return this._contract.rootToChildToken(rootToken);
+    return this.contract.rootToChildToken(rootToken);
   }
 
   childToRootToken(childToken: string): Promise<string> {
-    return this._contract.childToRootToken(childToken);
+    return this.contract.childToRootToken(childToken);
   }
 }
 

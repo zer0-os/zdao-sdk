@@ -34,89 +34,85 @@ abstract class AbstractDAOClient<
   ProposalT extends Proposal<VoteT>
 > implements zDAO<VoteT, ProposalT>
 {
-  protected readonly _properties: zDAOProperties;
-  protected _gnosisSafeClient!: GnosisSafeClient;
+  protected readonly properties: zDAOProperties;
+  public readonly gnosisSafeClient: GnosisSafeClient;
 
   constructor(properties: zDAOProperties, gnosisSafeClient: GnosisSafeClient) {
-    this._properties = cloneDeep(properties);
-    this._gnosisSafeClient = gnosisSafeClient;
-  }
-
-  get gnosisSafeClient() {
-    return this._gnosisSafeClient;
+    this.properties = cloneDeep(properties);
+    this.gnosisSafeClient = gnosisSafeClient;
   }
 
   get id() {
-    return this._properties.id;
+    return this.properties.id;
   }
 
   get zNAs() {
-    return this._properties.zNAs;
+    return this.properties.zNAs;
   }
 
   get name() {
-    return this._properties.name;
+    return this.properties.name;
   }
 
   get createdBy() {
-    return this._properties.createdBy;
+    return this.properties.createdBy;
   }
 
   get network() {
-    return this._properties.network;
+    return this.properties.network;
   }
 
   get gnosisSafe() {
-    return this._properties.gnosisSafe;
+    return this.properties.gnosisSafe;
   }
 
   get votingToken() {
-    return this._properties.votingToken;
+    return this.properties.votingToken;
   }
 
   get amount() {
-    return this._properties.amount;
+    return this.properties.amount;
   }
 
   get duration() {
-    return this._properties.duration;
+    return this.properties.duration;
   }
 
   get votingThreshold() {
-    return this._properties.votingThreshold;
+    return this.properties.votingThreshold;
   }
 
   get minimumVotingParticipants() {
-    return this._properties.minimumVotingParticipants;
+    return this.properties.minimumVotingParticipants;
   }
 
   get minimumTotalVotingTokens() {
-    return this._properties.minimumTotalVotingTokens;
+    return this.properties.minimumTotalVotingTokens;
   }
 
   get isRelativeMajority() {
-    return this._properties.isRelativeMajority;
+    return this.properties.isRelativeMajority;
   }
 
   get state() {
-    return this._properties.state;
+    return this.properties.state;
   }
 
   get snapshot() {
-    return this._properties.snapshot;
+    return this.properties.snapshot;
   }
 
   get destroyed() {
-    return this._properties.destroyed;
+    return this.properties.destroyed;
   }
 
   async listAssets(): Promise<zDAOAssets> {
-    const balances = await this._gnosisSafeClient.listAssets(
+    const balances = await this.gnosisSafeClient.listAssets(
       this.gnosisSafe,
       this.network.toString()
     );
 
-    const collectibles = await this._gnosisSafeClient.listCollectibles(
+    const collectibles = await this.gnosisSafeClient.listCollectibles(
       this.gnosisSafe,
       this.network.toString()
     );
@@ -149,7 +145,7 @@ abstract class AbstractDAOClient<
 
   async listTransactions(): Promise<Transaction[]> {
     const transactions: GnosisTransaction[] =
-      await this._gnosisSafeClient.listTransactions(
+      await this.gnosisSafeClient.listTransactions(
         this.gnosisSafe,
         this.network.toString()
       );

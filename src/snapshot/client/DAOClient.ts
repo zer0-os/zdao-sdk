@@ -40,10 +40,10 @@ class DAOClient
   extends AbstractDAOClient<SnapshotVote, SnapshotProposal>
   implements SnapshotZDAO
 {
-  private readonly _config: SnapshotConfig;
-  protected readonly _snapshotClient: SnapshotClient;
-  protected readonly _zDAOOptions: zDAOOptions;
-  private readonly _options: any;
+  private readonly config: SnapshotConfig;
+  protected readonly snapshotClient: SnapshotClient;
+  protected readonly zDAOOptions: zDAOOptions;
+  private readonly options: any;
 
   private constructor(
     config: SnapshotConfig,
@@ -54,15 +54,15 @@ class DAOClient
       properties,
       new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
     );
-    this._config = config;
-    this._zDAOOptions = cloneDeep(properties);
-    this._options = options;
+    this.config = config;
+    this.zDAOOptions = cloneDeep(properties);
+    this.options = options;
 
-    this._snapshotClient = new SnapshotClient(config.snapshot);
+    this.snapshotClient = new SnapshotClient(config.snapshot);
   }
 
   get ens() {
-    return this._zDAOOptions.ens;
+    return this.zDAOOptions.ens;
   }
 
   static async createInstance(
@@ -83,12 +83,12 @@ class DAOClient
   }
 
   async listAssets(): Promise<zDAOAssets> {
-    const balances = await this._gnosisSafeClient.listAssets(
+    const balances = await this.gnosisSafeClient.listAssets(
       this.gnosisSafe,
       this.network.toString()
     );
 
-    const collectibles = await this._gnosisSafeClient.listCollectibles(
+    const collectibles = await this.gnosisSafeClient.listCollectibles(
       this.gnosisSafe,
       this.network.toString()
     );
@@ -121,7 +121,7 @@ class DAOClient
 
   async listTransactions(): Promise<Transaction[]> {
     const transactions: GnosisTransaction[] =
-      await this._gnosisSafeClient.listTransactions(
+      await this.gnosisSafeClient.listTransactions(
         this.gnosisSafe,
         this.network.toString()
       );
@@ -194,7 +194,7 @@ class DAOClient
 
     // get the list of proposals
     while (numberOfResults === limit) {
-      const results = await this._snapshotClient.listProposals(
+      const results = await this.snapshotClient.listProposals(
         this.ens,
         this.network.toString(),
         from,
@@ -213,8 +213,8 @@ class DAOClient
       (proposal): Promise<SnapshotProposal> =>
         ProposalClient.createInstance(
           this,
-          this._snapshotClient,
-          this._gnosisSafeClient,
+          this.snapshotClient,
+          this.gnosisSafeClient,
           {
             id: proposal.id,
             createdBy: proposal.author,
@@ -231,7 +231,7 @@ class DAOClient
             voters: proposal.votes,
           },
           {
-            strategies: this._options.strategies,
+            strategies: this.options.strategies,
             scores_state: proposal.scores_state,
           }
         )
@@ -241,19 +241,19 @@ class DAOClient
   }
 
   async getProposal(id: ProposalId): Promise<SnapshotProposal> {
-    await this._snapshotClient.forceUpdateScoresAndVotes(id);
+    await this.snapshotClient.forceUpdateScoresAndVotes(id);
 
-    const proposal = await this._snapshotClient.getProposal({
+    const proposal = await this.snapshotClient.getProposal({
       spaceId: this.ens,
       network: this.network.toString(),
-      strategies: this._options.strategies,
+      strategies: this.options.strategies,
       proposalId: id,
     });
 
     return await ProposalClient.createInstance(
       this,
-      this._snapshotClient,
-      this._gnosisSafeClient,
+      this.snapshotClient,
+      this.gnosisSafeClient,
       {
         id: proposal.id,
         createdBy: proposal.author,
@@ -270,7 +270,7 @@ class DAOClient
         voters: proposal.votes,
       },
       {
-        strategies: this._options.strategies,
+        strategies: this.options.strategies,
         scores_state: proposal.scores_state,
       }
     );
@@ -290,7 +290,7 @@ class DAOClient
 
     const signer = getSigner(provider, account);
     const accountAddress = account ? account : await signer.getAddress();
-    const { id: proposalId } = await this._snapshotClient.createProposal(
+    const { id: proposalId } = await this.snapshotClient.createProposal(
       provider,
       accountAddress,
       {
@@ -301,7 +301,7 @@ class DAOClient
         duration,
         snapshot,
         network: this.network.toString(),
-        strategies: this._options.strategies,
+        strategies: this.options.strategies,
         token: this.votingToken,
         transfer: payload.transfer && {
           sender: this.gnosisSafe,

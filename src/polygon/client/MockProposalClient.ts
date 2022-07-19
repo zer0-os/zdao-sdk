@@ -17,16 +17,16 @@ class MockProposalClient
   extends AbstractProposalClient<PolygonVote>
   implements PolygonProposal
 {
-  private _votes: PolygonVote[] = [];
-  private readonly _zDAO: MockDAOClient;
+  private readonly zDAO: MockDAOClient;
+  private votes: PolygonVote[] = [];
 
   constructor(properties: ProposalProperties, zDAO: MockDAOClient) {
     super(properties);
-    this._zDAO = zDAO;
+    this.zDAO = zDAO;
   }
 
   listVotes(): Promise<PolygonVote[]> {
-    return Promise.resolve(this._votes);
+    return Promise.resolve(this.votes);
   }
 
   getVotingPowerOfUser(_: string): Promise<string> {
@@ -44,22 +44,22 @@ class MockProposalClient
   ): Promise<void> {
     const signer = getSigner(provider, account);
     const accountAddress = account ? account : await signer.getAddress();
-    const found = this._votes.find((item) => item.voter == accountAddress);
+    const found = this.votes.find((item) => item.voter == accountAddress);
 
     const vp = Number(await this.getVotingPowerOfUser(accountAddress));
     if (!found) {
-      this._votes.push({
+      this.votes.push({
         voter: accountAddress,
         choice: payload.choice,
         votes: vp.toString(),
       });
-      this._properties.voters = (this._properties.voters ?? 0) + vp;
+      this.properties.voters = (this.properties.voters ?? 0) + vp;
     } else {
       found.choice = payload.choice;
     }
-    if (this._properties.scores) {
-      this._properties.scores[payload.choice] = (
-        Number(this._properties.scores) + vp
+    if (this.properties.scores) {
+      this.properties.scores[payload.choice] = (
+        Number(this.properties.scores) + vp
       ).toString();
     }
   }

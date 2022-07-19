@@ -4,10 +4,10 @@ import fetch from 'cross-fetch';
 import { FleekConfig } from '../types';
 
 class IPFSClient {
-  private static _config: FleekConfig;
+  private static config: FleekConfig;
 
   static initialize(config: FleekConfig) {
-    IPFSClient._config = config;
+    IPFSClient.config = config;
   }
 
   private static getUrl(uri: string, gateway: string): string | null {
@@ -45,8 +45,8 @@ class IPFSClient {
 
   static async upload(key: string, body: any): Promise<string> {
     const result = await fleek.upload({
-      apiKey: IPFSClient._config.apiKey,
-      apiSecret: IPFSClient._config.apiSecret,
+      apiKey: IPFSClient.config.apiKey,
+      apiSecret: IPFSClient.config.apiSecret,
       key,
       data: JSON.stringify(body),
     });
