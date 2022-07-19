@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import { PlatformType } from '../..';
 import { DAOConfig, zDAOId } from '../../types';
 import GlobalClient from '../client/GlobalClient';
-import SnapshotZDAOChefAbi from '../config/abi/SnapshotZDAOChef.json';
+import { SnapshotZDAOChef__factory } from '../config/types/factories/SnapshotZDAOChef__factory';
 import { SnapshotZDAOChef } from '../config/types/SnapshotZDAOChef';
 import { CreateSnapshotZDAOParams } from '../types';
 import { SnapshotZDAOProperties } from './types';
@@ -14,11 +14,10 @@ class EthereumZDAOChefClient {
 
   constructor(config: DAOConfig) {
     this.config = config;
-    this.contract = new ethers.Contract(
+    this.contract = SnapshotZDAOChef__factory.connect(
       config.zDAOChef,
-      SnapshotZDAOChefAbi.abi,
       GlobalClient.etherRpcProvider
-    ) as SnapshotZDAOChef;
+    );
   }
 
   async getZDAOPropertiesById(zDAOId: zDAOId): Promise<SnapshotZDAOProperties> {

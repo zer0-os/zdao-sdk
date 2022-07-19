@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
 import { PlatformType } from '..';
-import ZDAORegistryAbi from '../config/abi/ZDAORegistry.json';
+import { ZDAORegistry__factory } from '../config/types/factories/ZDAORegistry__factory';
 import { ZDAORegistry } from '../config/types/ZDAORegistry';
 import { zNAConfig, zNAId } from '../types';
 import { zDAOId, zDAOProperties, zNA } from '../types';
@@ -27,11 +27,10 @@ class ZDAORegistryClient {
   protected readonly contract: ZDAORegistry;
 
   constructor(config: zNAConfig) {
-    this.contract = new ethers.Contract(
+    this.contract = ZDAORegistry__factory.connect(
       config.zDAORegistry,
-      ZDAORegistryAbi.abi,
       new ethers.providers.JsonRpcProvider(config.rpcUrl, config.network)
-    ) as ZDAORegistry;
+    );
   }
 
   async numberOfzDAOs(): Promise<number> {

@@ -4,8 +4,8 @@ import { ethers } from 'ethers';
 import { Choice, DAOConfig, ProposalId, zDAOId } from '../../types';
 import { calculateGasMargin } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
-import PolygonZDAOAbi from '../config/abi/PolygonZDAO.json';
-import PolygonZDAOChefAbi from '../config/abi/PolygonZDAOChef.json';
+import { PolygonZDAO__factory } from '../config/types/factories/PolygonZDAO__factory';
+import { PolygonZDAOChef__factory } from '../config/types/factories/PolygonZDAOChef__factory';
 import { PolygonZDAO } from '../config/types/PolygonZDAO';
 import { PolygonZDAOChef } from '../config/types/PolygonZDAOChef';
 import { StakingProperties } from '../types';
@@ -17,11 +17,10 @@ class PolygonZDAOChefClient {
 
   constructor(config: DAOConfig) {
     this.config = config;
-    this.contract = new ethers.Contract(
+    this.contract = PolygonZDAOChef__factory.connect(
       config.zDAOChef,
-      PolygonZDAOChefAbi.abi,
       GlobalClient.polyRpcProvider
-    ) as PolygonZDAOChef;
+    );
   }
 
   async numberOfzDAOs(): Promise<number> {
@@ -32,20 +31,18 @@ class PolygonZDAOChefClient {
     const iPolygonZDAO = await this.contract.getzDAOById(daoId);
     if (!iPolygonZDAO || iPolygonZDAO === AddressZero) return null;
 
-    return new ethers.Contract(
+    return PolygonZDAO__factory.connect(
       iPolygonZDAO,
-      PolygonZDAOAbi.abi,
       GlobalClient.polyRpcProvider
-    ) as PolygonZDAO;
+    );
   }
 
   async getZDAOProperties(daoId: zDAOId): Promise<PolygonZDAOProperties> {
     const address = await this.contract.getzDAOById(daoId);
-    const polygonZDAO = new ethers.Contract(
+    const polygonZDAO = PolygonZDAO__factory.connect(
       address,
-      PolygonZDAOAbi.abi,
       GlobalClient.polyRpcProvider
-    ) as PolygonZDAO;
+    );
 
     const zDAOInfo = await polygonZDAO.zDAOInfo();
 

@@ -5,11 +5,11 @@ import { ZDAORecord } from '../../client/ZDAORegistry';
 import { DAOConfig, ProposalId, zDAOId, zNA } from '../../types';
 import { calculateGasMargin, getToken } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
-import EthereumZDAOAbi from '../config/abi/EthereumZDAO.json';
-import EthereumZDAOChefAbi from '../config/abi/EthereumZDAOChef.json';
-import FxStateEthereumTunnelAbi from '../config/abi/FxStateEthereumTunnel.json';
 import { EthereumZDAO } from '../config/types/EthereumZDAO';
 import { EthereumZDAOChef } from '../config/types/EthereumZDAOChef';
+import { EthereumZDAO__factory } from '../config/types/factories/EthereumZDAO__factory';
+import { EthereumZDAOChef__factory } from '../config/types/factories/EthereumZDAOChef__factory';
+import { FxStateEthereumTunnel__factory } from '../config/types/factories/FxStateEthereumTunnel__factory';
 import { FxStateEthereumTunnel } from '../config/types/FxStateEthereumTunnel';
 import { CreatePolygonProposalParams, CreatePolygonZDAOParams } from '../types';
 import { EthereumZDAOProperties } from './types';
@@ -23,18 +23,16 @@ class EthereumZDAOChefClient {
     this.config = config;
 
     return (async (): Promise<EthereumZDAOChefClient> => {
-      this.contract = new ethers.Contract(
+      this.contract = EthereumZDAOChef__factory.connect(
         config.zDAOChef,
-        EthereumZDAOChefAbi.abi,
         GlobalClient.etherRpcProvider
-      ) as EthereumZDAOChef;
+      );
 
       const address = await this.contract.ethereumStateSender();
-      this.rootStateSender = new ethers.Contract(
+      this.rootStateSender = FxStateEthereumTunnel__factory.connect(
         address,
-        FxStateEthereumTunnelAbi.abi,
         GlobalClient.etherRpcProvider
-      ) as FxStateEthereumTunnel;
+      );
 
       return this;
     })() as unknown as EthereumZDAOChefClient;
@@ -43,11 +41,7 @@ class EthereumZDAOChefClient {
   async getZDAOById(zDAOId: zDAOId): Promise<EthereumZDAO> {
     const zDAO = await this.contract.zDAOs(zDAOId);
 
-    return new ethers.Contract(
-      zDAO,
-      EthereumZDAOAbi.abi,
-      GlobalClient.etherRpcProvider
-    ) as EthereumZDAO;
+    return EthereumZDAO__factory.connect(zDAO, GlobalClient.etherRpcProvider);
   }
 
   async getZDAOPropertiesById(

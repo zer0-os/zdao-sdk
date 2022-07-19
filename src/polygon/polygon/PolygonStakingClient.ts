@@ -2,18 +2,17 @@ import { ContractReceipt, ethers } from 'ethers';
 
 import { calculateGasMargin } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
-import StakingAbi from '../config/abi/Staking.json';
+import { Staking__factory } from '../config/types/factories/Staking__factory';
 import { Staking } from '../config/types/Staking';
 
 class PolygonStakingClient {
   protected readonly contract: Staking;
 
   constructor(address: string) {
-    this.contract = new ethers.Contract(
+    this.contract = Staking__factory.connect(
       address,
-      StakingAbi.abi,
       GlobalClient.polyRpcProvider
-    ) as Staking;
+    );
   }
 
   async stakeERC20(

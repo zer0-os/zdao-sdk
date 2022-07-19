@@ -211,12 +211,12 @@ const iterateZDAO = async (
 
 const performance = async (
   sdkInstance: Polygon.PolygonSDKInstance,
-  goerliSigner: ethers.Wallet
+  goerliSigner: ethers.Wallet,
+  goerliGnosisOwnerSigner: ethers.Wallet
 ) => {
   console.time('>listZNAs');
   await sdkInstance.listZNAs();
   console.timeEnd('>listZNAs');
-
   for (let i = 0; i < 1; i++) {
     console.time('>getZDAOByZNA');
     await sdkInstance.getZDAOByZNA('wilder.cats');
@@ -270,16 +270,26 @@ const main = async () => {
   console.log('config', config);
   console.log('signer.address', goerliSigner.address);
 
+  console.time('createSDKInstance');
   const instance: Polygon.PolygonSDKInstance = await Polygon.createSDKInstance(
     config
   );
+  console.timeEnd('createSDKInstance');
 
   console.log('instance created');
 
   // await createZDAO(instance, goerliSigner, env);
   // await iterateZNAs(instance);
-  // await iterateZDAO(instance, goerliSigner, 'wilder.kicks', env);
-  await performance(instance, goerliSigner);
+  // await iterateZDAO(instance, goerliSigner, 'wilder.wheels', env);
+
+  const goerliGnosisOwnerSigner = new ethers.Wallet(
+    env.gnosisSafe.goerli.ownerPrivateKey,
+    new ethers.providers.JsonRpcProvider(
+      env.rpc.goerli,
+      SupportedChainId.GOERLI
+    )
+  );
+  await performance(instance, goerliSigner, goerliGnosisOwnerSigner);
 
   console.log('Finished successfully');
 };

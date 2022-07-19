@@ -3,7 +3,7 @@ import { cloneDeep } from 'lodash';
 import shortid from 'shortid';
 
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
-import IERC20UpgradeableAbi from '../../config/abi/IERC20Upgradeable.json';
+import { IERC20Upgradeable__factory } from '../../config/types/factories/IERC20Upgradeable__factory';
 import {
   NotFoundError,
   ProposalId,
@@ -92,9 +92,8 @@ class MockDAOClient
       polygonToken: polygonToken,
     };
 
-    const tokenContract = new ethers.Contract(
+    const tokenContract = IERC20Upgradeable__factory.connect(
       params.token,
-      IERC20UpgradeableAbi.abi,
       GlobalClient.etherRpcProvider
     );
 

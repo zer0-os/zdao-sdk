@@ -3,7 +3,8 @@ import { cloneDeep } from 'lodash';
 
 import { AbstractDAOClient, GnosisSafeClient, IPFSClient } from '../../client';
 import { ZDAORecord } from '../../client/ZDAORegistry';
-import IERC20UpgradeableAbi from '../../config/abi/IERC20Upgradeable.json';
+import { IERC20Upgradeable__factory } from '../../config/types/factories/IERC20Upgradeable__factory';
+import { IERC20Upgradeable } from '../../config/types/IERC20Upgradeable';
 import {
   AlreadyDestroyedError,
   FailedTxError,
@@ -44,7 +45,7 @@ class DAOClient
   protected readonly zDAOOptions: zDAOOptions;
   protected ethereumZDAO!: EthereumZDAO;
   protected polygonZDAOContract: PolygonZDAOContract | null = null;
-  protected rootTokenContract!: ethers.Contract;
+  protected rootTokenContract!: IERC20Upgradeable;
   protected totalSupplyAsBN!: BigNumber;
 
   private constructor(
@@ -55,9 +56,8 @@ class DAOClient
     this.zDAOOptions = cloneDeep(properties);
 
     return (async (): Promise<DAOClient> => {
-      this.rootTokenContract = new ethers.Contract(
+      this.rootTokenContract = IERC20Upgradeable__factory.connect(
         properties.votingToken.token,
-        IERC20UpgradeableAbi.abi,
         GlobalClient.etherRpcProvider
       );
 
@@ -315,8 +315,11 @@ class DAOClient
       throw new Error(errorMessageForError('invalid-proposal-duration'));
     }
 
+    const signer = getSigner(provider, account);
+    const signerAddress = await signer.getAddress();
+
     // signer should have valid amount of voting token on Ethereum
-    const balance = await this.rootTokenContract.balanceOf(account);
+    const balance = await this.rootTokenContract.balanceOf(signerAddress);
     if (balance.lt(this.amount)) {
       throw new InvalidError(
         errorMessageForError('should-hold-token', {
@@ -329,13 +332,12 @@ class DAOClient
     }
 
     // zDAO should be synchronized to Polygon prior to create proposal
-    const PolygonZDAOContract = await this.getPolygonZDAOContract();
-    if (!PolygonZDAOContract) {
+    const polygonZDAOContract = await this.getPolygonZDAOContract();
+    if (!polygonZDAOContract) {
       throw new NotSyncStateError();
     }
 
     try {
-      const signer = getSigner(provider, account);
       const ipfs = await AbstractDAOClient.uploadToIPFS(signer, payload);
 
       await GlobalClient.ethereumZDAOChef.createProposal(
