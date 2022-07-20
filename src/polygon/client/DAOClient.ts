@@ -44,7 +44,7 @@ class DAOClient
 {
   protected readonly zDAOOptions: zDAOOptions;
   protected ethereumZDAO!: EthereumZDAO;
-  protected polygonZDAOContract: PolygonZDAOContract | null = null;
+  protected polygonZDAO: PolygonZDAOContract | null = null;
   protected rootTokenContract!: IERC20Upgradeable;
   protected totalSupplyAsBN!: BigNumber;
 
@@ -70,15 +70,9 @@ class DAOClient
 
       this.totalSupplyAsBN = results[0] as BigNumber;
       this.ethereumZDAO = results[1] as EthereumZDAO;
-      this.polygonZDAOContract = results[2] as PolygonZDAOContract;
+      this.polygonZDAO = results[2] as PolygonZDAOContract;
 
-      // this.totalSupplyAsBN = await this.rootTokenContract.totalSupply()
-
-      // this.ethereumZDAO = await GlobalClient.ethereumZDAOChef.getZDAOById(
-      //   this.properties.id
-      // );
-      // this.polygonZDAOContract = await this.getPolygonZDAOContract();
-      if (this.polygonZDAOContract) {
+      if (this.polygonZDAO) {
         this.properties.state = zDAOState.ACTIVE;
       }
       if (properties.destroyed) {
@@ -123,19 +117,19 @@ class DAOClient
   }
 
   async getPolygonZDAOContract(): Promise<PolygonZDAOContract | null> {
-    if (this.polygonZDAOContract) return this.polygonZDAOContract;
-    this.polygonZDAOContract = await GlobalClient.polygonZDAOChef.getZDAOById(
+    if (this.polygonZDAO) return this.polygonZDAO;
+    this.polygonZDAO = await GlobalClient.polygonZDAOChef.getZDAOById(
       this.properties.id
     );
-    return this.polygonZDAOContract;
+    return this.polygonZDAO;
   }
 
   private async mapToProperties(
     raw: IEthereumZDAO.ProposalStruct
   ): Promise<ProposalProperties> {
-    const polygonZDAOContract = await this.getPolygonZDAOContract();
-    const polyProposal = polygonZDAOContract
-      ? await polygonZDAOContract.proposals(raw.proposalId)
+    const polygonZDAO = await this.getPolygonZDAOContract();
+    const polyProposal = polygonZDAO
+      ? await polygonZDAO.proposals(raw.proposalId)
       : null;
     const isSyncedProposal = polyProposal
       ? polyProposal.proposalId.eq(raw.proposalId)
@@ -143,24 +137,24 @@ class DAOClient
 
     const created = new Date(Number(raw.created) * 1000);
     const start =
-        polygonZDAOContract && polyProposal && isSyncedProposal
+        polygonZDAO && polyProposal && isSyncedProposal
           ? new Date(Number(polyProposal.startTimestamp) * 1000)
           : undefined,
       end =
-        polygonZDAOContract && polyProposal && isSyncedProposal
+        polygonZDAO && polyProposal && isSyncedProposal
           ? new Date(Number(polyProposal.endTimestamp) * 1000)
           : undefined,
       now = new Date();
     const snapshot =
-      polygonZDAOContract && polyProposal && isSyncedProposal
+      polygonZDAO && polyProposal && isSyncedProposal
         ? polyProposal.snapshot.toNumber()
         : undefined;
     const scores =
-      polygonZDAOContract && polyProposal && isSyncedProposal
+      polygonZDAO && polyProposal && isSyncedProposal
         ? [polyProposal.yes.toString(), polyProposal.no.toString()]
         : undefined;
     const voters =
-      polygonZDAOContract && polyProposal && isSyncedProposal
+      polygonZDAO && polyProposal && isSyncedProposal
         ? polyProposal.voters.toNumber()
         : undefined;
 
@@ -332,8 +326,8 @@ class DAOClient
     }
 
     // zDAO should be synchronized to Polygon prior to create proposal
-    const polygonZDAOContract = await this.getPolygonZDAOContract();
-    if (!polygonZDAOContract) {
+    const polygonZDAO = await this.getPolygonZDAOContract();
+    if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
 

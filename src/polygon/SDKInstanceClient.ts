@@ -2,7 +2,6 @@ import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
 import { ethers } from 'ethers';
 
 import { IPFSClient, ZNAClient } from '../client';
-import ZDAORegistryClient from '../client/ZDAORegistry';
 import ZNSHubClient from '../client/ZNSHubClient';
 import {
   AlreadyExistError,
@@ -14,16 +13,8 @@ import {
   zNAId,
 } from '../types';
 import { errorMessageForError, getSigner } from '../utilities';
-import {
-  DAOClient,
-  MockDAOClient,
-  ProofClient,
-  RegistryClient,
-  StakingClient,
-} from './client';
+import { DAOClient, MockDAOClient, ProofClient } from './client';
 import GlobalClient from './client/GlobalClient';
-import { EthereumZDAOChefClient } from './ethereum';
-import { PolygonZDAOChefClient } from './polygon';
 import {
   CreatePolygonZDAOParams,
   PolygonConfig,
@@ -42,30 +33,8 @@ class SDKInstanceClient implements PolygonSDKInstance {
     ZNAClient.initialize(this.config.zNS);
     ZNSHubClient.initialize(config.zNA);
 
-    GlobalClient.etherRpcProvider = new ethers.providers.JsonRpcProvider(
-      this.config.ethereum.rpcUrl,
-      this.config.ethereum.network
-    );
-    GlobalClient.polyRpcProvider = new ethers.providers.JsonRpcProvider(
-      this.config.polygon.rpcUrl,
-      this.config.polygon.network
-    );
-    GlobalClient.zDAORegistry = new ZDAORegistryClient(config.zNA);
-    GlobalClient.ipfsGateway = config.ipfsGateway;
-
     return (async (config: PolygonConfig): Promise<SDKInstanceClient> => {
-      GlobalClient.ethereumZDAOChef = await new EthereumZDAOChefClient(
-        config.ethereum
-      );
-      GlobalClient.polygonZDAOChef = new PolygonZDAOChefClient(config.polygon);
-
-      const stakingProperties =
-        await GlobalClient.polygonZDAOChef.getStakingProperties();
-      GlobalClient.staking = new StakingClient(stakingProperties);
-
-      const registryAddress =
-        await GlobalClient.polygonZDAOChef.getRegistryAddress();
-      GlobalClient.registry = new RegistryClient(registryAddress);
+      await GlobalClient.initialize(config);
       await ProofClient.initialize(config);
 
       return this;
