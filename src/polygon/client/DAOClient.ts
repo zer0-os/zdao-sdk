@@ -11,6 +11,7 @@ import {
   InvalidError,
   NotFoundError,
   NotSyncStateError,
+  PaginationParam,
   ProposalId,
   ProposalProperties,
   ProposalState,
@@ -256,16 +257,22 @@ class DAOClient
     };
   }
 
-  async listProposals(): Promise<PolygonProposal[]> {
-    const count = 100;
-    let from = 0;
-    let numberOfResults = count;
+  async listProposals(
+    pagination?: PaginationParam
+  ): Promise<PolygonProposal[]> {
+    const limit = 100;
+    let from = pagination?.from ?? 0;
+    let count = pagination?.count ?? limit;
+    let numberOfResults = limit;
 
     const proposalPromises: Promise<PolygonProposal>[] = [];
 
-    while (numberOfResults === count) {
+    while (numberOfResults === limit) {
       const results: IEthereumZDAO.ProposalStructOutput[] =
-        await this.ethereumZDAO.listProposals(from, count);
+        await this.ethereumZDAO.listProposals(
+          from,
+          count >= limit ? limit : count
+        );
 
       const promises: Promise<ProposalProperties>[] = [];
       promises.push(
@@ -280,6 +287,7 @@ class DAOClient
       );
 
       from += results.length;
+      count -= results.length;
       numberOfResults = results.length;
     }
     return await Promise.all(proposalPromises).then((values) =>

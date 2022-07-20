@@ -14,6 +14,7 @@ import {
   AssetType,
   CreateProposalParams,
   NotImplementedError,
+  PaginationParam,
   Proposal,
   ProposalId,
   Transaction,
@@ -198,7 +199,7 @@ abstract class AbstractDAOClient<
     });
   }
 
-  listProposals(): Promise<ProposalT[]> {
+  listProposals(pagination?: PaginationParam): Promise<ProposalT[]> {
     throw new NotImplementedError();
   }
 
