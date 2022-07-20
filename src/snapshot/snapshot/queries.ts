@@ -72,6 +72,25 @@ export const PROPOSALS_QUERY: DocumentNode = gql`
   }
 `;
 
+export const PROPOSALIDS_QUERY: DocumentNode = gql`
+  query Proposals(
+    $spaceId: String!
+    $network: String!
+    $skip: Int!
+    $first: Int!
+  ) {
+    proposals(
+      first: $first
+      skip: $skip
+      where: { space_in: [$spaceId], network: $network }
+      orderBy: "created"
+      orderDirection: desc
+    ) {
+      id
+    }
+  }
+`;
+
 export const PROPOSAL_QUERY: DocumentNode = gql`
   query Proposal($id: String!) {
     proposal(id: $id) {

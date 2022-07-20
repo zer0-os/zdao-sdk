@@ -12,6 +12,7 @@ import verified from '../config/verified.json';
 import { ENS, SnapshotNetworkConfig } from '../types';
 import {
   PROPOSAL_QUERY,
+  PROPOSALIDS_QUERY,
   PROPOSALS_QUERY,
   SPACES_QUERY,
   SPACES_STRATEGIES_QUERY,
@@ -212,6 +213,25 @@ class SnapshotClient {
         votes: response.votes,
       })
     );
+  }
+
+  async listProposalIds(
+    spaceId: ENS,
+    network: string,
+    from = 0,
+    count = 30000
+  ): Promise<ProposalId[]> {
+    const response = await this.graphQLQuery(
+      PROPOSALIDS_QUERY,
+      {
+        spaceId,
+        network,
+        skip: from,
+        first: count,
+      },
+      'proposals'
+    );
+    return response.map((response: any) => response.id);
   }
 
   async updateScoresAndVotes(

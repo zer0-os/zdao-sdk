@@ -240,6 +240,31 @@ class DAOClient
     return await Promise.all(promises);
   }
 
+  async listProposalIds(): Promise<string[]> {
+    const limit = 3000;
+    let from = 0;
+    let count = limit;
+    let numberOfResults = limit;
+    const proposalIds: string[] = [];
+
+    // get the list of proposals
+    while (numberOfResults === limit) {
+      const results = await this.snapshotClient.listProposalIds(
+        this.ens,
+        this.network.toString(),
+        from,
+        count >= limit ? limit : count
+      );
+
+      proposalIds.push(...results);
+
+      from += results.length;
+      count -= results.length;
+      numberOfResults = results.length;
+    }
+    return proposalIds;
+  }
+
   async getProposal(id: ProposalId): Promise<SnapshotProposal> {
     await this.snapshotClient.forceUpdateScoresAndVotes(id);
 

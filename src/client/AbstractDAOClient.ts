@@ -202,6 +202,10 @@ abstract class AbstractDAOClient<
     throw new NotImplementedError();
   }
 
+  listProposalIds(): Promise<ProposalId[]> {
+    throw new NotImplementedError();
+  }
+
   getProposal(_: ProposalId): Promise<ProposalT> {
     throw new NotImplementedError();
   }

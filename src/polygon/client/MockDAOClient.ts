@@ -110,6 +110,10 @@ class MockDAOClient
     return Promise.resolve(this.proposals);
   }
 
+  listProposalIds(): Promise<ProposalId[]> {
+    return Promise.resolve(this.proposals.map((proposal) => proposal.id));
+  }
+
   getProposal(proposalId: ProposalId): Promise<PolygonProposal> {
     const found = this.proposals.find((proposal) => proposal.id === proposalId);
     if (!found) {

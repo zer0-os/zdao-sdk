@@ -146,6 +146,12 @@ export interface zDAO<VoteT extends Vote, ProposalT extends Proposal<VoteT>>
   listProposals(pagination?: PaginationParam): Promise<ProposalT[]>;
 
   /**
+   * Get the list of proposal ids created in the zDAO
+   * @return list of proposal ids
+   */
+  listProposalIds(): Promise<ProposalId[]>;
+
+  /**
    * Get the specific proposal
    * @param id proposal id
    * @returns proposal instance
