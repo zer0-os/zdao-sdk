@@ -17,25 +17,26 @@ import { EthereumZDAOProperties } from './types';
 class EthereumZDAOChefClient {
   private readonly config: DAOConfig;
   protected contract!: EthereumZDAOChef;
-  protected rootStateSender!: FxStateEthereumTunnel;
+  protected rootStateSender?: FxStateEthereumTunnel;
 
   constructor(config: DAOConfig) {
     this.config = config;
 
-    return (async (): Promise<EthereumZDAOChefClient> => {
-      this.contract = EthereumZDAOChef__factory.connect(
-        config.zDAOChef,
-        GlobalClient.etherRpcProvider
-      );
+    this.contract = EthereumZDAOChef__factory.connect(
+      config.zDAOChef,
+      GlobalClient.etherRpcProvider
+    );
+  }
 
+  private async getRootStateSender(): Promise<FxStateEthereumTunnel> {
+    if (!this.rootStateSender) {
       const address = await this.contract.ethereumStateSender();
       this.rootStateSender = FxStateEthereumTunnel__factory.connect(
         address,
         GlobalClient.etherRpcProvider
       );
-
-      return this;
-    })() as unknown as EthereumZDAOChefClient;
+    }
+    return this.rootStateSender;
   }
 
   async getZDAOById(zDAOId: zDAOId): Promise<EthereumZDAO> {
@@ -158,15 +159,14 @@ class EthereumZDAOChefClient {
   }
 
   async receiveMessage(signer: ethers.Signer, proof: string) {
-    const gasEstimated = await this.rootStateSender
+    const instance = await this.getRootStateSender();
+    const gasEstimated = await instance
       .connect(signer)
       .estimateGas.receiveMessage(proof);
 
-    const tx = await this.rootStateSender
-      .connect(signer)
-      .receiveMessage(proof, {
-        gasLimit: calculateGasMargin(gasEstimated),
-      });
+    const tx = await instance.connect(signer).receiveMessage(proof, {
+      gasLimit: calculateGasMargin(gasEstimated),
+    });
     return await tx.wait();
   }
 }
