@@ -3,7 +3,7 @@ import { cloneDeep } from 'lodash';
 import shortid from 'shortid';
 
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
-import IERC20UpgradeableAbi from '../../config/abi/IERC20Upgradeable.json';
+import { IERC20Upgradeable__factory } from '../../config/types/factories/IERC20Upgradeable__factory';
 import {
   NotFoundError,
   ProposalId,
@@ -35,9 +35,9 @@ class MockDAOClient
   extends AbstractDAOClient<PolygonVote, PolygonProposal>
   implements PolygonZDAO
 {
-  protected readonly _zDAOOptions: zDAOOptions;
-  private _proposals: MockProposalClient[] = [];
-  protected _totalSupply: ethers.BigNumber;
+  protected readonly zDAOOptions: zDAOOptions;
+  protected readonly totalSupplyAsBN: ethers.BigNumber;
+  private proposals: MockProposalClient[] = [];
 
   private constructor(
     properties: zDAOProperties & zDAOOptions,
@@ -45,16 +45,16 @@ class MockDAOClient
     totalSupply: ethers.BigNumber
   ) {
     super(properties, gnosisSafeClient);
-    this._zDAOOptions = cloneDeep(properties);
-    this._totalSupply = totalSupply;
+    this.zDAOOptions = cloneDeep(properties);
+    this.totalSupplyAsBN = totalSupply;
   }
 
   get polygonToken() {
-    return this._zDAOOptions.polygonToken;
+    return this.zDAOOptions.polygonToken;
   }
 
   get totalSupply() {
-    return this._totalSupply;
+    return this.totalSupplyAsBN;
   }
 
   static async createInstance(
@@ -92,9 +92,8 @@ class MockDAOClient
       polygonToken: polygonToken,
     };
 
-    const tokenContract = new ethers.Contract(
+    const tokenContract = IERC20Upgradeable__factory.connect(
       params.token,
-      IERC20UpgradeableAbi.abi,
       GlobalClient.etherRpcProvider
     );
 
@@ -108,13 +107,11 @@ class MockDAOClient
   }
 
   listProposals(): Promise<PolygonProposal[]> {
-    return Promise.resolve(this._proposals);
+    return Promise.resolve(this.proposals);
   }
 
   getProposal(proposalId: ProposalId): Promise<PolygonProposal> {
-    const found = this._proposals.find(
-      (proposal) => proposal.id === proposalId
-    );
+    const found = this.proposals.find((proposal) => proposal.id === proposalId);
     if (!found) {
       throw new NotFoundError(errorMessageForError('not-found-proposal'));
     }
@@ -134,7 +131,7 @@ class MockDAOClient
     const now = new Date();
 
     const properties: ProposalProperties = {
-      id: (this._proposals.length + 1).toString(),
+      id: (this.proposals.length + 1).toString(),
       createdBy: address,
       title: payload.title,
       body: payload.body,
@@ -149,7 +146,7 @@ class MockDAOClient
       voters: 0,
       metadata: payload.transfer,
     };
-    this._proposals.push(new MockProposalClient(properties, this));
+    this.proposals.push(new MockProposalClient(properties, this));
 
     return Promise.resolve(properties.id);
   }

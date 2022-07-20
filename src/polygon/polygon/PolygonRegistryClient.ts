@@ -1,26 +1,23 @@
-import { ethers } from 'ethers';
-
 import GlobalClient from '../client/GlobalClient';
-import IChildChainManagerAbi from '../config/abi/IChildChainManager.json';
+import { IChildChainManager__factory } from '../config/types/factories/IChildChainManager__factory';
 import { IChildChainManager } from '../config/types/IChildChainManager';
 
 class PolygonRegistryClient {
-  protected readonly _contract: IChildChainManager;
+  protected readonly contract: IChildChainManager;
 
   constructor(address: string) {
-    this._contract = new ethers.Contract(
+    this.contract = IChildChainManager__factory.connect(
       address,
-      IChildChainManagerAbi.abi,
       GlobalClient.polyRpcProvider
-    ) as IChildChainManager;
+    );
   }
 
   rootToChildToken(rootToken: string): Promise<string> {
-    return this._contract.rootToChildToken(rootToken);
+    return this.contract.rootToChildToken(rootToken);
   }
 
   childToRootToken(childToken: string): Promise<string> {
-    return this._contract.childToRootToken(childToken);
+    return this.contract.childToRootToken(childToken);
   }
 }
 

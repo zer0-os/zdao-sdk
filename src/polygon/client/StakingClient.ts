@@ -5,20 +5,20 @@ import PolygonStakingClient from '../polygon/PolygonStakingClient';
 import { Staking, StakingProperties } from '../types';
 
 class StakingClient implements Staking {
-  protected readonly _properties: StakingProperties;
-  protected _polyStaking: PolygonStakingClient;
+  protected readonly properties: StakingProperties;
+  protected readonly polyStaking: PolygonStakingClient;
 
   constructor(properties: StakingProperties) {
-    this._properties = properties;
-    this._polyStaking = new PolygonStakingClient(properties.address);
+    this.properties = properties;
+    this.polyStaking = new PolygonStakingClient(properties.address);
   }
 
   get network() {
-    return this._properties.network;
+    return this.properties.network;
   }
 
   get address() {
-    return this._properties.address;
+    return this.properties.address;
   }
 
   stakeERC20(
@@ -27,7 +27,7 @@ class StakingClient implements Staking {
     amount: string
   ): Promise<ContractReceipt> {
     try {
-      return this._polyStaking.stakeERC20(signer, token, amount);
+      return this.polyStaking.stakeERC20(signer, token, amount);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -40,7 +40,7 @@ class StakingClient implements Staking {
     tokenId: string
   ): Promise<ContractReceipt> {
     try {
-      return this._polyStaking.stakeERC721(signer, token, tokenId);
+      return this.polyStaking.stakeERC721(signer, token, tokenId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -53,7 +53,7 @@ class StakingClient implements Staking {
     amount: string
   ): Promise<ContractReceipt> {
     try {
-      return this._polyStaking.unstakeERC20(signer, token, amount);
+      return this.polyStaking.unstakeERC20(signer, token, amount);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -66,7 +66,7 @@ class StakingClient implements Staking {
     tokenId: string
   ): Promise<ContractReceipt> {
     try {
-      return this._polyStaking.unstakeERC721(signer, token, tokenId);
+      return this.polyStaking.unstakeERC721(signer, token, tokenId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -74,7 +74,7 @@ class StakingClient implements Staking {
   }
 
   stakingPower(account: string, token: string): Promise<string> {
-    return this._polyStaking.stakingPower(account, token);
+    return this.polyStaking.stakingPower(account, token);
   }
 
   pastStakingPower(
@@ -82,11 +82,11 @@ class StakingClient implements Staking {
     token: string,
     blockNumber: number
   ): Promise<string> {
-    return this._polyStaking.pastStakingPower(account, token, blockNumber);
+    return this.polyStaking.pastStakingPower(account, token, blockNumber);
   }
 
   stakedERC20Amount(account: string, token: string): Promise<string> {
-    return this._polyStaking.stakedERC20Amount(account, token);
+    return this.polyStaking.stakedERC20Amount(account, token);
   }
 
   isStakedERC721(
@@ -94,7 +94,7 @@ class StakingClient implements Staking {
     token: string,
     tokenId: string
   ): Promise<boolean> {
-    return this._polyStaking.isStakedERC721(account, token, tokenId);
+    return this.polyStaking.isStakedERC721(account, token, tokenId);
   }
 }
 

@@ -28,11 +28,11 @@ class ProposalClient
   extends AbstractProposalClient<PolygonVote>
   implements PolygonProposal
 {
-  private readonly _zDAO: DAOClient;
+  private readonly zDAO: DAOClient;
 
   private constructor(properties: ProposalProperties, zDAO: DAOClient) {
     super(properties);
-    this._zDAO = zDAO;
+    this.zDAO = zDAO;
   }
 
   static async createInstance(
@@ -44,7 +44,7 @@ class ProposalClient
   }
 
   async listVotes(): Promise<PolygonVote[]> {
-    const polygonZDAO = await this._zDAO.getPolygonZDAOContract();
+    const polygonZDAO = await this.zDAO.getPolygonZDAOContract();
     if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
@@ -71,7 +71,7 @@ class ProposalClient
   }
 
   async getVotingPowerOfUser(account: string): Promise<string> {
-    const polygonZDAO = await this._zDAO.getPolygonZDAOContract();
+    const polygonZDAO = await this.zDAO.getPolygonZDAOContract();
     if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
@@ -80,7 +80,7 @@ class ProposalClient
   }
 
   async updateScoresAndVotes(): Promise<PolygonProposal> {
-    const polygonZDAO = await this._zDAO.getPolygonZDAOContract();
+    const polygonZDAO = await this.zDAO.getPolygonZDAOContract();
     if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
@@ -100,8 +100,8 @@ class ProposalClient
       polygonZDAO && polyProposal && isSyncedProposal
         ? polyProposal.voters.toNumber()
         : undefined;
-    this._properties.scores = scores;
-    this._properties.voters = voters;
+    this.properties.scores = scores;
+    this.properties.voters = voters;
 
     return this;
   }
@@ -112,12 +112,12 @@ class ProposalClient
     payload: VotePolygonProposalParams
   ) {
     // zDAO should be active
-    if (this._zDAO.destroyed) {
+    if (this.zDAO.destroyed) {
       throw new AlreadyDestroyedError();
     }
 
     // zDAO should be synchronized to Polygon prior to create proposal
-    const polygonZDAO = await this._zDAO.getPolygonZDAOContract();
+    const polygonZDAO = await this.zDAO.getPolygonZDAOContract();
     if (!polygonZDAO) {
       throw new NotSyncStateError();
     }
@@ -131,7 +131,7 @@ class ProposalClient
 
     const sp = await GlobalClient.staking.pastStakingPower(
       accountAddress,
-      this._zDAO.polygonToken.token,
+      this.zDAO.polygonToken.token,
       this.snapshot!
     );
     if (ethers.BigNumber.from(sp).eq(ethers.BigNumber.from(0))) {
@@ -139,7 +139,7 @@ class ProposalClient
     }
 
     try {
-      const daoId = this._zDAO.id;
+      const daoId = this.zDAO.id;
       const proposalId = this.id;
       await GlobalClient.polygonZDAOChef.vote(
         signer,
@@ -158,7 +158,7 @@ class ProposalClient
     account: string | undefined,
     _: CalculatePolygonProposalParams
   ) {
-    const daoId = this._zDAO.id;
+    const daoId = this.zDAO.id;
     const proposalId = this.id;
 
     try {
@@ -181,7 +181,7 @@ class ProposalClient
     payload: FinalizePolygonProposalParams
   ) {
     // zDAO should be active
-    if (this._zDAO.destroyed) {
+    if (this.zDAO.destroyed) {
       throw new AlreadyDestroyedError();
     }
 
@@ -204,9 +204,9 @@ class ProposalClient
     const signer = getSigner(provider, account);
 
     const signerAccount = account ?? (await signer.getAddress());
-    const isOwner = await this._zDAO.gnosisSafeClient.isOwnerAddress(
+    const isOwner = await this.zDAO.gnosisSafeClient.isOwnerAddress(
       signer,
-      this._zDAO.gnosisSafe,
+      this.zDAO.gnosisSafe,
       signerAccount
     );
     if (!isOwner) {
@@ -223,8 +223,8 @@ class ProposalClient
     try {
       if (!this.metadata?.token || this.metadata.token.length < 1) {
         // Ether transfer
-        await this._zDAO.gnosisSafeClient.transferEther(
-          this._zDAO.gnosisSafe,
+        await this.zDAO.gnosisSafeClient.transferEther(
+          this.zDAO.gnosisSafe,
           signer,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           this.metadata!.recipient,
@@ -233,8 +233,8 @@ class ProposalClient
         );
       } else {
         // ERC20 transfer
-        await this._zDAO.gnosisSafeClient.transferERC20(
-          this._zDAO.gnosisSafe,
+        await this.zDAO.gnosisSafeClient.transferERC20(
+          this.zDAO.gnosisSafe,
           signer,
           this.metadata.token,
           this.metadata.recipient,
@@ -242,7 +242,7 @@ class ProposalClient
         );
       }
 
-      const daoId = this._zDAO.id;
+      const daoId = this.zDAO.id;
       const proposalId = this.id;
       await GlobalClient.ethereumZDAOChef.executeProposal(
         signer,
@@ -259,7 +259,7 @@ class ProposalClient
     try {
       if (this.state === ProposalState.AWAITING_FINALIZATION)
         return GlobalClient.polygonZDAOChef.getCheckPointingHashes(
-          this._zDAO.id,
+          this.zDAO.id,
           this.id
         );
       return Promise.resolve([]);

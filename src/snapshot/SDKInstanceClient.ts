@@ -28,21 +28,21 @@ import {
 } from './types';
 
 class SDKInstanceClient implements SnapshotSDKInstance {
-  private readonly _config: SnapshotConfig;
-  private readonly _snapshotClient: SnapshotClient;
-  protected _mockZDAOClients: SnapshotZDAO[] = [];
+  private readonly config: SnapshotConfig;
+  private readonly snapshotClient: SnapshotClient;
+  protected mockZDAOClients: SnapshotZDAO[] = [];
 
   constructor(config: SnapshotConfig) {
-    this._config = config;
-    this._snapshotClient = new SnapshotClient(config.snapshot);
+    this.config = config;
+    this.snapshotClient = new SnapshotClient(config.snapshot);
 
-    IPFSClient.initialize(this._config.fleek);
-    ZNAClient.initialize(this._config.zNS);
+    IPFSClient.initialize(this.config.fleek);
+    ZNAClient.initialize(this.config.zNS);
     ZNSHubClient.initialize(config.zNA);
 
     GlobalClient.etherRpcProvider = new ethers.providers.JsonRpcProvider(
-      this._config.ethereum.rpcUrl,
-      this._config.ethereum.network
+      this.config.ethereum.rpcUrl,
+      this.config.ethereum.network
     );
     GlobalClient.zDAORegistry = new ZDAORegistryClient(config.zNA);
     GlobalClient.ethereumZDAOChef = new EthereumZDAOChefClient(config.ethereum);
@@ -129,7 +129,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     );
 
     // should be found by ens in snapshot
-    const space = await this._snapshotClient.getSpaceDetails(zDAOInfo.ensSpace);
+    const space = await this.snapshotClient.getSpaceDetails(zDAOInfo.ensSpace);
     if (!space) {
       throw new NotFoundError(
         errorMessageForError('not-found-ens-in-snapshot')
@@ -151,7 +151,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     const decimals = strategy.params.decimals ?? 0;
 
     return await DAOClient.createInstance(
-      this._config,
+      this.config,
       {
         id: zDAORecord.id,
         zNAs: zDAORecord.associatedzNAs,
@@ -229,18 +229,18 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     // }
 
     const zDAOClient = await MockDAOClient.createInstance(
-      this._config,
+      this.config,
       signer,
       params
     );
 
-    this._mockZDAOClients.push(zDAOClient);
+    this.mockZDAOClients.push(zDAOClient);
     return zDAOClient;
   }
 
   listZNAsFromParams(): Promise<zNA[]> {
     // collect all the associated zNAs
-    const zNAs: zNA[] = this._mockZDAOClients.reduce(
+    const zNAs: zNA[] = this.mockZDAOClients.reduce(
       (prev, current) => [...prev, ...current.zNAs],
       [] as string[]
     );
@@ -256,7 +256,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 
-    const found = this._mockZDAOClients.find((client) =>
+    const found = this.mockZDAOClients.find((client) =>
       client.zNAs.find((item: zNA) => item === zNA)
     );
     if (!found) throw new NotFoundError(errorMessageForError('not-found-zdao'));

@@ -18,17 +18,13 @@ import { GnosisSafeConfig } from '../types';
 import IPFSClient from './IPFSClient';
 
 class GnosisSafeClient {
-  private readonly _config: GnosisSafeConfig;
-  private readonly _ipfsGateway: string;
+  private readonly config: GnosisSafeConfig;
+  private readonly ipfsGateway: string;
   private readonly EMPTY_DATA = '0x';
 
   constructor(config: GnosisSafeConfig, ipfsGateway: string) {
-    this._config = config;
-    this._ipfsGateway = ipfsGateway;
-  }
-
-  get config() {
-    return this._config;
+    this.config = config;
+    this.ipfsGateway = ipfsGateway;
   }
 
   async isOwnerAddress(
@@ -61,7 +57,7 @@ class GnosisSafeClient {
       ethers,
       signer,
     });
-    const safeService = new SafeServiceClient(this._config.serviceUri);
+    const safeService = new SafeServiceClient(this.config.serviceUri);
     const safe = await Safe.create({
       ethAdapter,
       safeAddress: gnosisSafe,
@@ -105,7 +101,7 @@ class GnosisSafeClient {
       ethers,
       signer,
     });
-    const safeService = new SafeServiceClient(this._config.serviceUri);
+    const safeService = new SafeServiceClient(this.config.serviceUri);
     const safe = await Safe.create({
       ethAdapter,
       safeAddress: gnosisSafe,
@@ -151,7 +147,7 @@ class GnosisSafeClient {
     const address = ethers.utils.getAddress(gnosisSafe);
 
     return await getBalances(
-      this._config.gateway,
+      this.config.gateway,
       network,
       address,
       selectedCurrency,
@@ -169,7 +165,7 @@ class GnosisSafeClient {
     const address = ethers.utils.getAddress(gnosisSafe);
 
     const collectibles = await getCollectibles(
-      this._config.gateway,
+      this.config.gateway,
       network,
       address,
       {
@@ -189,7 +185,7 @@ class GnosisSafeClient {
 
     const promises: Promise<{ [key: string]: string }>[] = [];
     for (const collectible of needToPatch) {
-      promises.push(IPFSClient.getJson(collectible.uri, this._ipfsGateway));
+      promises.push(IPFSClient.getJson(collectible.uri, this.ipfsGateway));
     }
     const result: { [key: string]: string }[] = await Promise.all(promises);
     for (const index in needToPatch) {
@@ -211,7 +207,7 @@ class GnosisSafeClient {
     const address = ethers.utils.getAddress(gnosisSafe);
 
     const { results } = await getTransactionHistory(
-      this._config.gateway,
+      this.config.gateway,
       network,
       address
     );

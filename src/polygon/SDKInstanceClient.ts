@@ -32,23 +32,23 @@ import {
 } from './types';
 
 class SDKInstanceClient implements PolygonSDKInstance {
-  private readonly _config: PolygonConfig;
-  protected _mockZDAOClients: PolygonZDAO[] = [];
+  private readonly config: PolygonConfig;
+  protected mockZDAOClients: PolygonZDAO[] = [];
 
   constructor(config: PolygonConfig) {
-    this._config = config;
+    this.config = config;
 
-    IPFSClient.initialize(this._config.fleek);
-    ZNAClient.initialize(this._config.zNS);
+    IPFSClient.initialize(this.config.fleek);
+    ZNAClient.initialize(this.config.zNS);
     ZNSHubClient.initialize(config.zNA);
 
     GlobalClient.etherRpcProvider = new ethers.providers.JsonRpcProvider(
-      this._config.ethereum.rpcUrl,
-      this._config.ethereum.network
+      this.config.ethereum.rpcUrl,
+      this.config.ethereum.network
     );
     GlobalClient.polyRpcProvider = new ethers.providers.JsonRpcProvider(
-      this._config.polygon.rpcUrl,
-      this._config.polygon.network
+      this.config.polygon.rpcUrl,
+      this.config.polygon.network
     );
     GlobalClient.zDAORegistry = new ZDAORegistryClient(config.zNA);
     GlobalClient.ipfsGateway = config.ipfsGateway;
@@ -144,7 +144,7 @@ class SDKInstanceClient implements PolygonSDKInstance {
 
     const promises: Promise<PolygonZDAO>[] = [];
     for (const zDAORecord of zDAORecords) {
-      promises.push(DAOClient.createInstance(this._config, zDAORecord));
+      promises.push(DAOClient.createInstance(this.config, zDAORecord));
     }
 
     return await Promise.all(promises);
@@ -157,7 +157,7 @@ class SDKInstanceClient implements PolygonSDKInstance {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 
-    const instance = await DAOClient.createInstance(this._config, zDAORecord);
+    const instance = await DAOClient.createInstance(this.config, zDAORecord);
     return instance;
   }
 
@@ -210,18 +210,18 @@ class SDKInstanceClient implements PolygonSDKInstance {
     // }
 
     const zDAOClient = await MockDAOClient.createInstance(
-      this._config,
+      this.config,
       signer,
       params
     );
 
-    this._mockZDAOClients.push(zDAOClient);
+    this.mockZDAOClients.push(zDAOClient);
     return zDAOClient;
   }
 
   listZNAsFromParams(): Promise<zNA[]> {
     // collect all the associated zNAs
-    const zNAs: zNA[] = this._mockZDAOClients.reduce(
+    const zNAs: zNA[] = this.mockZDAOClients.reduce(
       (prev, current) => [...prev, ...current.zNAs],
       [] as string[]
     );
@@ -237,7 +237,7 @@ class SDKInstanceClient implements PolygonSDKInstance {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 
-    const found = this._mockZDAOClients.find((client) =>
+    const found = this.mockZDAOClients.find((client) =>
       client.zNAs.find((item: zNA) => item === zNA)
     );
     if (!found) throw new NotFoundError(errorMessageForError('not-found-zdao'));

@@ -2,18 +2,17 @@ import { ContractReceipt, ethers } from 'ethers';
 
 import { calculateGasMargin } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
-import StakingAbi from '../config/abi/Staking.json';
+import { Staking__factory } from '../config/types/factories/Staking__factory';
 import { Staking } from '../config/types/Staking';
 
 class PolygonStakingClient {
-  protected readonly _contract: Staking;
+  protected readonly contract: Staking;
 
   constructor(address: string) {
-    this._contract = new ethers.Contract(
+    this.contract = Staking__factory.connect(
       address,
-      StakingAbi.abi,
       GlobalClient.polyRpcProvider
-    ) as Staking;
+    );
   }
 
   async stakeERC20(
@@ -21,11 +20,11 @@ class PolygonStakingClient {
     token: string,
     amount: string
   ): Promise<ContractReceipt> {
-    const gasEstimated = await this._contract
+    const gasEstimated = await this.contract
       .connect(signer)
       .estimateGas.stakeERC20(token, amount);
 
-    const tx = await this._contract.connect(signer).stakeERC20(token, amount, {
+    const tx = await this.contract.connect(signer).stakeERC20(token, amount, {
       gasLimit: calculateGasMargin(gasEstimated),
     });
     return await tx.wait();
@@ -36,15 +35,13 @@ class PolygonStakingClient {
     token: string,
     tokenId: string
   ): Promise<ContractReceipt> {
-    const gasEstimated = await this._contract
+    const gasEstimated = await this.contract
       .connect(signer)
       .estimateGas.stakeERC721(token, tokenId);
 
-    const tx = await this._contract
-      .connect(signer)
-      .stakeERC721(token, tokenId, {
-        gasLimit: calculateGasMargin(gasEstimated),
-      });
+    const tx = await this.contract.connect(signer).stakeERC721(token, tokenId, {
+      gasLimit: calculateGasMargin(gasEstimated),
+    });
     return await tx.wait();
   }
 
@@ -53,15 +50,13 @@ class PolygonStakingClient {
     token: string,
     amount: string
   ): Promise<ContractReceipt> {
-    const gasEstimated = await this._contract
+    const gasEstimated = await this.contract
       .connect(signer)
       .estimateGas.unstakeERC20(token, amount);
 
-    const tx = await this._contract
-      .connect(signer)
-      .unstakeERC20(token, amount, {
-        gasLimit: calculateGasMargin(gasEstimated),
-      });
+    const tx = await this.contract.connect(signer).unstakeERC20(token, amount, {
+      gasLimit: calculateGasMargin(gasEstimated),
+    });
     return await tx.wait();
   }
 
@@ -70,11 +65,11 @@ class PolygonStakingClient {
     token: string,
     tokenId: string
   ): Promise<ContractReceipt> {
-    const gasEstimated = await this._contract
+    const gasEstimated = await this.contract
       .connect(signer)
       .estimateGas.unstakeERC721(token, tokenId);
 
-    const tx = await this._contract
+    const tx = await this.contract
       .connect(signer)
       .unstakeERC721(token, tokenId, {
         gasLimit: calculateGasMargin(gasEstimated),
@@ -83,7 +78,7 @@ class PolygonStakingClient {
   }
 
   async stakingPower(account: string, token: string): Promise<string> {
-    return this._contract
+    return this.contract
       .stakingPower(account, token)
       .then((value) => value.toString());
   }
@@ -93,13 +88,13 @@ class PolygonStakingClient {
     token: string,
     blockNumber: number
   ): Promise<string> {
-    return this._contract
+    return this.contract
       .pastStakingPower(account, token, blockNumber)
       .then((value) => value.toString());
   }
 
   async stakedERC20Amount(account: string, token: string): Promise<string> {
-    return this._contract
+    return this.contract
       .stakedERC20Amount(account, token)
       .then((value) => value.toString());
   }

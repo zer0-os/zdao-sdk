@@ -33,19 +33,19 @@ class MockDAOClient
   extends AbstractDAOClient<SnapshotVote, SnapshotProposal>
   implements SnapshotZDAO
 {
-  protected readonly _zDAOOptions: zDAOOptions;
-  private _proposals: MockProposalClient[] = [];
+  protected readonly zDAOOptions: zDAOOptions;
+  private proposals: MockProposalClient[] = [];
 
   private constructor(
     properties: zDAOProperties & zDAOOptions,
     gnosisSafeClient: GnosisSafeClient
   ) {
     super(properties, gnosisSafeClient);
-    this._zDAOOptions = cloneDeep(properties);
+    this.zDAOOptions = cloneDeep(properties);
   }
 
   get ens() {
-    return this._zDAOOptions.ens;
+    return this.zDAOOptions.ens;
   }
 
   static async createInstance(
@@ -83,13 +83,11 @@ class MockDAOClient
   }
 
   listProposals(): Promise<SnapshotProposal[]> {
-    return Promise.resolve(this._proposals);
+    return Promise.resolve(this.proposals);
   }
 
   getProposal(proposalId: ProposalId): Promise<SnapshotProposal> {
-    const found = this._proposals.find(
-      (proposal) => proposal.id === proposalId
-    );
+    const found = this.proposals.find((proposal) => proposal.id === proposalId);
     if (!found) {
       throw new NotFoundError(errorMessageForError('not-found-proposal'));
     }
@@ -109,7 +107,7 @@ class MockDAOClient
     const now = new Date();
 
     const properties: ProposalProperties = {
-      id: (this._proposals.length + 1).toString(),
+      id: (this.proposals.length + 1).toString(),
       createdBy: address,
       title: payload.title,
       body: payload.body,
@@ -124,7 +122,7 @@ class MockDAOClient
       voters: 0,
       metadata: undefined,
     };
-    this._proposals.push(new MockProposalClient(properties, this));
+    this.proposals.push(new MockProposalClient(properties, this));
 
     return Promise.resolve(properties.id);
   }

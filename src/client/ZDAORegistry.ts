@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
 import { PlatformType } from '..';
-import ZDAORegistryAbi from '../config/abi/ZDAORegistry.json';
+import { ZDAORegistry__factory } from '../config/types/factories/ZDAORegistry__factory';
 import { ZDAORegistry } from '../config/types/ZDAORegistry';
 import { zNAConfig, zNAId } from '../types';
 import { zDAOId, zDAOProperties, zNA } from '../types';
@@ -24,18 +24,17 @@ export interface EthereumZDAOProperties extends Omit<zDAOProperties, 'state'> {
 }
 
 class ZDAORegistryClient {
-  protected readonly _contract: ZDAORegistry;
+  protected readonly contract: ZDAORegistry;
 
   constructor(config: zNAConfig) {
-    this._contract = new ethers.Contract(
+    this.contract = ZDAORegistry__factory.connect(
       config.zDAORegistry,
-      ZDAORegistryAbi.abi,
       new ethers.providers.JsonRpcProvider(config.rpcUrl, config.network)
-    ) as ZDAORegistry;
+    );
   }
 
   async numberOfzDAOs(): Promise<number> {
-    return (await this._contract.numberOfzDAOs()).toNumber();
+    return (await this.contract.numberOfzDAOs()).toNumber();
   }
 
   async listZDAOs(): Promise<ZDAORecord[]> {
@@ -45,7 +44,7 @@ class ZDAORegistryClient {
     const zDAORecord: ZDAORecord[] = [];
 
     while (numberOfReturns === count) {
-      const response = await this._contract.listZDAOs(from, count);
+      const response = await this.contract.listZDAOs(from, count);
 
       // todo, collect all the promise
       for (const record of response) {
@@ -79,7 +78,7 @@ class ZDAORegistryClient {
   }
 
   async getZDAORecordByZNA(zNA: zNA): Promise<ZDAORecord> {
-    const zDAORecord = await this._contract.getZDAOByZNA(
+    const zDAORecord = await this.contract.getZDAOByZNA(
       ZNAClient.zNATozNAId(zNA)
     );
 
@@ -102,7 +101,7 @@ class ZDAORegistryClient {
   }
 
   async getZDAORecordById(zDAOId: zDAOId): Promise<ZDAORecord> {
-    const zDAORecord = await this._contract.getZDAOById(zDAOId);
+    const zDAORecord = await this.contract.getZDAOById(zDAOId);
 
     // resolve all the zNAIds
     const promises: Promise<zNAId>[] = [];
@@ -123,7 +122,7 @@ class ZDAORegistryClient {
   }
 
   doesZDAOExistForZNA(zNA: zNA): Promise<boolean> {
-    return this._contract.doesZDAOExistForZNA(ZNAClient.zNATozNAId(zNA));
+    return this.contract.doesZDAOExistForZNA(ZNAClient.zNATozNAId(zNA));
   }
 
   async addNewZDAO(
@@ -134,7 +133,7 @@ class ZDAORegistryClient {
     name: string,
     options?: string
   ) {
-    const gasEstimated = await this._contract
+    const gasEstimated = await this.contract
       .connect(signer)
       .estimateGas.addNewZDAO(
         platformType,
@@ -144,7 +143,7 @@ class ZDAORegistryClient {
         options ?? '0x00'
       );
 
-    const tx = await this._contract
+    const tx = await this.contract
       .connect(signer)
       .addNewZDAO(platformType, zNA, gnosisSafe, name, options ?? '0x00', {
         gasLimit: calculateGasMargin(gasEstimated),
@@ -153,11 +152,11 @@ class ZDAORegistryClient {
   }
 
   async removeNewZDAO(signer: ethers.Signer, zDAOId: zDAOId) {
-    const gasEstimated = await this._contract
+    const gasEstimated = await this.contract
       .connect(signer)
       .estimateGas.adminRemoveZDAO(zDAOId);
 
-    const tx = await this._contract.connect(signer).adminRemoveZDAO(zDAOId, {
+    const tx = await this.contract.connect(signer).adminRemoveZDAO(zDAOId, {
       gasLimit: calculateGasMargin(gasEstimated),
     });
     return await tx.wait();
