@@ -5,7 +5,7 @@ import { ZDAORecord } from '../../client/ZDAORegistry';
 import { DAOConfig, ProposalId, zDAOId, zNA } from '../../types';
 import { calculateGasMargin, getToken } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
-import { EthereumZDAO } from '../config/types/EthereumZDAO';
+import { EthereumZDAO, IEthereumZDAO } from '../config/types/EthereumZDAO';
 import { EthereumZDAOChef } from '../config/types/EthereumZDAOChef';
 import { EthereumZDAO__factory } from '../config/types/factories/EthereumZDAO__factory';
 import { EthereumZDAOChef__factory } from '../config/types/factories/EthereumZDAOChef__factory';
@@ -45,28 +45,14 @@ class EthereumZDAOChefClient {
     return EthereumZDAO__factory.connect(zDAO, GlobalClient.etherRpcProvider);
   }
 
-  // todo, should use defined typechain type
-  getZDAOInfo(zDAOId: zDAOId): Promise<{
-    zDAOId: ethers.BigNumber;
-    createdBy: string;
-    gnosisSafe: string;
-    token: string;
-    amount: ethers.BigNumber;
-    duration: ethers.BigNumber;
-    votingThreshold: ethers.BigNumber;
-    minimumVotingParticipants: ethers.BigNumber;
-    minimumTotalVotingTokens: ethers.BigNumber;
-    snapshot: ethers.BigNumber;
-    isRelativeMajority: boolean;
-    destroyed: boolean;
-  }> {
-    return this.contract.zDAOInfo(zDAOId);
+  getZDAOInfoById(zDAOId: zDAOId): Promise<IEthereumZDAO.ZDAOInfoStructOutput> {
+    return this.contract.getZDAOInfoById(zDAOId);
   }
 
   async getZDAOPropertiesById(
     zDAORecord: ZDAORecord
   ): Promise<EthereumZDAOProperties> {
-    const zDAOInfo = await this.contract.zDAOInfo(zDAORecord.id);
+    const zDAOInfo = await this.contract.getZDAOInfoById(zDAORecord.id);
 
     const token = await getToken(GlobalClient.etherRpcProvider, zDAOInfo.token);
     const zNAs: zNA[] = zDAORecord.associatedzNAs;

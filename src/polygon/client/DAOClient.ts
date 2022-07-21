@@ -96,8 +96,8 @@ class DAOClient
     zDAORecord: ZDAORecord
   ): Promise<PolygonZDAO> {
     const zDAOInfos = await Promise.all([
-      GlobalClient.ethereumZDAOChef.getZDAOInfo(zDAORecord.id),
-      GlobalClient.polygonZDAOChef.getZDAOInfo(zDAORecord.id),
+      GlobalClient.ethereumZDAOChef.getZDAOInfoById(zDAORecord.id),
+      GlobalClient.polygonZDAOChef.getZDAOInfoById(zDAORecord.id),
     ]);
 
     const tokens = await Promise.all([

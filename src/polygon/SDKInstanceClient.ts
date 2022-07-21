@@ -119,8 +119,6 @@ class SDKInstanceClient implements PolygonSDKInstance {
   }
 
   async getZDAOByZNA(zNA: zNA): Promise<PolygonZDAO> {
-    // todo, check if zDAO exists
-
     // get zDAO information associated with zNA
     const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
 

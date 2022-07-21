@@ -180,7 +180,7 @@ export interface zDAOProperties {
   // The minimum number of tokens required on Ethereum to become proposal creator
   amount: string;
 
-  // Time duration of this proposal in seconds
+  // Time duration of proposal in seconds
   duration: number;
 
   // Threshold in 100% as 10000 required to check if proposal is succeeded

@@ -6,7 +6,7 @@ import { calculateGasMargin } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import { PolygonZDAO__factory } from '../config/types/factories/PolygonZDAO__factory';
 import { PolygonZDAOChef__factory } from '../config/types/factories/PolygonZDAOChef__factory';
-import { PolygonZDAO } from '../config/types/PolygonZDAO';
+import { IPolygonZDAO, PolygonZDAO } from '../config/types/PolygonZDAO';
 import { PolygonZDAOChef } from '../config/types/PolygonZDAOChef';
 import { StakingProperties } from '../types';
 import { PolygonZDAOProperties } from './types';
@@ -23,12 +23,8 @@ class PolygonZDAOChefClient {
     );
   }
 
-  async numberOfzDAOs(): Promise<number> {
-    return (await this.contract.numberOfzDAOs()).toNumber();
-  }
-
   async getZDAOById(zDAOId: zDAOId): Promise<PolygonZDAO | null> {
-    const iPolygonZDAO = await this.contract.getzDAOById(zDAOId);
+    const iPolygonZDAO = await this.contract.getZDAOById(zDAOId);
     if (!iPolygonZDAO || iPolygonZDAO === AddressZero) return null;
 
     return PolygonZDAO__factory.connect(
@@ -37,35 +33,17 @@ class PolygonZDAOChefClient {
     );
   }
 
-  // todo, should use defined typechain type
-  async getZDAOInfo(zDAOId: zDAOId): Promise<{
-    zDAOId: ethers.BigNumber;
-    duration: ethers.BigNumber;
-    token: string;
-    snapshot: ethers.BigNumber;
-    destroyed: boolean;
-  }> {
-    const address = await this.contract.getzDAOById(zDAOId);
-    const polygonZDAO = PolygonZDAO__factory.connect(
-      address,
-      GlobalClient.polyRpcProvider
-    );
-
-    return await polygonZDAO.zDAOInfo();
+  getZDAOInfoById(zDAOId: zDAOId): Promise<IPolygonZDAO.ZDAOInfoStructOutput> {
+    return this.contract.getZDAOInfoById(zDAOId);
   }
 
-  async getZDAOProperties(zDAOId: zDAOId): Promise<PolygonZDAOProperties> {
-    const address = await this.contract.getzDAOById(zDAOId);
-    const polygonZDAO = PolygonZDAO__factory.connect(
-      address,
-      GlobalClient.polyRpcProvider
-    );
-
-    const zDAOInfo = await polygonZDAO.zDAOInfo();
+  async getZDAOPropertiesById(zDAOId: zDAOId): Promise<PolygonZDAOProperties> {
+    const zDAOInfo = await this.contract.getZDAOInfoById(zDAOId);
 
     return {
       id: zDAOInfo.zDAOId.toString(),
-      address: polygonZDAO.address,
+      duration: zDAOInfo.duration.toNumber(),
+      token: zDAOInfo.token.toString(),
       snapshot: zDAOInfo.snapshot.toNumber(),
       destroyed: zDAOInfo.destroyed,
     };
