@@ -4,12 +4,20 @@ const ErrorMessages = [
     value: 'No private key',
   },
   {
+    key: 'no-found-signer',
+    value: 'Not found signer',
+  },
+  {
     key: 'not-found-zdao',
     value: 'Not found zDAO',
   },
   {
-    key: 'empty-zdao-title',
-    value: 'Empty zDAO title',
+    key: 'empty-zdao-name',
+    value: 'Empty zDAO name',
+  },
+  {
+    key: 'empty-zdao-creator',
+    value: 'Empty zDAO creator',
   },
   {
     key: 'empty-gnosis-address',
@@ -20,12 +28,36 @@ const ErrorMessages = [
     value: 'Empty Gnosis Safe owners',
   },
   {
+    key: 'empty-proposal-token',
+    value: 'Empty ERC20 Token address to become proposal creator',
+  },
+  {
+    key: 'invalid-proposal-token-amount',
+    value: 'Invalid Token amount to become proposal creator',
+  },
+  {
     key: 'empty-voting-token',
-    value: 'Empty Voting ERC20 Token address',
+    value: 'Empty ERC20 Voting Token address',
+  },
+  {
+    key: 'invalid-quorum-amount',
+    value: 'Invalid minimum total voting tokens',
+  },
+  {
+    key: 'empty-ens',
+    value: 'Empty ENS',
+  },
+  {
+    key: 'not-zna-owner',
+    value: 'Not a zNA owner',
   },
   {
     key: 'already-exist-zdao',
     value: 'zDAO already exists',
+  },
+  {
+    key: 'already-destroyed',
+    value: 'Already destroyed',
   },
   {
     key: 'empty-metadata',
@@ -40,12 +72,40 @@ const ErrorMessages = [
     value: 'Not implemented',
   },
   {
-    key: 'failed-create-token',
-    value: 'Failed to create zToken',
+    key: 'not-initialized',
+    value: 'Not initialized',
+  },
+  {
+    key: 'failed-create-zdao',
+    value: 'Failed to create zDAO',
   },
   {
     key: 'failed-create-proposal',
     value: 'Failed to create proposal',
+  },
+  {
+    key: 'failed-create-token',
+    value: 'Failed to create zToken',
+  },
+  {
+    key: 'should-hold-token',
+    value: 'Should hold at least %amount% tokens',
+  },
+  {
+    key: 'not-sync-state',
+    value: 'Pending for state sync into Polygon network',
+  },
+  {
+    key: 'not-found-proposal',
+    value: 'Not Found a proposal',
+  },
+  {
+    key: 'not-active-proposal',
+    value: 'Not a active proposal',
+  },
+  {
+    key: 'zero-voting-power',
+    value: 'Should have voting power',
   },
   {
     key: 'not-found-ens-in-snapshot',
@@ -60,18 +120,33 @@ const ErrorMessages = [
     value: 'Invalid ENS',
   },
   {
+    key: 'invalid-zdao-duration',
+    value: 'Not found zDAO duration',
+  },
+  {
     key: 'invalid-proposal-duration',
     value: 'Not found proposal duration',
+  },
+  {
+    key: 'not-executable-proposal',
+    value: 'Not a executable   proposal',
   },
 ] as const;
 
 export type ErrorType = typeof ErrorMessages[number]['key'];
 
-export const errorMessageForError = (error: ErrorType): string => {
+export const errorMessageForError = (
+  error: ErrorType,
+  args?: { [key: string]: string }
+): string => {
   const found = ErrorMessages.find((item) => item.key === error);
-  return found ? found.value : 'Unknown Error';
-};
+  let plain = found ? found.value : 'Unknown Error';
+  if (args) {
+    Object.keys(args).forEach((key) => {
+      const reg = new RegExp(`%${key}%`, 'g');
+      plain = plain.replace(reg, args[key].toString());
+    });
+  }
 
-export const raiseError = (error: ErrorType): void => {
-  throw new Error(errorMessageForError(error));
+  return plain;
 };

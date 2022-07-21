@@ -1,47 +1,60 @@
-import { SupportedChainId } from './enumerations';
-import { Choice, ENS, zNA } from './primitives';
+import { SupportedChainId } from './enums';
+import { Choice, zNA } from './primitives';
 import { TokenMetaData } from './structures';
 
 export interface CreateZDAOParams {
-  // ENS
-  ens: ENS;
   // zNA, automatically linked with only one zNA
   zNA: zNA;
-  // zDAO title
-  title: string;
-  // address to zDAO creator
-  creator: string;
-  // uri to avatar, if not defined, will use default avatar image in frontend
-  avatar?: string;
+
+  // zDAO name
+  name: string;
+
   // network id where zDAO was created
   network: SupportedChainId;
-  // proposal duration if DAO has fixed proposal
-  duration?: number;
-  // adress to Gnosis Safe
-  safeAddress: string;
-  // ERC20 token address to cast a vote
-  votingToken: string;
+
+  // Gnosis safe address where collected treasuries are stored
+  gnosisSafe: string;
+
+  // Voting token (ERC20 or ERC721) on Ethereum, only token holders
+  // can create a proposal
+  token: string;
+
+  // The minimum number of tokens required to become proposal creator
+  amount: string;
+
+  // Time duration of this proposal in seconds
+  duration: number;
 }
 
 export interface CreateProposalParams {
+  // Title of the proposal
   title: string;
+
+  // Content of the proposal
   body: string;
-  choices: string[];
-  duration?: number; // time duration from start to end in seconds
-  snapshot: number; // block number
-  transfer?: TokenMetaData; // undefined if not a funding proposal
+
+  // Token meta data to be transfered if this proposal has been succeeded
+  transfer?: TokenMetaData;
 }
 
 export interface VoteProposalParams {
-  proposal: string; // proposal id
-  choice: Choice; // Yes or No
+  // Yes or No
+  choice: Choice;
 }
 
-export interface ExecuteProposalParams {
-  proposal: string; // proposal id
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface CalculateProposalParams {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface FinalizeProposalParams {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface ExecuteProposalParams {}
 
 export interface PaginationParam {
+  // From number, starting at 1
   from: number;
+
+  // Number of items to be fetched
   count: number;
 }

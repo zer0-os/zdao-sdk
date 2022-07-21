@@ -1,9 +1,9 @@
-import SDKInstanceClient from './SDKInstanceClient';
-import { Config, SDKInstance } from './types';
-
-export * from './config';
+export * as Polygon from './polygon';
+export * as Snapshot from './snapshot';
 export * from './types';
 
-export const createSDKInstance = (config: Config): SDKInstance => {
-  return new SDKInstanceClient(config);
-};
+export enum PlatformType {
+  Snapshot = 0,
+  Polygon = 1,
+  StarkNet = 2,
+}

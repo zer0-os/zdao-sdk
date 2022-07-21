@@ -1,21 +1,70 @@
 import { ethers } from 'ethers';
 
 import {
+  CalculateProposalParams,
   CreateProposalParams,
   CreateZDAOParams,
+  ExecuteProposalParams,
+  FinalizeProposalParams,
   PaginationParam,
+  VoteProposalParams,
 } from './params';
-import { Choice, ProposalId, VoteId, zNA } from './primitives';
+import { ProposalId, zDAOId, zNA } from './primitives';
 import {
   ProposalProperties,
-  TokenMintOptions,
   Transaction,
   Vote,
   zDAOAssets,
   zDAOProperties,
 } from './structures';
 
-export interface SDKInstance {
+type CreateZDAOParamsType<T extends CreateZDAOParams> =
+  T extends CreateZDAOParams ? T : CreateZDAOParams;
+
+type CreateProposalParamsType<T extends CreateProposalParams> =
+  T extends CreateProposalParams ? T : CreateProposalParams;
+
+type VoteProposalParamsType<T extends VoteProposalParams> =
+  T extends VoteProposalParams ? T : VoteProposalParams;
+
+type CalculateProposalParamsType<T extends CalculateProposalParams> =
+  T extends CalculateProposalParams ? T : CalculateProposalParams;
+
+type FinalizeProposalParamsType<T extends FinalizeProposalParams> =
+  T extends FinalizeProposalParams ? T : FinalizeProposalParams;
+
+type ExecuteProposalParamsType<T extends ExecuteProposalParams> =
+  T extends ExecuteProposalParams ? T : ExecuteProposalParams;
+
+export interface SDKInstance<
+  VoteT extends Vote,
+  ProposalT extends Proposal<VoteT>,
+  zDAOT extends zDAO<VoteT, ProposalT>
+> {
+  /**
+   * Create zDAO
+   * @param provider Web3 provider or wallet
+   * @param account signer address
+   * @param params
+   */
+  createZDAO(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    params: CreateZDAOParamsType<CreateZDAOParams>
+  ): Promise<void>;
+
+  /**
+   * Delete zDAO
+   * @param provider Web3 provider or wallet
+   * @param account signer address
+   * @param zDAOId
+   */
+  deleteZDAO(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    zDAOId: zDAOId
+  ): Promise<void>;
+
   /**
    * Get all the list of zNA
    * @returns list of zNA
@@ -23,12 +72,18 @@ export interface SDKInstance {
   listZNAs(): Promise<zNA[]>;
 
   /**
+   * Get all the list of zDAO instance
+   * @returns list of zDAO
+   */
+  listZDAOs(): Promise<zDAOT[]>;
+
+  /**
    * Create an zDAO instance by zNA
    * @param zNA zNA address
    * @returns created zDAO instance
    * @exception throw Error if zNA does not exist
    */
-  getZDAOByZNA(zNA: zNA): Promise<zDAO>;
+  getZDAOByZNA(zNA: zNA): Promise<zDAOT>;
 
   /**
    * Check if zDAO exists which associated with given zNA
@@ -38,26 +93,19 @@ export interface SDKInstance {
   doesZDAOExist(zNA: zNA): Promise<boolean>;
 
   /**
-   * Create new zToken with given name and symbol and return deployed address
-   * @param name name of zToken
-   * @param symbol symbol of zToken
-   * @param options mint options
-   */
-  createZToken(
-    signer: ethers.Signer,
-    name: string,
-    symbol: string,
-    options?: TokenMintOptions
-  ): Promise<string>;
-
-  /**
    * Create zDAO from parameters for test
-   * @param packaged parameters of zDAO
+   * @param provider Web3 provider or wallet
+   * @param account signer address
+   * @param params packaged parameters of zDAO
    * @exception throw Error if zNA already exists
    * @exception throw Error if owners is empty
    * @exception throw Error if title is empty
    */
-  createZDAOFromParams(param: CreateZDAOParams): Promise<zDAO>;
+  createZDAOFromParams(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    params: CreateZDAOParamsType<CreateZDAOParams>
+  ): Promise<zDAOT>;
 
   /**
    * List all associated zNAs, only used for test
@@ -68,7 +116,7 @@ export interface SDKInstance {
    * Get zDAO by zNA, only used for test
    * @param zNA
    */
-  getZDAOByZNAFromParams(zNA: zNA): Promise<zDAO>;
+  getZDAOByZNAFromParams(zNA: zNA): Promise<zDAOT>;
 
   /**
    * Check if zDAO exists which associated with given zNA, only used for test
@@ -77,7 +125,8 @@ export interface SDKInstance {
   doesZDAOExistFromParams(zNA: zNA): Promise<boolean>;
 }
 
-export interface zDAO extends zDAOProperties {
+export interface zDAO<VoteT extends Vote, ProposalT extends Proposal<VoteT>>
+  extends zDAOProperties {
   /**
    * Get the list of zDAO assets and amount in USD
    * @returns assets in zDAO
@@ -94,7 +143,7 @@ export interface zDAO extends zDAOProperties {
    * Get the list of the proposals created in the zDAO
    * @return list of proposals
    */
-  listProposals(pagination?: PaginationParam): Promise<Proposal[]>;
+  listProposals(pagination?: PaginationParam): Promise<ProposalT[]>;
 
   /**
    * Get the specific proposal
@@ -102,7 +151,7 @@ export interface zDAO extends zDAOProperties {
    * @returns proposal instance
    * @exception throw Error if not exist proposal id
    */
-  getProposal(id: ProposalId): Promise<Proposal>;
+  getProposal(id: ProposalId): Promise<ProposalT>;
 
   /**
    * Create a proposal in zDAO
@@ -113,50 +162,80 @@ export interface zDAO extends zDAOProperties {
    */
   createProposal(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string,
-    payload: CreateProposalParams
-  ): Promise<Proposal>;
+    account: string | undefined,
+    payload: CreateProposalParamsType<CreateProposalParams>
+  ): Promise<ProposalId>;
 }
 
-export interface Proposal extends ProposalProperties {
+export interface Proposal<VoteT extends Vote> extends ProposalProperties {
   /**
    * Get all the votes by proposal id filtering with the function parameter
    * @returns list of votes
    */
-  listVotes(pagination?: PaginationParam): Promise<Vote[]>;
+  listVotes(pagination?: PaginationParam): Promise<VoteT[]>;
 
   /**
    * Get voting power of the user in zDAO
    * @param account account address
-   * @returns voting power as number
+   * @returns voting power as BigNumber
    */
-  getVotingPowerOfUser(account: string): Promise<number>;
+  getVotingPowerOfUser(account: string): Promise<string>;
 
   /**
    * Update latest scores and votes
    * @returns proposal instance itself
    */
-  updateScoresAndVotes(): Promise<Proposal>;
+  updateScoresAndVotes(): Promise<Proposal<VoteT>>;
 
   /**
    * Cast a vote on proposal
-   * @param provider Web3 provider
+   * @param provider Web3 provider or wallet
    * @param account signer address
-   * @param choice voter's choice, 1: vote on first choice, 2: on second choice
+   * @param payload vote parameters
    * @returns vote id if successfully cast a vote
    */
   vote(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string,
-    choice: Choice
-  ): Promise<VoteId>;
+    account: string | undefined,
+    payload: VoteProposalParamsType<VoteProposalParams>
+  ): Promise<void>;
+
+  /**
+   * Calculate voting result and sync to ethereum
+   * @param provider Web3 provider or wallet
+   * @param account signer address
+   * @param payload parameters for proposal calculation
+   */
+  calculate(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    payload: CalculateProposalParamsType<CalculateProposalParams>
+  ): Promise<void>;
+
+  /**
+   * Finalize proposal
+   * @param provider Web3 provider or wallet
+   * @param account signer address
+   * @param payload parameters for proposal finalization
+   */
+  finalize(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    payload: FinalizeProposalParamsType<FinalizeProposalParams>
+  ): Promise<void>;
 
   /**
    * Execute a proposal in zDAO
-   * @param signer signer wallet
+   * @param provider Web3 provider or wallet
+   * @param account signer address
+   * @param payload parameters for proposal execution
    * @returns transaction response
    * @exception throw Error if signer is not Gnosis Safe owner
    * @exception throw Error if proposal does not conain meta data to transfer tokens
    */
-  execute(signer: ethers.Signer): Promise<void>;
+  execute(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    payload: ExecuteProposalParamsType<ExecuteProposalParams>
+  ): Promise<void>;
 }
