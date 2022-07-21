@@ -45,6 +45,24 @@ class EthereumZDAOChefClient {
     return EthereumZDAO__factory.connect(zDAO, GlobalClient.etherRpcProvider);
   }
 
+  // todo, should use defined typechain type
+  getZDAOInfo(zDAOId: zDAOId): Promise<{
+    zDAOId: ethers.BigNumber;
+    createdBy: string;
+    gnosisSafe: string;
+    token: string;
+    amount: ethers.BigNumber;
+    duration: ethers.BigNumber;
+    votingThreshold: ethers.BigNumber;
+    minimumVotingParticipants: ethers.BigNumber;
+    minimumTotalVotingTokens: ethers.BigNumber;
+    snapshot: ethers.BigNumber;
+    isRelativeMajority: boolean;
+    destroyed: boolean;
+  }> {
+    return this.contract.zDAOInfo(zDAOId);
+  }
+
   async getZDAOPropertiesById(
     zDAORecord: ZDAORecord
   ): Promise<EthereumZDAOProperties> {

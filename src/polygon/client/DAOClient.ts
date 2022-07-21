@@ -14,6 +14,7 @@ import {
   ProposalId,
   ProposalProperties,
   ProposalState,
+  Token,
   zDAOProperties,
   zDAOState,
 } from '../../types';
@@ -94,22 +95,38 @@ class DAOClient
     config: PolygonConfig,
     zDAORecord: ZDAORecord
   ): Promise<PolygonZDAO> {
-    const zDAOProperties =
-      await GlobalClient.ethereumZDAOChef.getZDAOPropertiesById(zDAORecord);
-    const polygonTokenAddress =
-      await GlobalClient.registry.ethereumToPolygonToken(
-        zDAOProperties.votingToken.token
-      );
+    const zDAOInfos = await Promise.all([
+      GlobalClient.ethereumZDAOChef.getZDAOInfo(zDAORecord.id),
+      GlobalClient.polygonZDAOChef.getZDAOInfo(zDAORecord.id),
+    ]);
 
-    const polygonToken = await getToken(
-      GlobalClient.polyRpcProvider,
-      polygonTokenAddress
-    );
+    const tokens = await Promise.all([
+      getToken(GlobalClient.etherRpcProvider, (zDAOInfos[0] as any).token),
+      getToken(GlobalClient.polyRpcProvider, (zDAOInfos[1] as any).token),
+    ]);
+
+    const etherZDAOInfo = zDAOInfos[0];
     const instance = await new DAOClient(
       {
-        ...zDAOProperties,
+        id: zDAORecord.id,
+        zNAs: zDAORecord.associatedzNAs,
+        name: zDAORecord.name,
+        createdBy: etherZDAOInfo.createdBy,
+        network: config.ethereum.network,
+        gnosisSafe: etherZDAOInfo.gnosisSafe,
+        votingToken: tokens[0] as Token,
+        amount: etherZDAOInfo.amount.toString(),
+        duration: etherZDAOInfo.duration.toNumber(),
+        votingThreshold: etherZDAOInfo.votingThreshold.toNumber(),
+        minimumVotingParticipants:
+          etherZDAOInfo.minimumVotingParticipants.toNumber(),
+        minimumTotalVotingTokens:
+          etherZDAOInfo.minimumTotalVotingTokens.toString(),
+        isRelativeMajority: etherZDAOInfo.isRelativeMajority,
         state: zDAOState.PENDING,
-        polygonToken: polygonToken,
+        snapshot: etherZDAOInfo.snapshot.toNumber(),
+        destroyed: etherZDAOInfo.destroyed,
+        polygonToken: tokens[1] as Token,
       },
       new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
     );
