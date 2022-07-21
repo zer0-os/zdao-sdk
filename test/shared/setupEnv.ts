@@ -1,45 +1,64 @@
 import * as dotenv from 'dotenv';
+import * as env from 'env-var';
 
 dotenv.config();
 
 export const setEnvPolygon = () => {
   return {
     rpc: {
-      rinkeby: process.env.RINKEBY_RPC_URL!,
-      mainnet: process.env.MAINNET_RPC_URL!,
-      goerli: process.env.GOERLI_RPC_URL!,
-      mumbai: process.env.MUMBAI_RPC_URL!,
+      rinkeby: env.get('RINKEBY_RPC_URL').required().asString(),
+      mainnet: env.get('MAINNET_RPC_URL').required().asString(),
+      goerli: env.get('GOERLI_RPC_URL').required().asString(),
+      mumbai: env.get('MUMBAI_RPC_URL').required().asString(),
     },
     contract: {
       zDAORegistry: {
-        goerli: process.env.GOERLI_POLYGON_ZDAOREGISTRY_ADDRESS!,
+        goerli: env
+          .get('GOERLI_POLYGON_ZDAOREGISTRY_ADDRESS')
+          .required()
+          .asString(),
       },
       zDAOChef: {
-        goerli: process.env.GOERLI_POLYGON_ZDAOCHEF_ADDRESS!,
-        goerliBlock: Number(process.env.GOERLI_POLYGON_ZDAOCHEF_BLOCK_NUMBER!),
-        mumbai: process.env.MUMBAI_POLYGON_ZDAOCHEF_ADDRESS!,
-        mumbaiBlock: Number(process.env.MUMBAI_POLYGON_ZDAOCHEF_BLOCK_NUMBER!),
+        goerli: env
+          .get('GOERLI_POLYGON_ZDAOCHEF_ADDRESS')
+          .required()
+          .asString(),
+        goerliBlock: env
+          .get('GOERLI_POLYGON_ZDAOCHEF_BLOCK_NUMBER')
+          .required()
+          .asInt(),
+        mumbai: env
+          .get('MUMBAI_POLYGON_ZDAOCHEF_ADDRESS')
+          .required()
+          .asString(),
+        mumbaiBlock: env
+          .get('MUMBAI_POLYGON_ZDAOCHEF_BLOCK_NUMBER')
+          .required()
+          .asInt(),
       },
       zNSHub: {
-        goerli: process.env.GOERLI_POLYGON_ZNSHUB_ADDRESS!,
+        goerli: env.get('GOERLI_POLYGON_ZNSHUB_ADDRESS').required().asString(),
       },
       token: {
-        goerli: process.env.GOERLI_VOTING_TOKEN!,
-        mumbai: process.env.MUMBAI_VOTING_TOKEN!,
+        goerli: env.get('GOERLI_VOTING_TOKEN').required().asString(),
+        mumbai: env.get('MUMBAI_VOTING_TOKEN').required().asString(),
       },
     },
     gnosisSafe: {
       goerli: {
-        address: process.env.GOERLI_GNOSIS_SAFE!,
-        ownerPrivateKey: process.env.GOERLI_GNOSIS_OWNER_PRIVATE_KEY!,
+        address: env.get('GOERLI_GNOSIS_SAFE').required().asString(),
+        ownerPrivateKey: env
+          .get('GOERLI_GNOSIS_OWNER_PRIVATE_KEY')
+          .required()
+          .asString(),
       },
     },
     wallet: {
-      privateKey: process.env.PRIVATE_KEY!,
+      privateKey: env.get('PRIVATE_KEY').required().asString(),
     },
     fleek: {
-      apiKey: process.env.FLEEK_API_KEY!,
-      apiSecret: process.env.FLEEK_API_SECRET!,
+      apiKey: env.get('FLEEK_API_KEY').required().asString(),
+      apiSecret: env.get('FLEEK_API_SECRET').required().asString(),
     },
     DAOs: {
       goerli: [
@@ -74,47 +93,58 @@ export const setEnvPolygon = () => {
 export const setEnvSnapshot = () => {
   return {
     rpc: {
-      rinkeby: process.env.RINKEBY_RPC_URL!,
-      mainnet: process.env.MAINNET_RPC_URL!,
-      goerli: process.env.GOERLI_RPC_URL!,
-      mumbai: process.env.MUMBAI_RPC_URL!,
+      rinkeby: env.get('RINKEBY_RPC_URL').required().asString(),
+      mainnet: env.get('MAINNET_RPC_URL').required().asString(),
+      goerli: env.get('GOERLI_RPC_URL').required().asString(),
+      mumbai: env.get('MUMBAI_RPC_URL').required().asString(),
     },
     contract: {
       zDAORegistry: {
-        rinkeby: process.env.RINKEBY_SNAPSHOT_ZDAOREGISTRY_ADDRESS!,
-        mainnet: process.env.MAINNET_SNAPSHOT_ZDAOREGISTRY_ADDRESS!,
+        rinkeby: env
+          .get('RINKEBY_SNAPSHOT_ZDAOREGISTRY_ADDRESS')
+          .required()
+          .asString(),
+        mainnet: '', // todo
       },
       zDAOChef: {
-        rinkeby: process.env.RINKEBY_SNAPSHOT_ZDAOCHEF_ADDRESS!,
-        rinkebyBlock: Number(
-          process.env.RINKEBY_SNAPSHOT_ZDAOCHEF_BLOCK_NUMBER!
-        ),
-        mainnet: process.env.MAINNET_SNAPSHOT_ZDAOCHEF_ADDRESS!,
-        mainnetBlock: Number(
-          process.env.MAINNET_SNAPSHOT_ZDAOCHEF_BLOCK_NUMBER!
-        ),
+        rinkeby: env
+          .get('RINKEBY_SNAPSHOT_ZDAOCHEF_ADDRESS')
+          .required()
+          .asString(),
+        rinkebyBlock: env
+          .get('RINKEBY_SNAPSHOT_ZDAOCHEF_BLOCK_NUMBER')
+          .required()
+          .asInt(),
+        mainnet: '', // todo
+        mainnetBlock: 0, // todo
       },
       zNSHub: {
-        rinkeby: process.env.RINKEBY_SNAPSHOT_ZNSHUB_ADDRESS!,
+        rinkeby: env
+          .get('RINKEBY_SNAPSHOT_ZNSHUB_ADDRESS')
+          .required()
+          .asString(),
         mainnet: '', // todo
       },
       token: {
-        rinkeby: process.env.RINKEBY_VOTING_TOKEN!,
+        rinkeby: env.get('RINKEBY_VOTING_TOKEN').required().asString(),
         mainnet: '', // todo
       },
     },
     gnosisSafe: {
       rinkeby: {
-        address: process.env.RINKEBY_GNOSIS_SAFE!,
-        ownerPrivateKey: process.env.RINKEBY_GNOSIS_OWNER_PRIVATE_KEY!,
+        address: env.get('RINKEBY_GNOSIS_SAFE').required().asString(),
+        ownerPrivateKey: env
+          .get('RINKEBY_GNOSIS_OWNER_PRIVATE_KEY')
+          .required()
+          .asString(),
       },
     },
     wallet: {
-      privateKey: process.env.PRIVATE_KEY!,
+      privateKey: env.get('PRIVATE_KEY').required().asString(),
     },
     fleek: {
-      apiKey: process.env.FLEEK_API_KEY!,
-      apiSecret: process.env.FLEEK_API_SECRET!,
+      apiKey: env.get('FLEEK_API_KEY').required().asString(),
+      apiSecret: env.get('FLEEK_API_SECRET').required().asString(),
     },
     DAOs: {
       rinkeby: [
