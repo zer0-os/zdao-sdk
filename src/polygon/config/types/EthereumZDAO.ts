@@ -49,46 +49,6 @@ export declare namespace IEthereumZDAOChef {
 }
 
 export declare namespace IEthereumZDAO {
-  export type ProposalStruct = {
-    proposalId: BigNumberish;
-    createdBy: string;
-    created: BigNumberish;
-    yes: BigNumberish;
-    no: BigNumberish;
-    voters: BigNumberish;
-    ipfs: string;
-    snapshot: BigNumberish;
-    calculated: boolean;
-    executed: boolean;
-    canceled: boolean;
-  };
-
-  export type ProposalStructOutput = [
-    BigNumber,
-    string,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    string,
-    BigNumber,
-    boolean,
-    boolean,
-    boolean
-  ] & {
-    proposalId: BigNumber;
-    createdBy: string;
-    created: BigNumber;
-    yes: BigNumber;
-    no: BigNumber;
-    voters: BigNumber;
-    ipfs: string;
-    snapshot: BigNumber;
-    calculated: boolean;
-    executed: boolean;
-    canceled: boolean;
-  };
-
   export type ZDAOInfoStruct = {
     zDAOId: BigNumberish;
     createdBy: string;
@@ -131,6 +91,46 @@ export declare namespace IEthereumZDAO {
     isRelativeMajority: boolean;
     destroyed: boolean;
   };
+
+  export type ProposalStruct = {
+    proposalId: BigNumberish;
+    createdBy: string;
+    created: BigNumberish;
+    yes: BigNumberish;
+    no: BigNumberish;
+    voters: BigNumberish;
+    ipfs: string;
+    snapshot: BigNumberish;
+    calculated: boolean;
+    executed: boolean;
+    canceled: boolean;
+  };
+
+  export type ProposalStructOutput = [
+    BigNumber,
+    string,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    string,
+    BigNumber,
+    boolean,
+    boolean,
+    boolean
+  ] & {
+    proposalId: BigNumber;
+    createdBy: string;
+    created: BigNumber;
+    yes: BigNumber;
+    no: BigNumber;
+    voters: BigNumber;
+    ipfs: string;
+    snapshot: BigNumber;
+    calculated: boolean;
+    executed: boolean;
+    canceled: boolean;
+  };
 }
 
 export interface EthereumZDAOInterface extends utils.Interface {
@@ -145,6 +145,9 @@ export interface EthereumZDAOInterface extends utils.Interface {
     "divisionConstant()": FunctionFragment;
     "executeProposal(address,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
+    "getZDAOId()": FunctionFragment;
+    "getZDAOInfo()": FunctionFragment;
+    "getZDAOOwner()": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "lastProposalId()": FunctionFragment;
@@ -167,7 +170,6 @@ export interface EthereumZDAOInterface extends utils.Interface {
     "version()": FunctionFragment;
     "zDAOChef()": FunctionFragment;
     "zDAOInfo()": FunctionFragment;
-    "zDAOOwner()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -208,6 +210,15 @@ export interface EthereumZDAOInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(functionFragment: "getZDAOId", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "getZDAOInfo",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getZDAOOwner",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "grantRole",
@@ -276,7 +287,6 @@ export interface EthereumZDAOInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
   encodeFunctionData(functionFragment: "zDAOChef", values?: undefined): string;
   encodeFunctionData(functionFragment: "zDAOInfo", values?: undefined): string;
-  encodeFunctionData(functionFragment: "zDAOOwner", values?: undefined): string;
 
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
@@ -309,6 +319,15 @@ export interface EthereumZDAOInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getRoleAdmin",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getZDAOId", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getZDAOInfo",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getZDAOOwner",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
@@ -363,7 +382,6 @@ export interface EthereumZDAOInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOChef", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOInfo", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "zDAOOwner", data: BytesLike): Result;
 
   events: {
     "AdminChanged(address,address)": EventFragment;
@@ -512,6 +530,14 @@ export interface EthereumZDAO extends BaseContract {
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
+    getZDAOId(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    getZDAOInfo(
+      overrides?: CallOverrides
+    ): Promise<[IEthereumZDAO.ZDAOInfoStructOutput]>;
+
+    getZDAOOwner(overrides?: CallOverrides): Promise<[string]>;
+
     grantRole(
       role: BytesLike,
       account: string,
@@ -638,9 +664,35 @@ export interface EthereumZDAO extends BaseContract {
 
     zDAOInfo(
       overrides?: CallOverrides
-    ): Promise<[IEthereumZDAO.ZDAOInfoStructOutput]>;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<[string]>;
+    ): Promise<
+      [
+        BigNumber,
+        string,
+        string,
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        boolean,
+        boolean
+      ] & {
+        zDAOId: BigNumber;
+        createdBy: string;
+        gnosisSafe: string;
+        token: string;
+        amount: BigNumber;
+        duration: BigNumber;
+        votingThreshold: BigNumber;
+        minimumVotingParticipants: BigNumber;
+        minimumTotalVotingTokens: BigNumber;
+        snapshot: BigNumber;
+        isRelativeMajority: boolean;
+        destroyed: boolean;
+      }
+    >;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -685,6 +737,14 @@ export interface EthereumZDAO extends BaseContract {
   ): Promise<ContractTransaction>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
+
+  getZDAOId(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getZDAOInfo(
+    overrides?: CallOverrides
+  ): Promise<IEthereumZDAO.ZDAOInfoStructOutput>;
+
+  getZDAOOwner(overrides?: CallOverrides): Promise<string>;
 
   grantRole(
     role: BytesLike,
@@ -805,9 +865,35 @@ export interface EthereumZDAO extends BaseContract {
 
   zDAOInfo(
     overrides?: CallOverrides
-  ): Promise<IEthereumZDAO.ZDAOInfoStructOutput>;
-
-  zDAOOwner(overrides?: CallOverrides): Promise<string>;
+  ): Promise<
+    [
+      BigNumber,
+      string,
+      string,
+      string,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      boolean,
+      boolean
+    ] & {
+      zDAOId: BigNumber;
+      createdBy: string;
+      gnosisSafe: string;
+      token: string;
+      amount: BigNumber;
+      duration: BigNumber;
+      votingThreshold: BigNumber;
+      minimumVotingParticipants: BigNumber;
+      minimumTotalVotingTokens: BigNumber;
+      snapshot: BigNumber;
+      isRelativeMajority: boolean;
+      destroyed: boolean;
+    }
+  >;
 
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -852,6 +938,14 @@ export interface EthereumZDAO extends BaseContract {
     ): Promise<void>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
+
+    getZDAOId(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getZDAOInfo(
+      overrides?: CallOverrides
+    ): Promise<IEthereumZDAO.ZDAOInfoStructOutput>;
+
+    getZDAOOwner(overrides?: CallOverrides): Promise<string>;
 
     grantRole(
       role: BytesLike,
@@ -970,9 +1064,35 @@ export interface EthereumZDAO extends BaseContract {
 
     zDAOInfo(
       overrides?: CallOverrides
-    ): Promise<IEthereumZDAO.ZDAOInfoStructOutput>;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<string>;
+    ): Promise<
+      [
+        BigNumber,
+        string,
+        string,
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        boolean,
+        boolean
+      ] & {
+        zDAOId: BigNumber;
+        createdBy: string;
+        gnosisSafe: string;
+        token: string;
+        amount: BigNumber;
+        duration: BigNumber;
+        votingThreshold: BigNumber;
+        minimumVotingParticipants: BigNumber;
+        minimumTotalVotingTokens: BigNumber;
+        snapshot: BigNumber;
+        isRelativeMajority: boolean;
+        destroyed: boolean;
+      }
+    >;
   };
 
   filters: {
@@ -1089,6 +1209,12 @@ export interface EthereumZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getZDAOId(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getZDAOInfo(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getZDAOOwner(overrides?: CallOverrides): Promise<BigNumber>;
+
     grantRole(
       role: BytesLike,
       account: string,
@@ -1184,8 +1310,6 @@ export interface EthereumZDAO extends BaseContract {
     zDAOChef(overrides?: CallOverrides): Promise<BigNumber>;
 
     zDAOInfo(overrides?: CallOverrides): Promise<BigNumber>;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1236,6 +1360,12 @@ export interface EthereumZDAO extends BaseContract {
       role: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    getZDAOId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getZDAOInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getZDAOOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     grantRole(
       role: BytesLike,
@@ -1332,7 +1462,5 @@ export interface EthereumZDAO extends BaseContract {
     zDAOChef(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     zDAOInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

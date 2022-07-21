@@ -74,6 +74,8 @@ export interface EthereumZDAOChefInterface extends utils.Interface {
     "ethereumStateSender()": FunctionFragment;
     "executeProposal(uint256,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
+    "getZDAOById(uint256)": FunctionFragment;
+    "getZDAOInfoById(uint256)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "modifyZDAO(uint256,address,bytes)": FunctionFragment;
@@ -92,7 +94,6 @@ export interface EthereumZDAOChefInterface extends utils.Interface {
     "upgradeToAndCall(address,bytes)": FunctionFragment;
     "version()": FunctionFragment;
     "zDAOBase()": FunctionFragment;
-    "zDAOInfo(uint256)": FunctionFragment;
     "zDAORegistry()": FunctionFragment;
     "zDAOs(uint256)": FunctionFragment;
   };
@@ -128,6 +129,14 @@ export interface EthereumZDAOChefInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getZDAOById",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getZDAOInfoById",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "grantRole",
@@ -184,10 +193,6 @@ export interface EthereumZDAOChefInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
   encodeFunctionData(functionFragment: "zDAOBase", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "zDAOInfo",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "zDAORegistry",
     values?: undefined
   ): string;
@@ -220,6 +225,14 @@ export interface EthereumZDAOChefInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getRoleAdmin",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getZDAOById",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getZDAOInfoById",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
@@ -264,7 +277,6 @@ export interface EthereumZDAOChefInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOBase", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "zDAOInfo", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "zDAORegistry",
     data: BytesLike
@@ -464,6 +476,16 @@ export interface EthereumZDAOChef extends BaseContract {
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
+    getZDAOById(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    getZDAOInfoById(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[IEthereumZDAO.ZDAOInfoStructOutput]>;
+
     grantRole(
       role: BytesLike,
       account: string,
@@ -548,11 +570,6 @@ export interface EthereumZDAOChef extends BaseContract {
 
     zDAOBase(overrides?: CallOverrides): Promise<[string]>;
 
-    zDAOInfo(
-      _zDAOId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[IEthereumZDAO.ZDAOInfoStructOutput]>;
-
     zDAORegistry(overrides?: CallOverrides): Promise<[string]>;
 
     zDAOs(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
@@ -596,6 +613,16 @@ export interface EthereumZDAOChef extends BaseContract {
   ): Promise<ContractTransaction>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
+
+  getZDAOById(
+    _zDAOId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  getZDAOInfoById(
+    _zDAOId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<IEthereumZDAO.ZDAOInfoStructOutput>;
 
   grantRole(
     role: BytesLike,
@@ -681,11 +708,6 @@ export interface EthereumZDAOChef extends BaseContract {
 
   zDAOBase(overrides?: CallOverrides): Promise<string>;
 
-  zDAOInfo(
-    _zDAOId: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<IEthereumZDAO.ZDAOInfoStructOutput>;
-
   zDAORegistry(overrides?: CallOverrides): Promise<string>;
 
   zDAOs(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
@@ -729,6 +751,16 @@ export interface EthereumZDAOChef extends BaseContract {
     ): Promise<void>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
+
+    getZDAOById(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    getZDAOInfoById(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<IEthereumZDAO.ZDAOInfoStructOutput>;
 
     grantRole(
       role: BytesLike,
@@ -805,11 +837,6 @@ export interface EthereumZDAOChef extends BaseContract {
     version(overrides?: CallOverrides): Promise<BigNumber>;
 
     zDAOBase(overrides?: CallOverrides): Promise<string>;
-
-    zDAOInfo(
-      _zDAOId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<IEthereumZDAO.ZDAOInfoStructOutput>;
 
     zDAORegistry(overrides?: CallOverrides): Promise<string>;
 
@@ -976,6 +1003,16 @@ export interface EthereumZDAOChef extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getZDAOById(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getZDAOInfoById(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     grantRole(
       role: BytesLike,
       account: string,
@@ -1060,11 +1097,6 @@ export interface EthereumZDAOChef extends BaseContract {
 
     zDAOBase(overrides?: CallOverrides): Promise<BigNumber>;
 
-    zDAOInfo(
-      _zDAOId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     zDAORegistry(overrides?: CallOverrides): Promise<BigNumber>;
 
     zDAOs(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
@@ -1114,6 +1146,16 @@ export interface EthereumZDAOChef extends BaseContract {
 
     getRoleAdmin(
       role: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getZDAOById(
+      _zDAOId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getZDAOInfoById(
+      _zDAOId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1200,11 +1242,6 @@ export interface EthereumZDAOChef extends BaseContract {
     version(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     zDAOBase(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    zDAOInfo(
-      _zDAOId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     zDAORegistry(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

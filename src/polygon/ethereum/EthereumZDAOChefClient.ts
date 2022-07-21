@@ -5,7 +5,7 @@ import { ZDAORecord } from '../../client/ZDAORegistry';
 import { DAOConfig, ProposalId, zDAOId, zNA } from '../../types';
 import { calculateGasMargin, getToken } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
-import { EthereumZDAO } from '../config/types/EthereumZDAO';
+import { EthereumZDAO, IEthereumZDAO } from '../config/types/EthereumZDAO';
 import { EthereumZDAOChef } from '../config/types/EthereumZDAOChef';
 import { EthereumZDAO__factory } from '../config/types/factories/EthereumZDAO__factory';
 import { EthereumZDAOChef__factory } from '../config/types/factories/EthereumZDAOChef__factory';
@@ -17,25 +17,26 @@ import { EthereumZDAOProperties } from './types';
 class EthereumZDAOChefClient {
   private readonly config: DAOConfig;
   protected contract!: EthereumZDAOChef;
-  protected rootStateSender!: FxStateEthereumTunnel;
+  protected rootStateSender?: FxStateEthereumTunnel;
 
   constructor(config: DAOConfig) {
     this.config = config;
 
-    return (async (): Promise<EthereumZDAOChefClient> => {
-      this.contract = EthereumZDAOChef__factory.connect(
-        config.zDAOChef,
-        GlobalClient.etherRpcProvider
-      );
+    this.contract = EthereumZDAOChef__factory.connect(
+      config.zDAOChef,
+      GlobalClient.etherRpcProvider
+    );
+  }
 
+  private async getRootStateSender(): Promise<FxStateEthereumTunnel> {
+    if (!this.rootStateSender) {
       const address = await this.contract.ethereumStateSender();
       this.rootStateSender = FxStateEthereumTunnel__factory.connect(
         address,
         GlobalClient.etherRpcProvider
       );
-
-      return this;
-    })() as unknown as EthereumZDAOChefClient;
+    }
+    return this.rootStateSender;
   }
 
   async getZDAOById(zDAOId: zDAOId): Promise<EthereumZDAO> {
@@ -44,10 +45,14 @@ class EthereumZDAOChefClient {
     return EthereumZDAO__factory.connect(zDAO, GlobalClient.etherRpcProvider);
   }
 
+  getZDAOInfoById(zDAOId: zDAOId): Promise<IEthereumZDAO.ZDAOInfoStructOutput> {
+    return this.contract.getZDAOInfoById(zDAOId);
+  }
+
   async getZDAOPropertiesById(
     zDAORecord: ZDAORecord
   ): Promise<EthereumZDAOProperties> {
-    const zDAOInfo = await this.contract.zDAOInfo(zDAORecord.id);
+    const zDAOInfo = await this.contract.getZDAOInfoById(zDAORecord.id);
 
     const token = await getToken(GlobalClient.etherRpcProvider, zDAOInfo.token);
     const zNAs: zNA[] = zDAORecord.associatedzNAs;
@@ -158,15 +163,14 @@ class EthereumZDAOChefClient {
   }
 
   async receiveMessage(signer: ethers.Signer, proof: string) {
-    const gasEstimated = await this.rootStateSender
+    const instance = await this.getRootStateSender();
+    const gasEstimated = await instance
       .connect(signer)
       .estimateGas.receiveMessage(proof);
 
-    const tx = await this.rootStateSender
-      .connect(signer)
-      .receiveMessage(proof, {
-        gasLimit: calculateGasMargin(gasEstimated),
-      });
+    const tx = await instance.connect(signer).receiveMessage(proof, {
+      gasLimit: calculateGasMargin(gasEstimated),
+    });
     return await tx.wait();
   }
 }

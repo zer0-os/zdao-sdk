@@ -2,7 +2,6 @@ import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
 import { ethers } from 'ethers';
 
 import { IPFSClient, ZNAClient } from '../client';
-import ZDAORegistryClient, { ZDAORecord } from '../client/ZDAORegistry';
 import ZNSHubClient from '../client/ZNSHubClient';
 import {
   AlreadyExistError,
@@ -18,7 +17,6 @@ import { errorMessageForError, getSigner } from '../utilities';
 import DAOClient from './client/DAOClient';
 import GlobalClient from './client/GlobalClient';
 import MockDAOClient from './client/MockDAOClient';
-import { EthereumZDAOChefClient } from './ethereum';
 import { SnapshotClient } from './snapshot';
 import {
   CreateSnapshotZDAOParams,
@@ -38,15 +36,8 @@ class SDKInstanceClient implements SnapshotSDKInstance {
 
     IPFSClient.initialize(this.config.fleek);
     ZNAClient.initialize(this.config.zNS);
-    ZNSHubClient.initialize(config.zNA);
-
-    GlobalClient.etherRpcProvider = new ethers.providers.JsonRpcProvider(
-      this.config.ethereum.rpcUrl,
-      this.config.ethereum.network
-    );
-    GlobalClient.zDAORegistry = new ZDAORegistryClient(config.zNA);
-    GlobalClient.ethereumZDAOChef = new EthereumZDAOChefClient(config.ethereum);
-    GlobalClient.ipfsGateway = config.ipfsGateway;
+    ZNSHubClient.initialize(this.config.zNA);
+    GlobalClient.initialize(this.config);
   }
 
   async createZDAO(
@@ -115,14 +106,12 @@ class SDKInstanceClient implements SnapshotSDKInstance {
   }
 
   async getZDAOByZNA(zNA: zNA): Promise<SnapshotZDAO> {
-    // check if zDAO exists
-    if (!(await this.doesZDAOExist(zNA))) {
+    // get zDAO information associated with zNA
+    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
+
+    if (zDAORecord.id === '0') {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
-
-    // get zDAO information associated with zNA
-    const zDAORecord: ZDAORecord =
-      await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
 
     const zDAOInfo = await GlobalClient.ethereumZDAOChef.getZDAOPropertiesById(
       zDAORecord.id

@@ -4,10 +4,12 @@ import ZDAORegistryClient from '../../client/ZDAORegistry';
 import { NotInitializedError } from '../../types';
 import { EthereumZDAOChefClient } from '../ethereum';
 import { PolygonZDAOChefClient } from '../polygon';
+import { PolygonConfig } from '../types';
 import RegistryClient from './RegistryClient';
 import StakingClient from './StakingClient';
 
 class GlobalClient {
+  private static config: PolygonConfig;
   private static etherRpcProviderInst?: ethers.providers.JsonRpcProvider;
   private static polyRpcProviderInst?: ethers.providers.JsonRpcProvider;
   private static zDAORegistryInst?: ZDAORegistryClient;
@@ -17,17 +19,34 @@ class GlobalClient {
   private static registryInst?: RegistryClient;
   private static ipfsGatewayHost?: string;
 
+  static initialize(config: PolygonConfig) {
+    GlobalClient.config = config;
+    GlobalClient.etherRpcProviderInst = new ethers.providers.JsonRpcProvider(
+      config.ethereum.rpcUrl,
+      config.ethereum.network
+    );
+    GlobalClient.polyRpcProviderInst = new ethers.providers.JsonRpcProvider(
+      config.polygon.rpcUrl,
+      config.polygon.network
+    );
+    GlobalClient.zDAORegistryInst = new ZDAORegistryClient(config.zNA);
+    GlobalClient.ipfsGatewayHost = config.ipfsGateway;
+
+    GlobalClient.ethereumZDAOChefInst = new EthereumZDAOChefClient(
+      config.ethereum
+    );
+    GlobalClient.polygonZDAOChefInst = new PolygonZDAOChefClient(
+      config.polygon
+    );
+    GlobalClient.stakingInst = new StakingClient();
+    GlobalClient.registryInst = new RegistryClient();
+  }
+
   static get etherRpcProvider() {
     if (!GlobalClient.etherRpcProviderInst) {
       throw new NotInitializedError();
     }
     return GlobalClient.etherRpcProviderInst;
-  }
-
-  static set etherRpcProvider(
-    etherRpcProvider: ethers.providers.JsonRpcProvider
-  ) {
-    GlobalClient.etherRpcProviderInst = etherRpcProvider;
   }
 
   static get polyRpcProvider() {
@@ -37,21 +56,11 @@ class GlobalClient {
     return GlobalClient.polyRpcProviderInst;
   }
 
-  static set polyRpcProvider(
-    polyRpcProvider: ethers.providers.JsonRpcProvider
-  ) {
-    GlobalClient.polyRpcProviderInst = polyRpcProvider;
-  }
-
   static get zDAORegistry() {
     if (!GlobalClient.zDAORegistryInst) {
       throw new NotInitializedError();
     }
     return GlobalClient.zDAORegistryInst;
-  }
-
-  static set zDAORegistry(registry: ZDAORegistryClient) {
-    GlobalClient.zDAORegistryInst = registry;
   }
 
   static get ethereumZDAOChef() {
@@ -61,19 +70,11 @@ class GlobalClient {
     return GlobalClient.ethereumZDAOChefInst;
   }
 
-  static set ethereumZDAOChef(ethereumZDAOChef: EthereumZDAOChefClient) {
-    GlobalClient.ethereumZDAOChefInst = ethereumZDAOChef;
-  }
-
   static get polygonZDAOChef() {
     if (!GlobalClient.polygonZDAOChefInst) {
       throw new NotInitializedError();
     }
     return GlobalClient.polygonZDAOChefInst;
-  }
-
-  static set polygonZDAOChef(polyZDAOChef: PolygonZDAOChefClient) {
-    GlobalClient.polygonZDAOChefInst = polyZDAOChef;
   }
 
   static get staking() {
@@ -83,10 +84,6 @@ class GlobalClient {
     return GlobalClient.stakingInst;
   }
 
-  static set staking(staking: StakingClient) {
-    GlobalClient.stakingInst = staking;
-  }
-
   static get registry() {
     if (!GlobalClient.registryInst) {
       throw new NotInitializedError();
@@ -94,19 +91,11 @@ class GlobalClient {
     return GlobalClient.registryInst;
   }
 
-  static set registry(registry: RegistryClient) {
-    GlobalClient.registryInst = registry;
-  }
-
   static get ipfsGateway() {
     if (!GlobalClient.ipfsGatewayHost) {
       throw new NotInitializedError();
     }
     return GlobalClient.ipfsGatewayHost;
-  }
-
-  static set ipfsGateway(ipfsGateway: string) {
-    GlobalClient.ipfsGatewayHost = ipfsGateway;
   }
 }
 

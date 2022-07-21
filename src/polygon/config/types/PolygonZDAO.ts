@@ -19,6 +19,28 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export declare namespace IPolygonZDAO {
+  export type ZDAOInfoStruct = {
+    zDAOId: BigNumberish;
+    duration: BigNumberish;
+    token: string;
+    snapshot: BigNumberish;
+    destroyed: boolean;
+  };
+
+  export type ZDAOInfoStructOutput = [
+    BigNumber,
+    BigNumber,
+    string,
+    BigNumber,
+    boolean
+  ] & {
+    zDAOId: BigNumber;
+    duration: BigNumber;
+    token: string;
+    snapshot: BigNumber;
+    destroyed: boolean;
+  };
+
   export type ProposalStruct = {
     proposalId: BigNumberish;
     startTimestamp: BigNumberish;
@@ -71,6 +93,8 @@ export interface PolygonZDAOInterface extends utils.Interface {
     "destroyed()": FunctionFragment;
     "executeProposal(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
+    "getZDAOId()": FunctionFragment;
+    "getZDAOInfo()": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "listProposals(uint256,uint256)": FunctionFragment;
@@ -97,7 +121,6 @@ export interface PolygonZDAOInterface extends utils.Interface {
     "votesResultOfProposal(uint256)": FunctionFragment;
     "votingPowerOfVoter(uint256,address)": FunctionFragment;
     "zDAOChef()": FunctionFragment;
-    "zDAOId()": FunctionFragment;
     "zDAOInfo()": FunctionFragment;
   };
 
@@ -141,6 +164,11 @@ export interface PolygonZDAOInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(functionFragment: "getZDAOId", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "getZDAOInfo",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "grantRole",
@@ -219,7 +247,6 @@ export interface PolygonZDAOInterface extends utils.Interface {
     values: [BigNumberish, string]
   ): string;
   encodeFunctionData(functionFragment: "zDAOChef", values?: undefined): string;
-  encodeFunctionData(functionFragment: "zDAOId", values?: undefined): string;
   encodeFunctionData(functionFragment: "zDAOInfo", values?: undefined): string;
 
   decodeFunctionResult(
@@ -258,6 +285,11 @@ export interface PolygonZDAOInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getRoleAdmin",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getZDAOId", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getZDAOInfo",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
@@ -322,7 +354,6 @@ export interface PolygonZDAOInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "zDAOChef", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "zDAOId", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOInfo", data: BytesLike): Result;
 
   events: {
@@ -481,6 +512,12 @@ export interface PolygonZDAO extends BaseContract {
     ): Promise<ContractTransaction>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
+
+    getZDAOId(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    getZDAOInfo(
+      overrides?: CallOverrides
+    ): Promise<[IPolygonZDAO.ZDAOInfoStructOutput]>;
 
     grantRole(
       role: BytesLike,
@@ -644,8 +681,6 @@ export interface PolygonZDAO extends BaseContract {
 
     zDAOChef(overrides?: CallOverrides): Promise<[string]>;
 
-    zDAOId(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     zDAOInfo(
       overrides?: CallOverrides
     ): Promise<
@@ -711,6 +746,12 @@ export interface PolygonZDAO extends BaseContract {
   ): Promise<ContractTransaction>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
+
+  getZDAOId(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getZDAOInfo(
+    overrides?: CallOverrides
+  ): Promise<IPolygonZDAO.ZDAOInfoStructOutput>;
 
   grantRole(
     role: BytesLike,
@@ -867,8 +908,6 @@ export interface PolygonZDAO extends BaseContract {
 
   zDAOChef(overrides?: CallOverrides): Promise<string>;
 
-  zDAOId(overrides?: CallOverrides): Promise<BigNumber>;
-
   zDAOInfo(
     overrides?: CallOverrides
   ): Promise<
@@ -940,6 +979,12 @@ export interface PolygonZDAO extends BaseContract {
     ): Promise<void>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
+
+    getZDAOId(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getZDAOInfo(
+      overrides?: CallOverrides
+    ): Promise<IPolygonZDAO.ZDAOInfoStructOutput>;
 
     grantRole(
       role: BytesLike,
@@ -1088,8 +1133,6 @@ export interface PolygonZDAO extends BaseContract {
 
     zDAOChef(overrides?: CallOverrides): Promise<string>;
 
-    zDAOId(overrides?: CallOverrides): Promise<BigNumber>;
-
     zDAOInfo(
       overrides?: CallOverrides
     ): Promise<
@@ -1227,6 +1270,10 @@ export interface PolygonZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getZDAOId(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getZDAOInfo(overrides?: CallOverrides): Promise<BigNumber>;
+
     grantRole(
       role: BytesLike,
       account: string,
@@ -1349,8 +1396,6 @@ export interface PolygonZDAO extends BaseContract {
 
     zDAOChef(overrides?: CallOverrides): Promise<BigNumber>;
 
-    zDAOId(overrides?: CallOverrides): Promise<BigNumber>;
-
     zDAOInfo(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
@@ -1412,6 +1457,10 @@ export interface PolygonZDAO extends BaseContract {
       role: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    getZDAOId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getZDAOInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     grantRole(
       role: BytesLike,
@@ -1534,8 +1583,6 @@ export interface PolygonZDAO extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     zDAOChef(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    zDAOId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     zDAOInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };

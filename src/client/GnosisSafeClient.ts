@@ -174,8 +174,6 @@ class GnosisSafeClient {
       }
     );
 
-    // todo, if empty uri, then should integrate with smart contract and get token uri
-
     // if not empty uri, then should fetch data from ipfs uri
     const needToPatch = collectibles.filter(
       (collectible) =>

@@ -6,7 +6,7 @@ import { calculateGasMargin } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import { PolygonZDAO__factory } from '../config/types/factories/PolygonZDAO__factory';
 import { PolygonZDAOChef__factory } from '../config/types/factories/PolygonZDAOChef__factory';
-import { PolygonZDAO } from '../config/types/PolygonZDAO';
+import { IPolygonZDAO, PolygonZDAO } from '../config/types/PolygonZDAO';
 import { PolygonZDAOChef } from '../config/types/PolygonZDAOChef';
 import { StakingProperties } from '../types';
 import { PolygonZDAOProperties } from './types';
@@ -23,12 +23,8 @@ class PolygonZDAOChefClient {
     );
   }
 
-  async numberOfzDAOs(): Promise<number> {
-    return (await this.contract.numberOfzDAOs()).toNumber();
-  }
-
-  async getZDAOById(daoId: zDAOId): Promise<PolygonZDAO | null> {
-    const iPolygonZDAO = await this.contract.getzDAOById(daoId);
+  async getZDAOById(zDAOId: zDAOId): Promise<PolygonZDAO | null> {
+    const iPolygonZDAO = await this.contract.getZDAOById(zDAOId);
     if (!iPolygonZDAO || iPolygonZDAO === AddressZero) return null;
 
     return PolygonZDAO__factory.connect(
@@ -37,18 +33,19 @@ class PolygonZDAOChefClient {
     );
   }
 
-  async getZDAOProperties(daoId: zDAOId): Promise<PolygonZDAOProperties> {
-    const address = await this.contract.getzDAOById(daoId);
-    const polygonZDAO = PolygonZDAO__factory.connect(
-      address,
-      GlobalClient.polyRpcProvider
-    );
+  async getZDAOInfoById(
+    zDAOId: zDAOId
+  ): Promise<IPolygonZDAO.ZDAOInfoStructOutput | undefined> {
+    return this.contract.getZDAOInfoById(zDAOId).catch(() => undefined);
+  }
 
-    const zDAOInfo = await polygonZDAO.zDAOInfo();
+  async getZDAOPropertiesById(zDAOId: zDAOId): Promise<PolygonZDAOProperties> {
+    const zDAOInfo = await this.contract.getZDAOInfoById(zDAOId);
 
     return {
       id: zDAOInfo.zDAOId.toString(),
-      address: polygonZDAO.address,
+      duration: zDAOInfo.duration.toNumber(),
+      token: zDAOInfo.token.toString(),
       snapshot: zDAOInfo.snapshot.toNumber(),
       destroyed: zDAOInfo.destroyed,
     };
@@ -68,17 +65,17 @@ class PolygonZDAOChefClient {
 
   async vote(
     signer: ethers.Signer,
-    daoId: zDAOId,
+    zDAOId: zDAOId,
     proposalId: ProposalId,
     choice: Choice
   ) {
     const gasEstimated = await this.contract
       .connect(signer)
-      .estimateGas.vote(daoId, proposalId, choice);
+      .estimateGas.vote(zDAOId, proposalId, choice);
 
     const tx = await this.contract
       .connect(signer)
-      .vote(daoId, proposalId, choice, {
+      .vote(zDAOId, proposalId, choice, {
         gasLimit: calculateGasMargin(gasEstimated),
       });
     return await tx.wait();
@@ -86,23 +83,23 @@ class PolygonZDAOChefClient {
 
   async calculateProposal(
     signer: ethers.Signer,
-    daoId: zDAOId,
+    zDAOId: zDAOId,
     proposalId: ProposalId
   ) {
     const gasEstimated = await this.contract
       .connect(signer)
-      .estimateGas.calculateProposal(daoId, proposalId);
+      .estimateGas.calculateProposal(zDAOId, proposalId);
 
     const tx = await this.contract
       .connect(signer)
-      .calculateProposal(daoId, proposalId, {
+      .calculateProposal(zDAOId, proposalId, {
         gasLimit: calculateGasMargin(gasEstimated),
       });
     return await tx.wait();
   }
 
   async getCheckPointingHashes(
-    daoId: zDAOId,
+    zDAOId: zDAOId,
     proposalId: ProposalId
   ): Promise<string[]> {
     const currentBlock = await this.contract.provider.getBlockNumber();
@@ -119,7 +116,7 @@ class PolygonZDAOChefClient {
     const blockCount = 3490;
 
     const filter = this.contract.filters.ProposalCalculated(
-      ethers.BigNumber.from(daoId),
+      ethers.BigNumber.from(zDAOId),
       ethers.BigNumber.from(proposalId)
     );
     const events = [];

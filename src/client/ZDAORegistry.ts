@@ -46,7 +46,6 @@ class ZDAORegistryClient {
     while (numberOfReturns === count) {
       const response = await this.contract.listZDAOs(from, count);
 
-      // todo, collect all the promise
       for (const record of response) {
         const zNAs: string[] = [];
         const promises: Promise<zNA>[] = [];
