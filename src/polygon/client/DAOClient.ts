@@ -102,7 +102,8 @@ class DAOClient
 
     const tokens = await Promise.all([
       getToken(GlobalClient.etherRpcProvider, (zDAOInfos[0] as any).token),
-      getToken(GlobalClient.polyRpcProvider, (zDAOInfos[1] as any).token),
+      zDAOInfos[1] &&
+        getToken(GlobalClient.polyRpcProvider, (zDAOInfos[1] as any).token),
     ]);
 
     const etherZDAOInfo = zDAOInfos[0];

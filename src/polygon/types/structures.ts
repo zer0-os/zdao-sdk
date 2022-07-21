@@ -9,5 +9,5 @@ export interface StakingProperties {
 }
 
 export interface zDAOOptions {
-  polygonToken: Token;
+  polygonToken?: Token;
 }

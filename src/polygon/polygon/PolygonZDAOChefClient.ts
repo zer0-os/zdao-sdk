@@ -33,8 +33,10 @@ class PolygonZDAOChefClient {
     );
   }
 
-  getZDAOInfoById(zDAOId: zDAOId): Promise<IPolygonZDAO.ZDAOInfoStructOutput> {
-    return this.contract.getZDAOInfoById(zDAOId);
+  async getZDAOInfoById(
+    zDAOId: zDAOId
+  ): Promise<IPolygonZDAO.ZDAOInfoStructOutput | undefined> {
+    return this.contract.getZDAOInfoById(zDAOId).catch(() => undefined);
   }
 
   async getZDAOPropertiesById(zDAOId: zDAOId): Promise<PolygonZDAOProperties> {
