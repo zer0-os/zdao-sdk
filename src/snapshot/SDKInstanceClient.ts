@@ -2,7 +2,6 @@ import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
 import { ethers } from 'ethers';
 
 import { IPFSClient, ZNAClient } from '../client';
-import { ZDAORecord } from '../client/ZDAORegistry';
 import ZNSHubClient from '../client/ZNSHubClient';
 import {
   AlreadyExistError,
@@ -107,14 +106,12 @@ class SDKInstanceClient implements SnapshotSDKInstance {
   }
 
   async getZDAOByZNA(zNA: zNA): Promise<SnapshotZDAO> {
-    // check if zDAO exists
-    if (!(await this.doesZDAOExist(zNA))) {
+    // get zDAO information associated with zNA
+    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
+
+    if (zDAORecord.id === '0') {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
-
-    // get zDAO information associated with zNA
-    const zDAORecord: ZDAORecord =
-      await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
 
     const zDAOInfo = await GlobalClient.ethereumZDAOChef.getZDAOPropertiesById(
       zDAORecord.id
