@@ -4,7 +4,7 @@ import ZDAORegistryClient from '../../client/ZDAORegistry';
 import { NotInitializedError } from '../../types';
 import { EthereumZDAOChefClient } from '../ethereum';
 import { PolygonZDAOChefClient } from '../polygon';
-import { PolygonConfig, StakingProperties } from '../types';
+import { PolygonConfig } from '../types';
 import RegistryClient from './RegistryClient';
 import StakingClient from './StakingClient';
 
@@ -19,7 +19,7 @@ class GlobalClient {
   private static registryInst?: RegistryClient;
   private static ipfsGatewayHost?: string;
 
-  static async initialize(config: PolygonConfig) {
+  static initialize(config: PolygonConfig) {
     GlobalClient.config = config;
     GlobalClient.etherRpcProviderInst = new ethers.providers.JsonRpcProvider(
       config.ethereum.rpcUrl,
@@ -38,18 +38,8 @@ class GlobalClient {
     GlobalClient.polygonZDAOChefInst = new PolygonZDAOChefClient(
       config.polygon
     );
-
-    const promises: Promise<any>[] = [
-      GlobalClient.polygonZDAOChef.getStakingProperties(),
-      GlobalClient.polygonZDAOChef.getRegistryAddress(),
-    ];
-    const results = await Promise.all(promises);
-
-    const stakingProperties = results[0] as StakingProperties;
-    GlobalClient.stakingInst = new StakingClient(stakingProperties);
-
-    const registryAddress = results[1] as string;
-    GlobalClient.registryInst = new RegistryClient(registryAddress);
+    GlobalClient.stakingInst = new StakingClient();
+    GlobalClient.registryInst = new RegistryClient();
   }
 
   static get etherRpcProvider() {

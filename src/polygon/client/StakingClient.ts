@@ -3,98 +3,115 @@ import { ContractReceipt, ethers } from 'ethers';
 import { FailedTxError } from '../../types';
 import PolygonStakingClient from '../polygon/PolygonStakingClient';
 import { Staking, StakingProperties } from '../types';
+import GlobalClient from './GlobalClient';
 
 class StakingClient implements Staking {
-  protected readonly properties: StakingProperties;
-  protected readonly polyStaking: PolygonStakingClient;
+  protected properties?: StakingProperties;
+  protected polyStaking?: PolygonStakingClient;
 
-  constructor(properties: StakingProperties) {
-    this.properties = properties;
-    this.polyStaking = new PolygonStakingClient(properties.address);
+  private async getPolygonStakingClient(): Promise<PolygonStakingClient> {
+    if (!this.polyStaking) {
+      const properties =
+        await GlobalClient.polygonZDAOChef.getStakingProperties();
+      this.polyStaking = new PolygonStakingClient(properties.address);
+    }
+    return this.polyStaking;
   }
 
   get network() {
-    return this.properties.network;
+    return this.properties?.network ?? 0;
   }
 
   get address() {
-    return this.properties.address;
+    return this.properties?.address ?? ethers.constants.AddressZero;
   }
 
-  stakeERC20(
+  async stakeERC20(
     signer: ethers.Signer,
     token: string,
     amount: string
   ): Promise<ContractReceipt> {
     try {
-      return this.polyStaking.stakeERC20(signer, token, amount);
+      const instance = await this.getPolygonStakingClient();
+      return instance.stakeERC20(signer, token, amount);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
     }
   }
 
-  stakeERC721(
+  async stakeERC721(
     signer: ethers.Signer,
     token: string,
     tokenId: string
   ): Promise<ContractReceipt> {
     try {
-      return this.polyStaking.stakeERC721(signer, token, tokenId);
+      const instance = await this.getPolygonStakingClient();
+      return instance.stakeERC721(signer, token, tokenId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
     }
   }
 
-  unstakeERC20(
+  async unstakeERC20(
     signer: ethers.Signer,
     token: string,
     amount: string
   ): Promise<ContractReceipt> {
     try {
-      return this.polyStaking.unstakeERC20(signer, token, amount);
+      const instance = await this.getPolygonStakingClient();
+      return instance.unstakeERC20(signer, token, amount);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
     }
   }
 
-  unstakeERC721(
+  async unstakeERC721(
     signer: ethers.Signer,
     token: string,
     tokenId: string
   ): Promise<ContractReceipt> {
     try {
-      return this.polyStaking.unstakeERC721(signer, token, tokenId);
+      const instance = await this.getPolygonStakingClient();
+      return instance.unstakeERC721(signer, token, tokenId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
     }
   }
 
-  stakingPower(account: string, token: string): Promise<string> {
-    return this.polyStaking.stakingPower(account, token);
+  async stakingPower(account: string, token: string): Promise<string> {
+    return this.getPolygonStakingClient().then((instance) =>
+      instance.stakingPower(account, token)
+    );
   }
 
-  pastStakingPower(
+  async pastStakingPower(
     account: string,
     token: string,
     blockNumber: number
   ): Promise<string> {
-    return this.polyStaking.pastStakingPower(account, token, blockNumber);
+    return this.getPolygonStakingClient().then((instance) =>
+      instance.pastStakingPower(account, token, blockNumber)
+    );
   }
 
-  stakedERC20Amount(account: string, token: string): Promise<string> {
-    return this.polyStaking.stakedERC20Amount(account, token);
+  async stakedERC20Amount(account: string, token: string): Promise<string> {
+    return this.getPolygonStakingClient().then((instance) =>
+      instance.stakedERC20Amount(account, token)
+    );
   }
 
-  isStakedERC721(
+  async isStakedERC721(
     account: string,
     token: string,
     tokenId: string
   ): Promise<boolean> {
-    return this.polyStaking.isStakedERC721(account, token, tokenId);
+    return this.getPolygonStakingClient().then((instance) =>
+      instance.isStakedERC721(account, token, tokenId)
+    );
   }
 }
 

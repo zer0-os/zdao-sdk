@@ -31,12 +31,11 @@ class SDKInstanceClient implements PolygonSDKInstance {
 
     IPFSClient.initialize(this.config.fleek);
     ZNAClient.initialize(this.config.zNS);
-    ZNSHubClient.initialize(config.zNA);
+    ZNSHubClient.initialize(this.config.zNA);
+    GlobalClient.initialize(this.config);
 
     return (async (config: PolygonConfig): Promise<SDKInstanceClient> => {
-      await GlobalClient.initialize(config);
       await ProofClient.initialize(config);
-
       return this;
     })(config) as unknown as SDKInstanceClient;
   }
@@ -120,6 +119,9 @@ class SDKInstanceClient implements PolygonSDKInstance {
   }
 
   async getZDAOByZNA(zNA: zNA): Promise<PolygonZDAO> {
+    // todo, check if zDAO exists
+
+    // get zDAO information associated with zNA
     const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
 
     if (zDAORecord.id === '0') {
