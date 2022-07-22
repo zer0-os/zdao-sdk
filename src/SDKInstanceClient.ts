@@ -169,14 +169,6 @@ class SDKInstanceClient implements SDKInstance {
 
     this._params.push(param);
 
-    // const votingToken = await getToken(
-    //   this._config.zNA.provider,
-    //   param.votingToken
-    // );
-    // const totalSupply = await getTotalSupply(
-    //   this._config.zNA.provider,
-    //   param.votingToken);
-
     const calls = await Promise.all([
       getToken(this._config.zNA.provider, param.votingToken),
       getTotalSupply(this._config.zNA.provider, param.votingToken),
@@ -212,11 +204,6 @@ class SDKInstanceClient implements SDKInstance {
 
     const found = this._params.find((param) => param.zNA === zNA);
     if (!found) throw new Error(errorMessageForError('not-found-zdao'));
-
-    // const votingToken = await getToken(
-    //   this._config.zNA.provider,
-    //   found.votingToken
-    // );
 
     const calls = await Promise.all([
       getToken(this._config.zNA.provider, found.votingToken),
