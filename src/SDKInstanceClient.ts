@@ -13,7 +13,7 @@ import {
   zDAO,
   zNA,
 } from './types';
-import { getToken } from './utilities/calls';
+import { getToken, getTotalSupply } from './utilities/calls';
 import { errorMessageForError } from './utilities/messages';
 import zDAORegistryClient from './zDAORegistry';
 import { ZDAORecord } from './zDAORegistry/types';
@@ -63,6 +63,11 @@ class SDKInstanceClient implements SDKInstance {
     const symbol = strategy.params.symbol;
     const decimals = strategy.params.decimals ?? 0;
 
+    const totalSupplyOfVotingToken = await getTotalSupply(
+      this._config.zNA.provider,
+      strategy.params.address
+    );
+
     return await DAOClient.createInstance(
       this._config,
       {
@@ -72,7 +77,7 @@ class SDKInstanceClient implements SDKInstance {
         title: space.name,
         creator: space.admins.length > 0 ? space.admins[0] : zDAORecord.ens,
         avatar: space.avatar,
-        network: space.network,
+        network: this._config.snapshot.network, // space.network,
         duration: space.duration,
         safeAddress: zDAORecord.gnosisSafe,
         votingToken: {
@@ -80,6 +85,7 @@ class SDKInstanceClient implements SDKInstance {
           symbol,
           decimals,
         },
+        totalSupplyOfVotingToken,
       },
       {
         strategies: space.strategies,
@@ -163,10 +169,18 @@ class SDKInstanceClient implements SDKInstance {
 
     this._params.push(param);
 
-    const votingToken = await getToken(
-      this._config.zNA.provider,
-      param.votingToken
-    );
+    // const votingToken = await getToken(
+    //   this._config.zNA.provider,
+    //   param.votingToken
+    // );
+    // const totalSupply = await getTotalSupply(
+    //   this._config.zNA.provider,
+    //   param.votingToken);
+
+    const calls = await Promise.all([
+      getToken(this._config.zNA.provider, param.votingToken),
+      getTotalSupply(this._config.zNA.provider, param.votingToken),
+    ]);
 
     return await DAOClient.createInstance(
       this._config,
@@ -180,7 +194,8 @@ class SDKInstanceClient implements SDKInstance {
         network: param.network.toString(),
         duration: param.duration,
         safeAddress: param.safeAddress,
-        votingToken,
+        votingToken: calls[0],
+        totalSupplyOfVotingToken: calls[1],
       },
       undefined
     );
@@ -198,10 +213,15 @@ class SDKInstanceClient implements SDKInstance {
     const found = this._params.find((param) => param.zNA === zNA);
     if (!found) throw new Error(errorMessageForError('not-found-zdao'));
 
-    const votingToken = await getToken(
-      this._config.zNA.provider,
-      found.votingToken
-    );
+    // const votingToken = await getToken(
+    //   this._config.zNA.provider,
+    //   found.votingToken
+    // );
+
+    const calls = await Promise.all([
+      getToken(this._config.zNA.provider, found.votingToken),
+      getTotalSupply(this._config.zNA.provider, found.votingToken),
+    ]);
 
     return await DAOClient.createInstance(
       this._config,
@@ -215,7 +235,8 @@ class SDKInstanceClient implements SDKInstance {
         network: found.network.toString(),
         duration: found.duration,
         safeAddress: found.safeAddress,
-        votingToken,
+        votingToken: calls[0],
+        totalSupplyOfVotingToken: calls[1],
       },
       undefined
     );
