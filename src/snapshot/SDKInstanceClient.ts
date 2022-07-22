@@ -13,7 +13,7 @@ import {
   zNA,
   zNAId,
 } from '../types';
-import { errorMessageForError, getSigner } from '../utilities';
+import { errorMessageForError, getSigner, getTotalSupply } from '../utilities';
 import DAOClient from './client/DAOClient';
 import GlobalClient from './client/GlobalClient';
 import MockDAOClient from './client/MockDAOClient';
@@ -139,6 +139,11 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     const symbol = strategy.params.symbol;
     const decimals = strategy.params.decimals ?? 0;
 
+    const totalSupplyOfVotingToken = await getTotalSupply(
+      GlobalClient.etherRpcProvider,
+      strategy.params.address
+    );
+
     return await DAOClient.createInstance(
       this.config,
       {
@@ -146,7 +151,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
         zNAs: zDAORecord.associatedzNAs,
         name: space.name,
         createdBy: '',
-        network: Number(space.network),
+        network: Number(this.config.snapshot.network),
         gnosisSafe: zDAORecord.gnosisSafe,
         votingToken: {
           token: strategy.params.address,
@@ -154,6 +159,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
           decimals,
         },
         amount: '0',
+        totalSupplyOfVotingToken: totalSupplyOfVotingToken.toString(),
         duration: space.duration ? Number(space.duration) : 0,
         votingThreshold: 5001,
         minimumVotingParticipants: 0,
