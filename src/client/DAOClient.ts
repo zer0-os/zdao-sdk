@@ -90,6 +90,10 @@ class DAOClient implements zDAO {
     return this._properties.votingToken;
   }
 
+  get totalSupplyOfVotingToken() {
+    return this._properties.totalSupplyOfVotingToken;
+  }
+
   static async createInstance(
     config: Config,
     properties: zDAOProperties,

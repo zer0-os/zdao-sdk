@@ -120,6 +120,7 @@ export interface zDAOProperties {
   duration?: number; // Proposal duration if DAO has fixed duration
   safeAddress: string; // Gnosis Safe address
   votingToken: Token; // Voting token
+  totalSupplyOfVotingToken: string; // total supply of voting token in bignumber
 }
 
 export interface ProposalProperties {
