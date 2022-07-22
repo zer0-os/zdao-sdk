@@ -164,11 +164,12 @@ export const setEnvSnapshot = () => {
           zNAs: ['joshupgig.eth'],
         },
         {
-          name: 'Game Guilds DAO',
-          votingToken: '0x676cEf263a2954DB6829383aa9d683c9cBc6B67c',
+          name: 'ERC721 Enumerable DAO',
+          votingToken: '0xa4F6C921f914ff7972D7C55c15f015419326e0Ca',
           gnosisSafe: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
-          ens: 'dappchain.eth',
+          ens: 'zdao721test.eth',
           zNAs: ['wilder.kicks'],
+          duration: 86400,
         },
       ],
       mainnet: [

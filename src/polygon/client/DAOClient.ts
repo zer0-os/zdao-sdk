@@ -23,6 +23,7 @@ import {
   getFullDisplayBalance,
   getSigner,
   getToken,
+  getTotalSupply,
 } from '../../utilities';
 import { EthereumZDAO, IEthereumZDAO } from '../config/types/EthereumZDAO';
 import { PolygonZDAO as PolygonZDAOContract } from '../config/types/PolygonZDAO';
@@ -47,7 +48,6 @@ class DAOClient
   protected ethereumZDAO!: EthereumZDAO;
   protected polygonZDAO: PolygonZDAOContract | null = null;
   protected rootTokenContract!: IERC20Upgradeable;
-  protected totalSupplyAsBN!: BigNumber;
 
   private constructor(
     properties: zDAOProperties & zDAOOptions,
@@ -63,15 +63,13 @@ class DAOClient
       );
 
       const promises: Promise<any>[] = [
-        this.rootTokenContract.totalSupply(),
         GlobalClient.ethereumZDAOChef.getZDAOById(this.properties.id),
         this.getPolygonZDAOContract(),
       ];
       const results = await Promise.all(promises);
 
-      this.totalSupplyAsBN = results[0] as BigNumber;
-      this.ethereumZDAO = results[1] as EthereumZDAO;
-      this.polygonZDAO = results[2] as PolygonZDAOContract;
+      this.ethereumZDAO = results[0] as EthereumZDAO;
+      this.polygonZDAO = results[1] as PolygonZDAOContract;
 
       if (this.polygonZDAO) {
         this.properties.state = zDAOState.ACTIVE;
@@ -87,10 +85,6 @@ class DAOClient
     return this.zDAOOptions.polygonToken;
   }
 
-  get totalSupply() {
-    return this.totalSupplyAsBN;
-  }
-
   static async createInstance(
     config: PolygonConfig,
     zDAORecord: ZDAORecord
@@ -101,9 +95,10 @@ class DAOClient
     ]);
 
     const tokens = await Promise.all([
-      getToken(GlobalClient.etherRpcProvider, (zDAOInfos[0] as any).token),
+      getToken(GlobalClient.etherRpcProvider, zDAOInfos[0].token),
       zDAOInfos[1] &&
-        getToken(GlobalClient.polyRpcProvider, (zDAOInfos[1] as any).token),
+        getToken(GlobalClient.polyRpcProvider, zDAOInfos[1].token),
+      getTotalSupply(GlobalClient.etherRpcProvider, zDAOInfos[0].token),
     ]);
 
     const etherZDAOInfo = zDAOInfos[0];
@@ -117,6 +112,7 @@ class DAOClient
         gnosisSafe: etherZDAOInfo.gnosisSafe,
         votingToken: tokens[0] as Token,
         amount: etherZDAOInfo.amount.toString(),
+        totalSupplyOfVotingToken: tokens[2].toString(),
         duration: etherZDAOInfo.duration.toNumber(),
         votingThreshold: etherZDAOInfo.votingThreshold.toNumber(),
         minimumVotingParticipants:
@@ -201,13 +197,15 @@ class DAOClient
         return true;
       }
 
+      const totalSupply = BigNumber.from(this.totalSupplyOfVotingToken);
+
       // if absolute majority, the denominator should be total supply
       if (
         !this.isRelativeMajority &&
-        this.totalSupply.gt(zero) &&
+        totalSupply.gt(zero) &&
         yes
           .mul(10000)
-          .div(this.totalSupply)
+          .div(totalSupply)
           .gte(BigNumber.from(this.votingThreshold))
       ) {
         return true;

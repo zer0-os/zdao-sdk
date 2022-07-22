@@ -2,8 +2,8 @@ import { ethers } from 'ethers';
 
 import { PlatformType } from '../..';
 import { ZDAORecord } from '../../client/ZDAORegistry';
-import { DAOConfig, ProposalId, zDAOId, zNA } from '../../types';
-import { calculateGasMargin, getToken } from '../../utilities';
+import { DAOConfig, ProposalId, zDAOId } from '../../types';
+import { calculateGasMargin, getToken, getTotalSupply } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import { EthereumZDAO, IEthereumZDAO } from '../config/types/EthereumZDAO';
 import { EthereumZDAOChef } from '../config/types/EthereumZDAOChef';
@@ -54,18 +54,21 @@ class EthereumZDAOChefClient {
   ): Promise<EthereumZDAOProperties> {
     const zDAOInfo = await this.contract.getZDAOInfoById(zDAORecord.id);
 
-    const token = await getToken(GlobalClient.etherRpcProvider, zDAOInfo.token);
-    const zNAs: zNA[] = zDAORecord.associatedzNAs;
+    const results = await Promise.all([
+      getToken(GlobalClient.etherRpcProvider, zDAOInfo.token),
+      getTotalSupply(GlobalClient.etherRpcProvider, zDAOInfo.token),
+    ]);
 
     return {
       id: zDAOInfo.zDAOId.toString(),
-      zNAs,
+      zNAs: zDAORecord.associatedzNAs,
       name: zDAORecord.name,
       createdBy: zDAOInfo.createdBy,
       network: this.config.network,
       gnosisSafe: zDAOInfo.gnosisSafe,
-      votingToken: token,
+      votingToken: results[0],
       amount: zDAOInfo.amount.toString(),
+      totalSupplyOfVotingToken: results[1].toString(),
       duration: zDAOInfo.duration.toNumber(),
       votingThreshold: zDAOInfo.votingThreshold.toNumber(),
       minimumVotingParticipants: zDAOInfo.minimumVotingParticipants.toNumber(),

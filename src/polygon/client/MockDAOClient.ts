@@ -3,7 +3,6 @@ import { cloneDeep } from 'lodash';
 import shortid from 'shortid';
 
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
-import { IERC20Upgradeable__factory } from '../../config/types/factories/IERC20Upgradeable__factory';
 import {
   NotFoundError,
   ProposalId,
@@ -16,6 +15,7 @@ import {
   errorMessageForError,
   getSigner,
   getToken,
+  getTotalSupply,
   timestamp,
 } from '../../utilities';
 import {
@@ -36,25 +36,18 @@ class MockDAOClient
   implements PolygonZDAO
 {
   protected readonly zDAOOptions: zDAOOptions;
-  protected readonly totalSupplyAsBN: ethers.BigNumber;
   private proposals: MockProposalClient[] = [];
 
   private constructor(
     properties: zDAOProperties & zDAOOptions,
-    gnosisSafeClient: GnosisSafeClient,
-    totalSupply: ethers.BigNumber
+    gnosisSafeClient: GnosisSafeClient
   ) {
     super(properties, gnosisSafeClient);
     this.zDAOOptions = cloneDeep(properties);
-    this.totalSupplyAsBN = totalSupply;
   }
 
   get polygonToken() {
     return this.zDAOOptions.polygonToken;
-  }
-
-  get totalSupply() {
-    return this.totalSupplyAsBN;
   }
 
   static async createInstance(
@@ -62,25 +55,26 @@ class MockDAOClient
     signer: ethers.Signer,
     params: CreatePolygonZDAOParams
   ): Promise<PolygonZDAO> {
-    const chainId = await signer.getChainId();
-
-    const token = await getToken(GlobalClient.etherRpcProvider, params.token);
     const polygonTokenAddress =
       await GlobalClient.registry.ethereumToPolygonToken(params.token);
-    const polygonToken = await getToken(
-      GlobalClient.polyRpcProvider,
-      polygonTokenAddress
-    );
+
+    const results = await Promise.all([
+      signer.getChainId(),
+      getToken(GlobalClient.etherRpcProvider, params.token),
+      getTotalSupply(GlobalClient.etherRpcProvider, params.token),
+      getToken(GlobalClient.polyRpcProvider, polygonTokenAddress),
+    ]);
 
     const properties: zDAOProperties & zDAOOptions = {
       id: shortid.generate(),
       zNAs: [params.zNA],
       name: params.name,
       createdBy: await signer.getAddress(),
-      network: chainId,
+      network: results[0],
       gnosisSafe: params.gnosisSafe,
-      votingToken: token,
+      votingToken: results[1],
       amount: params.amount,
+      totalSupplyOfVotingToken: results[2].toString(),
       duration: params.duration,
       votingThreshold: params.votingThreshold,
       minimumVotingParticipants: params.minimumVotingParticipants,
@@ -89,20 +83,12 @@ class MockDAOClient
       state: zDAOState.ACTIVE,
       snapshot: timestamp(new Date()),
       destroyed: false,
-      polygonToken: polygonToken,
+      polygonToken: results[3],
     };
-
-    const tokenContract = IERC20Upgradeable__factory.connect(
-      params.token,
-      GlobalClient.etherRpcProvider
-    );
-
-    const totalSupply = await tokenContract.totalSupply();
 
     return new MockDAOClient(
       properties,
-      new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway),
-      totalSupply
+      new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
     );
   }
 
