@@ -74,6 +74,10 @@ abstract class AbstractDAOClient<
     return this.properties.amount;
   }
 
+  get totalSupplyOfVotingToken() {
+    return this.properties.totalSupplyOfVotingToken;
+  }
+
   get duration() {
     return this.properties.duration;
   }

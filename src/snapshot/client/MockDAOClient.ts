@@ -15,6 +15,7 @@ import {
   errorMessageForError,
   getSigner,
   getToken,
+  getTotalSupply,
   timestamp,
 } from '../../utilities';
 import {
@@ -53,7 +54,10 @@ class MockDAOClient
     signer: ethers.Signer,
     params: CreateSnapshotZDAOParams
   ): Promise<SnapshotZDAO> {
-    const token = await getToken(GlobalClient.etherRpcProvider, params.token);
+    const results = await Promise.all([
+      getToken(GlobalClient.etherRpcProvider, params.token),
+      getTotalSupply(GlobalClient.etherRpcProvider, params.token),
+    ]);
     const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
 
     const properties: zDAOProperties & zDAOOptions = {
@@ -63,8 +67,9 @@ class MockDAOClient
       createdBy: '',
       network: params.network,
       gnosisSafe: params.gnosisSafe,
-      votingToken: token,
+      votingToken: results[0],
       amount: '0',
+      totalSupplyOfVotingToken: results[1].toString(),
       duration: params.duration,
       votingThreshold: 5001,
       minimumVotingParticipants: 0,
