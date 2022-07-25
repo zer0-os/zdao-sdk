@@ -38,3 +38,12 @@ export const getToken = async (
 
   throw new Error(errorMessageForError('empty-voting-token'));
 };
+
+export const getTotalSupply = async (
+  provider: ethers.providers.Provider,
+  token: string
+): Promise<string> => {
+  const contract = new ethers.Contract(token, ERC20Abi, provider);
+  const totalSupply = await contract.totalSupply();
+  return totalSupply.toString();
+};
