@@ -141,6 +141,7 @@ class DAOClient implements zDAO {
         description: item.description,
         imageUri: item.imageUri,
         metadata: item.metadata,
+        metadataUri: item.uri,
       })),
     };
   }
