@@ -96,6 +96,10 @@ class DAOClient implements zDAO {
     return this._properties.totalSupplyOfVotingToken;
   }
 
+  get votingThreshold() {
+    return this._properties.votingThreshold;
+  }
+
   get minimumVotingParticipants() {
     return this._properties.minimumVotingParticipants;
   }
@@ -131,6 +135,13 @@ class DAOClient implements zDAO {
             properties.votingToken.decimals
           ).toString()
         : '0';
+      properties.votingThreshold =
+        properties.totalSupplyOfVotingToken === '0'
+          ? 0
+          : BigNumber.from(properties.minimumTotalVotingTokens)
+              .mul(10000)
+              .div(properties.totalSupplyOfVotingToken)
+              .toNumber();
     }
 
     const zDAO = new DAOClient(config, properties, options);

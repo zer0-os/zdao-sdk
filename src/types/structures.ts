@@ -117,8 +117,9 @@ export interface zDAOProperties {
   duration?: number; // Proposal duration if DAO has fixed duration
   safeAddress: string; // Gnosis Safe address
   votingToken: Token; // Voting token
-  amount?: string; // Minimum amount of voting power to cast a vote
+  amount: string; // Minimum amount of voting power to cast a vote
   totalSupplyOfVotingToken: string; // total supply of voting token in bignumber
+  votingThreshold: number; // Threshold in 100% as 10000 required to check if proposal is succeeded
   minimumVotingParticipants: number; // Minimum number of voters required for the proposal to pass
   minimumTotalVotingTokens: string; // Minimum amount of voting power required for the proposal to pass
   isRelativeMajority: boolean; // True if relative majority

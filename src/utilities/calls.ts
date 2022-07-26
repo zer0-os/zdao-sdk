@@ -42,8 +42,8 @@ export const getToken = async (
 export const getTotalSupply = async (
   provider: ethers.providers.Provider,
   token: string
-): Promise<string> => {
+): Promise<ethers.BigNumber> => {
   const contract = new ethers.Contract(token, ERC20Abi, provider);
   const totalSupply = await contract.totalSupply();
-  return totalSupply.toString();
+  return totalSupply;
 };

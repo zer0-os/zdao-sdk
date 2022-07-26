@@ -68,6 +68,19 @@ class SDKInstanceClient implements SDKInstance {
       this._config.zNA.provider,
       strategy.params.address
     );
+    const minimumTotalVotingTokens = space.quorum
+      ? getDecimalAmount(
+          BigNumber.from(space.quorum.toString()),
+          decimals
+        ).toString()
+      : '0';
+    const votingThreshold =
+      totalSupplyOfVotingToken === BigNumber.from(0)
+        ? 0
+        : BigNumber.from(minimumTotalVotingTokens)
+            .mul(10000)
+            .div(totalSupplyOfVotingToken)
+            .toNumber();
 
     return await DAOClient.createInstance(
       this._config,
@@ -91,14 +104,10 @@ class SDKInstanceClient implements SDKInstance {
               decimals
             ).toString()
           : '0',
-        totalSupplyOfVotingToken,
+        totalSupplyOfVotingToken: totalSupplyOfVotingToken.toString(),
+        votingThreshold,
         minimumVotingParticipants: 1,
-        minimumTotalVotingTokens: space.quorum
-          ? getDecimalAmount(
-              BigNumber.from(space.quorum.toString()),
-              decimals
-            ).toString()
-          : '0',
+        minimumTotalVotingTokens,
         isRelativeMajority: false,
       },
       {
@@ -202,7 +211,8 @@ class SDKInstanceClient implements SDKInstance {
         safeAddress: param.safeAddress,
         votingToken: calls[0],
         amount: '0',
-        totalSupplyOfVotingToken: calls[1],
+        totalSupplyOfVotingToken: calls[1].toString(),
+        votingThreshold: 0,
         minimumVotingParticipants: 1,
         minimumTotalVotingTokens: '0',
         isRelativeMajority: false,
@@ -241,7 +251,8 @@ class SDKInstanceClient implements SDKInstance {
         safeAddress: found.safeAddress,
         votingToken: calls[0],
         amount: '0',
-        totalSupplyOfVotingToken: calls[1],
+        totalSupplyOfVotingToken: calls[1].toString(),
+        votingThreshold: 0,
         minimumVotingParticipants: 1,
         minimumTotalVotingTokens: '0',
         isRelativeMajority: false,
