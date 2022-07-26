@@ -129,7 +129,7 @@ const ErrorMessages = [
   },
   {
     key: 'not-executable-proposal',
-    value: 'Not a executable   proposal',
+    value: 'Not a executable proposal',
   },
 ] as const;
 
