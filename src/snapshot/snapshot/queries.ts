@@ -16,6 +16,7 @@ export const SPACES_QUERY: DocumentNode = gql`
       admins
       followersCount
       voting {
+        delay
         period
       }
       strategies {
@@ -30,6 +31,10 @@ export const SPACES_STRATEGIES_QUERY: DocumentNode = gql`
   query Spaces($id_in: [String]) {
     spaces(where: { id_in: $id_in }) {
       id
+      voting {
+        delay
+        period
+      }
       strategies {
         name
         params
