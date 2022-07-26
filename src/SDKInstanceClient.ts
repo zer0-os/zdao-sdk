@@ -88,6 +88,7 @@ class SDKInstanceClient implements SDKInstance {
         totalSupplyOfVotingToken,
       },
       {
+        delay: space.delay,
         strategies: space.strategies,
       }
     );
