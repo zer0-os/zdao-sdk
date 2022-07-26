@@ -101,10 +101,10 @@ class DAOClient implements zDAO {
   ): Promise<zDAO> {
     if (options === undefined) {
       const snapshotClient = new SnapshotClient(config.snapshot);
-      const strategies = await snapshotClient.getSpaceStrategies(
+      const { strategies, delay } = await snapshotClient.getSpaceOptions(
         properties.ens
       );
-      options = { strategies };
+      options = { strategies, delay };
     }
 
     const zDAO = new DAOClient(config, properties, options);
@@ -314,6 +314,7 @@ class DAOClient implements zDAO {
         title: payload.title,
         body: payload.body ?? '',
         choices: payload.choices,
+        delay: this._options.delay,
         duration: duration!,
         snapshot: Number(payload.snapshot),
         network: this.network,

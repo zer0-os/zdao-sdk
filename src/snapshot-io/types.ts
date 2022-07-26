@@ -36,6 +36,7 @@ export interface CreateProposalParams extends SpaceParams {
   title: string;
   body: string;
   choices: string[];
+  delay?: number;
   duration: number;
   snapshot: number;
   token: Token; // voting token
@@ -60,6 +61,13 @@ export interface SnapshotSpace {
 export interface SnapshotSpaceDetails extends SnapshotSpace {
   admins: string[];
   strategies: any[];
+  delay?: number; // voting delay
+}
+
+export interface SnapshotSpaceOptions {
+  strategies: any[];
+  duration?: number;
+  delay?: number; // voting delay
 }
 
 export interface SnapshotProposal {

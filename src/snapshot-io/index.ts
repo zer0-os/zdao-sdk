@@ -25,6 +25,7 @@ import {
   SnapshotProposalResponse,
   SnapshotSpace,
   SnapshotSpaceDetails,
+  SnapshotSpaceOptions,
   SnapshotVote,
   SpaceParams,
   VoteProposalParams,
@@ -149,11 +150,12 @@ class SnapshotClient {
       duration: item.voting.period,
       admins: item.admins,
       strategies: item.strategies,
+      delay: item.voting.delay,
       followers: item.followersCount,
     };
   }
 
-  async getSpaceStrategies(spaceId: ENS): Promise<any[]> {
+  async getSpaceOptions(spaceId: ENS): Promise<SnapshotSpaceOptions> {
     const response = await this.graphQLQuery(
       SPACES_STRATEGIES_QUERY,
       {
@@ -166,7 +168,11 @@ class SnapshotClient {
     if (filter.length < 1) {
       throw Error(errorMessageForError('not-found-ens-in-snapshot'));
     }
-    return filter[0].strategies;
+    return {
+      strategies: filter[0].strategies,
+      delay: filter[0].voting.delay,
+      duration: filter[0].voting.period,
+    };
   }
 
   // this function can not contain immediate voting scores and voters,
@@ -237,7 +243,8 @@ class SnapshotClient {
 
       let strategies = params.strategies;
       if (!params.strategies) {
-        strategies = await this.getSpaceStrategies(params.spaceId);
+        const options = await this.getSpaceOptions(params.spaceId);
+        strategies = options.strategies;
       }
 
       // Get scores
@@ -380,7 +387,7 @@ class SnapshotClient {
   }
 
   async getVotingPower(params: VotingPowerParams): Promise<number> {
-    const strategies = await this.getSpaceStrategies(params.spaceId);
+    const { strategies } = await this.getSpaceOptions(params.spaceId);
 
     let scores: any = await Client.utils.getScores(
       params.spaceId,
@@ -401,6 +408,7 @@ class SnapshotClient {
     params: CreateProposalParams
   ): Promise<SnapshotProposalResponse> {
     const startDateTime = new Date();
+    const delay = params.delay ?? 0;
 
     const response: any = await this._clientEIP712.proposal(provider, account, {
       from: account,
@@ -410,8 +418,8 @@ class SnapshotClient {
       title: params.title,
       body: params.body,
       choices: params.choices,
-      start: timestamp(startDateTime),
-      end: timestamp(addSeconds(startDateTime, params.duration)),
+      start: timestamp(startDateTime) + delay,
+      end: timestamp(addSeconds(startDateTime, params.duration)) + delay,
       snapshot: Number(params.snapshot),
       network: params.network,
       strategies:
