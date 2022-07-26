@@ -4,6 +4,12 @@ export enum SupportedChainId {
   RINKEBY = 4,
 }
 
+export enum ProposalState {
+  PENDING = 'PENDING',
+  ACTIVE = 'ACTIVE',
+  CLOSED = 'CLOSED',
+}
+
 export enum AssetType {
   ERC20 = 'ERC20',
   ERC721 = 'ERC721',

@@ -67,6 +67,10 @@ const ErrorMessages = [
     key: 'should-hold-token',
     value: 'Should hold at least %amount% tokens',
   },
+  {
+    key: 'not-executable-proposal',
+    value: 'Not a executable proposal',
+  },
 ] as const;
 
 export type ErrorType = typeof ErrorMessages[number]['key'];

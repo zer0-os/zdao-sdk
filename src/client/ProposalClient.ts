@@ -4,7 +4,12 @@ import { cloneDeep } from 'lodash';
 import GnosisSafeClient from '../gnosis-safe';
 import SnapshotClient from '../snapshot-io';
 import { SnapshotProposal } from '../snapshot-io/types';
-import { PaginationParam, ProposalProperties, VoteId } from '../types';
+import {
+  PaginationParam,
+  ProposalProperties,
+  ProposalState,
+  VoteId,
+} from '../types';
 import { Choice, Proposal, Vote } from '../types';
 import { errorMessageForError } from '../utilities/messages';
 import DAOClient from './DAOClient';
@@ -194,6 +199,17 @@ class ProposalClient implements Proposal {
   }
 
   async updateScoresAndVotes(): Promise<Proposal> {
+    const mapState = (
+      state: ProposalState
+    ): 'pending' | 'active' | 'closed' => {
+      if (state === ProposalState.PENDING) {
+        return 'pending';
+      } else if (state === ProposalState.ACTIVE) {
+        return 'active';
+      }
+      return 'closed';
+    };
+
     const snapshotProposal: SnapshotProposal = {
       id: this._properties.id,
       type: this._properties.type,
@@ -205,7 +221,7 @@ class ProposalClient implements Proposal {
       created: this._properties.created,
       start: this._properties.start,
       end: this._properties.end,
-      state: this._properties.state,
+      state: mapState(this._properties.state),
       scores_state: this._options.scores_state,
       network: this._properties.network,
       snapshot: Number(this._properties.snapshot),
@@ -253,6 +269,9 @@ class ProposalClient implements Proposal {
 
     if (!this.metadata) {
       throw new Error(errorMessageForError('empty-metadata'));
+    }
+    if (this.state !== ProposalState.CLOSED) {
+      throw new Error(errorMessageForError('not-executable-proposal'));
     }
 
     if (

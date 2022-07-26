@@ -20,6 +20,7 @@ import {
   PaginationParam,
   Proposal,
   ProposalId,
+  ProposalState,
   Transaction,
   TransactionStatus,
   TransactionType,
@@ -238,6 +239,15 @@ class DAOClient implements zDAO {
     });
   }
 
+  private mapState(state: string): ProposalState {
+    if (state === 'pending') {
+      return ProposalState.PENDING;
+    } else if (state === 'active') {
+      return ProposalState.ACTIVE;
+    }
+    return ProposalState.CLOSED;
+  }
+
   async listProposals(pagination?: PaginationParam): Promise<Proposal[]> {
     const limit = 3000;
     let from = pagination?.from ?? 0;
@@ -280,7 +290,7 @@ class DAOClient implements zDAO {
             created: proposal.created,
             start: proposal.start,
             end: proposal.end,
-            state: proposal.state,
+            state: this.mapState(proposal.state),
             network: proposal.network,
             snapshot: Number(proposal.snapshot),
             scores: proposal.scores,
@@ -321,7 +331,7 @@ class DAOClient implements zDAO {
         created: proposal.created,
         start: proposal.start,
         end: proposal.end,
-        state: proposal.state,
+        state: this.mapState(proposal.state),
         network: proposal.network,
         snapshot: Number(proposal.snapshot),
         scores: proposal.scores,
@@ -338,7 +348,7 @@ class DAOClient implements zDAO {
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
     payload: CreateProposalParams
-  ): Promise<Proposal> {
+  ): Promise<ProposalId> {
     if (!this.duration && !payload.duration) {
       throw new Error(errorMessageForError('invalid-proposal-duration'));
     }
@@ -388,37 +398,7 @@ class DAOClient implements zDAO {
       }
     );
 
-    const proposal: SnapshotProposal = await this._snapshotClient.getProposal({
-      spaceId: this.ens,
-      network: this.network,
-      proposalId,
-    });
-    return await ProposalClient.createInstance(
-      this,
-      this._snapshotClient,
-      this._gnosisSafeClient,
-      {
-        id: proposal.id,
-        type: proposal.type,
-        author: proposal.author,
-        title: proposal.title,
-        body: proposal.body ?? '',
-        ipfs: proposal.ipfs,
-        choices: proposal.choices,
-        created: proposal.created,
-        start: proposal.start,
-        end: proposal.end,
-        state: proposal.state,
-        network: proposal.network,
-        snapshot: Number(proposal.snapshot),
-        scores: proposal.scores,
-        votes: proposal.votes,
-      },
-      {
-        strategies: this._options.strategies,
-        scores_state: proposal.scores_state,
-      }
-    );
+    return proposalId;
   }
 }
 

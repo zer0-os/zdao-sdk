@@ -1,4 +1,9 @@
-import { AssetType, TransactionStatus, TransactionType } from './enumerations';
+import {
+  AssetType,
+  ProposalState,
+  TransactionStatus,
+  TransactionType,
+} from './enumerations';
 import { Choice, ENS, ProposalId, zDAOId, zNA } from './primitives';
 
 export interface Vote {
@@ -136,7 +141,7 @@ export interface ProposalProperties {
   created: Date;
   start: Date;
   end: Date;
-  state: 'pending' | 'active' | 'closed';
+  state: ProposalState;
   network: string; // chain id
   snapshot: number; // snapshot block number
   scores: number[]; // scores per all the choices
