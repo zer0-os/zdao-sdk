@@ -70,10 +70,6 @@ class DAOClient implements zDAO {
     return this._properties.creator;
   }
 
-  get avatar() {
-    return this._properties.avatar;
-  }
-
   get network() {
     return this._properties.network;
   }
@@ -90,8 +86,24 @@ class DAOClient implements zDAO {
     return this._properties.votingToken;
   }
 
+  get amount() {
+    return this._properties.amount;
+  }
+
   get totalSupplyOfVotingToken() {
     return this._properties.totalSupplyOfVotingToken;
+  }
+
+  get minimumVotingParticipants() {
+    return this._properties.minimumVotingParticipants;
+  }
+
+  get minimumTotalVotingTokens() {
+    return this._properties.minimumTotalVotingTokens;
+  }
+
+  get isRelativeMajority() {
+    return this._properties.isRelativeMajority;
   }
 
   static async createInstance(
@@ -101,10 +113,12 @@ class DAOClient implements zDAO {
   ): Promise<zDAO> {
     if (options === undefined) {
       const snapshotClient = new SnapshotClient(config.snapshot);
-      const strategies = await snapshotClient.getSpaceStrategies(
-        properties.ens
-      );
-      options = { strategies };
+      const { strategies, threshold, duration, delay, quorum } =
+        await snapshotClient.getSpaceOptions(properties.ens);
+      options = { strategies, delay };
+      properties.duration = duration;
+      properties.amount = threshold?.toString();
+      properties.minimumTotalVotingTokens = quorum?.toString() ?? '0';
     }
 
     const zDAO = new DAOClient(config, properties, options);
@@ -314,6 +328,7 @@ class DAOClient implements zDAO {
         title: payload.title,
         body: payload.body ?? '',
         choices: payload.choices,
+        delay: this._options.delay,
         duration: duration!,
         snapshot: Number(payload.snapshot),
         network: this.network,

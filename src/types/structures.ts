@@ -113,14 +113,15 @@ export interface zDAOProperties {
   zNAs: zNA[]; // Linked zNA
   title: string; // zDAO title, zNA by default
   creator: string; // Creator wallet address
-  // avatar uri which starts with https schema
-  // The frontend should use default avatar image if not defined
-  avatar?: string; // Avatar uri (https link)
   network: string; // Chain id
   duration?: number; // Proposal duration if DAO has fixed duration
   safeAddress: string; // Gnosis Safe address
   votingToken: Token; // Voting token
+  amount?: string; // Minimum amount of voting power to cast a vote
   totalSupplyOfVotingToken: string; // total supply of voting token in bignumber
+  minimumVotingParticipants: number; // Minimum number of voters required for the proposal to pass
+  minimumTotalVotingTokens: string; // Minimum amount of voting power required for the proposal to pass
+  isRelativeMajority: boolean; // True if relative majority
 }
 
 export interface ProposalProperties {

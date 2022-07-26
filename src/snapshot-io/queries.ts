@@ -14,8 +14,14 @@ export const SPACES_QUERY = gql`
       domain
       admins
       followersCount
+      filters {
+        minScore
+        onlyMembers
+      }
       voting {
+        delay
         period
+        quorum
       }
       strategies {
         name
@@ -29,6 +35,15 @@ export const SPACES_STRATEGIES_QUERY = gql`
   query Spaces($id_in: [String]) {
     spaces(where: { id_in: $id_in }) {
       id
+      filters {
+        minScore
+        onlyMembers
+      }
+      voting {
+        delay
+        period
+        quorum
+      }
       strategies {
         name
         params

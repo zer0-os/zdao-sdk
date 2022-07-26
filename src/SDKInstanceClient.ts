@@ -76,7 +76,6 @@ class SDKInstanceClient implements SDKInstance {
         zNAs: zDAORecord.zNAs,
         title: space.name,
         creator: space.admins.length > 0 ? space.admins[0] : zDAORecord.ens,
-        avatar: space.avatar,
         network: this._config.snapshot.network, // space.network,
         duration: space.duration,
         safeAddress: zDAORecord.gnosisSafe,
@@ -85,9 +84,14 @@ class SDKInstanceClient implements SDKInstance {
           symbol,
           decimals,
         },
+        amount: space.threshold?.toString(),
         totalSupplyOfVotingToken,
+        minimumVotingParticipants: 1,
+        minimumTotalVotingTokens: space.quorum?.toString() ?? '0',
+        isRelativeMajority: false,
       },
       {
+        delay: space.delay,
         strategies: space.strategies,
       }
     );
@@ -182,12 +186,15 @@ class SDKInstanceClient implements SDKInstance {
         zNAs: [param.zNA],
         title: param.title,
         creator: param.creator,
-        avatar: param.avatar,
         network: param.network.toString(),
         duration: param.duration,
         safeAddress: param.safeAddress,
         votingToken: calls[0],
+        amount: '0',
         totalSupplyOfVotingToken: calls[1],
+        minimumVotingParticipants: 1,
+        minimumTotalVotingTokens: '0',
+        isRelativeMajority: false,
       },
       undefined
     );
@@ -218,12 +225,15 @@ class SDKInstanceClient implements SDKInstance {
         zNAs: [found.zNA],
         title: found.title,
         creator: found.creator,
-        avatar: found.avatar,
         network: found.network.toString(),
         duration: found.duration,
         safeAddress: found.safeAddress,
         votingToken: calls[0],
+        amount: '0',
         totalSupplyOfVotingToken: calls[1],
+        minimumVotingParticipants: 1,
+        minimumTotalVotingTokens: '0',
+        isRelativeMajority: false,
       },
       undefined
     );
