@@ -8,3 +8,5 @@ export const MultiCallAddress: AddressMap = {
   [SupportedChainId.MUMBAI]: '0x08411ADd0b5AA8ee47563b146743C13b3556c9Cc',
   [SupportedChainId.POLYGON]: '0xCBca837161be50EfA5925bB9Cc77406468e76751',
 };
+
+export const DEFAULT_ZDAO_DURATION = 86400;

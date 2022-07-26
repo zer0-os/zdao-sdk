@@ -1,7 +1,9 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
+import { DEFAULT_ZDAO_DURATION } from '../../config';
+import ERC20Abi from '../../config/abi/ERC20.json';
 import {
   InvalidError,
   PaginationParam,
@@ -9,7 +11,12 @@ import {
   ProposalState,
   zDAOProperties,
 } from '../../types';
-import { errorMessageForError, getSigner } from '../../utilities';
+import {
+  errorMessageForError,
+  getDecimalAmount,
+  getFullDisplayBalance,
+  getSigner,
+} from '../../utilities';
 import { SnapshotClient } from '../snapshot';
 import {
   CreateSnapshotProposalParams,
@@ -58,10 +65,22 @@ class DAOClient
   ): Promise<SnapshotZDAO> {
     if (options === undefined) {
       const snapshotClient = new SnapshotClient(config.snapshot);
-      const { strategies, delay } = await snapshotClient.getSpaceOptions(
-        properties.ens
-      );
+      const { strategies, threshold, duration, delay, quorum } =
+        await snapshotClient.getSpaceOptions(properties.ens);
       options = { strategies, delay };
+      properties.duration = duration ?? DEFAULT_ZDAO_DURATION;
+      properties.amount = threshold
+        ? getDecimalAmount(
+            BigNumber.from(threshold),
+            properties.votingToken.decimals
+          ).toString()
+        : '0';
+      properties.minimumTotalVotingTokens = quorum
+        ? getDecimalAmount(
+            BigNumber.from(quorum),
+            properties.votingToken.decimals
+          ).toString()
+        : '0';
     }
 
     const zDAO = new DAOClient(config, properties, options);
@@ -184,6 +203,26 @@ class DAOClient
 
     const signer = getSigner(provider, account);
     const accountAddress = account ? account : await signer.getAddress();
+
+    // signer should have valid amount of voting token on Ethereum
+    const contract = new ethers.Contract(
+      this.votingToken.token,
+      ERC20Abi,
+      provider
+    );
+
+    const balance = await contract.balanceOf(account);
+    if (balance.lt(this.amount)) {
+      throw new Error(
+        errorMessageForError('should-hold-token', {
+          amount: getFullDisplayBalance(
+            BigNumber.from(this.amount),
+            this.votingToken.decimals
+          ),
+        })
+      );
+    }
+
     const { id: proposalId } = await this.snapshotClient.createProposal(
       provider,
       accountAddress,

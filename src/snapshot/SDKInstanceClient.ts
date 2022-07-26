@@ -1,5 +1,5 @@
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
 import { IPFSClient, ZNAClient } from '../client';
 import ZNSHubClient from '../client/ZNSHubClient';
@@ -13,7 +13,12 @@ import {
   zNA,
   zNAId,
 } from '../types';
-import { errorMessageForError, getSigner, getTotalSupply } from '../utilities';
+import {
+  errorMessageForError,
+  getDecimalAmount,
+  getSigner,
+  getTotalSupply,
+} from '../utilities';
 import DAOClient from './client/DAOClient';
 import GlobalClient from './client/GlobalClient';
 import MockDAOClient from './client/MockDAOClient';
@@ -143,6 +148,19 @@ class SDKInstanceClient implements SnapshotSDKInstance {
       GlobalClient.etherRpcProvider,
       strategy.params.address
     );
+    const minimumTotalVotingTokens = space.quorum
+      ? getDecimalAmount(
+          BigNumber.from(space.quorum.toString()),
+          decimals
+        ).toString()
+      : '0';
+    const votingThreshold =
+      totalSupplyOfVotingToken === BigNumber.from(0)
+        ? 0
+        : BigNumber.from(minimumTotalVotingTokens)
+            .mul(10000)
+            .div(totalSupplyOfVotingToken)
+            .toNumber();
 
     return await DAOClient.createInstance(
       this.config,
@@ -158,14 +176,17 @@ class SDKInstanceClient implements SnapshotSDKInstance {
           symbol,
           decimals,
         },
-        amount: '0',
+        amount: space.threshold
+          ? getDecimalAmount(
+              BigNumber.from(space.threshold.toString()),
+              decimals
+            ).toString()
+          : '0',
         totalSupplyOfVotingToken: totalSupplyOfVotingToken.toString(),
         duration: space.duration ? Number(space.duration) : 0,
-        votingThreshold: 5001,
-        minimumVotingParticipants: 0,
-        minimumTotalVotingTokens: ethers.BigNumber.from(10)
-          .pow(ethers.BigNumber.from(decimals))
-          .toString(),
+        votingThreshold,
+        minimumVotingParticipants: 1,
+        minimumTotalVotingTokens,
         isRelativeMajority: false,
         state: zDAOState.ACTIVE,
         snapshot: 0,
@@ -173,6 +194,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
         ens: space.id,
       },
       {
+        delay: space.delay,
         strategies: space.strategies,
       }
     );

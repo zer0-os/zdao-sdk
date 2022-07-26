@@ -72,7 +72,7 @@ class MockDAOClient
       totalSupplyOfVotingToken: results[1].toString(),
       duration: params.duration,
       votingThreshold: 5001,
-      minimumVotingParticipants: 0,
+      minimumVotingParticipants: 1,
       minimumTotalVotingTokens: '0',
       isRelativeMajority: false,
       state: zDAOState.ACTIVE,
