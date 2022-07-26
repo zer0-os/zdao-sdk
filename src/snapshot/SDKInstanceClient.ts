@@ -215,14 +215,6 @@ class SDKInstanceClient implements SnapshotSDKInstance {
 
     const signer = getSigner(provider, account);
 
-    // const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
-
-    // // signer should be owner of zNA
-    // const account = account ?? (await signer.getAddress());
-    // if (!(await ZNSHubClient.isOwnerOf(zNAId, account))) {
-    //   throw new InvalidError(errorMessageForError('not-zna-owner'));
-    // }
-
     const zDAOClient = await MockDAOClient.createInstance(
       this.config,
       signer,

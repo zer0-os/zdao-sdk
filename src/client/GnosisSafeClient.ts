@@ -15,7 +15,6 @@ import { ethers } from 'ethers';
 
 import ERC20Abi from '../config/abi/ERC20.json';
 import { GnosisSafeConfig } from '../types';
-import IPFSClient from './IPFSClient';
 
 class GnosisSafeClient {
   private readonly config: GnosisSafeConfig;
@@ -173,27 +172,6 @@ class GnosisSafeClient {
         trusted: false,
       }
     );
-
-    // if not empty uri, then should fetch data from ipfs uri
-    const needToPatch = collectibles.filter(
-      (collectible) =>
-        Object.keys(collectible.metadata).length < 1 &&
-        collectible.uri.length > 0
-    );
-
-    const promises: Promise<{ [key: string]: string }>[] = [];
-    for (const collectible of needToPatch) {
-      promises.push(IPFSClient.getJson(collectible.uri, this.ipfsGateway));
-    }
-    const result: { [key: string]: string }[] = await Promise.all(promises);
-    for (const index in needToPatch) {
-      const patch = collectibles.find(
-        (collectible) => collectible.uri === needToPatch[index].uri
-      );
-      if (patch) {
-        patch.metadata = result[index];
-      }
-    }
 
     return collectibles;
   }

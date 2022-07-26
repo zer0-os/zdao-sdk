@@ -83,15 +83,18 @@ class DAOClient
   }
 
   async listAssets(): Promise<zDAOAssets> {
-    const balances = await this.gnosisSafeClient.listAssets(
-      this.gnosisSafe,
-      this.network.toString()
-    );
-
-    const collectibles = await this.gnosisSafeClient.listCollectibles(
-      this.gnosisSafe,
-      this.network.toString()
-    );
+    const results = await Promise.all([
+      this.gnosisSafeClient.listAssets(
+        this.gnosisSafe,
+        this.network.toString()
+      ),
+      this.gnosisSafeClient.listCollectibles(
+        this.gnosisSafe,
+        this.network.toString()
+      ),
+    ]);
+    const balances = results[0];
+    const collectibles = results[1];
 
     return {
       amountInUSD: Number(balances.fiatTotal),
