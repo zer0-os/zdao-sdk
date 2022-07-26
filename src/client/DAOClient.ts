@@ -112,15 +112,12 @@ class DAOClient implements zDAO {
   }
 
   async listAssets(): Promise<zDAOAssets> {
-    const balances = await this._gnosisSafeClient.listAssets(
-      this.safeAddress,
-      this.network
-    );
-
-    const collectibles = await this._gnosisSafeClient.listCollectibles(
-      this.safeAddress,
-      this.network
-    );
+    const results = await Promise.all([
+      this._gnosisSafeClient.listAssets(this.safeAddress, this.network),
+      this._gnosisSafeClient.listCollectibles(this.safeAddress, this.network),
+    ]);
+    const balances = results[0];
+    const collectibles = results[1];
 
     return {
       amountInUSD: Number(balances.fiatTotal),
@@ -226,19 +223,6 @@ class DAOClient implements zDAO {
       count -= results.length;
       numberOfResults = results.length;
     }
-
-    // The scores in voted proposal was updated immediately after voting,
-    // so we don't need to call `updateScore`.
-    // // update the immediate scores
-    // const snapshotPromises: Promise<SnapshotProposal>[] = snapshotProposals.map(
-    //   (proposal: SnapshotProposal) =>
-    //     this._snapshotClient.updateScoresAndVotes(proposal, {
-    //       spaceId: this.ens,
-    //       network: this.network,
-    //       strategies: this._options.strategies,
-    //     })
-    // );
-    // const proposals = await Promise.all(snapshotPromises);
 
     // create all instances
     const promises: Promise<Proposal>[] = snapshotProposals.map(
