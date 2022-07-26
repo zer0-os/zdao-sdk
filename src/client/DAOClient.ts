@@ -6,9 +6,10 @@ import {
   Transfer as GnosisTransfer,
   TransferInfo as GnosisTransferInfo,
 } from '@gnosis.pm/safe-react-gateway-sdk';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
+import ERC20Abi from '../config/constants/abi/ERC20.json';
 import GnosisSafeClient from '../gnosis-safe';
 import SnapshotClient from '../snapshot-io';
 import { SnapshotProposal } from '../snapshot-io/types';
@@ -27,6 +28,7 @@ import {
   zDAOAssets,
   zDAOProperties,
 } from '../types';
+import { getDecimalAmount, getFullDisplayBalance } from '../utilities';
 import { errorMessageForError } from '../utilities/messages';
 import ProposalClient from './ProposalClient';
 
@@ -117,8 +119,18 @@ class DAOClient implements zDAO {
         await snapshotClient.getSpaceOptions(properties.ens);
       options = { strategies, delay };
       properties.duration = duration;
-      properties.amount = threshold?.toString();
-      properties.minimumTotalVotingTokens = quorum?.toString() ?? '0';
+      properties.amount = threshold
+        ? getDecimalAmount(
+            BigNumber.from(threshold),
+            properties.votingToken.decimals
+          ).toString()
+        : '0';
+      properties.minimumTotalVotingTokens = quorum
+        ? getDecimalAmount(
+            BigNumber.from(quorum),
+            properties.votingToken.decimals
+          ).toString()
+        : '0';
     }
 
     const zDAO = new DAOClient(config, properties, options);
@@ -319,6 +331,26 @@ class DAOClient implements zDAO {
     if (!this.duration && !payload.duration) {
       throw new Error(errorMessageForError('invalid-proposal-duration'));
     }
+
+    // signer should have valid amount of voting token on Ethereum
+    const contract = new ethers.Contract(
+      this.votingToken.token,
+      ERC20Abi,
+      provider
+    );
+
+    const balance = await contract.balanceOf(account);
+    if (balance.lt(this.amount)) {
+      throw new Error(
+        errorMessageForError('should-hold-token', {
+          amount: getFullDisplayBalance(
+            BigNumber.from(this.amount),
+            this.votingToken.decimals
+          ),
+        })
+      );
+    }
+
     const duration = this.duration ?? payload.duration;
     const { id: proposalId } = await this._snapshotClient.createProposal(
       provider,

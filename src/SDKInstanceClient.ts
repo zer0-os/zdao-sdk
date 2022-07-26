@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import shortid from 'shortid';
 
 import DAOClient from './client/DAOClient';
@@ -13,6 +13,7 @@ import {
   zDAO,
   zNA,
 } from './types';
+import { getDecimalAmount } from './utilities';
 import { getToken, getTotalSupply } from './utilities/calls';
 import { errorMessageForError } from './utilities/messages';
 import zDAORegistryClient from './zDAORegistry';
@@ -84,10 +85,20 @@ class SDKInstanceClient implements SDKInstance {
           symbol,
           decimals,
         },
-        amount: space.threshold?.toString(),
+        amount: space.threshold
+          ? getDecimalAmount(
+              BigNumber.from(space.threshold.toString()),
+              decimals
+            ).toString()
+          : '0',
         totalSupplyOfVotingToken,
         minimumVotingParticipants: 1,
-        minimumTotalVotingTokens: space.quorum?.toString() ?? '0',
+        minimumTotalVotingTokens: space.quorum
+          ? getDecimalAmount(
+              BigNumber.from(space.quorum.toString()),
+              decimals
+            ).toString()
+          : '0',
         isRelativeMajority: false,
       },
       {
