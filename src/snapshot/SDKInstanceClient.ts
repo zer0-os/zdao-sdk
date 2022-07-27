@@ -147,7 +147,9 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     const totalSupplyOfVotingToken = await getTotalSupply(
       GlobalClient.etherRpcProvider,
       strategy.params.address
-    );
+    ).catch(() => {
+      throw new InvalidError(errorMessageForError('not-support-total-supply'));
+    });
     const minimumTotalVotingTokens = space.quorum
       ? getDecimalAmount(
           BigNumber.from(space.quorum.toString()),
