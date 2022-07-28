@@ -257,9 +257,9 @@ export interface PolygonZDAOChefInterface extends utils.Interface {
     "DAOTokenUpdated(uint256,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
-    "ProposalCalculated(uint256,uint256,uint256,uint256,uint256)": EventFragment;
+    "ProposalCalculated(uint256,uint256,uint256,uint256[])": EventFragment;
     "ProposalCanceled(uint256,uint256)": EventFragment;
-    "ProposalCreated(uint256,uint256,uint256)": EventFragment;
+    "ProposalCreated(uint256,uint256,uint256,uint256)": EventFragment;
     "ProposalExecuted(uint256,uint256)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
@@ -352,13 +352,12 @@ export type PausedEvent = TypedEvent<[string], { account: string }>;
 export type PausedEventFilter = TypedEventFilter<PausedEvent>;
 
 export type ProposalCalculatedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber],
+  [BigNumber, BigNumber, BigNumber, BigNumber[]],
   {
     _zDAOId: BigNumber;
     _proposalId: BigNumber;
     _voters: BigNumber;
-    _yes: BigNumber;
-    _no: BigNumber;
+    _votes: BigNumber[];
   }
 >;
 
@@ -374,8 +373,13 @@ export type ProposalCanceledEventFilter =
   TypedEventFilter<ProposalCanceledEvent>;
 
 export type ProposalCreatedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber],
-  { _zDAOId: BigNumber; _proposalId: BigNumber; _startTimestamp: BigNumber }
+  [BigNumber, BigNumber, BigNumber, BigNumber],
+  {
+    _zDAOId: BigNumber;
+    _proposalId: BigNumber;
+    _numberOfChoices: BigNumber;
+    _startTimestamp: BigNumber;
+  }
 >;
 
 export type ProposalCreatedEventFilter = TypedEventFilter<ProposalCreatedEvent>;
@@ -897,19 +901,17 @@ export interface PolygonZDAOChef extends BaseContract {
     "Paused(address)"(account?: null): PausedEventFilter;
     Paused(account?: null): PausedEventFilter;
 
-    "ProposalCalculated(uint256,uint256,uint256,uint256,uint256)"(
+    "ProposalCalculated(uint256,uint256,uint256,uint256[])"(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
       _voters?: null,
-      _yes?: null,
-      _no?: null
+      _votes?: null
     ): ProposalCalculatedEventFilter;
     ProposalCalculated(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
       _voters?: null,
-      _yes?: null,
-      _no?: null
+      _votes?: null
     ): ProposalCalculatedEventFilter;
 
     "ProposalCanceled(uint256,uint256)"(
@@ -921,14 +923,16 @@ export interface PolygonZDAOChef extends BaseContract {
       _proposalId?: BigNumberish | null
     ): ProposalCanceledEventFilter;
 
-    "ProposalCreated(uint256,uint256,uint256)"(
+    "ProposalCreated(uint256,uint256,uint256,uint256)"(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
+      _numberOfChoices?: BigNumberish | null,
       _startTimestamp?: null
     ): ProposalCreatedEventFilter;
     ProposalCreated(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
+      _numberOfChoices?: BigNumberish | null,
       _startTimestamp?: null
     ): ProposalCreatedEventFilter;
 

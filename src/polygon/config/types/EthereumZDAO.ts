@@ -49,6 +49,46 @@ export declare namespace IEthereumZDAOChef {
 }
 
 export declare namespace IEthereumZDAO {
+  export type ProposalStruct = {
+    proposalId: BigNumberish;
+    createdBy: string;
+    created: BigNumberish;
+    voters: BigNumberish;
+    ipfs: string;
+    snapshot: BigNumberish;
+    calculated: boolean;
+    executed: boolean;
+    canceled: boolean;
+    choices: string[];
+    votes: BigNumberish[];
+  };
+
+  export type ProposalStructOutput = [
+    BigNumber,
+    string,
+    BigNumber,
+    BigNumber,
+    string,
+    BigNumber,
+    boolean,
+    boolean,
+    boolean,
+    string[],
+    BigNumber[]
+  ] & {
+    proposalId: BigNumber;
+    createdBy: string;
+    created: BigNumber;
+    voters: BigNumber;
+    ipfs: string;
+    snapshot: BigNumber;
+    calculated: boolean;
+    executed: boolean;
+    canceled: boolean;
+    choices: string[];
+    votes: BigNumber[];
+  };
+
   export type ZDAOInfoStruct = {
     zDAOId: BigNumberish;
     createdBy: string;
@@ -91,46 +131,6 @@ export declare namespace IEthereumZDAO {
     isRelativeMajority: boolean;
     destroyed: boolean;
   };
-
-  export type ProposalStruct = {
-    proposalId: BigNumberish;
-    createdBy: string;
-    created: BigNumberish;
-    yes: BigNumberish;
-    no: BigNumberish;
-    voters: BigNumberish;
-    ipfs: string;
-    snapshot: BigNumberish;
-    calculated: boolean;
-    executed: boolean;
-    canceled: boolean;
-  };
-
-  export type ProposalStructOutput = [
-    BigNumber,
-    string,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    string,
-    BigNumber,
-    boolean,
-    boolean,
-    boolean
-  ] & {
-    proposalId: BigNumber;
-    createdBy: string;
-    created: BigNumber;
-    yes: BigNumber;
-    no: BigNumber;
-    voters: BigNumber;
-    ipfs: string;
-    snapshot: BigNumber;
-    calculated: boolean;
-    executed: boolean;
-    canceled: boolean;
-  };
 }
 
 export interface EthereumZDAOInterface extends utils.Interface {
@@ -138,12 +138,13 @@ export interface EthereumZDAOInterface extends utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "__ZDAO_init(address,uint256,address,address,(address,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
-    "calculateProposal(uint256,uint256,uint256,uint256)": FunctionFragment;
+    "calculateProposal(uint256,uint256,uint256[])": FunctionFragment;
     "cancelProposal(address,uint256)": FunctionFragment;
-    "createProposal(address,string)": FunctionFragment;
+    "createProposal(address,string[],string)": FunctionFragment;
     "destroyed()": FunctionFragment;
     "divisionConstant()": FunctionFragment;
     "executeProposal(address,uint256)": FunctionFragment;
+    "getProposalById(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getZDAOId()": FunctionFragment;
     "getZDAOInfo()": FunctionFragment;
@@ -188,7 +189,7 @@ export interface EthereumZDAOInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "calculateProposal",
-    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish, BigNumberish[]]
   ): string;
   encodeFunctionData(
     functionFragment: "cancelProposal",
@@ -196,7 +197,7 @@ export interface EthereumZDAOInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createProposal",
-    values: [string, string]
+    values: [string, string[], string]
   ): string;
   encodeFunctionData(functionFragment: "destroyed", values?: undefined): string;
   encodeFunctionData(
@@ -206,6 +207,10 @@ export interface EthereumZDAOInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "executeProposal",
     values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProposalById",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -315,6 +320,10 @@ export interface EthereumZDAOInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "executeProposal",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProposalById",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -501,8 +510,7 @@ export interface EthereumZDAO extends BaseContract {
     calculateProposal(
       _proposalId: BigNumberish,
       _voters: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
+      _votes: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -514,6 +522,7 @@ export interface EthereumZDAO extends BaseContract {
 
     createProposal(
       _createdBy: string,
+      _choices: string[],
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -527,6 +536,11 @@ export interface EthereumZDAO extends BaseContract {
       _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    getProposalById(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[IEthereumZDAO.ProposalStructOutput]>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
@@ -589,8 +603,6 @@ export interface EthereumZDAO extends BaseContract {
         string,
         BigNumber,
         BigNumber,
-        BigNumber,
-        BigNumber,
         string,
         BigNumber,
         boolean,
@@ -600,8 +612,6 @@ export interface EthereumZDAO extends BaseContract {
         proposalId: BigNumber;
         createdBy: string;
         created: BigNumber;
-        yes: BigNumber;
-        no: BigNumber;
         voters: BigNumber;
         ipfs: string;
         snapshot: BigNumber;
@@ -709,8 +719,7 @@ export interface EthereumZDAO extends BaseContract {
   calculateProposal(
     _proposalId: BigNumberish,
     _voters: BigNumberish,
-    _yes: BigNumberish,
-    _no: BigNumberish,
+    _votes: BigNumberish[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -722,6 +731,7 @@ export interface EthereumZDAO extends BaseContract {
 
   createProposal(
     _createdBy: string,
+    _choices: string[],
     _ipfs: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -735,6 +745,11 @@ export interface EthereumZDAO extends BaseContract {
     _proposalId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  getProposalById(
+    _proposalId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<IEthereumZDAO.ProposalStructOutput>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -793,8 +808,6 @@ export interface EthereumZDAO extends BaseContract {
       string,
       BigNumber,
       BigNumber,
-      BigNumber,
-      BigNumber,
       string,
       BigNumber,
       boolean,
@@ -804,8 +817,6 @@ export interface EthereumZDAO extends BaseContract {
       proposalId: BigNumber;
       createdBy: string;
       created: BigNumber;
-      yes: BigNumber;
-      no: BigNumber;
       voters: BigNumber;
       ipfs: string;
       snapshot: BigNumber;
@@ -910,8 +921,7 @@ export interface EthereumZDAO extends BaseContract {
     calculateProposal(
       _proposalId: BigNumberish,
       _voters: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
+      _votes: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -923,6 +933,7 @@ export interface EthereumZDAO extends BaseContract {
 
     createProposal(
       _createdBy: string,
+      _choices: string[],
       _ipfs: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -936,6 +947,11 @@ export interface EthereumZDAO extends BaseContract {
       _proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    getProposalById(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<IEthereumZDAO.ProposalStructOutput>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -994,8 +1010,6 @@ export interface EthereumZDAO extends BaseContract {
         string,
         BigNumber,
         BigNumber,
-        BigNumber,
-        BigNumber,
         string,
         BigNumber,
         boolean,
@@ -1005,8 +1019,6 @@ export interface EthereumZDAO extends BaseContract {
         proposalId: BigNumber;
         createdBy: string;
         created: BigNumber;
-        yes: BigNumber;
-        no: BigNumber;
         voters: BigNumber;
         ipfs: string;
         snapshot: BigNumber;
@@ -1177,8 +1189,7 @@ export interface EthereumZDAO extends BaseContract {
     calculateProposal(
       _proposalId: BigNumberish,
       _voters: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
+      _votes: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1190,6 +1201,7 @@ export interface EthereumZDAO extends BaseContract {
 
     createProposal(
       _createdBy: string,
+      _choices: string[],
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1202,6 +1214,11 @@ export interface EthereumZDAO extends BaseContract {
       _executeBy: string,
       _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    getProposalById(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getRoleAdmin(
@@ -1329,8 +1346,7 @@ export interface EthereumZDAO extends BaseContract {
     calculateProposal(
       _proposalId: BigNumberish,
       _voters: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
+      _votes: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1342,6 +1358,7 @@ export interface EthereumZDAO extends BaseContract {
 
     createProposal(
       _createdBy: string,
+      _choices: string[],
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -1354,6 +1371,11 @@ export interface EthereumZDAO extends BaseContract {
       _executeBy: string,
       _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getProposalById(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getRoleAdmin(
