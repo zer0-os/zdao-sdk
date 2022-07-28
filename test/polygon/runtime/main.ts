@@ -41,6 +41,7 @@ const createProposal = async (
   await zDAO.createProposal(signer, undefined, {
     title: 'Hello Proposal',
     body: 'Hello World',
+    choices: ['Approve', 'Deny', 'Absence'],
     transfer: {
       sender: zDAO.gnosisSafe,
       recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
