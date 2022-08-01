@@ -26,6 +26,7 @@ import {
   SnapshotProposalResponse,
   SnapshotSpace,
   SnapshotSpaceDetails,
+  SnapshotSpaceOptions,
   SnapshotVoteProperties,
   SpaceParams,
   VoteProposalParams,
@@ -150,13 +151,16 @@ class SnapshotClient {
       avatar: Client.utils.getUrl(item.avatar, GlobalClient.ipfsGateway),
       network: item.network,
       duration: item.voting.period,
+      followers: item.followersCount,
       admins: item.admins,
       strategies: item.strategies,
-      followers: item.followersCount,
+      threshold: item.filters.minScore,
+      delay: item.voting.delay,
+      quorum: item.voting.quorum,
     };
   }
 
-  async getSpaceStrategies(spaceId: ENS): Promise<any[]> {
+  async getSpaceOptions(spaceId: ENS): Promise<SnapshotSpaceOptions> {
     const response = await this.graphQLQuery(
       SPACES_STRATEGIES_QUERY,
       {
@@ -167,11 +171,15 @@ class SnapshotClient {
     const filter = response.filter((item: any) => item.id === spaceId);
 
     if (filter.length < 1) {
-      throw new NotFoundError(
-        errorMessageForError('not-found-ens-in-snapshot')
-      );
+      throw Error(errorMessageForError('not-found-ens-in-snapshot'));
     }
-    return filter[0].strategies;
+    return {
+      strategies: filter[0].strategies,
+      threshold: filter[0].filters.minScore,
+      duration: filter[0].voting.period,
+      delay: filter[0].voting.delay,
+      quorum: filter[0].voting.quorum,
+    };
   }
 
   // this function can not contain immediate voting scores and voters,
@@ -242,7 +250,8 @@ class SnapshotClient {
 
       let strategies = params.strategies;
       if (!params.strategies) {
-        strategies = await this.getSpaceStrategies(params.spaceId);
+        const options = await this.getSpaceOptions(params.spaceId);
+        strategies = options.strategies;
       }
 
       // Get scores
@@ -387,7 +396,7 @@ class SnapshotClient {
   }
 
   async getVotingPower(params: VotingPowerParams): Promise<number> {
-    const strategies = await this.getSpaceStrategies(params.spaceId);
+    const { strategies } = await this.getSpaceOptions(params.spaceId);
 
     let scores: any = await Client.utils.getScores(
       params.spaceId,
@@ -408,6 +417,7 @@ class SnapshotClient {
     params: CreateProposalParams
   ): Promise<SnapshotProposalResponse> {
     const startDateTime = new Date();
+    const delay = params.delay ?? 0;
 
     const response: any = await this.clientEIP712.proposal(provider, account, {
       from: account,
@@ -417,8 +427,8 @@ class SnapshotClient {
       title: params.title,
       body: params.body,
       choices: params.choices,
-      start: timestamp(startDateTime),
-      end: timestamp(addSeconds(startDateTime, params.duration)),
+      start: timestamp(startDateTime) + delay,
+      end: timestamp(addSeconds(startDateTime, params.duration)) + delay,
       snapshot: Number(params.snapshot),
       network: params.network,
       strategies:

@@ -98,7 +98,13 @@ class DAOClient
       getToken(GlobalClient.etherRpcProvider, zDAOInfos[0].token),
       zDAOInfos[1] &&
         getToken(GlobalClient.polyRpcProvider, zDAOInfos[1].token),
-      getTotalSupply(GlobalClient.etherRpcProvider, zDAOInfos[0].token),
+      getTotalSupply(GlobalClient.etherRpcProvider, zDAOInfos[0].token).catch(
+        () => {
+          throw new InvalidError(
+            errorMessageForError('not-support-total-supply')
+          );
+        }
+      ),
     ]);
 
     const etherZDAOInfo = zDAOInfos[0];

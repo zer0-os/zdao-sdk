@@ -129,7 +129,11 @@ const ErrorMessages = [
   },
   {
     key: 'not-executable-proposal',
-    value: 'Not a executable   proposal',
+    value: 'Not a executable proposal',
+  },
+  {
+    key: 'not-support-total-supply',
+    value: 'Voting token does not support total supply',
   },
 ] as const;
 

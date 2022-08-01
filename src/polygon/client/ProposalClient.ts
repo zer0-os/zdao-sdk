@@ -221,7 +221,11 @@ class ProposalClient
     }
 
     try {
-      if (!this.metadata?.token || this.metadata.token.length < 1) {
+      if (
+        !this.metadata?.token ||
+        this.metadata.token.length < 1 ||
+        this.metadata.token === ethers.constants.AddressZero
+      ) {
         // Ether transfer
         await this.zDAO.gnosisSafeClient.transferEther(
           this.zDAO.gnosisSafe,

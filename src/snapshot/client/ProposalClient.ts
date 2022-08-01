@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
 import {
   AbstractProposalClient,
@@ -7,6 +7,7 @@ import {
 } from '../../client';
 import {
   Choice,
+  FailedTxError,
   InvalidError,
   NotImplementedError,
   PaginationParam,
@@ -15,7 +16,11 @@ import {
   TokenMetaData,
   ZDAOError,
 } from '../../types';
-import { errorMessageForError, getSigner } from '../../utilities';
+import {
+  errorMessageForError,
+  getDecimalAmount,
+  getSigner,
+} from '../../utilities';
 import { SnapshotClient } from '../snapshot';
 import { SnapshotProposalProperties } from '../snapshot/types';
 import {
@@ -232,19 +237,34 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     throw new NotImplementedError();
   }
 
+  canExecute(): boolean {
+    if (this.zDAO.isRelativeMajority || !this.scores) return false;
+
+    const totalScore = this.scores.reduce(
+      (prev, current) => prev.add(current),
+      BigNumber.from(0)
+    );
+    const totalScoreAsBN = getDecimalAmount(
+      BigNumber.from(totalScore),
+      this.zDAO.votingToken.decimals
+    );
+    if (totalScoreAsBN.gte(this.zDAO.minimumTotalVotingTokens)) {
+      return true;
+    }
+    return false;
+  }
+
   async execute(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
     _: ExecuteSnapshotProposalParams
   ): Promise<void> {
-    if (!this.metadata) return;
-
     const signer = getSigner(provider, account);
 
     const address = account ?? (await signer.getAddress());
     const isOwner = await this.gnosisSafeClient.isOwnerAddress(
       signer,
-      this.zDAO.ens,
+      this.zDAO.gnosisSafe,
       address
     );
     if (!isOwner) {
@@ -254,29 +274,38 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     if (!this.metadata) {
       throw new ZDAOError(errorMessageForError('empty-metadata'));
     }
-    if (this.state !== ProposalState.AWAITING_EXECUTION) {
+    if (this.state !== ProposalState.CLOSED || !this.canExecute()) {
       throw new ZDAOError(errorMessageForError('not-executable-proposal'));
     }
 
-    if (!this.metadata?.token || this.metadata.token.length < 1) {
-      // Ether transfer
-      await this.gnosisSafeClient.transferEther(
-        this.zDAO.gnosisSafe,
-        signer,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.metadata!.recipient,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.metadata!.amount.toString()
-      );
-    } else {
-      // ERC20 transfer
-      await this.gnosisSafeClient.transferERC20(
-        this.zDAO.gnosisSafe,
-        signer,
-        this.metadata.token,
-        this.metadata.recipient,
-        this.metadata.amount.toString()
-      );
+    try {
+      if (
+        !this.metadata?.token ||
+        this.metadata.token.length < 1 ||
+        this.metadata.token === ethers.constants.AddressZero
+      ) {
+        // Ether transfer
+        await this.gnosisSafeClient.transferEther(
+          this.zDAO.gnosisSafe,
+          signer,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          this.metadata!.recipient,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          this.metadata!.amount.toString()
+        );
+      } else {
+        // ERC20 transfer
+        await this.gnosisSafeClient.transferERC20(
+          this.zDAO.gnosisSafe,
+          signer,
+          this.metadata.token,
+          this.metadata.recipient,
+          this.metadata.amount.toString()
+        );
+      }
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
     }
   }
 }

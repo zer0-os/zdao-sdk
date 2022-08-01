@@ -1,29 +1,22 @@
-import {
-  Erc20Transfer as GnosisErc20Transfer,
-  Erc721Transfer as GnosisErc721Transfer,
-  NativeCoinTransfer as GnosisNativeCoinTransfer,
-  Transaction as GnosisTransaction,
-  Transfer as GnosisTransfer,
-  TransferInfo as GnosisTransferInfo,
-} from '@gnosis.pm/safe-react-gateway-sdk';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
+import { DEFAULT_ZDAO_DURATION } from '../../config';
+import ERC20Abi from '../../config/abi/ERC20.json';
 import {
-  AssetType,
   InvalidError,
   PaginationParam,
   ProposalId,
   ProposalState,
-  Transaction,
-  TransactionStatus,
-  TransactionType,
-  TransferInfo,
-  zDAOAssets,
   zDAOProperties,
 } from '../../types';
-import { errorMessageForError, getSigner } from '../../utilities';
+import {
+  errorMessageForError,
+  getDecimalAmount,
+  getFullDisplayBalance,
+  getSigner,
+} from '../../utilities';
 import { SnapshotClient } from '../snapshot';
 import {
   CreateSnapshotProposalParams,
@@ -72,106 +65,26 @@ class DAOClient
   ): Promise<SnapshotZDAO> {
     if (options === undefined) {
       const snapshotClient = new SnapshotClient(config.snapshot);
-      const strategies = await snapshotClient.getSpaceStrategies(
-        properties.ens
-      );
-      options = { strategies };
+      const { strategies, threshold, duration, delay, quorum } =
+        await snapshotClient.getSpaceOptions(properties.ens);
+      options = { strategies, delay };
+      properties.duration = duration ?? DEFAULT_ZDAO_DURATION;
+      properties.amount = threshold
+        ? getDecimalAmount(
+            BigNumber.from(threshold),
+            properties.votingToken.decimals
+          ).toString()
+        : '0';
+      properties.minimumTotalVotingTokens = quorum
+        ? getDecimalAmount(
+            BigNumber.from(quorum),
+            properties.votingToken.decimals
+          ).toString()
+        : '0';
     }
 
     const zDAO = new DAOClient(config, properties, options);
     return zDAO;
-  }
-
-  async listAssets(): Promise<zDAOAssets> {
-    const balances = await this.gnosisSafeClient.listAssets(
-      this.gnosisSafe,
-      this.network.toString()
-    );
-
-    const collectibles = await this.gnosisSafeClient.listCollectibles(
-      this.gnosisSafe,
-      this.network.toString()
-    );
-
-    return {
-      amountInUSD: Number(balances.fiatTotal),
-      coins: balances.items.map((item: any) => ({
-        type: item.tokenInfo.type as string as AssetType,
-        address: item.tokenInfo.address,
-        decimals: item.tokenInfo.decimals,
-        symbol: item.tokenInfo.symbol,
-        name: item.tokenInfo.name,
-        logoUri: item.tokenInfo.logoUri ?? undefined,
-        amount: item.balance,
-        amountInUSD: Number(item.fiatBalance),
-      })),
-      collectibles: collectibles.map((item: any) => ({
-        address: item.address,
-        tokenName: item.tokenName,
-        tokenSymbol: item.tokenSymbol,
-        id: item.id,
-        logoUri: item.logoUri,
-        name: item.name,
-        description: item.description,
-        imageUri: item.imageUri,
-        metadata: item.metadata,
-      })),
-    };
-  }
-
-  async listTransactions(): Promise<Transaction[]> {
-    const transactions: GnosisTransaction[] =
-      await this.gnosisSafeClient.listTransactions(
-        this.gnosisSafe,
-        this.network.toString()
-      );
-
-    const mapToTransferInfo = (info: GnosisTransferInfo): TransferInfo => {
-      if ((info.type as string) === AssetType.ERC20) {
-        const typedInfo = info as GnosisErc20Transfer;
-        return {
-          type: AssetType.ERC20,
-          tokenAddress: typedInfo.tokenAddress,
-          tokenName: typedInfo.tokenName ?? undefined,
-          tokenSymbol: typedInfo.tokenSymbol ?? undefined,
-          logoUri: typedInfo.logoUri ?? undefined,
-          decimals: typedInfo.decimals ?? undefined,
-          value: typedInfo.value,
-        };
-      } else if ((info.type as string) === AssetType.ERC721) {
-        const typedInfo = info as GnosisErc721Transfer;
-        return {
-          type: AssetType.ERC721,
-          tokenAddress: typedInfo.tokenAddress,
-          tokenId: typedInfo.tokenId,
-          tokenName: typedInfo.tokenName ?? undefined,
-          tokenSymbol: typedInfo.tokenSymbol ?? undefined,
-          logoUri: typedInfo.logoUri ?? undefined,
-        };
-      } else {
-        // AssetType.NATIVE_COIN
-        const typedInfo = info as GnosisNativeCoinTransfer;
-        return {
-          type: AssetType.NATIVE_TOKEN,
-          value: typedInfo.value,
-        };
-      }
-    };
-
-    return transactions.map((tx: GnosisTransaction) => {
-      const txInfo = tx.transaction.txInfo as GnosisTransfer;
-      return {
-        type:
-          txInfo.direction === 'INCOMING'
-            ? TransactionType.RECEIVED
-            : TransactionType.SENT,
-        asset: mapToTransferInfo(txInfo.transferInfo),
-        from: txInfo.sender.value,
-        to: txInfo.recipient.value,
-        created: new Date(tx.transaction.timestamp),
-        status: tx.transaction.txStatus as string as TransactionStatus,
-      };
-    });
   }
 
   private mapState(state: string): ProposalState {
@@ -290,6 +203,26 @@ class DAOClient
 
     const signer = getSigner(provider, account);
     const accountAddress = account ? account : await signer.getAddress();
+
+    // signer should have valid amount of voting token on Ethereum
+    const contract = new ethers.Contract(
+      this.votingToken.token,
+      ERC20Abi,
+      provider
+    );
+
+    const balance = await contract.balanceOf(account);
+    if (balance.lt(this.amount)) {
+      throw new Error(
+        errorMessageForError('should-hold-token', {
+          amount: getFullDisplayBalance(
+            BigNumber.from(this.amount),
+            this.votingToken.decimals
+          ),
+        })
+      );
+    }
+
     const { id: proposalId } = await this.snapshotClient.createProposal(
       provider,
       accountAddress,
@@ -298,6 +231,7 @@ class DAOClient
         title: payload.title,
         body: payload.body ?? '',
         choices: payload.choices,
+        delay: this.options.delay,
         duration,
         snapshot,
         network: this.network.toString(),
