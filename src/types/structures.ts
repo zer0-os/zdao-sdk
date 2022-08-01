@@ -1,4 +1,9 @@
-import { AssetType, TransactionStatus, TransactionType } from './enumerations';
+import {
+  AssetType,
+  ProposalState,
+  TransactionStatus,
+  TransactionType,
+} from './enumerations';
 import { Choice, ENS, ProposalId, zDAOId, zNA } from './primitives';
 
 export interface Vote {
@@ -113,14 +118,16 @@ export interface zDAOProperties {
   zNAs: zNA[]; // Linked zNA
   title: string; // zDAO title, zNA by default
   creator: string; // Creator wallet address
-  // avatar uri which starts with https schema
-  // The frontend should use default avatar image if not defined
-  avatar?: string; // Avatar uri (https link)
   network: string; // Chain id
   duration?: number; // Proposal duration if DAO has fixed duration
   safeAddress: string; // Gnosis Safe address
   votingToken: Token; // Voting token
+  amount: string; // Minimum amount of voting power to create a proposal
   totalSupplyOfVotingToken: string; // total supply of voting token in bignumber
+  votingThreshold: number; // Threshold in 100% as 10000 required to check if proposal is succeeded
+  minimumVotingParticipants: number; // Minimum number of voters required for the proposal to pass
+  minimumTotalVotingTokens: string; // Minimum amount of voting power required for the proposal to pass
+  isRelativeMajority: boolean; // True if relative majority
 }
 
 export interface ProposalProperties {
@@ -134,7 +141,7 @@ export interface ProposalProperties {
   created: Date;
   start: Date;
   end: Date;
-  state: 'pending' | 'active' | 'closed';
+  state: ProposalState;
   network: string; // chain id
   snapshot: number; // snapshot block number
   scores: number[]; // scores per all the choices

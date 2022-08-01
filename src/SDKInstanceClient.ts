@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import shortid from 'shortid';
 
 import DAOClient from './client/DAOClient';
@@ -13,6 +13,7 @@ import {
   zDAO,
   zNA,
 } from './types';
+import { getDecimalAmount } from './utilities';
 import { getToken, getTotalSupply } from './utilities/calls';
 import { errorMessageForError } from './utilities/messages';
 import zDAORegistryClient from './zDAORegistry';
@@ -36,14 +37,12 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async getZDAOByZNA(zNA: zNA): Promise<zDAO> {
-    // check if zDAO exists
-    if (!(await this.doesZDAOExist(zNA))) {
-      throw new Error(errorMessageForError('not-found-zdao'));
-    }
-
     // get zDAO information associated with zNA
-    const zDAORecord: ZDAORecord =
-      await this._zDAORegistryClient.getZDAORecordByZNA(zNA);
+    const zDAORecord: ZDAORecord = await this._zDAORegistryClient
+      .getZDAORecordByZNA(zNA)
+      .catch(() => {
+        throw new Error(errorMessageForError('not-found-zdao'));
+      });
 
     // should be found by ens in snapshot
     const space = await this._snapshotClient.getSpaceDetails(zDAORecord.ens);
@@ -66,7 +65,22 @@ class SDKInstanceClient implements SDKInstance {
     const totalSupplyOfVotingToken = await getTotalSupply(
       this._config.zNA.provider,
       strategy.params.address
-    );
+    ).catch(() => {
+      throw new Error(errorMessageForError('not-found-strategy-in-snapshot'));
+    });
+    const minimumTotalVotingTokens = space.quorum
+      ? getDecimalAmount(
+          BigNumber.from(space.quorum.toString()),
+          decimals
+        ).toString()
+      : '0';
+    const votingThreshold =
+      totalSupplyOfVotingToken === BigNumber.from(0)
+        ? 0
+        : BigNumber.from(minimumTotalVotingTokens)
+            .mul(10000)
+            .div(totalSupplyOfVotingToken)
+            .toNumber();
 
     return await DAOClient.createInstance(
       this._config,
@@ -76,7 +90,6 @@ class SDKInstanceClient implements SDKInstance {
         zNAs: zDAORecord.zNAs,
         title: space.name,
         creator: space.admins.length > 0 ? space.admins[0] : zDAORecord.ens,
-        avatar: space.avatar,
         network: this._config.snapshot.network, // space.network,
         duration: space.duration,
         safeAddress: zDAORecord.gnosisSafe,
@@ -85,7 +98,17 @@ class SDKInstanceClient implements SDKInstance {
           symbol,
           decimals,
         },
-        totalSupplyOfVotingToken,
+        amount: space.threshold
+          ? getDecimalAmount(
+              BigNumber.from(space.threshold.toString()),
+              decimals
+            ).toString()
+          : '0',
+        totalSupplyOfVotingToken: totalSupplyOfVotingToken.toString(),
+        votingThreshold,
+        minimumVotingParticipants: 1,
+        minimumTotalVotingTokens,
+        isRelativeMajority: false,
       },
       {
         delay: space.delay,
@@ -183,12 +206,16 @@ class SDKInstanceClient implements SDKInstance {
         zNAs: [param.zNA],
         title: param.title,
         creator: param.creator,
-        avatar: param.avatar,
         network: param.network.toString(),
         duration: param.duration,
         safeAddress: param.safeAddress,
         votingToken: calls[0],
-        totalSupplyOfVotingToken: calls[1],
+        amount: '0',
+        totalSupplyOfVotingToken: calls[1].toString(),
+        votingThreshold: 0,
+        minimumVotingParticipants: 1,
+        minimumTotalVotingTokens: '0',
+        isRelativeMajority: false,
       },
       undefined
     );
@@ -208,7 +235,9 @@ class SDKInstanceClient implements SDKInstance {
 
     const calls = await Promise.all([
       getToken(this._config.zNA.provider, found.votingToken),
-      getTotalSupply(this._config.zNA.provider, found.votingToken),
+      getTotalSupply(this._config.zNA.provider, found.votingToken).catch(() => {
+        throw new Error(errorMessageForError('not-found-strategy-in-snapshot'));
+      }),
     ]);
 
     return await DAOClient.createInstance(
@@ -219,12 +248,16 @@ class SDKInstanceClient implements SDKInstance {
         zNAs: [found.zNA],
         title: found.title,
         creator: found.creator,
-        avatar: found.avatar,
         network: found.network.toString(),
         duration: found.duration,
         safeAddress: found.safeAddress,
         votingToken: calls[0],
-        totalSupplyOfVotingToken: calls[1],
+        amount: '0',
+        totalSupplyOfVotingToken: calls[1].toString(),
+        votingThreshold: 0,
+        minimumVotingParticipants: 1,
+        minimumTotalVotingTokens: '0',
+        isRelativeMajority: false,
       },
       undefined
     );

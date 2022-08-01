@@ -63,13 +63,36 @@ const ErrorMessages = [
     key: 'invalid-proposal-duration',
     value: 'Not found proposal duration',
   },
+  {
+    key: 'should-hold-token',
+    value: 'Should hold at least %amount% tokens',
+  },
+  {
+    key: 'not-executable-proposal',
+    value: 'Not a executable proposal',
+  },
+  {
+    key: 'not-support-total-supply',
+    value: 'Voting token does not support total supply',
+  },
 ] as const;
 
 export type ErrorType = typeof ErrorMessages[number]['key'];
 
-export const errorMessageForError = (error: ErrorType): string => {
+export const errorMessageForError = (
+  error: ErrorType,
+  args?: { [key: string]: string }
+): string => {
   const found = ErrorMessages.find((item) => item.key === error);
-  return found ? found.value : 'Unknown Error';
+  let plain = found ? found.value : 'Unknown Error';
+  if (args) {
+    Object.keys(args).forEach((key) => {
+      const reg = new RegExp(`%${key}%`, 'g');
+      plain = plain.replace(reg, args[key].toString());
+    });
+  }
+
+  return plain;
 };
 
 export const raiseError = (error: ErrorType): void => {

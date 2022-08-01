@@ -1,3 +1,5 @@
+import { createInstance as createZNSInstance } from '@zero-tech/zns-sdk';
+import * as zns from '@zero-tech/zns-sdk';
 import { BigNumber, ethers } from 'ethers';
 
 import { createSDKInstance } from '../../src';
@@ -7,6 +9,7 @@ import {
 } from '../../src/config';
 import {
   Config,
+  ProposalState,
   SDKInstance,
   SupportedChainId,
   zDAO,
@@ -15,6 +18,40 @@ import {
 import { setEnv } from '../shared/setupEnv';
 
 (global as any).XMLHttpRequest = require('xhr2');
+
+const createProposal = async (
+  sdkInstance: SDKInstance,
+  signer: ethers.Wallet
+) => {
+  const blockNumber = await signer.provider.getBlockNumber();
+
+  const zDAO = await sdkInstance.createZDAOFromParams({
+    ens: 'zdao721test.eth',
+    zNA: 'wilder.moto',
+    duration: 86400,
+    title: 'ERC721 Enumerable DAO',
+    creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+    network: SupportedChainId.RINKEBY,
+    safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+    votingToken: '0xa4F6C921f914ff7972D7C55c15f015419326e0Ca', // GuildNFT (GGD)
+  });
+
+  await zDAO.createProposal(signer, signer.address, {
+    title: 'Hello Proposal',
+    body: 'Hello World',
+    snapshot: blockNumber,
+    choices: ['Yes', 'No', 'Absent'],
+    transfer: {
+      sender: zDAO.safeAddress,
+      recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+      token: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+      decimals: 18,
+      symbol: 'zToken',
+      amount: BigNumber.from(10).pow(18).mul(50).toString(),
+    },
+  });
+  console.log('proposal created');
+};
 
 const createToken = async (sdkInstance: SDKInstance, signer: ethers.Wallet) => {
   // isDev should be true
@@ -96,6 +133,7 @@ const immediateVote = async (
     safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
     votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
   });
+  console.log('dao', dao);
 
   const proposalId =
     '0x558fff7cace5c2f8aa261953e5ad833cfa889ad721051d2557acfda13496f2be';
@@ -111,6 +149,78 @@ const immediateVote = async (
       console.log('proposal.scores and votes', proposal.scores, proposal.votes)
     )
     .catch((error) => console.error(error));
+};
+
+const immediateVoteAll = async (
+  sdkInstance: SDKInstance,
+  signer: ethers.Wallet,
+  dao: zDAO,
+  choice = 1
+) => {
+  // isDev should be true
+
+  const proposals = await dao.listProposals();
+  for (const proposal of proposals) {
+    if (proposal.state === ProposalState.ACTIVE) {
+      console.log('proposal id', proposal.id, proposal.title);
+      const vp = await proposal.getVotingPowerOfUser(signer.address);
+      console.log('vp', vp);
+
+      await proposal.vote(signer, signer.address, choice);
+
+      const votes = await proposal.listVotes();
+      console.log('votes', votes);
+    }
+  }
+};
+
+const iterateZNAs = async (sdkInstance: SDKInstance) => {
+  const zNAs: zNA[] = await sdkInstance.listZNAs();
+  console.log('zNAs', zNAs);
+
+  console.time('iterateZNAs');
+  // create zdao which is associated with `wilder.cats`
+  for (const zNA of zNAs) {
+    console.log('> zNA:', zNA);
+    const dao: zDAO = await sdkInstance.getZDAOByZNA(zNA);
+    console.log(
+      'zDAO instance',
+      dao.id,
+      dao.ens,
+      dao.zNAs,
+      dao.title,
+      dao.votingToken,
+      dao.totalSupplyOfVotingToken
+    );
+
+    // const proposals = await dao.listProposals();
+    // console.log('proposals', proposals);
+
+    // const assets = await dao.listAssets();
+    // console.log('assets', assets);
+
+    // const txs = await dao.listTransactions();
+    // console.log('transactions', txs);
+  }
+  console.timeEnd('iterateZNAs');
+};
+
+const performance = async (sdkInstance: SDKInstance, signer: ethers.Wallet) => {
+  const zNAs: zNA[] = await sdkInstance.listZNAs();
+  console.log('zNAs', zNAs);
+
+  const zDAO = await sdkInstance.getZDAOByZNA('wilder.skydao2');
+  console.log('zDAO', zDAO);
+
+  // const proposals = await zDAO.listProposals();
+  // console.log('proposals', proposals);
+
+  const proposal = await zDAO.getProposal(
+    '0x3c28cfe3c537166310f66458a32133fe552c8a6f9d7ee3ba0ce4e0a73618fa51'
+  );
+  console.log('proposal', proposal);
+
+  await proposal.execute(signer);
 };
 
 const main = async () => {
@@ -135,30 +245,63 @@ const main = async () => {
         'snapshot.mypinata.cloud'
       );
 
+  console.time('createSDKInstance');
   const sdkInstance: SDKInstance = createSDKInstance(config);
+  console.timeEnd('createSDKInstance');
 
+  console.log('zNS.config', config.zNS);
+
+  const znsInstance = createZNSInstance(config.zNS);
+  // console.log('wilder.moto', zns.domains.domainNameToId('wilder.moto'));
+  // console.log('wilder.skydao', zns.domains.domainNameToId('wilder.skydao'));
+  console.log('wilder.moto', zns.domains.domainNameToId('wilder.moto'));
+
+  // console.log(
+  //   '0x617b3c878abfceb89eb62b7a24f393569c822946bbc9175c6c65a7d2647c5402',
+  //   await znsInstance
+  //     .getDomainById(
+  //       '0x617b3c878abfceb89eb62b7a24f393569c822946bbc9175c6c65a7d2647c5402'
+  //     )
+  //     .then((domain) => domain.name)
+  // );
+  // console.log(
+  //   '0x81a205879073b617f10e379fbb3558ac869fe9f182b029307f9e216d736dc3f4',
+  //   await znsInstance
+  //     .getDomainById(
+  //       '0x81a205879073b617f10e379fbb3558ac869fe9f182b029307f9e216d736dc3f4'
+  //     )
+  //     .then((domain) => domain.name)
+  // );
+  // console.log(
+  //   '0x45483a3a19b4ce3eb27a6d8e0b4d1eb6561c94af65b268fc1038d45130e65796',
+  //   await znsInstance
+  //     .getDomainById(
+  //       '0x45483a3a19b4ce3eb27a6d8e0b4d1eb6561c94af65b268fc1038d45130e65796'
+  //     )
+  //     .then((domain) => domain.name)
+  // );
+
+  // await createProposal(sdkInstance, signer);
   // await createToken(sdkInstance, signer);
   // await pagination(sdkInstance);
   // await immediateVote(sdkInstance, signer);
+  // await immediateVoteAll(
+  //   sdkInstance,
+  //   signer,
+  //   await sdkInstance.createZDAOFromParams({
+  //     ens: 'zdao721test.eth',
+  //     zNA: 'wilder.moto',
+  //     title: 'ERC721 Enumerable DAO',
+  //     creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+  //     network: SupportedChainId.RINKEBY,
+  //     safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+  //     votingToken: '0xa4F6C921f914ff7972D7C55c15f015419326e0Ca', // GuildNFT (GGD)
+  //   }),
+  //   2
+  // );
+  // await iterateZNAs(sdkInstance);
+  await performance(sdkInstance, signer);
 
-  const zNAs: zNA[] = await sdkInstance.listZNAs();
-  console.log('zNAs', zNAs);
-
-  // create zdao which is associated with `wilder.cats`
-  for (const zNA of zNAs) {
-    console.log('> zNA:', zNA);
-    const dao: zDAO = await sdkInstance.getZDAOByZNA(zNA);
-    console.log('zDAO instance', dao);
-
-    const proposals = await dao.listProposals();
-    console.log('proposals', proposals);
-
-    const assets = await dao.listAssets();
-    console.log('assets', assets);
-
-    const txs = await dao.listTransactions();
-    console.log('transactions', txs);
-  }
   console.log('Finished successfully');
 };
 

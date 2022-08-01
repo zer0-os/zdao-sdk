@@ -11,8 +11,6 @@ export interface CreateZDAOParams {
   title: string;
   // address to zDAO creator
   creator: string;
-  // uri to avatar, if not defined, will use default avatar image in frontend
-  avatar?: string;
   // network id where zDAO was created
   network: SupportedChainId;
   // proposal duration if DAO has fixed proposal

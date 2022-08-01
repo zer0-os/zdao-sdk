@@ -148,10 +148,12 @@ class SnapshotClient {
       avatar: Client.utils.getUrl(item.avatar, this._config.ipfsGateway),
       network: item.network,
       duration: item.voting.period,
+      followers: item.followersCount,
       admins: item.admins,
       strategies: item.strategies,
+      threshold: item.filters.minScore,
       delay: item.voting.delay,
-      followers: item.followersCount,
+      quorum: item.voting.quorum,
     };
   }
 
@@ -170,8 +172,10 @@ class SnapshotClient {
     }
     return {
       strategies: filter[0].strategies,
-      delay: filter[0].voting.delay,
+      threshold: filter[0].filters.minScore,
       duration: filter[0].voting.period,
+      delay: filter[0].voting.delay,
+      quorum: filter[0].voting.quorum,
     };
   }
 

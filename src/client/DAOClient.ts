@@ -6,9 +6,10 @@ import {
   Transfer as GnosisTransfer,
   TransferInfo as GnosisTransferInfo,
 } from '@gnosis.pm/safe-react-gateway-sdk';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
+import ERC20Abi from '../config/constants/abi/ERC20.json';
 import GnosisSafeClient from '../gnosis-safe';
 import SnapshotClient from '../snapshot-io';
 import { SnapshotProposal } from '../snapshot-io/types';
@@ -19,6 +20,7 @@ import {
   PaginationParam,
   Proposal,
   ProposalId,
+  ProposalState,
   Transaction,
   TransactionStatus,
   TransactionType,
@@ -27,6 +29,7 @@ import {
   zDAOAssets,
   zDAOProperties,
 } from '../types';
+import { getDecimalAmount, getFullDisplayBalance } from '../utilities';
 import { errorMessageForError } from '../utilities/messages';
 import ProposalClient from './ProposalClient';
 
@@ -70,10 +73,6 @@ class DAOClient implements zDAO {
     return this._properties.creator;
   }
 
-  get avatar() {
-    return this._properties.avatar;
-  }
-
   get network() {
     return this._properties.network;
   }
@@ -90,8 +89,28 @@ class DAOClient implements zDAO {
     return this._properties.votingToken;
   }
 
+  get amount() {
+    return this._properties.amount;
+  }
+
   get totalSupplyOfVotingToken() {
     return this._properties.totalSupplyOfVotingToken;
+  }
+
+  get votingThreshold() {
+    return this._properties.votingThreshold;
+  }
+
+  get minimumVotingParticipants() {
+    return this._properties.minimumVotingParticipants;
+  }
+
+  get minimumTotalVotingTokens() {
+    return this._properties.minimumTotalVotingTokens;
+  }
+
+  get isRelativeMajority() {
+    return this._properties.isRelativeMajority;
   }
 
   static async createInstance(
@@ -101,10 +120,29 @@ class DAOClient implements zDAO {
   ): Promise<zDAO> {
     if (options === undefined) {
       const snapshotClient = new SnapshotClient(config.snapshot);
-      const { strategies, delay } = await snapshotClient.getSpaceOptions(
-        properties.ens
-      );
+      const { strategies, threshold, duration, delay, quorum } =
+        await snapshotClient.getSpaceOptions(properties.ens);
       options = { strategies, delay };
+      properties.duration = duration;
+      properties.amount = threshold
+        ? getDecimalAmount(
+            BigNumber.from(threshold),
+            properties.votingToken.decimals
+          ).toString()
+        : '0';
+      properties.minimumTotalVotingTokens = quorum
+        ? getDecimalAmount(
+            BigNumber.from(quorum),
+            properties.votingToken.decimals
+          ).toString()
+        : '0';
+      properties.votingThreshold =
+        properties.totalSupplyOfVotingToken === '0'
+          ? 0
+          : BigNumber.from(properties.minimumTotalVotingTokens)
+              .mul(10000)
+              .div(properties.totalSupplyOfVotingToken)
+              .toNumber();
     }
 
     const zDAO = new DAOClient(config, properties, options);
@@ -201,6 +239,15 @@ class DAOClient implements zDAO {
     });
   }
 
+  private mapState(state: string): ProposalState {
+    if (state === 'pending') {
+      return ProposalState.PENDING;
+    } else if (state === 'active') {
+      return ProposalState.ACTIVE;
+    }
+    return ProposalState.CLOSED;
+  }
+
   async listProposals(pagination?: PaginationParam): Promise<Proposal[]> {
     const limit = 3000;
     let from = pagination?.from ?? 0;
@@ -243,7 +290,7 @@ class DAOClient implements zDAO {
             created: proposal.created,
             start: proposal.start,
             end: proposal.end,
-            state: proposal.state,
+            state: this.mapState(proposal.state),
             network: proposal.network,
             snapshot: Number(proposal.snapshot),
             scores: proposal.scores,
@@ -284,7 +331,7 @@ class DAOClient implements zDAO {
         created: proposal.created,
         start: proposal.start,
         end: proposal.end,
-        state: proposal.state,
+        state: this.mapState(proposal.state),
         network: proposal.network,
         snapshot: Number(proposal.snapshot),
         scores: proposal.scores,
@@ -301,10 +348,30 @@ class DAOClient implements zDAO {
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
     payload: CreateProposalParams
-  ): Promise<Proposal> {
+  ): Promise<ProposalId> {
     if (!this.duration && !payload.duration) {
       throw new Error(errorMessageForError('invalid-proposal-duration'));
     }
+
+    // signer should have valid amount of voting token on Ethereum
+    const contract = new ethers.Contract(
+      this.votingToken.token,
+      ERC20Abi,
+      provider
+    );
+
+    const balance = await contract.balanceOf(account);
+    if (balance.lt(this.amount)) {
+      throw new Error(
+        errorMessageForError('should-hold-token', {
+          amount: getFullDisplayBalance(
+            BigNumber.from(this.amount),
+            this.votingToken.decimals
+          ),
+        })
+      );
+    }
+
     const duration = this.duration ?? payload.duration;
     const { id: proposalId } = await this._snapshotClient.createProposal(
       provider,
@@ -331,37 +398,7 @@ class DAOClient implements zDAO {
       }
     );
 
-    const proposal: SnapshotProposal = await this._snapshotClient.getProposal({
-      spaceId: this.ens,
-      network: this.network,
-      proposalId,
-    });
-    return await ProposalClient.createInstance(
-      this,
-      this._snapshotClient,
-      this._gnosisSafeClient,
-      {
-        id: proposal.id,
-        type: proposal.type,
-        author: proposal.author,
-        title: proposal.title,
-        body: proposal.body ?? '',
-        ipfs: proposal.ipfs,
-        choices: proposal.choices,
-        created: proposal.created,
-        start: proposal.start,
-        end: proposal.end,
-        state: proposal.state,
-        network: proposal.network,
-        snapshot: Number(proposal.snapshot),
-        scores: proposal.scores,
-        votes: proposal.votes,
-      },
-      {
-        strategies: this._options.strategies,
-        scores_state: proposal.scores_state,
-      }
-    );
+    return proposalId;
   }
 }
 

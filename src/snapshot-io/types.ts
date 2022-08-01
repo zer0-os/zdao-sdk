@@ -61,13 +61,17 @@ export interface SnapshotSpace {
 export interface SnapshotSpaceDetails extends SnapshotSpace {
   admins: string[];
   strategies: any[];
+  threshold?: number; // proposal threshold, minimum voting power to cast a vote
   delay?: number; // voting delay
+  quorum?: number; // minimum voting power required for the proposal to pass
 }
 
 export interface SnapshotSpaceOptions {
   strategies: any[];
+  threshold?: number; // proposal threshold, minimum voting power to cast a vote
   duration?: number;
   delay?: number; // voting delay
+  quorum?: number; // minimum voting power required for the proposal to pass
 }
 
 export interface SnapshotProposal {

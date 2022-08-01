@@ -115,7 +115,7 @@ export interface zDAO extends zDAOProperties {
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string,
     payload: CreateProposalParams
-  ): Promise<Proposal>;
+  ): Promise<ProposalId>;
 }
 
 export interface Proposal extends ProposalProperties {
