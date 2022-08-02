@@ -117,9 +117,9 @@ class DAOClient
         network: config.ethereum.network,
         gnosisSafe: etherZDAOInfo.gnosisSafe,
         votingToken: tokens[0] as Token,
-        amount: etherZDAOInfo.amount.toString(),
+        minimumVotingTokenAmount: etherZDAOInfo.amount.toString(),
         totalSupplyOfVotingToken: tokens[2].toString(),
-        duration: etherZDAOInfo.duration.toNumber(),
+        votingDuration: etherZDAOInfo.duration.toNumber(),
         votingDelay: etherZDAOInfo.votingDelay.toNumber(),
         votingThreshold: etherZDAOInfo.votingThreshold.toNumber(),
         minimumVotingParticipants:
@@ -330,7 +330,7 @@ class DAOClient
     if (this.destroyed) {
       throw new AlreadyDestroyedError();
     }
-    if (!this.duration) {
+    if (!this.votingDuration) {
       throw new Error(errorMessageForError('invalid-proposal-duration'));
     }
 
@@ -339,11 +339,11 @@ class DAOClient
 
     // signer should have valid amount of voting token on Ethereum
     const balance = await this.rootTokenContract.balanceOf(signerAddress);
-    if (balance.lt(this.amount)) {
+    if (balance.lt(this.minimumVotingTokenAmount)) {
       throw new InvalidError(
         errorMessageForError('should-hold-token', {
           amount: getFullDisplayBalance(
-            BigNumber.from(this.amount),
+            BigNumber.from(this.minimumVotingTokenAmount),
             this.votingToken.decimals
           ),
         })

@@ -185,14 +185,14 @@ class SDKInstanceClient implements SnapshotSDKInstance {
           symbol,
           decimals,
         },
-        amount: space.threshold
+        minimumVotingTokenAmount: space.threshold
           ? getDecimalAmount(
               BigNumber.from(space.threshold.toString()),
               decimals
             ).toString()
           : '0',
         totalSupplyOfVotingToken: totalSupplyOfVotingToken.toString(),
-        duration: space.duration ? Number(space.duration) : 0,
+        votingDuration: space.duration ? Number(space.duration) : 0,
         votingDelay: space.delay ?? 0,
         votingThreshold,
         minimumVotingParticipants: 1,
@@ -225,12 +225,14 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     if (params.gnosisSafe.length < 1) {
       throw new InvalidError(errorMessageForError('empty-gnosis-address'));
     }
-    if (params.token.length < 1) {
+    if (params.votingToken.length < 1) {
       throw new InvalidError(errorMessageForError('empty-proposal-token'));
     }
     if (
-      !isBigNumberish(params.amount) ||
-      ethers.BigNumber.from(params.amount).eq(ethers.BigNumber.from(0))
+      !isBigNumberish(params.minimumVotingTokenAmount) ||
+      ethers.BigNumber.from(params.minimumVotingTokenAmount).eq(
+        ethers.BigNumber.from(0)
+      )
     ) {
       throw new InvalidError(
         errorMessageForError('invalid-proposal-token-amount')

@@ -56,12 +56,12 @@ class MockDAOClient
     params: CreatePolygonZDAOParams
   ): Promise<PolygonZDAO> {
     const polygonTokenAddress =
-      await GlobalClient.registry.ethereumToPolygonToken(params.token);
+      await GlobalClient.registry.ethereumToPolygonToken(params.votingToken);
 
     const results = await Promise.all([
       signer.getChainId(),
-      getToken(GlobalClient.etherRpcProvider, params.token),
-      getTotalSupply(GlobalClient.etherRpcProvider, params.token),
+      getToken(GlobalClient.etherRpcProvider, params.votingToken),
+      getTotalSupply(GlobalClient.etherRpcProvider, params.votingToken),
       getToken(GlobalClient.polyRpcProvider, polygonTokenAddress),
     ]);
 
@@ -73,9 +73,9 @@ class MockDAOClient
       network: results[0],
       gnosisSafe: params.gnosisSafe,
       votingToken: results[1],
-      amount: params.amount,
+      minimumVotingTokenAmount: params.minimumVotingTokenAmount,
       totalSupplyOfVotingToken: results[2].toString(),
-      duration: params.duration,
+      votingDuration: params.votingDuration,
       votingDelay: params.votingDelay ?? 0,
       votingThreshold: params.votingThreshold,
       minimumVotingParticipants: params.minimumVotingParticipants,
@@ -126,7 +126,7 @@ class MockDAOClient
       choices: [VoteChoice.YES, VoteChoice.NO],
       created: now,
       start: now,
-      end: new Date(now.getTime() + this.duration * 1000),
+      end: new Date(now.getTime() + this.votingDuration * 1000),
       state: ProposalState.ACTIVE,
       snapshot: timestamp(now),
       scores: ['0', '0'],

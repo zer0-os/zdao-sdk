@@ -56,7 +56,7 @@ class SDKInstanceClient implements PolygonSDKInstance {
     if (await this.doesZDAOExist(params.zNA)) {
       throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
     }
-    if (!params.duration) {
+    if (!params.votingDuration) {
       throw new Error(errorMessageForError('invalid-zdao-duration'));
     }
 
@@ -145,12 +145,14 @@ class SDKInstanceClient implements PolygonSDKInstance {
     if (params.gnosisSafe.length < 1) {
       throw new InvalidError(errorMessageForError('empty-gnosis-address'));
     }
-    if (params.token.length < 1) {
+    if (params.votingToken.length < 1) {
       throw new InvalidError(errorMessageForError('empty-proposal-token'));
     }
     if (
-      !isBigNumberish(params.amount) ||
-      ethers.BigNumber.from(params.amount).eq(ethers.BigNumber.from(0))
+      !isBigNumberish(params.minimumVotingTokenAmount) ||
+      ethers.BigNumber.from(params.minimumVotingTokenAmount).eq(
+        ethers.BigNumber.from(0)
+      )
     ) {
       throw new InvalidError(
         errorMessageForError('invalid-proposal-token-amount')
@@ -158,7 +160,9 @@ class SDKInstanceClient implements PolygonSDKInstance {
     }
     if (
       !isBigNumberish(params.minimumTotalVotingTokens) ||
-      ethers.BigNumber.from(params.amount).eq(ethers.BigNumber.from(0))
+      ethers.BigNumber.from(params.minimumVotingTokenAmount).eq(
+        ethers.BigNumber.from(0)
+      )
     ) {
       throw new InvalidError(errorMessageForError('invalid-quorum-amount'));
     }

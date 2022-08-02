@@ -17,13 +17,13 @@ export interface CreateZDAOParams {
 
   // Voting token (ERC20 or ERC721) on Ethereum, only token holders
   // can create a proposal
-  token: string;
+  votingToken: string;
 
   // The minimum number of tokens required to become proposal creator
-  amount: string;
+  minimumVotingTokenAmount: string;
 
   // Time duration of this proposal in seconds
-  duration: number;
+  votingDuration: number;
 
   // Delay of proposal to start voting in seconds, 0 by default
   votingDelay?: number;

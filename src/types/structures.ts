@@ -178,13 +178,13 @@ export interface zDAOProperties {
   votingToken: Token;
 
   // The minimum number of tokens required on Ethereum to become proposal creator
-  amount: string;
+  minimumVotingTokenAmount: string;
 
   // Total Supply of Voting token (ERC20 or ERC721) in BigNumber
   totalSupplyOfVotingToken: string;
 
   // Time duration of proposal in seconds
-  duration: number;
+  votingDuration: number;
 
   // Delay of proposal to start voting in seconds, 0 by default
   votingDelay: number;
