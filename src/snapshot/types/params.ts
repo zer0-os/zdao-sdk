@@ -13,9 +13,6 @@ export interface CreateSnapshotZDAOParams extends CreateZDAOParams {
 }
 
 export interface CreateSnapshotProposalParams extends CreateProposalParams {
-  // Array of choices
-  choices: string[];
-
   // Block number
   snapshot: number;
 

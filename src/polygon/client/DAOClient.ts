@@ -149,7 +149,7 @@ class DAOClient
   ): Promise<ProposalProperties> {
     const polygonZDAO = await this.getPolygonZDAOContract();
     const polyProposal = polygonZDAO
-      ? await polygonZDAO.proposals(raw.proposalId)
+      ? await polygonZDAO.getProposalById(raw.proposalId)
       : null;
     const isSyncedProposal = polyProposal
       ? polyProposal.proposalId.eq(raw.proposalId)
@@ -171,7 +171,7 @@ class DAOClient
         : undefined;
     const scores =
       polygonZDAO && polyProposal && isSyncedProposal
-        ? [polyProposal.yes.toString(), polyProposal.no.toString()]
+        ? polyProposal.votes
         : undefined;
     const voters =
       polygonZDAO && polyProposal && isSyncedProposal
@@ -181,12 +181,14 @@ class DAOClient
     const canExecute = (): boolean => {
       if (!scores || !voters) return false;
 
-      const yes = BigNumber.from(scores[0]),
-        no = BigNumber.from(scores[1]),
-        zero = BigNumber.from(0);
+      const sumOfScores = scores.reduce(
+        (prev, current) => prev.add(current),
+        BigNumber.from(0)
+      );
+      const zero = BigNumber.from(0);
       if (
         voters < this.minimumVotingParticipants ||
-        yes.add(no).lt(BigNumber.from(this.minimumTotalVotingTokens)) // <
+        sumOfScores.lt(BigNumber.from(this.minimumTotalVotingTokens)) // <
       ) {
         return false;
       }
@@ -194,10 +196,10 @@ class DAOClient
       // if relative majority, the denominator should be sum of yes and no votes
       if (
         this.isRelativeMajority &&
-        yes.add(no).gt(zero) &&
-        yes
+        sumOfScores.gt(zero) &&
+        scores[0]
           .mul(BigNumber.from(10000))
-          .div(yes.add(no))
+          .div(sumOfScores)
           .gte(BigNumber.from(this.votingThreshold))
       ) {
         return true;
@@ -209,7 +211,7 @@ class DAOClient
       if (
         !this.isRelativeMajority &&
         totalSupply.gt(zero) &&
-        yes
+        scores[0]
           .mul(10000)
           .div(totalSupply)
           .gte(BigNumber.from(this.votingThreshold))
@@ -262,7 +264,7 @@ class DAOClient
       end,
       state: mapState(raw),
       snapshot,
-      scores,
+      scores: scores?.map((score) => score.toString()),
       voters,
       metadata: metadataJson && {
         sender: metadataJson.sender,
@@ -307,7 +309,7 @@ class DAOClient
   }
 
   async getProposal(id: ProposalId): Promise<PolygonProposal> {
-    const proposal = await this.ethereumZDAO.proposals(id);
+    const proposal = await this.ethereumZDAO.getProposalById(id);
     if (proposal.proposalId.toString() !== id) {
       throw new NotFoundError(errorMessageForError('not-found-proposal'));
     }

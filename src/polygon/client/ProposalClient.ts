@@ -86,7 +86,7 @@ class ProposalClient
     }
 
     const polyProposal = polygonZDAO
-      ? await polygonZDAO.proposals(this.id)
+      ? await polygonZDAO.getProposalById(this.id)
       : null;
     const isSyncedProposal = polyProposal
       ? polyProposal.proposalId.eq(this.id)
@@ -94,7 +94,7 @@ class ProposalClient
 
     const scores =
       polygonZDAO && polyProposal && isSyncedProposal
-        ? [polyProposal.yes.toString(), polyProposal.no.toString()]
+        ? polyProposal.votes.map((vote) => vote.toString())
         : undefined;
     const voters =
       polygonZDAO && polyProposal && isSyncedProposal

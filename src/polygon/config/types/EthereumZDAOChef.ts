@@ -70,7 +70,7 @@ export interface EthereumZDAOChefInterface extends utils.Interface {
     "__ZDAOChef_init(address,address,address)": FunctionFragment;
     "addNewZDAO(uint256,uint256,address,bytes)": FunctionFragment;
     "cancelProposal(uint256,uint256)": FunctionFragment;
-    "createProposal(uint256,string)": FunctionFragment;
+    "createProposal(uint256,string[],string)": FunctionFragment;
     "ethereumStateSender()": FunctionFragment;
     "executeProposal(uint256,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -116,7 +116,7 @@ export interface EthereumZDAOChefInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createProposal",
-    values: [BigNumberish, string]
+    values: [BigNumberish, string[], string]
   ): string;
   encodeFunctionData(
     functionFragment: "ethereumStateSender",
@@ -288,9 +288,9 @@ export interface EthereumZDAOChefInterface extends utils.Interface {
     "BeaconUpgraded(address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
-    "ProposalCalculated(uint256,uint256,uint256,uint256,uint256)": EventFragment;
+    "ProposalCalculated(uint256,uint256,uint256,uint256[])": EventFragment;
     "ProposalCanceled(uint256,uint256,address)": EventFragment;
-    "ProposalCreated(uint256,uint256,address,uint256)": EventFragment;
+    "ProposalCreated(uint256,uint256,uint256,address,uint256)": EventFragment;
     "ProposalExecuted(uint256,uint256,address)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
@@ -338,13 +338,12 @@ export type PausedEvent = TypedEvent<[string], { account: string }>;
 export type PausedEventFilter = TypedEventFilter<PausedEvent>;
 
 export type ProposalCalculatedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber],
+  [BigNumber, BigNumber, BigNumber, BigNumber[]],
   {
     _zDAOId: BigNumber;
     _propoalId: BigNumber;
     _voters: BigNumber;
-    _yes: BigNumber;
-    _no: BigNumber;
+    votes: BigNumber[];
   }
 >;
 
@@ -360,10 +359,11 @@ export type ProposalCanceledEventFilter =
   TypedEventFilter<ProposalCanceledEvent>;
 
 export type ProposalCreatedEvent = TypedEvent<
-  [BigNumber, BigNumber, string, BigNumber],
+  [BigNumber, BigNumber, BigNumber, string, BigNumber],
   {
     _zDAOId: BigNumber;
     _proposalId: BigNumber;
+    _numberOfChoices: BigNumber;
     _createdBy: string;
     _snapshot: BigNumber;
   }
@@ -462,6 +462,7 @@ export interface EthereumZDAOChef extends BaseContract {
 
     createProposal(
       _zDAOId: BigNumberish,
+      _choices: string[],
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -600,6 +601,7 @@ export interface EthereumZDAOChef extends BaseContract {
 
   createProposal(
     _zDAOId: BigNumberish,
+    _choices: string[],
     _ipfs: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -738,6 +740,7 @@ export interface EthereumZDAOChef extends BaseContract {
 
     createProposal(
       _zDAOId: BigNumberish,
+      _choices: string[],
       _ipfs: string,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -870,19 +873,17 @@ export interface EthereumZDAOChef extends BaseContract {
     "Paused(address)"(account?: null): PausedEventFilter;
     Paused(account?: null): PausedEventFilter;
 
-    "ProposalCalculated(uint256,uint256,uint256,uint256,uint256)"(
+    "ProposalCalculated(uint256,uint256,uint256,uint256[])"(
       _zDAOId?: BigNumberish | null,
       _propoalId?: BigNumberish | null,
       _voters?: null,
-      _yes?: null,
-      _no?: null
+      votes?: null
     ): ProposalCalculatedEventFilter;
     ProposalCalculated(
       _zDAOId?: BigNumberish | null,
       _propoalId?: BigNumberish | null,
       _voters?: null,
-      _yes?: null,
-      _no?: null
+      votes?: null
     ): ProposalCalculatedEventFilter;
 
     "ProposalCanceled(uint256,uint256,address)"(
@@ -896,16 +897,18 @@ export interface EthereumZDAOChef extends BaseContract {
       _cancelBy?: string | null
     ): ProposalCanceledEventFilter;
 
-    "ProposalCreated(uint256,uint256,address,uint256)"(
+    "ProposalCreated(uint256,uint256,uint256,address,uint256)"(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
-      _createdBy?: string | null,
+      _numberOfChoices?: BigNumberish | null,
+      _createdBy?: null,
       _snapshot?: null
     ): ProposalCreatedEventFilter;
     ProposalCreated(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
-      _createdBy?: string | null,
+      _numberOfChoices?: BigNumberish | null,
+      _createdBy?: null,
       _snapshot?: null
     ): ProposalCreatedEventFilter;
 
@@ -986,6 +989,7 @@ export interface EthereumZDAOChef extends BaseContract {
 
     createProposal(
       _zDAOId: BigNumberish,
+      _choices: string[],
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1130,6 +1134,7 @@ export interface EthereumZDAOChef extends BaseContract {
 
     createProposal(
       _zDAOId: BigNumberish,
+      _choices: string[],
       _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

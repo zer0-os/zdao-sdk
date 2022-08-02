@@ -121,11 +121,11 @@ class EthereumZDAOChefClient {
   ) {
     const gasEstimated = await this.contract
       .connect(signer)
-      .estimateGas.createProposal(zDAOId, ipfs);
+      .estimateGas.createProposal(zDAOId, payload.choices, ipfs);
 
     const tx = await this.contract
       .connect(signer)
-      .createProposal(zDAOId, ipfs, {
+      .createProposal(zDAOId, payload.choices, ipfs, {
         gasLimit: calculateGasMargin(gasEstimated),
       });
     return await tx.wait();
