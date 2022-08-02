@@ -56,7 +56,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     if (params.votingDelay) {
       throw new AlreadyExistError(
         errorMessageForError('invalid-parameter', {
-          name: 'votingDelay',
+          name: 'votingDelay should not be passed',
         })
       );
     }
