@@ -76,6 +76,7 @@ class MockDAOClient
       amount: params.amount,
       totalSupplyOfVotingToken: results[2].toString(),
       duration: params.duration,
+      votingDelay: params.votingDelay ?? 0,
       votingThreshold: params.votingThreshold,
       minimumVotingParticipants: params.minimumVotingParticipants,
       minimumTotalVotingTokens: params.minimumTotalVotingTokens,

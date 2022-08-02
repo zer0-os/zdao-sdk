@@ -24,6 +24,9 @@ export interface CreateZDAOParams {
 
   // Time duration of this proposal in seconds
   duration: number;
+
+  // Delay of proposal to start voting in seconds, 0 by default
+  votingDelay?: number;
 }
 
 export interface CreateProposalParams {

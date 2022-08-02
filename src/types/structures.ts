@@ -186,6 +186,9 @@ export interface zDAOProperties {
   // Time duration of proposal in seconds
   duration: number;
 
+  // Delay of proposal to start voting in seconds, 0 by default
+  votingDelay: number;
+
   // Threshold in 100% as 10000 required to check if proposal is succeeded
   votingThreshold: number;
 

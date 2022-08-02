@@ -53,6 +53,13 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     if (await this.doesZDAOExist(params.zNA)) {
       throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
     }
+    if (params.votingDelay) {
+      throw new AlreadyExistError(
+        errorMessageForError('invalid-parameter', {
+          name: 'votingDelay',
+        })
+      );
+    }
 
     try {
       const signer = getSigner(provider, account);
@@ -186,6 +193,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
           : '0',
         totalSupplyOfVotingToken: totalSupplyOfVotingToken.toString(),
         duration: space.duration ? Number(space.duration) : 0,
+        votingDelay: space.delay ?? 0,
         votingThreshold,
         minimumVotingParticipants: 1,
         minimumTotalVotingTokens,

@@ -116,6 +116,10 @@ const ErrorMessages = [
     value: 'Not found any token related strategyies in snapshot',
   },
   {
+    key: 'invalid-parameter',
+    value: 'Invalid parameter: %name%',
+  },
+  {
     key: 'invalid-ens',
     value: 'Invalid ENS',
   },

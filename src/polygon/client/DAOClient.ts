@@ -120,6 +120,7 @@ class DAOClient
         amount: etherZDAOInfo.amount.toString(),
         totalSupplyOfVotingToken: tokens[2].toString(),
         duration: etherZDAOInfo.duration.toNumber(),
+        votingDelay: etherZDAOInfo.votingDelay.toNumber(),
         votingThreshold: etherZDAOInfo.votingThreshold.toNumber(),
         minimumVotingParticipants:
           etherZDAOInfo.minimumVotingParticipants.toNumber(),

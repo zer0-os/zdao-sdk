@@ -82,6 +82,10 @@ abstract class AbstractDAOClient<
     return this.properties.duration;
   }
 
+  get votingDelay() {
+    return this.properties.votingDelay;
+  }
+
   get votingThreshold() {
     return this.properties.votingThreshold;
   }
