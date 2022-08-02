@@ -59,6 +59,7 @@ export declare namespace IPolygonZDAO {
   export type ZDAOInfoStruct = {
     zDAOId: BigNumberish;
     duration: BigNumberish;
+    votingDelay: BigNumberish;
     token: string;
     snapshot: BigNumberish;
     destroyed: boolean;
@@ -67,12 +68,14 @@ export declare namespace IPolygonZDAO {
   export type ZDAOInfoStructOutput = [
     BigNumber,
     BigNumber,
+    BigNumber,
     string,
     BigNumber,
     boolean
   ] & {
     zDAOId: BigNumber;
     duration: BigNumber;
+    votingDelay: BigNumber;
     token: string;
     snapshot: BigNumber;
     destroyed: boolean;
@@ -83,7 +86,7 @@ export interface PolygonZDAOInterface extends utils.Interface {
   contractName: "PolygonZDAO";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "__ZDAO_init(address,address,uint256,uint256,address)": FunctionFragment;
+    "__ZDAO_init(address,address,uint256,uint256,uint256,address)": FunctionFragment;
     "calculateProposal(uint256)": FunctionFragment;
     "canCalculateProposal(uint256)": FunctionFragment;
     "canVote(uint256,address)": FunctionFragment;
@@ -131,7 +134,7 @@ export interface PolygonZDAOInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "__ZDAO_init",
-    values: [string, string, BigNumberish, BigNumberish, string]
+    values: [string, string, BigNumberish, BigNumberish, BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "calculateProposal",
@@ -476,6 +479,7 @@ export interface PolygonZDAO extends BaseContract {
       _staking: string,
       _zDAOId: BigNumberish,
       _duration: BigNumberish,
+      _votingDelay: BigNumberish,
       _token: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -510,7 +514,7 @@ export interface PolygonZDAO extends BaseContract {
     createProposal(
       _proposalId: BigNumberish,
       _numberOfChoices: BigNumberish,
-      _startTimestamp: BigNumberish,
+      _proposalCreated: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -693,9 +697,10 @@ export interface PolygonZDAO extends BaseContract {
     zDAOInfo(
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, string, BigNumber, boolean] & {
+      [BigNumber, BigNumber, BigNumber, string, BigNumber, boolean] & {
         zDAOId: BigNumber;
         duration: BigNumber;
+        votingDelay: BigNumber;
         token: string;
         snapshot: BigNumber;
         destroyed: boolean;
@@ -710,6 +715,7 @@ export interface PolygonZDAO extends BaseContract {
     _staking: string,
     _zDAOId: BigNumberish,
     _duration: BigNumberish,
+    _votingDelay: BigNumberish,
     _token: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -744,7 +750,7 @@ export interface PolygonZDAO extends BaseContract {
   createProposal(
     _proposalId: BigNumberish,
     _numberOfChoices: BigNumberish,
-    _startTimestamp: BigNumberish,
+    _proposalCreated: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -920,9 +926,10 @@ export interface PolygonZDAO extends BaseContract {
   zDAOInfo(
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, string, BigNumber, boolean] & {
+    [BigNumber, BigNumber, BigNumber, string, BigNumber, boolean] & {
       zDAOId: BigNumber;
       duration: BigNumber;
+      votingDelay: BigNumber;
       token: string;
       snapshot: BigNumber;
       destroyed: boolean;
@@ -937,6 +944,7 @@ export interface PolygonZDAO extends BaseContract {
       _staking: string,
       _zDAOId: BigNumberish,
       _duration: BigNumberish,
+      _votingDelay: BigNumberish,
       _token: string,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -973,7 +981,7 @@ export interface PolygonZDAO extends BaseContract {
     createProposal(
       _proposalId: BigNumberish,
       _numberOfChoices: BigNumberish,
-      _startTimestamp: BigNumberish,
+      _proposalCreated: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1121,7 +1129,7 @@ export interface PolygonZDAO extends BaseContract {
       _voter: string,
       _choice: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
 
     votesResultOfProposal(
       _proposalId: BigNumberish,
@@ -1141,9 +1149,10 @@ export interface PolygonZDAO extends BaseContract {
     zDAOInfo(
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, string, BigNumber, boolean] & {
+      [BigNumber, BigNumber, BigNumber, string, BigNumber, boolean] & {
         zDAOId: BigNumber;
         duration: BigNumber;
+        votingDelay: BigNumber;
         token: string;
         snapshot: BigNumber;
         destroyed: boolean;
@@ -1226,6 +1235,7 @@ export interface PolygonZDAO extends BaseContract {
       _staking: string,
       _zDAOId: BigNumberish,
       _duration: BigNumberish,
+      _votingDelay: BigNumberish,
       _token: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1260,7 +1270,7 @@ export interface PolygonZDAO extends BaseContract {
     createProposal(
       _proposalId: BigNumberish,
       _numberOfChoices: BigNumberish,
-      _startTimestamp: BigNumberish,
+      _proposalCreated: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1420,6 +1430,7 @@ export interface PolygonZDAO extends BaseContract {
       _staking: string,
       _zDAOId: BigNumberish,
       _duration: BigNumberish,
+      _votingDelay: BigNumberish,
       _token: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -1454,7 +1465,7 @@ export interface PolygonZDAO extends BaseContract {
     createProposal(
       _proposalId: BigNumberish,
       _numberOfChoices: BigNumberish,
-      _startTimestamp: BigNumberish,
+      _proposalCreated: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
