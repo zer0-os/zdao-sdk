@@ -20,15 +20,14 @@ export interface GnosisSafeConfig {
 }
 
 export interface zNAConfig {
-  // address to zDAOCore contract
-  contract: string;
-  // web3 provider
-  provider: ethers.providers.Provider;
+  // subgraphUri where indexed zDAORegistry
+  subgraphUri: string;
 }
 
 export interface Config {
   snapshot: SnapshotConfig;
   gnosisSafe: GnosisSafeConfig;
   zNA: zNAConfig;
+  provider: ethers.providers.Provider; // web3 provider
   zNS: zNSConfig;
 }

@@ -11,7 +11,6 @@ export const MultiCallAddress: AddressMap = {
 };
 
 export const developmentConfiguration = (
-  contract: string,
   provider: ethers.providers.Provider,
   ipfsGateway = 'snapshot.mypinata.cloud'
 ): Config => ({
@@ -26,14 +25,14 @@ export const developmentConfiguration = (
     ipfsGateway,
   },
   zNA: {
-    contract,
-    provider,
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry',
   },
+  provider,
   zNS: configuration.rinkebyConfiguration(provider),
 });
 
 export const productionConfiguration = (
-  contract: string,
   provider: ethers.providers.Provider,
   ipfsGateway = 'snapshot.mypinata.cloud'
 ): Config => ({
@@ -48,8 +47,9 @@ export const productionConfiguration = (
     ipfsGateway,
   },
   zNA: {
-    contract,
-    provider,
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
   },
+  provider,
   zNS: configuration.mainnetConfiguration(provider),
 });

@@ -63,7 +63,7 @@ class SDKInstanceClient implements SDKInstance {
     const decimals = strategy.params.decimals ?? 0;
 
     const totalSupplyOfVotingToken = await getTotalSupply(
-      this._config.zNA.provider,
+      this._config.provider,
       strategy.params.address
     ).catch(() => {
       throw new Error(errorMessageForError('not-found-strategy-in-snapshot'));
@@ -194,8 +194,8 @@ class SDKInstanceClient implements SDKInstance {
     this._params.push(param);
 
     const calls = await Promise.all([
-      getToken(this._config.zNA.provider, param.votingToken),
-      getTotalSupply(this._config.zNA.provider, param.votingToken),
+      getToken(this._config.provider, param.votingToken),
+      getTotalSupply(this._config.provider, param.votingToken),
     ]);
 
     return await DAOClient.createInstance(
@@ -234,8 +234,8 @@ class SDKInstanceClient implements SDKInstance {
     if (!found) throw new Error(errorMessageForError('not-found-zdao'));
 
     const calls = await Promise.all([
-      getToken(this._config.zNA.provider, found.votingToken),
-      getTotalSupply(this._config.zNA.provider, found.votingToken).catch(() => {
+      getToken(this._config.provider, found.votingToken),
+      getTotalSupply(this._config.provider, found.votingToken).catch(() => {
         throw new Error(errorMessageForError('not-found-strategy-in-snapshot'));
       }),
     ]);
