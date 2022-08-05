@@ -21,7 +21,9 @@ export function getUrl(uri: string, gateway: string) {
 export async function ipfsJson(uri: string, gateway: string) {
   const url = getUrl(uri, gateway);
   if (!url) return {};
-  return fetch(url).then((res) => res.json());
+  const res = await fetch(url);
+  const data = await res.json();
+  return data;
 }
 
 export async function ipfsGet(
@@ -30,5 +32,7 @@ export async function ipfsGet(
   protocolType = 'ipfs'
 ) {
   const url = `https://${gateway}/${protocolType}/${ipfsHash}`;
-  return fetch(url).then((res) => res.json());
+  const res = await fetch(url);
+  const data = await res.json();
+  return data;
 }

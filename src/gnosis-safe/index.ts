@@ -103,7 +103,10 @@ class GnosisSafeClient {
     const address = ethers.utils.getAddress(safeAddress);
 
     const url = `https://zero-gateway.azure-api.net/gnosis/${network}/safes/${address}/balances/${selectedCurrency}?exclude_spam=true&trusted=false`;
-    return fetch(url).then((res) => res.json());
+
+    const res = await fetch(url);
+    const data = await res.json();
+    return data;
   }
 
   async listCollectibles(
@@ -113,7 +116,10 @@ class GnosisSafeClient {
     const address = ethers.utils.getAddress(safeAddress);
 
     const url = `https://zero-gateway.azure-api.net/gnosis/${network}/safes/${address}/collectibles?exclude_spam=true&trusted=false`;
-    return fetch(url).then((res) => res.json());
+
+    const res = await fetch(url);
+    const data = await res.json();
+    return data;
   }
 
   async listTransactions(
