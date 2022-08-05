@@ -23,6 +23,7 @@ export declare namespace IEthereumZDAOChef {
     token: string;
     amount: BigNumberish;
     duration: BigNumberish;
+    votingDelay: BigNumberish;
     votingThreshold: BigNumberish;
     minimumVotingParticipants: BigNumberish;
     minimumTotalVotingTokens: BigNumberish;
@@ -36,11 +37,13 @@ export declare namespace IEthereumZDAOChef {
     BigNumber,
     BigNumber,
     BigNumber,
+    BigNumber,
     boolean
   ] & {
     token: string;
     amount: BigNumber;
     duration: BigNumber;
+    votingDelay: BigNumber;
     votingThreshold: BigNumber;
     minimumVotingParticipants: BigNumber;
     minimumTotalVotingTokens: BigNumber;
@@ -96,6 +99,7 @@ export declare namespace IEthereumZDAO {
     token: string;
     amount: BigNumberish;
     duration: BigNumberish;
+    votingDelay: BigNumberish;
     votingThreshold: BigNumberish;
     minimumVotingParticipants: BigNumberish;
     minimumTotalVotingTokens: BigNumberish;
@@ -115,6 +119,7 @@ export declare namespace IEthereumZDAO {
     BigNumber,
     BigNumber,
     BigNumber,
+    BigNumber,
     boolean,
     boolean
   ] & {
@@ -124,6 +129,7 @@ export declare namespace IEthereumZDAO {
     token: string;
     amount: BigNumber;
     duration: BigNumber;
+    votingDelay: BigNumber;
     votingThreshold: BigNumber;
     minimumVotingParticipants: BigNumber;
     minimumTotalVotingTokens: BigNumber;
@@ -137,7 +143,7 @@ export interface EthereumZDAOInterface extends utils.Interface {
   contractName: "EthereumZDAO";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "__ZDAO_init(address,uint256,address,address,(address,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
+    "__ZDAO_init(address,uint256,address,address,(address,uint256,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
     "calculateProposal(uint256,uint256,uint256[])": FunctionFragment;
     "cancelProposal(address,uint256)": FunctionFragment;
     "createProposal(address,string[],string)": FunctionFragment;
@@ -686,6 +692,7 @@ export interface EthereumZDAO extends BaseContract {
         BigNumber,
         BigNumber,
         BigNumber,
+        BigNumber,
         boolean,
         boolean
       ] & {
@@ -695,6 +702,7 @@ export interface EthereumZDAO extends BaseContract {
         token: string;
         amount: BigNumber;
         duration: BigNumber;
+        votingDelay: BigNumber;
         votingThreshold: BigNumber;
         minimumVotingParticipants: BigNumber;
         minimumTotalVotingTokens: BigNumber;
@@ -888,6 +896,7 @@ export interface EthereumZDAO extends BaseContract {
       BigNumber,
       BigNumber,
       BigNumber,
+      BigNumber,
       boolean,
       boolean
     ] & {
@@ -897,6 +906,7 @@ export interface EthereumZDAO extends BaseContract {
       token: string;
       amount: BigNumber;
       duration: BigNumber;
+      votingDelay: BigNumber;
       votingThreshold: BigNumber;
       minimumVotingParticipants: BigNumber;
       minimumTotalVotingTokens: BigNumber;
@@ -1088,6 +1098,7 @@ export interface EthereumZDAO extends BaseContract {
         BigNumber,
         BigNumber,
         BigNumber,
+        BigNumber,
         boolean,
         boolean
       ] & {
@@ -1097,6 +1108,7 @@ export interface EthereumZDAO extends BaseContract {
         token: string;
         amount: BigNumber;
         duration: BigNumber;
+        votingDelay: BigNumber;
         votingThreshold: BigNumber;
         minimumVotingParticipants: BigNumber;
         minimumTotalVotingTokens: BigNumber;

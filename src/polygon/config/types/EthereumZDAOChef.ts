@@ -26,6 +26,7 @@ export declare namespace IEthereumZDAO {
     token: string;
     amount: BigNumberish;
     duration: BigNumberish;
+    votingDelay: BigNumberish;
     votingThreshold: BigNumberish;
     minimumVotingParticipants: BigNumberish;
     minimumTotalVotingTokens: BigNumberish;
@@ -45,6 +46,7 @@ export declare namespace IEthereumZDAO {
     BigNumber,
     BigNumber,
     BigNumber,
+    BigNumber,
     boolean,
     boolean
   ] & {
@@ -54,6 +56,7 @@ export declare namespace IEthereumZDAO {
     token: string;
     amount: BigNumber;
     duration: BigNumber;
+    votingDelay: BigNumber;
     votingThreshold: BigNumber;
     minimumVotingParticipants: BigNumber;
     minimumTotalVotingTokens: BigNumber;

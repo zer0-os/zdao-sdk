@@ -22,6 +22,7 @@ export declare namespace IPolygonZDAO {
   export type ZDAOInfoStruct = {
     zDAOId: BigNumberish;
     duration: BigNumberish;
+    votingDelay: BigNumberish;
     token: string;
     snapshot: BigNumberish;
     destroyed: boolean;
@@ -30,12 +31,14 @@ export declare namespace IPolygonZDAO {
   export type ZDAOInfoStructOutput = [
     BigNumber,
     BigNumber,
+    BigNumber,
     string,
     BigNumber,
     boolean
   ] & {
     zDAOId: BigNumber;
     duration: BigNumber;
+    votingDelay: BigNumber;
     token: string;
     snapshot: BigNumber;
     destroyed: boolean;
@@ -250,7 +253,7 @@ export interface PolygonZDAOChefInterface extends utils.Interface {
   events: {
     "AdminChanged(address,address)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
-    "CastVote(uint256,uint256,address,uint256)": EventFragment;
+    "CastVote(uint256,uint256,address,uint256,uint256)": EventFragment;
     "DAOCreated(address,uint256,uint256)": EventFragment;
     "DAODestroyed(uint256)": EventFragment;
     "DAOStakingUpdated(uint256,address)": EventFragment;
@@ -259,7 +262,7 @@ export interface PolygonZDAOChefInterface extends utils.Interface {
     "Paused(address)": EventFragment;
     "ProposalCalculated(uint256,uint256,uint256,uint256[])": EventFragment;
     "ProposalCanceled(uint256,uint256)": EventFragment;
-    "ProposalCreated(uint256,uint256,uint256,uint256)": EventFragment;
+    "ProposalCreated(uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "ProposalExecuted(uint256,uint256)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
@@ -302,12 +305,13 @@ export type BeaconUpgradedEvent = TypedEvent<[string], { beacon: string }>;
 export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
 
 export type CastVoteEvent = TypedEvent<
-  [BigNumber, BigNumber, string, BigNumber],
+  [BigNumber, BigNumber, string, BigNumber, BigNumber],
   {
     _zDAOId: BigNumber;
     _proposalId: BigNumber;
     _voter: string;
     _choice: BigNumber;
+    _votingPower: BigNumber;
   }
 >;
 
@@ -373,12 +377,13 @@ export type ProposalCanceledEventFilter =
   TypedEventFilter<ProposalCanceledEvent>;
 
 export type ProposalCreatedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber, BigNumber],
+  [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber],
   {
     _zDAOId: BigNumber;
     _proposalId: BigNumber;
     _numberOfChoices: BigNumber;
-    _startTimestamp: BigNumber;
+    _proposalCreated: BigNumber;
+    _currentTimestamp: BigNumber;
   }
 >;
 
@@ -842,17 +847,19 @@ export interface PolygonZDAOChef extends BaseContract {
     ): BeaconUpgradedEventFilter;
     BeaconUpgraded(beacon?: string | null): BeaconUpgradedEventFilter;
 
-    "CastVote(uint256,uint256,address,uint256)"(
+    "CastVote(uint256,uint256,address,uint256,uint256)"(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
       _voter?: string | null,
-      _choice?: null
+      _choice?: null,
+      _votingPower?: null
     ): CastVoteEventFilter;
     CastVote(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
       _voter?: string | null,
-      _choice?: null
+      _choice?: null,
+      _votingPower?: null
     ): CastVoteEventFilter;
 
     "DAOCreated(address,uint256,uint256)"(
@@ -923,17 +930,19 @@ export interface PolygonZDAOChef extends BaseContract {
       _proposalId?: BigNumberish | null
     ): ProposalCanceledEventFilter;
 
-    "ProposalCreated(uint256,uint256,uint256,uint256)"(
+    "ProposalCreated(uint256,uint256,uint256,uint256,uint256)"(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
       _numberOfChoices?: BigNumberish | null,
-      _startTimestamp?: null
+      _proposalCreated?: null,
+      _currentTimestamp?: null
     ): ProposalCreatedEventFilter;
     ProposalCreated(
       _zDAOId?: BigNumberish | null,
       _proposalId?: BigNumberish | null,
       _numberOfChoices?: BigNumberish | null,
-      _startTimestamp?: null
+      _proposalCreated?: null,
+      _currentTimestamp?: null
     ): ProposalCreatedEventFilter;
 
     "ProposalExecuted(uint256,uint256)"(

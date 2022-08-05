@@ -55,8 +55,8 @@ class MockDAOClient
     params: CreateSnapshotZDAOParams
   ): Promise<SnapshotZDAO> {
     const results = await Promise.all([
-      getToken(GlobalClient.etherRpcProvider, params.token),
-      getTotalSupply(GlobalClient.etherRpcProvider, params.token),
+      getToken(GlobalClient.etherRpcProvider, params.votingToken),
+      getTotalSupply(GlobalClient.etherRpcProvider, params.votingToken),
     ]);
     const snapshot = await GlobalClient.etherRpcProvider.getBlockNumber();
 
@@ -68,9 +68,10 @@ class MockDAOClient
       network: params.network,
       gnosisSafe: params.gnosisSafe,
       votingToken: results[0],
-      amount: '0',
+      minimumVotingTokenAmount: '0',
       totalSupplyOfVotingToken: results[1].toString(),
-      duration: params.duration,
+      votingDuration: params.votingDuration,
+      votingDelay: params.votingDelay ?? 0,
       votingThreshold: 5001,
       minimumVotingParticipants: 1,
       minimumTotalVotingTokens: '0',
@@ -120,7 +121,7 @@ class MockDAOClient
       choices: payload.choices,
       created: now,
       start: now,
-      end: new Date(now.getTime() + this.duration * 1000),
+      end: new Date(now.getTime() + this.votingDuration * 1000),
       state: ProposalState.ACTIVE,
       snapshot: timestamp(now),
       scores: payload.choices.map((_) => '0'),

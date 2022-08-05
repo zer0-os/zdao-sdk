@@ -68,8 +68,8 @@ class DAOClient
       const { strategies, threshold, duration, delay, quorum } =
         await snapshotClient.getSpaceOptions(properties.ens);
       options = { strategies, delay };
-      properties.duration = duration ?? DEFAULT_ZDAO_DURATION;
-      properties.amount = threshold
+      properties.votingDuration = duration ?? DEFAULT_ZDAO_DURATION;
+      properties.minimumVotingTokenAmount = threshold
         ? getDecimalAmount(
             BigNumber.from(threshold),
             properties.votingToken.decimals
@@ -194,7 +194,8 @@ class DAOClient
     account: string | undefined,
     payload: CreateSnapshotProposalParams
   ): Promise<ProposalId> {
-    const duration = this.duration > 0 ? this.duration : payload.duration ?? 0;
+    const duration =
+      this.votingDuration > 0 ? this.votingDuration : payload.duration ?? 0;
     if (!duration) {
       throw new InvalidError(errorMessageForError('invalid-proposal-duration'));
     }
@@ -212,11 +213,11 @@ class DAOClient
     );
 
     const balance = await contract.balanceOf(account);
-    if (balance.lt(this.amount)) {
+    if (balance.lt(this.minimumVotingTokenAmount)) {
       throw new Error(
         errorMessageForError('should-hold-token', {
           amount: getFullDisplayBalance(
-            BigNumber.from(this.amount),
+            BigNumber.from(this.minimumVotingTokenAmount),
             this.votingToken.decimals
           ),
         })

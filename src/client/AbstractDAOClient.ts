@@ -70,16 +70,20 @@ abstract class AbstractDAOClient<
     return this.properties.votingToken;
   }
 
-  get amount() {
-    return this.properties.amount;
+  get minimumVotingTokenAmount() {
+    return this.properties.minimumVotingTokenAmount;
   }
 
   get totalSupplyOfVotingToken() {
     return this.properties.totalSupplyOfVotingToken;
   }
 
-  get duration() {
-    return this.properties.duration;
+  get votingDuration() {
+    return this.properties.votingDuration;
+  }
+
+  get votingDelay() {
+    return this.properties.votingDelay;
   }
 
   get votingThreshold() {
