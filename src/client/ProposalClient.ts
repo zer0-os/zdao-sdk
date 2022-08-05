@@ -275,6 +275,14 @@ class ProposalClient implements Proposal {
     return false;
   }
 
+  async isExecuted(): Promise<boolean> {
+    return await this._gnosisSafeClient.isProposalExecuted(
+      this._provider,
+      PlatformType.Snapshot,
+      this.id
+    );
+  }
+
   async execute(signer: ethers.Signer): Promise<void> {
     const address = await signer.getAddress();
     const isOwner = await this._gnosisSafeClient.isOwnerAddress(
@@ -295,11 +303,7 @@ class ProposalClient implements Proposal {
 
     try {
       // check if proposal executed
-      const executed = await this._gnosisSafeClient.isProposalExecuted(
-        this._provider,
-        PlatformType.Snapshot,
-        this.id
-      );
+      const executed = await this.isExecuted();
       if (!executed) {
         throw new Error(errorMessageForError('proposal-already-executed'));
       }

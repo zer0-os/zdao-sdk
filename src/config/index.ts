@@ -15,7 +15,7 @@ export const DEFAULT_PROPOSAL_CHOICES = ['Approve', 'Deny'];
 const zDAOModuleAddress: AddressMap = {
   [SupportedChainId.MAINNET]: '',
   [SupportedChainId.ROPSTEN]: '',
-  [SupportedChainId.RINKEBY]: '0x6CF0f6C20ce04dd6Ca3605467B565107A7F0DF0E',
+  [SupportedChainId.RINKEBY]: '0x70F9A6e7f037389f3200EB8F635AF1b06b110dDF',
 };
 
 export const developmentConfiguration = (
