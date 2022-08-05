@@ -1,3 +1,9 @@
+export enum PlatformType {
+  Snapshot = 0,
+  Polygon = 1,
+  StarkNet = 2,
+}
+
 export enum SupportedChainId {
   MAINNET = 1,
   ROPSTEN = 3,

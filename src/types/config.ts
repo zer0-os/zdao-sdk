@@ -17,6 +17,8 @@ export interface GnosisSafeConfig {
   gateway: string;
   // ipfs gateway without schemes
   ipfsGateway: string;
+  // address to zDAOModule
+  zDAOModule: string;
 }
 
 export interface zNAConfig {

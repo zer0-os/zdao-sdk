@@ -10,8 +10,8 @@ import {
 import fetch from 'cross-fetch';
 import { BigNumberish, ethers } from 'ethers';
 
-import ERC20Abi from '../config/constants/abi/ERC20.json';
-import { GnosisSafeConfig } from '../types';
+import ZDAOModuleAbi from '../config/constants/abi/ZDAOModule.json';
+import { GnosisSafeConfig, PlatformType } from '../types';
 
 class GnosisSafeClient {
   private readonly _config: GnosisSafeConfig;
@@ -41,37 +41,24 @@ class GnosisSafeClient {
     return true;
   }
 
-  async transferEther(
-    safeAddress: string,
-    signer: ethers.Signer,
-    recipient: string,
-    amount: BigNumberish
-  ): Promise<void> {
-    const ethAdapter = new EthersAdapter({
-      ethers,
-      signer,
-    });
-    const safeService = new SafeService(this._config.serviceUri);
-    const safe = await Safe.create({
-      ethAdapter,
-      safeAddress,
-    });
-    const safeSigner = new SafeEthersSigner(safe, safeService, signer.provider);
-
-    await safeSigner.sendTransaction({
-      to: recipient,
-      data: this.EMPTY_DATA,
-      value: amount.toString(),
-    });
+  async isProposalExecuted(
+    provider: ethers.providers.Provider,
+    platformType: PlatformType,
+    proposalId: string
+  ): Promise<boolean> {
+    const module = this._config.zDAOModule;
+    const contract = new ethers.Contract(module, ZDAOModuleAbi.abi, provider);
+    const value = await contract.isProposalExecuted(platformType, proposalId);
+    return value;
   }
 
-  async transferERC20(
+  async proposeTxFromModule(
     safeAddress: string,
     signer: ethers.Signer,
-    token: string,
-    recipient: string,
-    amount: BigNumberish
-  ): Promise<void> {
+    funcName: string,
+    params: string[],
+    value: BigNumberish = '0' // ETH amount to be transferred
+  ) {
     const ethAdapter = new EthersAdapter({
       ethers,
       signer,
@@ -83,15 +70,14 @@ class GnosisSafeClient {
     });
     const safeSigner = new SafeEthersSigner(safe, safeService, signer.provider);
 
-    const erc20Interface = new ethers.utils.Interface(ERC20Abi);
-    const txData = erc20Interface.encodeFunctionData('transfer', [
-      recipient,
-      amount,
-    ]);
+    const moduleInterface = new ethers.utils.Interface(ZDAOModuleAbi.abi);
+    const data = moduleInterface.encodeFunctionData(funcName, params);
+
+    const module = this._config.zDAOModule;
     await safeSigner.sendTransaction({
-      value: '0',
-      to: token,
-      data: txData,
+      value,
+      to: module,
+      data,
     });
   }
 

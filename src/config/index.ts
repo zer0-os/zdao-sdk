@@ -12,6 +12,12 @@ export const MultiCallAddress: AddressMap = {
 
 export const DEFAULT_PROPOSAL_CHOICES = ['Approve', 'Deny'];
 
+const zDAOModuleAddress: AddressMap = {
+  [SupportedChainId.MAINNET]: '',
+  [SupportedChainId.ROPSTEN]: '',
+  [SupportedChainId.RINKEBY]: '0x6CF0f6C20ce04dd6Ca3605467B565107A7F0DF0E',
+};
+
 export const developmentConfiguration = (
   provider: ethers.providers.Provider,
   ipfsGateway = 'snapshot.mypinata.cloud'
@@ -25,6 +31,7 @@ export const developmentConfiguration = (
     serviceUri: 'https://safe-transaction.rinkeby.gnosis.io',
     gateway: 'https://safe-client.staging.gnosisdev.com',
     ipfsGateway,
+    zDAOModule: zDAOModuleAddress[SupportedChainId.RINKEBY],
   },
   zNA: {
     subgraphUri:
@@ -47,6 +54,7 @@ export const productionConfiguration = (
     serviceUri: 'https://safe-transaction.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
     ipfsGateway,
+    zDAOModule: zDAOModuleAddress[SupportedChainId.RINKEBY],
   },
   zNA: {
     subgraphUri:

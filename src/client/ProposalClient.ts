@@ -6,6 +6,7 @@ import SnapshotClient from '../snapshot-io';
 import { SnapshotProposal } from '../snapshot-io/types';
 import {
   PaginationParam,
+  PlatformType,
   ProposalProperties,
   ProposalState,
   VoteId,
@@ -20,6 +21,7 @@ class ProposalClient implements Proposal {
   private readonly _snapshotClient: SnapshotClient;
   private readonly _gnosisSafeClient: GnosisSafeClient;
   protected readonly _properties: ProposalProperties;
+  private readonly _provider: ethers.providers.Provider;
   private readonly _options: any;
 
   private constructor(
@@ -27,12 +29,14 @@ class ProposalClient implements Proposal {
     snapshotClient: SnapshotClient,
     gnosisSafeClient: GnosisSafeClient,
     properties: ProposalProperties,
+    provider: ethers.providers.Provider,
     options: any
   ) {
     this._zDAO = zDAO;
     this._snapshotClient = snapshotClient;
     this._gnosisSafeClient = gnosisSafeClient;
     this._properties = cloneDeep(properties);
+    this._provider = provider;
     this._options = options;
   }
 
@@ -105,6 +109,7 @@ class ProposalClient implements Proposal {
     snapshotClient: SnapshotClient,
     gnosisSafeClient: GnosisSafeClient,
     properties: ProposalProperties,
+    provider: ethers.providers.Provider,
     options: any
   ): Promise<Proposal> {
     const proposal = new ProposalClient(
@@ -112,6 +117,7 @@ class ProposalClient implements Proposal {
       snapshotClient,
       gnosisSafeClient,
       properties,
+      provider,
       options
     );
     await proposal.getTokenMetadata();
@@ -288,30 +294,35 @@ class ProposalClient implements Proposal {
     }
 
     try {
-      if (
+      // check if proposal executed
+      const executed = await this._gnosisSafeClient.isProposalExecuted(
+        this._provider,
+        PlatformType.Snapshot,
+        this.id
+      );
+      if (!executed) {
+        throw new Error(errorMessageForError('proposal-already-executed'));
+      }
+
+      const token =
         !this.metadata?.token ||
         this.metadata.token.length < 1 ||
         this.metadata.token === ethers.constants.AddressZero
-      ) {
-        // Ether transfer
-        await this._gnosisSafeClient.transferEther(
-          this._zDAO.safeAddress,
-          signer,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          this.metadata!.recipient,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          this.metadata!.amount.toString()
-        );
-      } else {
-        // ERC20 transfer
-        await this._gnosisSafeClient.transferERC20(
-          this._zDAO.safeAddress,
-          signer,
-          this.metadata.token,
+          ? ethers.constants.AddressZero
+          : this.metadata.token;
+
+      await this._gnosisSafeClient.proposeTxFromModule(
+        this._zDAO.safeAddress,
+        signer,
+        'executeProposal',
+        [
+          PlatformType.Snapshot.toString(),
+          this.id,
+          token,
           this.metadata.recipient,
-          this.metadata.amount.toString()
-        );
-      }
+          this.metadata.amount,
+        ]
+      );
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new Error(errorMsg);

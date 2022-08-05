@@ -317,6 +317,7 @@ class DAOClient implements zDAO {
             scores: proposal.scores,
             votes: proposal.votes,
           },
+          this._config.provider,
           {
             strategies: this._options.strategies,
             scores_state: proposal.scores_state,
@@ -358,6 +359,7 @@ class DAOClient implements zDAO {
         scores: proposal.scores,
         votes: proposal.votes,
       },
+      this._config.provider,
       {
         strategies: this._options.strategies,
         scores_state: proposal.scores_state,
