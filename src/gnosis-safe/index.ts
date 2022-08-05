@@ -9,16 +9,22 @@ import {
 } from '@gnosis.pm/safe-react-gateway-sdk';
 import fetch from 'cross-fetch';
 import { BigNumberish, ethers } from 'ethers';
+import { GraphQLClient } from 'graphql-request';
 
 import ZDAOModuleAbi from '../config/constants/abi/ZDAOModule.json';
-import { GnosisSafeConfig, PlatformType } from '../types';
+import { GnosisSafeConfig, PlatformType, ProposalId } from '../types';
+import { graphQLQuery } from '../utilities';
+import { EXECUTEDPROPOSALS_BY_QUERY } from './types';
 
 class GnosisSafeClient {
   private readonly _config: GnosisSafeConfig;
   private readonly EMPTY_DATA = '0x';
+  private readonly _graphQLClient;
 
   constructor(config: GnosisSafeConfig) {
     this._config = config;
+
+    this._graphQLClient = new GraphQLClient(config.zDAOModuleSubgraphUri);
   }
 
   async isOwnerAddress(
@@ -41,15 +47,21 @@ class GnosisSafeClient {
     return true;
   }
 
-  async isProposalExecuted(
-    provider: ethers.providers.Provider,
+  async isProposalsExecuted(
     platformType: PlatformType,
-    proposalId: string
-  ): Promise<boolean> {
-    const module = this._config.zDAOModule;
-    const contract = new ethers.Contract(module, ZDAOModuleAbi.abi, provider);
-    const value = await contract.isProposalExecuted(platformType, proposalId);
-    return value;
+    proposalIds: ProposalId[]
+  ): Promise<boolean[]> {
+    const response = await graphQLQuery(
+      this._graphQLClient,
+      EXECUTEDPROPOSALS_BY_QUERY,
+      {
+        id_in: proposalIds.map((proposalId) => `${platformType}-${proposalId}`),
+      }
+    );
+    const filtered = response.executedProposals.map(
+      (proposal: any) => proposal.proposalId
+    );
+    return proposalIds.map((proposalId) => filtered.indexOf(proposalId) >= 0);
   }
 
   async proposeTxFromModule(

@@ -19,6 +19,8 @@ export interface GnosisSafeConfig {
   ipfsGateway: string;
   // address to zDAOModule
   zDAOModule: string;
+  // Subgraph Uri of ZDAOModule
+  zDAOModuleSubgraphUri: string;
 }
 
 export interface zNAConfig {

@@ -13,7 +13,9 @@ export enum SupportedChainId {
 export enum ProposalState {
   PENDING = 'PENDING',
   ACTIVE = 'ACTIVE',
+  AWAITING_EXECUTION = 'AWAITING_EXECUTING',
   CLOSED = 'CLOSED',
+  EXECUTED = 'EXECUTED',
 }
 
 export enum AssetType {

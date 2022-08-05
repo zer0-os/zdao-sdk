@@ -19,6 +19,7 @@ import {
   Config,
   CreateProposalParams,
   PaginationParam,
+  PlatformType,
   Proposal,
   ProposalId,
   ProposalState,
@@ -260,13 +261,35 @@ class DAOClient implements zDAO {
     });
   }
 
-  private mapState(state: string): ProposalState {
+  private mapState(
+    scores: number[],
+    state: string,
+    executed: boolean
+  ): ProposalState {
     if (state === 'pending') {
       return ProposalState.PENDING;
     } else if (state === 'active') {
       return ProposalState.ACTIVE;
     }
-    return ProposalState.CLOSED;
+    return executed
+      ? ProposalState.EXECUTED
+      : this.canExecute(scores)
+      ? ProposalState.AWAITING_EXECUTION
+      : ProposalState.CLOSED;
+  }
+
+  private canExecute(scores: number[]): boolean {
+    if (this.isRelativeMajority) return false;
+
+    const totalScore = scores.reduce((prev, current) => prev + current, 0);
+    const totalScoreAsBN = getDecimalAmount(
+      BigNumber.from(totalScore),
+      this.votingToken.decimals
+    );
+    if (totalScoreAsBN.gte(this.minimumTotalVotingTokens)) {
+      return true;
+    }
+    return false;
   }
 
   async listProposals(pagination?: PaginationParam): Promise<Proposal[]> {
@@ -293,9 +316,14 @@ class DAOClient implements zDAO {
       numberOfResults = results.length;
     }
 
+    const executeds = await this._gnosisSafeClient.isProposalsExecuted(
+      PlatformType.Snapshot,
+      snapshotProposals.map((proposal) => proposal.id)
+    );
+
     // create all instances
     const promises: Promise<Proposal>[] = snapshotProposals.map(
-      (proposal: SnapshotProposal): Promise<Proposal> =>
+      (proposal: SnapshotProposal, index: number): Promise<Proposal> =>
         ProposalClient.createInstance(
           this,
           this._snapshotClient,
@@ -311,7 +339,11 @@ class DAOClient implements zDAO {
             created: proposal.created,
             start: proposal.start,
             end: proposal.end,
-            state: this.mapState(proposal.state),
+            state: this.mapState(
+              proposal.scores,
+              proposal.state,
+              executeds[index]
+            ),
             network: proposal.network,
             snapshot: Number(proposal.snapshot),
             scores: proposal.scores,
@@ -338,6 +370,11 @@ class DAOClient implements zDAO {
       proposalId: id,
     });
 
+    const executed = await this._gnosisSafeClient.isProposalsExecuted(
+      PlatformType.Snapshot,
+      [proposal.id]
+    );
+
     return await ProposalClient.createInstance(
       this,
       this._snapshotClient,
@@ -353,7 +390,7 @@ class DAOClient implements zDAO {
         created: proposal.created,
         start: proposal.start,
         end: proposal.end,
-        state: this.mapState(proposal.state),
+        state: this.mapState(proposal.scores, proposal.state, executed[0]),
         network: proposal.network,
         snapshot: Number(proposal.snapshot),
         scores: proposal.scores,

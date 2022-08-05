@@ -32,6 +32,8 @@ export const developmentConfiguration = (
     gateway: 'https://safe-client.staging.gnosisdev.com',
     ipfsGateway,
     zDAOModule: zDAOModuleAddress[SupportedChainId.RINKEBY],
+    zDAOModuleSubgraphUri:
+      'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry',
   },
   zNA: {
     subgraphUri:
@@ -55,6 +57,8 @@ export const productionConfiguration = (
     gateway: 'https://safe-client.gnosis.io',
     ipfsGateway,
     zDAOModule: zDAOModuleAddress[SupportedChainId.RINKEBY],
+    zDAOModuleSubgraphUri:
+      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
   },
   zNA: {
     subgraphUri:

@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import GnosisSafeClient from '../gnosis-safe';
@@ -12,7 +12,6 @@ import {
   VoteId,
 } from '../types';
 import { Choice, Proposal, Vote } from '../types';
-import { getDecimalAmount } from '../utilities';
 import { errorMessageForError } from '../utilities/messages';
 import DAOClient from './DAOClient';
 
@@ -261,26 +260,12 @@ class ProposalClient implements Proposal {
     });
   }
 
-  canExecute(): boolean {
-    if (this._zDAO.isRelativeMajority) return false;
-
-    const totalScore = this.scores.reduce((prev, current) => prev + current, 0);
-    const totalScoreAsBN = getDecimalAmount(
-      BigNumber.from(totalScore),
-      this._zDAO.votingToken.decimals
-    );
-    if (totalScoreAsBN.gte(this._zDAO.minimumTotalVotingTokens)) {
-      return true;
-    }
-    return false;
-  }
-
   async isExecuted(): Promise<boolean> {
-    return await this._gnosisSafeClient.isProposalExecuted(
-      this._provider,
+    const executed = await this._gnosisSafeClient.isProposalsExecuted(
       PlatformType.Snapshot,
-      this.id
+      [this.id]
     );
+    return executed[0];
   }
 
   async execute(signer: ethers.Signer): Promise<void> {
@@ -297,7 +282,7 @@ class ProposalClient implements Proposal {
     if (!this.metadata) {
       throw new Error(errorMessageForError('empty-metadata'));
     }
-    if (this.state !== ProposalState.CLOSED || !this.canExecute()) {
+    if (this.state !== ProposalState.AWAITING_EXECUTION) {
       throw new Error(errorMessageForError('not-executable-proposal'));
     }
 
