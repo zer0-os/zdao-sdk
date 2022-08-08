@@ -2,7 +2,6 @@ import Safe from '@gnosis.pm/safe-core-sdk';
 import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import {
-  getTransactionHistory,
   SafeBalanceResponse,
   SafeCollectibleResponse,
   Transaction as Transaction,
@@ -127,11 +126,10 @@ class GnosisSafeClient {
   ): Promise<Transaction[]> {
     const address = ethers.utils.getAddress(gnosisSafe);
 
-    const { results } = await getTransactionHistory(
-      this.config.gateway,
-      network,
-      address
-    );
+    const url = `https://zero-gateway.azure-api.net/gnosis/${network}/safes/${address}/transactions/history`;
+
+    const resp = await fetch(url).then((res) => res.json());
+    const { results } = resp;
 
     const filtered = results
       .filter(
