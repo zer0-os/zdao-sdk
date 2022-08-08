@@ -139,7 +139,7 @@ class GnosisSafeClient {
           (tx.transaction.txInfo.direction === 'INCOMING' ||
             tx.transaction.txInfo.direction === 'OUTGOING')
       )
-      .map((tx) => tx as Transaction);
+      .map((tx: TransactionListItem) => tx as Transaction);
 
     return filtered;
   }
