@@ -8,6 +8,7 @@ import {
   Transaction as Transaction,
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
+import fetch from 'cross-fetch';
 import { ethers } from 'ethers';
 
 import ERC20Abi from '../config/abi/ERC20.json';

@@ -23,6 +23,8 @@ import {
   Vote,
   zDAO,
   zDAOAssets,
+  zDAOCoins,
+  zDAOCollectibles,
   zDAOProperties,
 } from '../types';
 import { timestamp } from '../utilities';
@@ -114,23 +116,14 @@ abstract class AbstractDAOClient<
     return this.properties.destroyed;
   }
 
-  async listAssets(): Promise<zDAOAssets> {
-    const results = await Promise.all([
-      this.gnosisSafeClient.listAssets(
-        this.gnosisSafe,
-        this.network.toString()
-      ),
-      this.gnosisSafeClient.listCollectibles(
-        this.gnosisSafe,
-        this.network.toString()
-      ),
-    ]);
-    const balances = results[0];
-    const collectibles = results[1];
-
+  async listAssetsCoins(): Promise<zDAOCoins> {
+    const results = await this.gnosisSafeClient.listAssets(
+      this.gnosisSafe,
+      this.network.toString()
+    );
     return {
-      amountInUSD: Number(balances.fiatTotal),
-      coins: balances.items.map((item: any) => ({
+      amountInUSD: Number(results.fiatTotal),
+      coins: results.items.map((item: any) => ({
         type: item.tokenInfo.type as string as AssetType,
         address: item.tokenInfo.address,
         decimals: item.tokenInfo.decimals,
@@ -140,18 +133,39 @@ abstract class AbstractDAOClient<
         amount: item.balance,
         amountInUSD: Number(item.fiatBalance),
       })),
-      collectibles: collectibles.map((item: any) => ({
-        address: item.address,
-        tokenName: item.tokenName,
-        tokenSymbol: item.tokenSymbol,
-        id: item.id,
-        logoUri: item.logoUri,
-        name: item.name,
-        description: item.description,
-        imageUri: item.imageUri,
-        metadata: item.metadata,
-        metadataUri: item.uri,
-      })),
+    };
+  }
+
+  async listAssetsCollectibles(): Promise<zDAOCollectibles> {
+    const results = await this.gnosisSafeClient.listCollectibles(
+      this.gnosisSafe,
+      this.network.toString()
+    );
+    return results.map((item: any) => ({
+      address: item.address,
+      tokenName: item.tokenName,
+      tokenSymbol: item.tokenSymbol,
+      id: item.id,
+      logoUri: item.logoUri,
+      name: item.name,
+      description: item.description,
+      imageUri: item.imageUri,
+      metadata: item.metadata,
+      metadataUri: item.uri,
+    }));
+  }
+
+  async listAssets(): Promise<zDAOAssets> {
+    const results = await Promise.all([
+      this.listAssetsCoins(),
+      this.listAssetsCollectibles(),
+    ]);
+    const balances = results[0];
+    const collectibles = results[1];
+
+    return {
+      ...balances,
+      collectibles,
     };
   }
 
