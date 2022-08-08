@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import GnosisSafeClient from '../gnosis-safe';
@@ -121,6 +121,14 @@ class ProposalClient implements Proposal {
     );
     await proposal.getTokenMetadata();
     return proposal;
+  }
+
+  static getProposalHash(proposalId: string): BigNumber {
+    return BigNumber.from(
+      ethers.utils.keccak256(
+        ethers.utils.defaultAbiCoder.encode(['string'], [proposalId])
+      )
+    );
   }
 
   private async getTokenMetadata() {
@@ -306,7 +314,7 @@ class ProposalClient implements Proposal {
         'executeProposal',
         [
           PlatformType.Snapshot.toString(),
-          this.id,
+          ProposalClient.getProposalHash(this.id).toString(),
           token,
           this.metadata.recipient,
           this.metadata.amount,
