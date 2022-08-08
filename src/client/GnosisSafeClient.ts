@@ -2,8 +2,6 @@ import Safe from '@gnosis.pm/safe-core-sdk';
 import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import {
-  getBalances,
-  getCollectibles,
   getTransactionHistory,
   SafeBalanceResponse,
   SafeCollectibleResponse,
@@ -106,16 +104,9 @@ class GnosisSafeClient {
   ): Promise<SafeBalanceResponse> {
     const address = ethers.utils.getAddress(gnosisSafe);
 
-    return await getBalances(
-      this.config.gateway,
-      network,
-      address,
-      selectedCurrency,
-      {
-        exclude_spam: true,
-        trusted: false,
-      }
-    );
+    const url = `https://zero-gateway.azure-api.net/gnosis/${network}/safes/${address}/balances/${selectedCurrency}?exclude_spam=true&trusted=false`;
+    const res = await fetch(url);
+    return await res.json();
   }
 
   async listCollectibles(
@@ -124,17 +115,9 @@ class GnosisSafeClient {
   ): Promise<SafeCollectibleResponse[]> {
     const address = ethers.utils.getAddress(gnosisSafe);
 
-    const collectibles = await getCollectibles(
-      this.config.gateway,
-      network,
-      address,
-      {
-        exclude_spam: true,
-        trusted: false,
-      }
-    );
-
-    return collectibles;
+    const url = `https://zero-gateway.azure-api.net/gnosis/${network}/safes/${address}/collectibles?exclude_spam=true&trusted=false`;
+    const res = await fetch(url);
+    return await res.json();
   }
 
   async listTransactions(
