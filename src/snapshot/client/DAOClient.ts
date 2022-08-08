@@ -81,6 +81,13 @@ class DAOClient
             properties.votingToken.decimals
           ).toString()
         : '0';
+      properties.votingThreshold =
+        properties.totalSupplyOfVotingToken === '0'
+          ? 0
+          : BigNumber.from(properties.minimumTotalVotingTokens)
+              .mul(10000)
+              .div(properties.totalSupplyOfVotingToken)
+              .toNumber();
     }
 
     const zDAO = new DAOClient(config, properties, options);

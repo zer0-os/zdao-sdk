@@ -1,5 +1,5 @@
 import Safe from '@gnosis.pm/safe-core-sdk';
-import { SafeTransactionDataPartial } from '@gnosis.pm/safe-core-sdk-types';
+import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import {
   getBalances,
@@ -10,7 +10,6 @@ import {
   Transaction as Transaction,
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
-import SafeServiceClient from '@gnosis.pm/safe-service-client';
 import { ethers } from 'ethers';
 
 import ERC20Abi from '../config/abi/ERC20.json';
@@ -56,36 +55,17 @@ class GnosisSafeClient {
       ethers,
       signer,
     });
-    const safeService = new SafeServiceClient(this.config.serviceUri);
+    const safeService = new SafeService(this.config.serviceUri);
     const safe = await Safe.create({
       ethAdapter,
       safeAddress: gnosisSafe,
     });
+    const safeSigner = new SafeEthersSigner(safe, safeService, signer.provider);
 
-    const signerAddress = await signer.getAddress();
-    // const nonce = await safeService.getNextNonce(gnosisSafe);
-    const transaction: SafeTransactionDataPartial = {
+    await safeSigner.sendTransaction({
       to: recipient,
       data: this.EMPTY_DATA,
       value: amount.toString(),
-      operation: 0, // Optional
-      safeTxGas: 0, // Optional
-      baseGas: 0, // Optional
-      gasPrice: 0, // Optional
-      gasToken: '0x0000000000000000000000000000000000000000', // Optional
-      refundReceiver: '0x0000000000000000000000000000000000000000', // Optional
-      // nonce: Number(nonce), // Optional
-    };
-
-    const safeTransaction = await safe.createTransaction(transaction);
-    await safe.signTransaction(safeTransaction);
-
-    const safeTxHash = await safe.getTransactionHash(safeTransaction);
-    await safeService.proposeTransaction({
-      safeAddress: gnosisSafe,
-      senderAddress: signerAddress,
-      safeTransaction,
-      safeTxHash,
     });
   }
 
@@ -100,41 +80,22 @@ class GnosisSafeClient {
       ethers,
       signer,
     });
-    const safeService = new SafeServiceClient(this.config.serviceUri);
+    const safeService = new SafeService(this.config.serviceUri);
     const safe = await Safe.create({
       ethAdapter,
       safeAddress: gnosisSafe,
     });
+    const safeSigner = new SafeEthersSigner(safe, safeService, signer.provider);
 
-    const signerAddress = await signer.getAddress();
     const erc20Interface = new ethers.utils.Interface(ERC20Abi);
     const txData = erc20Interface.encodeFunctionData('transfer', [
       recipient,
       amount,
     ]);
-    // const nonce = await safeService.getNextNonce(gnosisSafe);
-    const transaction: SafeTransactionDataPartial = {
+    await safeSigner.sendTransaction({
+      value: '0',
       to: token,
       data: txData,
-      value: '0',
-      operation: 0, // Optional
-      safeTxGas: 0, // Optional
-      baseGas: 0, // Optional
-      gasPrice: 0, // Optional
-      gasToken: '0x0000000000000000000000000000000000000000', // Optional
-      refundReceiver: '0x0000000000000000000000000000000000000000', // Optional
-      // nonce: Number(nonce), // Optional
-    };
-
-    const safeTransaction = await safe.createTransaction(transaction);
-    await safe.signTransaction(safeTransaction);
-
-    const safeTxHash = await safe.getTransactionHash(safeTransaction);
-    await safeService.proposeTransaction({
-      safeAddress: gnosisSafe,
-      senderAddress: signerAddress,
-      safeTransaction,
-      safeTxHash,
     });
   }
 
