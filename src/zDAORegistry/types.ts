@@ -12,10 +12,12 @@ export interface ZDAORecord {
 export const ZDAORECORDS_QUERY = gql`
   query zDAORecords {
     zdaorecords {
-      destroyed
-      ensSpace
-      gnosisSafe
       id
+      createdBy
+      destroyed
+      gnosisSafe
+      name
+      platformType
       zNAs {
         id
       }
@@ -26,10 +28,12 @@ export const ZDAORECORDS_QUERY = gql`
 export const ZDAORECORDS_BY_QUERY = gql`
   query zDAORecords($id_in: [String]) {
     zdaorecords(where: { id_in: $id_in }) {
-      destroyed
-      ensSpace
-      gnosisSafe
       id
+      createdBy
+      destroyed
+      gnosisSafe
+      name
+      platformType
       zNAs {
         id
       }
@@ -51,9 +55,11 @@ export const ZNAASSOCIATION_BY_QUERY = gql`
       id
       zDAORecord {
         id
-        gnosisSafe
-        ensSpace
+        createdBy
         destroyed
+        gnosisSafe
+        name
+        platformType
       }
     }
   }

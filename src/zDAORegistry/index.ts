@@ -59,7 +59,7 @@ class zDAORegistryClient {
 
     return {
       id: result.znaassociations[0].zDAORecord.id.toString(),
-      ens: result.znaassociations[0].zDAORecord.ensSpace,
+      ens: result.znaassociations[0].zDAORecord.name,
       gnosisSafe: result.znaassociations[0].zDAORecord.gnosisSafe.toString(),
       zNAs,
     };
