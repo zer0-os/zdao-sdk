@@ -9,6 +9,7 @@ import {
 import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
+import { DefaultProposalChoices } from '../config';
 import ERC20Abi from '../config/constants/abi/ERC20.json';
 import GnosisSafeClient from '../gnosis-safe';
 import SnapshotClient from '../snapshot-io';
@@ -351,6 +352,17 @@ class DAOClient implements zDAO {
   ): Promise<ProposalId> {
     if (!this.duration && !payload.duration) {
       throw new Error(errorMessageForError('invalid-proposal-duration'));
+    }
+
+    if (payload.transfer) {
+      if (payload.choices && payload.choices.length !== 2) {
+        throw new Error(
+          errorMessageForError('invalid-choices-for-funding-proposal')
+        );
+      }
+    }
+    if (!payload.choices) {
+      payload.choices = DefaultProposalChoices;
     }
 
     // signer should have valid amount of voting token on Ethereum

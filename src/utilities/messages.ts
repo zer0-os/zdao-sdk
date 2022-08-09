@@ -64,6 +64,10 @@ const ErrorMessages = [
     value: 'Not found proposal duration',
   },
   {
+    key: 'invalid-choices-for-funding-proposal',
+    value: 'Funding proposal should have only two choices',
+  },
+  {
     key: 'should-hold-token',
     value: 'Should hold at least %amount% tokens',
   },

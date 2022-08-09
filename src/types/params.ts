@@ -24,7 +24,7 @@ export interface CreateZDAOParams {
 export interface CreateProposalParams {
   title: string;
   body: string;
-  choices: string[];
+  choices?: string[];
   duration?: number; // time duration from start to end in seconds
   snapshot: number; // block number
   transfer?: TokenMetaData; // undefined if not a funding proposal
