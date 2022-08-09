@@ -26,7 +26,7 @@ export const developmentConfiguration = (
   },
   zNA: {
     subgraphUri:
-      'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry',
+      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-rinkeby',
   },
   provider,
   zNS: configuration.rinkebyConfiguration(provider),
