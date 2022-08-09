@@ -11,13 +11,14 @@ export interface ZDAORecord {
 
 export const ZDAORECORDS_QUERY = gql`
   query zDAORecords {
-    zdaorecords {
+    zdaorecords(where: { destroyed: false }) {
       id
+      platformType
+      zDAOId
+      name
+      gnosisSafe
       createdBy
       destroyed
-      gnosisSafe
-      name
-      platformType
       zNAs {
         id
       }
@@ -27,13 +28,14 @@ export const ZDAORECORDS_QUERY = gql`
 
 export const ZDAORECORDS_BY_QUERY = gql`
   query zDAORecords($id_in: [String]) {
-    zdaorecords(where: { id_in: $id_in }) {
+    zdaorecords(where: { destroyed: false, id_in: $id_in }) {
       id
+      platformType
+      zDAOId
+      name
+      gnosisSafe
       createdBy
       destroyed
-      gnosisSafe
-      name
-      platformType
       zNAs {
         id
       }
@@ -43,7 +45,7 @@ export const ZDAORECORDS_BY_QUERY = gql`
 
 export const ZNAS_QUERY = gql`
   query zNAAssociation {
-    znaassociations {
+    znaassociations(where: { zDAORecord_: { destroyed: false } }) {
       id
     }
   }
@@ -51,10 +53,13 @@ export const ZNAS_QUERY = gql`
 
 export const ZNAASSOCIATION_BY_QUERY = gql`
   query zNAAssociation($id_in: [String]) {
-    znaassociations(where: { id_in: $id_in }) {
+    znaassociations(
+      where: { zDAORecord_: { destroyed: false }, id_in: $id_in }
+    ) {
       id
       zDAORecord {
         id
+        zDAOId
         createdBy
         destroyed
         gnosisSafe
