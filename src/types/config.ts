@@ -20,7 +20,7 @@ export interface GnosisSafeConfig {
 }
 
 export interface zNAConfig {
-  // subgraphUri where indexed zDAORegistry
+  // subgraphUri where indexed zDAORegistry, refer: config/index.ts
   subgraphUri: string;
 }
 
