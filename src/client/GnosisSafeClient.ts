@@ -104,7 +104,7 @@ class GnosisSafeClient {
   ): Promise<SafeBalanceResponse> {
     const address = ethers.utils.getAddress(gnosisSafe);
 
-    const url = `https://zero-gateway.azure-api.net/gnosis/${network}/safes/${address}/balances/${selectedCurrency}?exclude_spam=true&trusted=false`;
+    const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/balances/${selectedCurrency}?exclude_spam=true&trusted=false`;
     const res = await fetch(url);
     return await res.json();
   }
@@ -115,7 +115,7 @@ class GnosisSafeClient {
   ): Promise<SafeCollectibleResponse[]> {
     const address = ethers.utils.getAddress(gnosisSafe);
 
-    const url = `https://zero-gateway.azure-api.net/gnosis/${network}/safes/${address}/collectibles?exclude_spam=true&trusted=false`;
+    const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/collectibles?exclude_spam=true&trusted=false`;
     const res = await fetch(url);
     return await res.json();
   }
@@ -126,7 +126,7 @@ class GnosisSafeClient {
   ): Promise<Transaction[]> {
     const address = ethers.utils.getAddress(gnosisSafe);
 
-    const url = `https://zero-gateway.azure-api.net/gnosis/${network}/safes/${address}/transactions/history`;
+    const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/transactions/history`;
 
     const resp = await fetch(url).then((res) => res.json());
     const { results } = resp;
