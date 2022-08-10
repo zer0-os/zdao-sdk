@@ -108,6 +108,8 @@ class DAOClient
       ),
     ]);
 
+    const network = await GlobalClient.etherRpcProvider.getNetwork();
+
     const etherZDAOInfo = zDAOInfos[0];
     const instance = await new DAOClient(
       {
@@ -115,7 +117,7 @@ class DAOClient
         zNAs: zDAORecord.associatedzNAs,
         name: zDAORecord.name,
         createdBy: etherZDAOInfo.createdBy,
-        network: config.ethereum.network,
+        network: network.chainId,
         gnosisSafe: etherZDAOInfo.gnosisSafe,
         votingToken: tokens[0] as Token,
         minimumVotingTokenAmount: etherZDAOInfo.amount.toString(),
@@ -235,8 +237,8 @@ class DAOClient
         return ProposalState.PENDING;
       } else if (now <= end) {
         return ProposalState.ACTIVE;
-      } else if (raw.executed) {
-        return ProposalState.EXECUTED;
+        // } else if (raw.executed) {
+        //   return ProposalState.EXECUTED;
       } else if (raw.calculated) {
         return canExecute()
           ? ProposalState.AWAITING_EXECUTION

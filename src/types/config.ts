@@ -1,19 +1,9 @@
 import { Config as zNSConfig } from '@zero-tech/zns-sdk';
+import { ethers } from 'ethers';
 
-import { SupportedChainId } from './enums';
-
-export interface DAOConfig {
+export interface EthereumDAOConfig {
   // address to zDAOChef contract
   zDAOChef: string;
-
-  // Contract Creation block number
-  blockNumber: number;
-
-  // RPC url for Web3 provider
-  rpcUrl: string;
-
-  // ChainId
-  network: SupportedChainId;
 }
 
 export interface zNAConfig {
@@ -22,12 +12,6 @@ export interface zNAConfig {
 
   // address to zNSHub contract
   zNSHub: string;
-
-  // RPC url for Web3 provider
-  rpcUrl: string;
-
-  // ChainId
-  network: SupportedChainId;
 }
 
 export interface GnosisSafeConfig {
@@ -48,7 +32,9 @@ export interface FleekConfig {
 
 export interface Config {
   // zDAOChef contract configuration
-  ethereum: DAOConfig;
+  ethereum: EthereumDAOConfig;
+
+  ethereumProvider: ethers.providers.Provider;
 
   // zDAORegistry contract configuration
   zNA: zNAConfig;

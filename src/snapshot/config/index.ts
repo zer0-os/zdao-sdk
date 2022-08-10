@@ -2,7 +2,7 @@ import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
 import {
-  DAOConfig,
+  EthereumDAOConfig,
   FleekConfig,
   SupportedChainId,
   zNAConfig,
@@ -14,9 +14,11 @@ export interface ConfigParams {
    * On the development, ethereum network should be Goerli,
    * On the production, ethereum network should be mainnet
    */
-  ethereum: DAOConfig;
+  ethereum: EthereumDAOConfig;
 
   zNA: zNAConfig;
+
+  ethereumProvider: ethers.providers.Provider;
 
   /**
    * Fleek configuration to upload to IPFS
@@ -28,11 +30,13 @@ export interface ConfigParams {
 
 export const developmentConfiguration = ({
   ethereum,
+  ethereumProvider,
   zNA,
   fleek,
   ipfsGateway,
 }: ConfigParams): SnapshotConfig => ({
   ethereum,
+  ethereumProvider,
   zNA,
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.rinkeby.gnosis.io',
@@ -40,9 +44,7 @@ export const developmentConfiguration = ({
   },
   fleek,
   ipfsGateway,
-  zNS: configuration.rinkebyConfiguration(
-    new ethers.providers.JsonRpcProvider(ethereum.rpcUrl, ethereum.network)
-  ),
+  zNS: configuration.rinkebyConfiguration(ethereumProvider),
   isProd: false,
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
@@ -52,11 +54,13 @@ export const developmentConfiguration = ({
 
 export const productionConfiguration = ({
   ethereum,
+  ethereumProvider,
   zNA,
   fleek,
   ipfsGateway,
 }: ConfigParams): SnapshotConfig => ({
   ethereum,
+  ethereumProvider,
   zNA,
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
@@ -64,9 +68,7 @@ export const productionConfiguration = ({
   },
   fleek,
   ipfsGateway,
-  zNS: configuration.mainnetConfiguration(
-    new ethers.providers.JsonRpcProvider(ethereum.rpcUrl, ethereum.network)
-  ),
+  zNS: configuration.mainnetConfiguration(ethereumProvider),
   isProd: true,
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',

@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 
 import { PlatformType } from '../..';
 import { ZDAORecord } from '../../client/ZDAORegistry';
-import { DAOConfig, ProposalId, zDAOId } from '../../types';
+import { EthereumDAOConfig, ProposalId, zDAOId } from '../../types';
 import { calculateGasMargin, getToken, getTotalSupply } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import { EthereumZDAO, IEthereumZDAO } from '../config/types/EthereumZDAO';
@@ -15,16 +15,16 @@ import { CreatePolygonProposalParams, CreatePolygonZDAOParams } from '../types';
 import { EthereumZDAOProperties } from './types';
 
 class EthereumZDAOChefClient {
-  private readonly config: DAOConfig;
+  private readonly config: EthereumDAOConfig;
   protected contract!: EthereumZDAOChef;
   protected rootStateSender?: FxStateEthereumTunnel;
 
-  constructor(config: DAOConfig) {
+  constructor(config: EthereumDAOConfig, provider: ethers.providers.Provider) {
     this.config = config;
 
     this.contract = EthereumZDAOChef__factory.connect(
       config.zDAOChef,
-      GlobalClient.etherRpcProvider
+      provider
     );
   }
 
@@ -59,12 +59,14 @@ class EthereumZDAOChefClient {
       getTotalSupply(GlobalClient.etherRpcProvider, zDAOInfo.token),
     ]);
 
+    const network = await this.contract.provider.getNetwork();
+
     return {
       id: zDAOInfo.zDAOId.toString(),
       zNAs: zDAORecord.associatedzNAs,
       name: zDAORecord.name,
       createdBy: zDAOInfo.createdBy,
-      network: this.config.network,
+      network: network.chainId,
       gnosisSafe: zDAOInfo.gnosisSafe,
       votingToken: results[0],
       minimumVotingTokenAmount: zDAOInfo.amount.toString(),

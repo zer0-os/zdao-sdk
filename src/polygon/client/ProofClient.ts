@@ -20,13 +20,13 @@ class ProofClient {
       network: config.isProd ? 'mainnet' : 'testnet',
       version: config.isProd ? 'v1' : 'mumbai',
       parent: {
-        provider: config.ethereum.rpcUrl,
+        provider: config.ethereumProvider,
         defaultConfig: {
           from: config.proof.from,
         },
       },
       child: {
-        provider: config.polygon.rpcUrl,
+        provider: config.polygonProvider,
         defaultConfig: {
           from: config.proof.from,
         },

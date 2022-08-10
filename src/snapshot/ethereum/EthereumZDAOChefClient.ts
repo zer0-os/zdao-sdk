@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
 import { PlatformType } from '../..';
-import { DAOConfig, zDAOId } from '../../types';
+import { EthereumDAOConfig, zDAOId } from '../../types';
 import GlobalClient from '../client/GlobalClient';
 import { SnapshotZDAOChef__factory } from '../config/types/factories/SnapshotZDAOChef__factory';
 import { SnapshotZDAOChef } from '../config/types/SnapshotZDAOChef';
@@ -9,14 +9,14 @@ import { CreateSnapshotZDAOParams } from '../types';
 import { SnapshotZDAOProperties } from './types';
 
 class EthereumZDAOChefClient {
-  private readonly config: DAOConfig;
+  private readonly config: EthereumDAOConfig;
   protected readonly contract: SnapshotZDAOChef;
 
-  constructor(config: DAOConfig) {
+  constructor(config: EthereumDAOConfig, provider: ethers.providers.Provider) {
     this.config = config;
     this.contract = SnapshotZDAOChef__factory.connect(
       config.zDAOChef,
-      GlobalClient.etherRpcProvider
+      provider
     );
   }
 

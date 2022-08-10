@@ -26,10 +26,10 @@ export interface EthereumZDAOProperties extends Omit<zDAOProperties, 'state'> {
 class ZDAORegistryClient {
   protected readonly contract: ZDAORegistry;
 
-  constructor(config: zNAConfig) {
+  constructor(config: zNAConfig, provider: ethers.providers.Provider) {
     this.contract = ZDAORegistry__factory.connect(
       config.zDAORegistry,
-      new ethers.providers.JsonRpcProvider(config.rpcUrl, config.network)
+      provider
     );
   }
 

@@ -10,8 +10,8 @@ import StakingClient from './StakingClient';
 
 class GlobalClient {
   private static config: PolygonConfig;
-  private static etherRpcProviderInst?: ethers.providers.JsonRpcProvider;
-  private static polyRpcProviderInst?: ethers.providers.JsonRpcProvider;
+  private static etherRpcProviderInst: ethers.providers.Provider;
+  private static polyRpcProviderInst: ethers.providers.Provider;
   private static zDAORegistryInst?: ZDAORegistryClient;
   private static ethereumZDAOChefInst?: EthereumZDAOChefClient;
   private static polygonZDAOChefInst?: PolygonZDAOChefClient;
@@ -21,22 +21,21 @@ class GlobalClient {
 
   static initialize(config: PolygonConfig) {
     GlobalClient.config = config;
-    GlobalClient.etherRpcProviderInst = new ethers.providers.JsonRpcProvider(
-      config.ethereum.rpcUrl,
-      config.ethereum.network
+    GlobalClient.etherRpcProviderInst = config.ethereumProvider;
+    GlobalClient.polyRpcProviderInst = config.polygonProvider;
+    GlobalClient.zDAORegistryInst = new ZDAORegistryClient(
+      config.zNA,
+      config.ethereumProvider
     );
-    GlobalClient.polyRpcProviderInst = new ethers.providers.JsonRpcProvider(
-      config.polygon.rpcUrl,
-      config.polygon.network
-    );
-    GlobalClient.zDAORegistryInst = new ZDAORegistryClient(config.zNA);
     GlobalClient.ipfsGatewayHost = config.ipfsGateway;
 
     GlobalClient.ethereumZDAOChefInst = new EthereumZDAOChefClient(
-      config.ethereum
+      config.ethereum,
+      config.ethereumProvider
     );
     GlobalClient.polygonZDAOChefInst = new PolygonZDAOChefClient(
-      config.polygon
+      config.polygon,
+      config.polygonProvider
     );
     GlobalClient.stakingInst = new StakingClient();
     GlobalClient.registryInst = new RegistryClient();

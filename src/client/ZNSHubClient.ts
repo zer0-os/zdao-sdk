@@ -7,11 +7,8 @@ import { zNAConfig, zNAId } from '../types';
 class ZNSHubClient {
   protected static contract: IZNSHub;
 
-  static initialize(config: zNAConfig) {
-    ZNSHubClient.contract = IZNSHub__factory.connect(
-      config.zNSHub,
-      new ethers.providers.JsonRpcProvider(config.rpcUrl, config.network)
-    );
+  static initialize(config: zNAConfig, provider: ethers.providers.Provider) {
+    ZNSHubClient.contract = IZNSHub__factory.connect(config.zNSHub, provider);
   }
 
   static async ownerOf(zNAId: zNAId): Promise<string> {

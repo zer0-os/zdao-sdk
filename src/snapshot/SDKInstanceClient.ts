@@ -41,7 +41,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
 
     IPFSClient.initialize(this.config.fleek);
     ZNAClient.initialize(this.config.zNS);
-    ZNSHubClient.initialize(this.config.zNA);
+    ZNSHubClient.initialize(this.config.zNA, config.ethereumProvider);
     GlobalClient.initialize(this.config);
   }
 

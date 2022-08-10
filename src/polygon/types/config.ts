@@ -1,4 +1,14 @@
-import { Config, DAOConfig } from '../../types';
+import { ethers } from 'ethers';
+
+import { Config } from '../../types';
+
+export interface PolygonDAOConfig {
+  // address to zDAOChef contract
+  zDAOChef: string;
+
+  // Contract Creation block number
+  blockNumber: number;
+}
 
 export interface ProofConfig {
   // From address
@@ -7,7 +17,9 @@ export interface ProofConfig {
 
 export interface PolygonConfig extends Config {
   // Polygon DAO configuration
-  polygon: DAOConfig;
+  polygon: PolygonDAOConfig;
+
+  polygonProvider: ethers.providers.Provider;
 
   // Proof configuration
   proof: ProofConfig;

@@ -18,10 +18,6 @@ class StakingClient implements Staking {
     return this.polyStaking;
   }
 
-  get network() {
-    return this.properties?.network ?? 0;
-  }
-
   get address() {
     return this.properties?.address ?? ethers.constants.AddressZero;
   }

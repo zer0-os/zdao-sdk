@@ -1,21 +1,25 @@
 import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
-import { DAOConfig, FleekConfig, zNAConfig } from '../../types';
-import { PolygonConfig, ProofConfig } from '../types';
+import { EthereumDAOConfig, FleekConfig, zNAConfig } from '../../types';
+import { PolygonConfig, PolygonDAOConfig, ProofConfig } from '../types';
 
 export interface ConfigParams {
   /**
    * On the development, ethereum network should be Goerli,
    * On the production, ethereum network should be mainnet
    */
-  ethereum: DAOConfig;
+  ethereum: EthereumDAOConfig;
+
+  ethereumProvider: ethers.providers.Provider;
 
   /**
    * On the development, polygon network should be mumbai
    * On the production, polygon network should be polygon
    */
-  polygon: DAOConfig;
+  polygon: PolygonDAOConfig;
+
+  polygonProvider: ethers.providers.Provider;
 
   zNA: zNAConfig;
 
@@ -39,7 +43,9 @@ export interface ConfigParams {
 
 export const developmentConfiguration = ({
   ethereum,
+  ethereumProvider,
   polygon,
+  polygonProvider,
   zNA,
   proof,
   fleek,
@@ -47,7 +53,9 @@ export const developmentConfiguration = ({
   zNSProvider,
 }: ConfigParams): PolygonConfig => ({
   ethereum,
+  ethereumProvider,
   polygon,
+  polygonProvider,
   zNA,
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.goerli.gnosis.io',
@@ -63,14 +71,18 @@ export const developmentConfiguration = ({
 
 export const productionConfiguration = ({
   ethereum,
+  ethereumProvider,
   polygon,
+  polygonProvider,
   zNA,
   proof,
   fleek,
   ipfsGateway,
 }: ConfigParams): PolygonConfig => ({
   ethereum,
+  ethereumProvider,
   polygon,
+  polygonProvider,
   zNA,
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
@@ -79,8 +91,6 @@ export const productionConfiguration = ({
   proof,
   fleek,
   ipfsGateway,
-  zNS: configuration.mainnetConfiguration(
-    new ethers.providers.JsonRpcProvider(ethereum.rpcUrl, ethereum.network)
-  ),
+  zNS: configuration.mainnetConfiguration(ethereumProvider),
   isProd: true,
 });
