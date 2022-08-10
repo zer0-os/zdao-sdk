@@ -10,7 +10,7 @@ export const MultiCallAddress: AddressMap = {
   [SupportedChainId.RINKEBY]: '0x42ad527de7d4e9d9d011ac45b31d8551f8fe9821',
 };
 
-export const DefaultProposalChoices = ['Approve', 'Deny'];
+export const DEFAULT_PROPOSAL_CHOICES = ['Approve', 'Deny'];
 
 export const developmentConfiguration = (
   contract: string,

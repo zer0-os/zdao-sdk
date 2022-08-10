@@ -9,7 +9,7 @@ import {
 import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
-import { DefaultProposalChoices } from '../config';
+import { DEFAULT_PROPOSAL_CHOICES } from '../config';
 import ERC20Abi from '../config/constants/abi/ERC20.json';
 import GnosisSafeClient from '../gnosis-safe';
 import SnapshotClient from '../snapshot-io';
@@ -362,7 +362,7 @@ class DAOClient implements zDAO {
       }
     }
     if (!payload.choices) {
-      payload.choices = DefaultProposalChoices;
+      payload.choices = DEFAULT_PROPOSAL_CHOICES;
     }
 
     // signer should have valid amount of voting token on Ethereum
