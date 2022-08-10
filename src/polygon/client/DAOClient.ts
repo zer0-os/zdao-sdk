@@ -3,6 +3,7 @@ import { cloneDeep } from 'lodash';
 
 import { AbstractDAOClient, GnosisSafeClient, IPFSClient } from '../../client';
 import { ZDAORecord } from '../../client/ZDAORegistry';
+import { DEFAULT_PROPOSAL_CHOICES } from '../../config';
 import { IERC20Upgradeable__factory } from '../../config/types/factories/IERC20Upgradeable__factory';
 import { IERC20Upgradeable } from '../../config/types/IERC20Upgradeable';
 import {
@@ -332,6 +333,17 @@ class DAOClient
     }
     if (!this.votingDuration) {
       throw new Error(errorMessageForError('invalid-proposal-duration'));
+    }
+
+    if (payload.transfer) {
+      if (payload.choices && payload.choices.length !== 2) {
+        throw new Error(
+          errorMessageForError('invalid-choices-for-funding-proposal')
+        );
+      }
+    }
+    if (!payload.choices) {
+      payload.choices = DEFAULT_PROPOSAL_CHOICES;
     }
 
     const signer = getSigner(provider, account);

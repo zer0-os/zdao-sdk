@@ -10,3 +10,5 @@ export const MultiCallAddress: AddressMap = {
 };
 
 export const DEFAULT_ZDAO_DURATION = 86400;
+
+export const DEFAULT_PROPOSAL_CHOICES = ['Approve', 'Deny'];
