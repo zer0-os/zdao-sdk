@@ -49,19 +49,23 @@ class GnosisSafeClient {
 
   async isProposalsExecuted(
     platformType: PlatformType,
-    proposalIds: ProposalId[]
+    proposalHashes: ProposalId[]
   ): Promise<boolean[]> {
     const response = await graphQLQuery(
       this._graphQLClient,
       EXECUTEDPROPOSALS_BY_QUERY,
       {
-        id_in: proposalIds.map((proposalId) => `${platformType}-${proposalId}`),
+        id_in: proposalHashes.map(
+          (proposalHash) => `${platformType}-${proposalHash}`
+        ),
       }
     );
     const filtered = response.executedProposals.map(
       (proposal: any) => proposal.proposalId
     );
-    return proposalIds.map((proposalId) => filtered.indexOf(proposalId) >= 0);
+    return proposalHashes.map(
+      (proposalHash) => filtered.indexOf(proposalHash) >= 0
+    );
   }
 
   async proposeTxFromModule(
