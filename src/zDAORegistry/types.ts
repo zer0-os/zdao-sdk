@@ -45,7 +45,9 @@ export const ZDAORECORDS_BY_QUERY = gql`
 
 export const ZNAS_QUERY = gql`
   query zNAAssociation {
-    znaassociations(where: { zDAORecord_: { destroyed: false } }) {
+    znaassociations(
+      where: { zDAORecord_: { destroyed: false, platformType: $platformType } }
+    ) {
       id
     }
   }
@@ -65,6 +67,9 @@ export const ZNAASSOCIATION_BY_QUERY = gql`
         gnosisSafe
         name
         platformType
+        zNAs {
+          id
+        }
       }
     }
   }

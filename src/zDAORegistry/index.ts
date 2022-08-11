@@ -34,7 +34,9 @@ class zDAORegistryClient {
   }
 
   async listZNAs(): Promise<zNA[]> {
-    const result = await this._registryGQLClient.request(ZNAS_QUERY);
+    const result = await this._registryGQLClient.request(ZNAS_QUERY, {
+      platformType: 0,
+    });
     const promises: Promise<zNA>[] = result.znaassociations.map((zNA: any) =>
       this.zNAIdTozNA(BigNumber.from(zNA.id).toHexString())
     );
@@ -48,14 +50,18 @@ class zDAORegistryClient {
         id_in: [this.zNATozNAId(zNA)],
       }
     );
+    if (
+      !result ||
+      !result.znaassociations ||
+      result.znaassociations.length < 1
+    ) {
+      throw new Error(errorMessageForError('not-found-zdao'));
+    }
     const zNAs: zNA[] = await Promise.all(
-      result.znaassociations.map((association: any) =>
+      result.znaassociations[0].zDAORecord.zNAs.map((association: any) =>
         this.zNAIdTozNA(BigNumber.from(association.id).toHexString())
       )
     );
-    if (zNAs.length < 1) {
-      throw new Error(errorMessageForError('not-found-zdao'));
-    }
 
     return {
       id: result.znaassociations[0].zDAORecord.zDAOId.toString(),
