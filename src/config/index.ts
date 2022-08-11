@@ -33,7 +33,7 @@ export const developmentConfiguration = (
     ipfsGateway,
     zDAOModule: zDAOModuleAddress[SupportedChainId.RINKEBY],
     zDAOModuleSubgraphUri:
-      'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry',
+      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-rinkeby',
   },
   zNA: {
     subgraphUri:
