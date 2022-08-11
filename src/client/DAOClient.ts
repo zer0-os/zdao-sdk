@@ -355,11 +355,7 @@ class DAOClient implements zDAO {
     }
 
     if (payload.transfer) {
-      if (payload.choices && payload.choices.length !== 2) {
-        throw new Error(
-          errorMessageForError('invalid-choices-for-funding-proposal')
-        );
-      }
+      payload.choices = DEFAULT_PROPOSAL_CHOICES;
     }
     if (!payload.choices) {
       payload.choices = DEFAULT_PROPOSAL_CHOICES;
