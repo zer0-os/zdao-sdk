@@ -2,14 +2,12 @@ import Safe from '@gnosis.pm/safe-core-sdk';
 import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import {
-  getBalances,
-  getCollectibles,
-  getTransactionHistory,
   SafeBalanceResponse,
   SafeCollectibleResponse,
   Transaction as Transaction,
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
+import fetch from 'cross-fetch';
 import { BigNumberish, ethers } from 'ethers';
 
 import ERC20Abi from '../config/constants/abi/ERC20.json';
@@ -104,16 +102,11 @@ class GnosisSafeClient {
   ): Promise<SafeBalanceResponse> {
     const address = ethers.utils.getAddress(safeAddress);
 
-    return await getBalances(
-      this._config.gateway,
-      network,
-      address,
-      selectedCurrency,
-      {
-        exclude_spam: true,
-        trusted: false,
-      }
-    );
+    const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/balances/${selectedCurrency}?exclude_spam=true&trusted=false`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+    return data;
   }
 
   async listCollectibles(
@@ -122,17 +115,11 @@ class GnosisSafeClient {
   ): Promise<SafeCollectibleResponse[]> {
     const address = ethers.utils.getAddress(safeAddress);
 
-    const collectibles = await getCollectibles(
-      this._config.gateway,
-      network,
-      address,
-      {
-        exclude_spam: true,
-        trusted: false,
-      }
-    );
+    const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/collectibles?exclude_spam=true&trusted=false`;
 
-    return collectibles;
+    const res = await fetch(url);
+    const data = await res.json();
+    return data;
   }
 
   async listTransactions(
@@ -141,11 +128,10 @@ class GnosisSafeClient {
   ): Promise<Transaction[]> {
     const address = ethers.utils.getAddress(safeAddress);
 
-    const { results } = await getTransactionHistory(
-      this._config.gateway,
-      network,
-      address
-    );
+    const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/transactions/history`;
+
+    const resp = await fetch(url).then((res) => res.json());
+    const { results } = resp;
 
     const filtered = results
       .filter(
@@ -155,7 +141,7 @@ class GnosisSafeClient {
           (tx.transaction.txInfo.direction === 'INCOMING' ||
             tx.transaction.txInfo.direction === 'OUTGOING')
       )
-      .map((tx) => tx as Transaction);
+      .map((tx: TransactionListItem) => tx as Transaction);
 
     return filtered;
   }

@@ -86,14 +86,16 @@ export interface Transaction {
   status: TransactionStatus;
 }
 
-export interface zDAOAssets {
+export interface zDAOCoins {
   // total coin amount in USD
   amountInUSD: number;
   // list of assets in zDAO
   coins: Coin[];
-  // list of collectibles in zDAO
-  collectibles: Collectible[];
 }
+
+export type zDAOCollectibles = Collectible[];
+
+export type zDAOAssets = zDAOCoins & { collectibles: zDAOCollectibles };
 
 export interface Token {
   token: string; // asset token address
