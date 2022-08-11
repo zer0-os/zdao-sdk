@@ -31,7 +31,7 @@ class EthereumZDAOChefClient {
     };
   }
 
-  async addNewDAO(signer: ethers.Signer, payload: CreateSnapshotZDAOParams) {
+  async addNewZDAO(signer: ethers.Signer, payload: CreateSnapshotZDAOParams) {
     await GlobalClient.zDAORegistry.addNewZDAO(
       signer,
       PlatformType.Snapshot,
@@ -42,8 +42,8 @@ class EthereumZDAOChefClient {
     );
   }
 
-  async removeDAO(signer: ethers.Signer, zDAOId: zDAOId) {
-    await GlobalClient.zDAORegistry.removeNewZDAO(signer, zDAOId);
+  async removeZDAO(signer: ethers.Signer, zDAOId: zDAOId) {
+    await GlobalClient.zDAORegistry.removeZDAO(signer, zDAOId);
   }
 }
 

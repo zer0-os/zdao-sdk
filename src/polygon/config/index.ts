@@ -1,33 +1,31 @@
 import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
-import { zDAOModuleAddress, zDAOModuleSubgraphUri } from '../../config';
 import {
-  EthereumDAOConfig,
-  FleekConfig,
-  SupportedChainId,
-  zNAConfig,
-} from '../../types';
-import { PolygonConfig, PolygonDAOConfig, ProofConfig } from '../types';
+  ethereumZDAOConfig,
+  zDAOModuleAddress,
+  zDAOModuleSubgraphUri,
+  zDAORegistryAddress,
+  zNSHubAddress,
+} from '../../config';
+import { FleekConfig, SupportedChainId } from '../../types';
+import { PolygonConfig, ProofConfig } from '../types';
+
+const polygonZDAOConfig = {
+  [SupportedChainId.MUMBAI]: {
+    zDAOChef: '', // todo
+    blockNumber: 0, // todo
+  },
+  [SupportedChainId.POLYGON]: {
+    zDAOChef: '', // todo
+    blockNumber: 0, // todo
+  },
+};
 
 export interface ConfigParams {
-  /**
-   * On the development, ethereum network should be Goerli,
-   * On the production, ethereum network should be mainnet
-   */
-  ethereum: EthereumDAOConfig;
-
   ethereumProvider: ethers.providers.Provider;
 
-  /**
-   * On the development, polygon network should be mumbai
-   * On the production, polygon network should be polygon
-   */
-  polygon: PolygonDAOConfig;
-
   polygonProvider: ethers.providers.Provider;
-
-  zNA: zNAConfig;
 
   /**
    * Proof configuration for @maticnetwork/maticjs
@@ -48,21 +46,23 @@ export interface ConfigParams {
 }
 
 export const developmentConfiguration = ({
-  ethereum,
   ethereumProvider,
-  polygon,
   polygonProvider,
-  zNA,
   proof,
   fleek,
   ipfsGateway,
   zNSProvider,
 }: ConfigParams): PolygonConfig => ({
-  ethereum,
+  ethereum: ethereumZDAOConfig[SupportedChainId.GOERLI],
   ethereumProvider,
-  polygon,
+  polygon: polygonZDAOConfig[SupportedChainId.MUMBAI],
   polygonProvider,
-  zNA,
+  zNA: {
+    zDAORegistry: zDAORegistryAddress[SupportedChainId.GOERLI],
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-rinkeby',
+    zNSHub: zNSHubAddress[SupportedChainId.GOERLI],
+  },
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.goerli.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
@@ -78,20 +78,22 @@ export const developmentConfiguration = ({
 });
 
 export const productionConfiguration = ({
-  ethereum,
   ethereumProvider,
-  polygon,
   polygonProvider,
-  zNA,
   proof,
   fleek,
   ipfsGateway,
 }: ConfigParams): PolygonConfig => ({
-  ethereum,
+  ethereum: ethereumZDAOConfig[SupportedChainId.MAINNET],
   ethereumProvider,
-  polygon,
+  polygon: polygonZDAOConfig[SupportedChainId.POLYGON],
   polygonProvider,
-  zNA,
+  zNA: {
+    zDAORegistry: zDAORegistryAddress[SupportedChainId.MAINNET],
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
+    zNSHub: zNSHubAddress[SupportedChainId.MAINNET],
+  },
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',

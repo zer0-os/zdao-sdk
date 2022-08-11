@@ -1,6 +1,7 @@
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
 import { BigNumber, ethers } from 'ethers';
 
+import { PlatformType } from '..';
 import { IPFSClient, ZNAClient } from '../client';
 import ZNSHubClient from '../client/ZNSHubClient';
 import {
@@ -71,7 +72,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
         throw new InvalidError(errorMessageForError('not-zna-owner'));
       }
 
-      await GlobalClient.ethereumZDAOChef.addNewDAO(signer, {
+      await GlobalClient.ethereumZDAOChef.addNewZDAO(signer, {
         ...params,
         zNA: zNAId,
       });
@@ -88,7 +89,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
   ): Promise<void> {
     try {
       const signer = getSigner(provider, account);
-      await GlobalClient.ethereumZDAOChef.removeDAO(signer, zDAOId);
+      await GlobalClient.ethereumZDAOChef.removeZDAO(signer, zDAOId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -96,16 +97,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
   }
 
   async listZNAs(): Promise<zNA[]> {
-    const zDAORecords = await GlobalClient.zDAORegistry.listZDAOs();
-
-    // collect all the associated zNAs
-    const zNAs: zNA[] = [];
-    for (const zDAORecord of zDAORecords) {
-      zNAs.push(...zDAORecord.associatedzNAs);
-    }
-
-    // remove duplicated entries
-    return zNAs.filter((value, index) => zNAs.indexOf(value) === index);
+    return await GlobalClient.zDAORegistry.listZNAs(PlatformType.Snapshot);
   }
 
   async listZDAOs(): Promise<SnapshotZDAO[]> {

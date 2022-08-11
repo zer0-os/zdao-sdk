@@ -10,22 +10,12 @@ import {
 import fetch from 'cross-fetch';
 import { BigNumber, BigNumberish, ethers } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
-import { gql } from 'graphql-request';
 
 import { PlatformType } from '..';
 import { ZDAOModule__factory } from '../config/types/factories/ZDAOModule__factory';
 import { GnosisSafeConfig } from '../types';
 import { graphQLQuery } from '../utilities/graphql';
-
-const EXECUTEDPROPOSALS_BY_QUERY = gql`
-  query ExecutedProposals($id_in: [String]) {
-    executedProposals(where: { id_in: $id_in }) {
-      id
-      platformType
-      proposalId
-    }
-  }
-`;
+import { EXECUTEDPROPOSALS_BY_QUERY } from './types';
 
 class GnosisSafeClient {
   private readonly config: GnosisSafeConfig;

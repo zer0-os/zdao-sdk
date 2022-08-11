@@ -1,5 +1,8 @@
 import { SupportedChainId } from '../types';
 
+/* -------------------------------------------------------------------------- */
+/*                          Smart Contract Addresses                          */
+/* -------------------------------------------------------------------------- */
 type AddressMap = { [chainId in SupportedChainId]: string };
 export const MultiCallAddress: AddressMap = {
   [SupportedChainId.MAINNET]: '0x1F98415757620B543A52E61c46B32eB19261F984',
@@ -7,6 +10,22 @@ export const MultiCallAddress: AddressMap = {
   [SupportedChainId.GOERLI]: '0x77dca2c955b15e9de4dbbcf1246b4b85b651e50e',
   [SupportedChainId.MUMBAI]: '0x08411ADd0b5AA8ee47563b146743C13b3556c9Cc',
   [SupportedChainId.POLYGON]: '0xCBca837161be50EfA5925bB9Cc77406468e76751',
+};
+
+export const zDAORegistryAddress: AddressMap = {
+  [SupportedChainId.MAINNET]: '',
+  [SupportedChainId.RINKEBY]: '',
+  [SupportedChainId.GOERLI]: '',
+  [SupportedChainId.MUMBAI]: '',
+  [SupportedChainId.POLYGON]: '',
+};
+
+export const zNSHubAddress: AddressMap = {
+  [SupportedChainId.MAINNET]: '0x6141d5cb3517215a03519a464bf9c39814df7479',
+  [SupportedChainId.RINKEBY]: '',
+  [SupportedChainId.GOERLI]: '0x9a35367c5e8C01cd009885e497a33a9761938832',
+  [SupportedChainId.MUMBAI]: '',
+  [SupportedChainId.POLYGON]: '',
 };
 
 export const zDAOModuleAddress: AddressMap = {
@@ -17,10 +36,9 @@ export const zDAOModuleAddress: AddressMap = {
   [SupportedChainId.POLYGON]: '',
 };
 
-export const DEFAULT_ZDAO_DURATION = 86400;
-
-export const DEFAULT_PROPOSAL_CHOICES = ['Approve', 'Deny'];
-
+/* -------------------------------------------------------------------------- */
+/*                                Subgraph Uris                               */
+/* -------------------------------------------------------------------------- */
 export const zDAOModuleSubgraphUri: AddressMap = {
   [SupportedChainId.MAINNET]:
     'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
@@ -30,3 +48,22 @@ export const zDAOModuleSubgraphUri: AddressMap = {
   [SupportedChainId.MUMBAI]: '',
   [SupportedChainId.POLYGON]: '',
 };
+
+/* -------------------------------------------------------------------------- */
+/*                             DAO Configurations                             */
+/* -------------------------------------------------------------------------- */
+export const ethereumZDAOConfig = {
+  [SupportedChainId.MAINNET]: {
+    zDAOChef: '', // todo
+  },
+  [SupportedChainId.RINKEBY]: {
+    zDAOChef: '', // todo
+  },
+  [SupportedChainId.GOERLI]: {
+    zDAOChef: '', // todo
+  },
+};
+
+export const DEFAULT_ZDAO_DURATION = 86400;
+
+export const DEFAULT_PROPOSAL_CHOICES = ['Approve', 'Deny'];

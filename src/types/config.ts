@@ -10,6 +10,9 @@ export interface zNAConfig {
   // address to zDAORegistry contract
   zDAORegistry: string;
 
+  // subgraphUri where indexed zDAORegistry
+  subgraphUri: string;
+
   // address to zNSHub contract
   zNSHub: string;
 }

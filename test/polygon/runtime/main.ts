@@ -18,9 +18,9 @@ const createZDAO = async (
         name: DAO.name,
         network: SupportedChainId.GOERLI,
         gnosisSafe: env.gnosisSafe.goerli.address,
-        token: env.contract.token.goerli,
-        amount: BigNumber.from(10).pow(18).toString(),
-        duration: DAO.duration,
+        votingToken: env.contract.token.goerli,
+        minimumVotingTokenAmount: BigNumber.from(10).pow(18).toString(),
+        votingDuration: DAO.duration,
         votingThreshold: 5001, // 50.01%
         minimumVotingParticipants: 1,
         minimumTotalVotingTokens: BigNumber.from(10).pow(18).toString(),
@@ -74,8 +74,8 @@ const iterateZNAs = async (sdkInstance: Polygon.PolygonSDKInstance) => {
       zDAO.network,
       zDAO.gnosisSafe,
       zDAO.votingToken,
-      zDAO.amount,
-      zDAO.duration,
+      zDAO.minimumVotingTokenAmount,
+      zDAO.votingDuration,
       zDAO.votingThreshold,
       zDAO.minimumVotingParticipants,
       zDAO.minimumTotalVotingTokens,
@@ -228,13 +228,17 @@ const performance = async (
 const main = async () => {
   const env = setEnv();
 
-  const goerliSigner = new ethers.Wallet(
-    env.wallet.privateKey,
-    new ethers.providers.JsonRpcProvider(
-      env.rpc.goerli,
-      SupportedChainId.GOERLI
-    )
+  const goerliProvider = new ethers.providers.JsonRpcProvider(
+    env.rpc.goerli,
+    SupportedChainId.GOERLI
   );
+
+  const mumbaiProvider = new ethers.providers.JsonRpcProvider(
+    env.rpc.mumbai,
+    SupportedChainId.MUMBAI
+  );
+
+  const goerliSigner = new ethers.Wallet(env.wallet.privateKey, goerliProvider);
 
   const rinkebyProvider = new ethers.providers.JsonRpcProvider(
     env.rpc.rinkeby,
@@ -242,24 +246,8 @@ const main = async () => {
   );
 
   const config = Polygon.developmentConfiguration({
-    ethereum: {
-      zDAOChef: env.contract.zDAOChef.goerli,
-      rpcUrl: env.rpc.goerli,
-      network: SupportedChainId.GOERLI,
-      blockNumber: env.contract.zDAOChef.goerliBlock,
-    },
-    polygon: {
-      zDAOChef: env.contract.zDAOChef.mumbai,
-      rpcUrl: env.rpc.mumbai,
-      network: SupportedChainId.MUMBAI,
-      blockNumber: env.contract.zDAOChef.mumbaiBlock,
-    },
-    zNA: {
-      zDAORegistry: env.contract.zDAORegistry.goerli,
-      zNSHub: env.contract.zNSHub.goerli,
-      rpcUrl: env.rpc.goerli,
-      network: SupportedChainId.GOERLI,
-    },
+    ethereumProvider: goerliProvider,
+    polygonProvider: mumbaiProvider,
     proof: {
       from: goerliSigner.address,
     },
@@ -280,17 +268,17 @@ const main = async () => {
   console.log('instance created');
 
   // await createZDAO(instance, goerliSigner, env);
-  // await iterateZNAs(instance);
+  await iterateZNAs(instance);
   // await iterateZDAO(instance, goerliSigner, 'wilder.wheels', env);
 
-  const goerliGnosisOwnerSigner = new ethers.Wallet(
-    env.gnosisSafe.goerli.ownerPrivateKey,
-    new ethers.providers.JsonRpcProvider(
-      env.rpc.goerli,
-      SupportedChainId.GOERLI
-    )
-  );
-  await performance(instance, goerliSigner, goerliGnosisOwnerSigner);
+  // const goerliGnosisOwnerSigner = new ethers.Wallet(
+  //   env.gnosisSafe.goerli.ownerPrivateKey,
+  //   new ethers.providers.JsonRpcProvider(
+  //     env.rpc.goerli,
+  //     SupportedChainId.GOERLI
+  //   )
+  // );
+  // await performance(instance, goerliSigner, goerliGnosisOwnerSigner);
 
   console.log('Finished successfully');
 };
