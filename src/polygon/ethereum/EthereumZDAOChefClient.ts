@@ -153,23 +153,6 @@ class EthereumZDAOChefClient {
     return await tx.wait();
   }
 
-  async executeProposal(
-    signer: ethers.Signer,
-    zDAOId: zDAOId,
-    proposalId: ProposalId
-  ) {
-    const gasEstimated = await this.contract
-      .connect(signer)
-      .estimateGas.executeProposal(zDAOId, proposalId);
-
-    const tx = await this.contract
-      .connect(signer)
-      .executeProposal(zDAOId, proposalId, {
-        gasLimit: calculateGasMargin(gasEstimated),
-      });
-    return await tx.wait();
-  }
-
   async receiveMessage(signer: ethers.Signer, proof: string) {
     const instance = await this.getRootStateSender();
     const gasEstimated = await instance

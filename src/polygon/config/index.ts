@@ -1,7 +1,13 @@
 import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
-import { EthereumDAOConfig, FleekConfig, zNAConfig } from '../../types';
+import { zDAOModuleAddress, zDAOModuleSubgraphUri } from '../../config';
+import {
+  EthereumDAOConfig,
+  FleekConfig,
+  SupportedChainId,
+  zNAConfig,
+} from '../../types';
 import { PolygonConfig, PolygonDAOConfig, ProofConfig } from '../types';
 
 export interface ConfigParams {
@@ -60,6 +66,8 @@ export const developmentConfiguration = ({
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.goerli.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
+    zDAOModule: zDAOModuleAddress[SupportedChainId.GOERLI],
+    zDAOModuleSubgraphUri: zDAOModuleSubgraphUri[SupportedChainId.GOERLI],
   },
   proof,
   fleek,
@@ -87,6 +95,8 @@ export const productionConfiguration = ({
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
+    zDAOModule: zDAOModuleAddress[SupportedChainId.MAINNET],
+    zDAOModuleSubgraphUri: zDAOModuleSubgraphUri[SupportedChainId.MAINNET],
   },
   proof,
   fleek,

@@ -1,5 +1,6 @@
 import { BigNumber, ethers } from 'ethers';
 
+import { PlatformType } from '../..';
 import {
   AbstractProposalClient,
   GnosisSafeClient,
@@ -38,6 +39,7 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
   private readonly zDAO: DAOClient;
   private readonly snapshotClient: SnapshotClient;
   private readonly gnosisSafeClient: GnosisSafeClient;
+  private readonly provider: ethers.providers.Provider;
   private readonly options: any;
 
   private constructor(
@@ -45,12 +47,14 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     snapshotClient: SnapshotClient,
     gnosisSafeClient: GnosisSafeClient,
     properties: ProposalProperties,
+    provider: ethers.providers.Provider,
     options: any
   ) {
     super(properties);
     this.zDAO = zDAO;
     this.snapshotClient = snapshotClient;
     this.gnosisSafeClient = gnosisSafeClient;
+    this.provider = provider;
     this.options = options;
   }
 
@@ -59,6 +63,7 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     snapshotClient: SnapshotClient,
     gnosisSafeClient: GnosisSafeClient,
     properties: ProposalProperties,
+    provider: ethers.providers.Provider,
     options: any
   ): Promise<SnapshotProposal> {
     const proposal = new ProposalClient(
@@ -72,6 +77,7 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
           properties.ipfs
         ),
       },
+      provider,
       options
     );
     return proposal;
@@ -254,6 +260,14 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     return false;
   }
 
+  async isExecuted(): Promise<boolean> {
+    const executed = await this.zDAO.gnosisSafeClient.isProposalsExecuted(
+      PlatformType.Snapshot,
+      [ProposalClient.getProposalHash(this.zDAO.ens, this.id)]
+    );
+    return executed[0];
+  }
+
   async execute(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
@@ -279,30 +293,31 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     }
 
     try {
-      if (
+      // check if proposal executed
+      const executed = await this.isExecuted();
+      if (!executed) {
+        throw new Error(errorMessageForError('proposal-already-executed'));
+      }
+
+      const token =
         !this.metadata?.token ||
         this.metadata.token.length < 1 ||
         this.metadata.token === ethers.constants.AddressZero
-      ) {
-        // Ether transfer
-        await this.gnosisSafeClient.transferEther(
-          this.zDAO.gnosisSafe,
-          signer,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          this.metadata!.recipient,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          this.metadata!.amount.toString()
-        );
-      } else {
-        // ERC20 transfer
-        await this.gnosisSafeClient.transferERC20(
-          this.zDAO.gnosisSafe,
-          signer,
-          this.metadata.token,
+          ? ethers.constants.AddressZero
+          : this.metadata.token;
+
+      await this.gnosisSafeClient.proposeTxFromModule(
+        this.zDAO.gnosisSafe,
+        signer,
+        'executeProposal',
+        [
+          PlatformType.Snapshot.toString(),
+          ProposalClient.getProposalHash(this.zDAO.ens, this.id).toString(),
+          token,
           this.metadata.recipient,
-          this.metadata.amount.toString()
-        );
-      }
+          this.metadata.amount,
+        ]
+      );
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);

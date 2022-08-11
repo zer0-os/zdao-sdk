@@ -1,6 +1,7 @@
 import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
+import { PlatformType } from '../..';
 import { AbstractDAOClient, GnosisSafeClient, IPFSClient } from '../../client';
 import { ZDAORecord } from '../../client/ZDAORegistry';
 import { DEFAULT_PROPOSAL_CHOICES } from '../../config';
@@ -149,7 +150,8 @@ class DAOClient
   }
 
   private async mapToProperties(
-    raw: IEthereumZDAO.ProposalStruct
+    raw: IEthereumZDAO.ProposalStruct,
+    executed: boolean
   ): Promise<ProposalProperties> {
     const polygonZDAO = await this.getPolygonZDAOContract();
     const polyProposal = polygonZDAO
@@ -237,12 +239,12 @@ class DAOClient
         return ProposalState.PENDING;
       } else if (now <= end) {
         return ProposalState.ACTIVE;
-        // } else if (raw.executed) {
-        //   return ProposalState.EXECUTED;
+      } else if (executed) {
+        return ProposalState.EXECUTED;
       } else if (raw.calculated) {
         return canExecute()
           ? ProposalState.AWAITING_EXECUTION
-          : ProposalState.FAILED;
+          : ProposalState.CLOSED;
       } else if (polyProposal?.calculated) {
         return ProposalState.AWAITING_FINALIZATION;
       }
@@ -292,9 +294,18 @@ class DAOClient
       const results: IEthereumZDAO.ProposalStructOutput[] =
         await this.ethereumZDAO.listProposals(from, count);
 
+      const executeds = await this.gnosisSafeClient.isProposalsExecuted(
+        PlatformType.Polygon,
+        results.map((raw) =>
+          ProposalClient.getProposalHash(this.id, raw.proposalId.toString())
+        )
+      );
+
       const promises: Promise<ProposalProperties>[] = [];
       promises.push(
-        ...results.map((proposal) => this.mapToProperties(proposal))
+        ...results.map((proposal, index) =>
+          this.mapToProperties(proposal, executeds[index])
+        )
       );
 
       const propertiesAll: ProposalProperties[] = await Promise.all(promises);
@@ -318,9 +329,14 @@ class DAOClient
       throw new NotFoundError(errorMessageForError('not-found-proposal'));
     }
 
+    const executed = await this.gnosisSafeClient.isProposalsExecuted(
+      PlatformType.Snapshot,
+      [ProposalClient.getProposalHash(this.id, proposal.proposalId.toString())]
+    );
+
     return await ProposalClient.createInstance(
       this,
-      await this.mapToProperties(proposal)
+      await this.mapToProperties(proposal, executed[0])
     );
   }
 

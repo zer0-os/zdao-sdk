@@ -9,6 +9,24 @@ export const MultiCallAddress: AddressMap = {
   [SupportedChainId.POLYGON]: '0xCBca837161be50EfA5925bB9Cc77406468e76751',
 };
 
+export const zDAOModuleAddress: AddressMap = {
+  [SupportedChainId.MAINNET]: '',
+  [SupportedChainId.RINKEBY]: '0x6CF0f6C20ce04dd6Ca3605467B565107A7F0DF0E',
+  [SupportedChainId.GOERLI]: '0x97199c4d45037c1D12F24048Ea8a19A564A4b661',
+  [SupportedChainId.MUMBAI]: '',
+  [SupportedChainId.POLYGON]: '',
+};
+
 export const DEFAULT_ZDAO_DURATION = 86400;
 
 export const DEFAULT_PROPOSAL_CHOICES = ['Approve', 'Deny'];
+
+export const zDAOModuleSubgraphUri: AddressMap = {
+  [SupportedChainId.MAINNET]:
+    'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
+  [SupportedChainId.RINKEBY]:
+    'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-rinkeby',
+  [SupportedChainId.GOERLI]: '',
+  [SupportedChainId.MUMBAI]: '',
+  [SupportedChainId.POLYGON]: '',
+};

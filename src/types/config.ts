@@ -20,6 +20,12 @@ export interface GnosisSafeConfig {
 
   // uri to Gnosis Safe gateway
   gateway: string;
+
+  // address to zDAOModule
+  zDAOModule: string;
+
+  // Subgraph Uri of ZDAOModule
+  zDAOModuleSubgraphUri: string;
 }
 
 export interface FleekConfig {

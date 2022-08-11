@@ -1,6 +1,7 @@
 import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
+import { zDAOModuleAddress, zDAOModuleSubgraphUri } from '../../config';
 import {
   EthereumDAOConfig,
   FleekConfig,
@@ -41,6 +42,8 @@ export const developmentConfiguration = ({
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.rinkeby.gnosis.io',
     gateway: 'https://safe-client.staging.gnosisdev.com',
+    zDAOModule: zDAOModuleAddress[SupportedChainId.RINKEBY],
+    zDAOModuleSubgraphUri: zDAOModuleSubgraphUri[SupportedChainId.RINKEBY],
   },
   fleek,
   ipfsGateway,
@@ -65,6 +68,8 @@ export const productionConfiguration = ({
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
+    zDAOModule: zDAOModuleAddress[SupportedChainId.MAINNET],
+    zDAOModuleSubgraphUri: zDAOModuleSubgraphUri[SupportedChainId.MAINNET],
   },
   fleek,
   ipfsGateway,

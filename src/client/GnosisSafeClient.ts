@@ -8,18 +8,34 @@ import {
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
 import fetch from 'cross-fetch';
-import { ethers } from 'ethers';
+import { BigNumber, BigNumberish, ethers } from 'ethers';
+import { GraphQLClient } from 'graphql-request';
+import { gql } from 'graphql-request';
 
-import ERC20Abi from '../config/abi/ERC20.json';
+import { PlatformType } from '..';
+import { ZDAOModule__factory } from '../config/types/factories/ZDAOModule__factory';
 import { GnosisSafeConfig } from '../types';
+import { graphQLQuery } from '../utilities/graphql';
+
+const EXECUTEDPROPOSALS_BY_QUERY = gql`
+  query ExecutedProposals($id_in: [String]) {
+    executedProposals(where: { id_in: $id_in }) {
+      id
+      platformType
+      proposalId
+    }
+  }
+`;
 
 class GnosisSafeClient {
   private readonly config: GnosisSafeConfig;
+  private readonly graphQLClient: GraphQLClient;
   private readonly ipfsGateway: string;
   private readonly EMPTY_DATA = '0x';
 
   constructor(config: GnosisSafeConfig, ipfsGateway: string) {
     this.config = config;
+    this.graphQLClient = new GraphQLClient(config.zDAOModuleSubgraphUri);
     this.ipfsGateway = ipfsGateway;
   }
 
@@ -43,37 +59,30 @@ class GnosisSafeClient {
     return true;
   }
 
-  async transferEther(
-    gnosisSafe: string,
-    signer: ethers.Signer,
-    recipient: string,
-    amount: ethers.BigNumberish
-  ): Promise<void> {
-    const ethAdapter = new EthersAdapter({
-      ethers,
-      signer,
-    });
-    const safeService = new SafeService(this.config.serviceUri);
-    const safe = await Safe.create({
-      ethAdapter,
-      safeAddress: gnosisSafe,
-    });
-    const safeSigner = new SafeEthersSigner(safe, safeService, signer.provider);
-
-    await safeSigner.sendTransaction({
-      to: recipient,
-      data: this.EMPTY_DATA,
-      value: amount.toString(),
-    });
+  async isProposalsExecuted(
+    platformType: PlatformType,
+    proposalHashes: BigNumber[]
+  ): Promise<boolean[]> {
+    const response = await graphQLQuery(
+      this.graphQLClient,
+      EXECUTEDPROPOSALS_BY_QUERY,
+      {
+        id_in: proposalHashes.map((hash) => `${platformType}-${hash}`),
+      }
+    );
+    const filtered = response.executedProposals.map(
+      (proposal: any) => proposal.proposalId
+    );
+    return proposalHashes.map((hash) => filtered.indexOf(hash) >= 0);
   }
 
-  async transferERC20(
-    gnosisSafe: string,
+  async proposeTxFromModule(
+    safeAddress: string,
     signer: ethers.Signer,
-    token: string,
-    recipient: string,
-    amount: ethers.BigNumberish
-  ): Promise<void> {
+    funcName: string,
+    params: string[],
+    value: BigNumberish = '0' // ETH amount to be transferred
+  ) {
     const ethAdapter = new EthersAdapter({
       ethers,
       signer,
@@ -81,19 +90,18 @@ class GnosisSafeClient {
     const safeService = new SafeService(this.config.serviceUri);
     const safe = await Safe.create({
       ethAdapter,
-      safeAddress: gnosisSafe,
+      safeAddress,
     });
     const safeSigner = new SafeEthersSigner(safe, safeService, signer.provider);
 
-    const erc20Interface = new ethers.utils.Interface(ERC20Abi);
-    const txData = erc20Interface.encodeFunctionData('transfer', [
-      recipient,
-      amount,
-    ]);
+    const moduleInterface = new ethers.utils.Interface(ZDAOModule__factory.abi);
+    const data = moduleInterface.encodeFunctionData(funcName, params);
+
+    const module = this.config.zDAOModule;
     await safeSigner.sendTransaction({
-      value: '0',
-      to: token,
-      data: txData,
+      value,
+      to: module,
+      data,
     });
   }
 
