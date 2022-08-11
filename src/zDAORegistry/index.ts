@@ -48,6 +48,7 @@ class zDAORegistryClient {
       ZNAASSOCIATION_BY_QUERY,
       {
         id_in: [this.zNATozNAId(zNA)],
+        platformType: 0,
       }
     );
     if (
@@ -76,6 +77,7 @@ class zDAORegistryClient {
       ZNAASSOCIATION_BY_QUERY,
       {
         id_in: [this.zNATozNAId(zNA)],
+        platformType: 0,
       }
     );
     return result.znaassociations.length > 0;
