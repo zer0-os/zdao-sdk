@@ -123,10 +123,13 @@ class ProposalClient implements Proposal {
     return proposal;
   }
 
-  static getProposalHash(proposalId: string): BigNumber {
+  static getProposalHash(zDAOId: string, proposalId: string): BigNumber {
     return BigNumber.from(
       ethers.utils.keccak256(
-        ethers.utils.defaultAbiCoder.encode(['string'], [proposalId])
+        ethers.utils.defaultAbiCoder.encode(
+          ['string', 'string'],
+          [zDAOId, proposalId]
+        )
       )
     );
   }
@@ -314,7 +317,7 @@ class ProposalClient implements Proposal {
         'executeProposal',
         [
           PlatformType.Snapshot.toString(),
-          ProposalClient.getProposalHash(this.id).toString(),
+          ProposalClient.getProposalHash(this._zDAO.ens, this.id).toString(),
           token,
           this.metadata.recipient,
           this.metadata.amount,

@@ -1,5 +1,6 @@
-import { createInstance as createZNSInstance } from '@zero-tech/zns-sdk';
-import * as zns from '@zero-tech/zns-sdk';
+import Safe from '@gnosis.pm/safe-core-sdk';
+import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
+import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import { BigNumber, ethers } from 'ethers';
 
 import { createSDKInstance } from '../../src';
@@ -9,6 +10,7 @@ import {
 } from '../../src/config';
 import {
   Config,
+  GnosisSafeConfig,
   ProposalState,
   SDKInstance,
   SupportedChainId,
@@ -25,16 +27,18 @@ const createProposal = async (
 ) => {
   const blockNumber = await signer.provider.getBlockNumber();
 
-  const zDAO = await sdkInstance.createZDAOFromParams({
-    ens: 'zdao721test.eth',
-    zNA: 'wilder.moto',
-    duration: 86400,
-    title: 'ERC721 Enumerable DAO',
-    creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-    network: SupportedChainId.RINKEBY,
-    safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
-    votingToken: '0xa4F6C921f914ff7972D7C55c15f015419326e0Ca', // GuildNFT (GGD)
-  });
+  // const zDAO = await sdkInstance.createZDAOFromParams({
+  //   ens: 'zdao721test.eth',
+  //   zNA: 'wilder.moto',
+  //   duration: 86400,
+  //   title: 'ERC721 Enumerable DAO',
+  //   creator: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+  //   network: SupportedChainId.RINKEBY,
+  //   safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+  //   votingToken: '0xa4F6C921f914ff7972D7C55c15f015419326e0Ca', // GuildNFT (GGD)
+  // });
+
+  const zDAO = await sdkInstance.getZDAOByZNA('wilder.moto');
 
   await zDAO.createProposal(signer, signer.address, {
     title: 'Hello Proposal',
@@ -174,15 +178,22 @@ const immediateVoteAll = async (
   }
 };
 
-const iterateZNAs = async (sdkInstance: SDKInstance) => {
+const iterateZNAs = async (
+  sdkInstance: SDKInstance,
+  gnosisSigner: ethers.Wallet
+) => {
+  console.time('listZNAs');
   const zNAs: zNA[] = await sdkInstance.listZNAs();
+  console.timeEnd('listZNAs');
   console.log('zNAs', zNAs);
 
   console.time('iterateZNAs');
   // create zdao which is associated with `wilder.cats`
   for (const zNA of zNAs) {
     console.log('> zNA:', zNA);
+    console.time('getZDAOByZNA');
     const dao: zDAO = await sdkInstance.getZDAOByZNA(zNA);
+    console.timeEnd('getZDAOByZNA');
     console.log(
       'zDAO instance',
       dao.id,
@@ -193,38 +204,109 @@ const iterateZNAs = async (sdkInstance: SDKInstance) => {
       dao.totalSupplyOfVotingToken
     );
 
-    // const proposals = await dao.listProposals();
-    // console.log('proposals', proposals);
+    console.time('listProposals');
+    const proposals = await dao.listProposals();
+    console.timeEnd('listProposals');
+    console.log('proposals', proposals.length);
 
-    // const assets = await dao.listAssets();
+    console.time('listAssets');
+    const assets = await dao.listAssets();
+    console.timeEnd('listAssets');
     // console.log('assets', assets);
 
-    // const txs = await dao.listTransactions();
+    console.time('listTransactions');
+    const txs = await dao.listTransactions();
+    console.timeEnd('listTransactions');
     // console.log('transactions', txs);
   }
   console.timeEnd('iterateZNAs');
 };
 
 const performance = async (sdkInstance: SDKInstance, signer: ethers.Wallet) => {
+  console.time('listZNAs');
   const zNAs: zNA[] = await sdkInstance.listZNAs();
+  console.timeEnd('listZNAs');
   console.log('zNAs', zNAs);
 
-  const zDAO = await sdkInstance.getZDAOByZNA('wilder.skydao2');
-  console.log('zDAO', zDAO);
-
-  // const proposals = await zDAO.listProposals();
-  // console.log('proposals', proposals);
-
-  const proposal = await zDAO.getProposal(
-    '0x3c28cfe3c537166310f66458a32133fe552c8a6f9d7ee3ba0ce4e0a73618fa51'
+  console.time('Promise.getZDAOByZNA');
+  const daos: zDAO[] = await Promise.all(
+    zNAs.map((zna) => sdkInstance.getZDAOByZNA(zna))
   );
-  console.log('proposal', proposal);
+  console.timeEnd('Promise.getZDAOByZNA');
+  console.log('zDAOs', daos.length);
 
-  await proposal.execute(signer);
+  console.time('Promise,listAssetsCoins');
+  await Promise.all(daos.map((dao) => dao.listAssetsCoins()));
+  console.timeEnd('Promise,listAssetsCoins');
+
+  console.time('Promise,listAssetsCollectibles');
+  await Promise.all(daos.map((dao) => dao.listAssetsCollectibles()));
+  console.timeEnd('Promise,listAssetsCollectibles');
+
+  console.time('Promise,listAssets');
+  await Promise.all(daos.map((dao) => dao.listAssets()));
+  console.timeEnd('Promise,listAssets');
+
+  console.time('Promise,listTransactions');
+  await Promise.all(daos.map((dao) => dao.listTransactions()));
+  console.timeEnd('Promise,listTransactions');
+};
+
+const testZDAO = async (sdkInstance: SDKInstance) => {
+  const zDAO = await sdkInstance.getZDAOByZNA('wilder.wheels');
+  // const coins = await zDAO.listAssetsCoins();
+  // console.log('coins', coins);
+  const collectibles = await zDAO.listAssetsCollectibles();
+  console.log('collectibles', collectibles.length);
+};
+
+const multiSignTransaction = async (
+  config: GnosisSafeConfig,
+  safeAddress: string,
+  gnosisSafeSigner: ethers.Wallet
+) => {
+  const ethAdapter = new EthersAdapter({
+    ethers,
+    signer: gnosisSafeSigner,
+  });
+  const safeService = new SafeService(config.serviceUri);
+  const safe = await Safe.create({
+    ethAdapter,
+    safeAddress,
+  });
+  const safeSigner = new SafeEthersSigner(
+    safe,
+    safeService,
+    gnosisSafeSigner.provider
+  );
+
+  const abi = [
+    {
+      inputs: [{ internalType: 'address', name: 'module', type: 'address' }],
+      name: 'enableModule',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+  ];
+
+  const module = '0x97199c4d45037c1D12F24048Ea8a19A564A4b661';
+
+  const gnosisProxyInterface = new ethers.utils.Interface(abi);
+  const txData = gnosisProxyInterface.encodeFunctionData('enableModule', [
+    module,
+  ]);
+  console.log('txdata', txData);
+  const resp = await safeSigner.sendTransaction({
+    value: '0',
+    to: safeAddress,
+    data: txData,
+  });
+  console.log('resp', resp);
 };
 
 const main = async () => {
-  const isDev = true;
+  const isDev = false;
   const env = setEnv(isDev);
 
   const provider = new ethers.providers.JsonRpcProvider(
@@ -232,29 +314,24 @@ const main = async () => {
     env.network
   );
   const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
+  const gnosisSigner = new ethers.Wallet(
+    process.env.GNOSIS_OWNER_PRIVATE_KEY!,
+    provider
+  );
 
   const config: Config = isDev
-    ? developmentConfiguration(
-        env.zDAORegistry,
-        provider,
-        'snapshot.mypinata.cloud'
-      )
-    : productionConfiguration(
-        env.zDAORegistry,
-        provider,
-        'snapshot.mypinata.cloud'
-      );
+    ? developmentConfiguration(provider, 'snapshot.mypinata.cloud')
+    : productionConfiguration(provider, 'snapshot.mypinata.cloud');
 
   console.time('createSDKInstance');
   const sdkInstance: SDKInstance = createSDKInstance(config);
   console.timeEnd('createSDKInstance');
 
-  console.log('zNS.config', config.zNS);
-
-  const znsInstance = createZNSInstance(config.zNS);
+  // console.log('zNS.config', config.zNS);
+  // const znsInstance = createZNSInstance(config.zNS);
   // console.log('wilder.moto', zns.domains.domainNameToId('wilder.moto'));
   // console.log('wilder.skydao', zns.domains.domainNameToId('wilder.skydao'));
-  console.log('wilder.moto', zns.domains.domainNameToId('wilder.moto'));
+  // console.log('wilder.moto', zns.domains.domainNameToId('wilder.moto'));
 
   // console.log(
   //   '0x617b3c878abfceb89eb62b7a24f393569c822946bbc9175c6c65a7d2647c5402',
@@ -299,8 +376,36 @@ const main = async () => {
   //   }),
   //   2
   // );
-  // await iterateZNAs(sdkInstance);
+  // await iterateZNAs(sdkInstance, gnosisSigner);
   await performance(sdkInstance, signer);
+  // await testZDAO(sdkInstance);
+
+  // const gnosisSafeClient = new GnosisSafeClient(config.gnosisSafe);
+  // await gnosisSafeClient.proposeTxFromModule(
+  //   '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+  //   gnosisSigner,
+  //   'executeProposal',
+  //   [
+  //     PlatformType.Snapshot.toString(),
+  //     ethers.utils.keccak256(
+  //       ethers.utils.defaultAbiCoder.encode(['string'], ['Hello World1'])
+  //     ),
+  //     '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+  //     '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
+  //     '1000000000000000000000',
+  //   ]
+  // );
+  // const executed = await gnosisSafeClient.isProposalsExecuted(
+  //   PlatformType.Snapshot,
+  //   ['hddld', 'Hello World', 'HelloWorld']
+  // );
+  // console.log('executed', executed);
+
+  // await multiSignTransaction(
+  //   config.gnosisSafe,
+  //   '0x7a935d07d097146f143A45aA79FD8624353abD5D',
+  //   gnosisSigner
+  // );
 
   console.log('Finished successfully');
 };
