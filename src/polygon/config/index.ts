@@ -13,8 +13,8 @@ import { PolygonConfig, ProofConfig } from '../types';
 
 const polygonZDAOConfig = {
   [SupportedChainId.MUMBAI]: {
-    zDAOChef: '', // todo
-    blockNumber: 0, // todo
+    zDAOChef: '0xC0ee587997e3B389D00620582a330724A723728E', // todo
+    blockNumber: 27589024, // todo
   },
   [SupportedChainId.POLYGON]: {
     zDAOChef: '', // todo

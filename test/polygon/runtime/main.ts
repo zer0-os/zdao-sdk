@@ -27,7 +27,7 @@ const createZDAO = async (
         isRelativeMajority: DAO.isRelativeMajority ?? true,
       });
 
-      console.log(`DAO ${DAO.zNA} created`);
+      console.log(`DAO ${DAO.zNAs} created`);
     }
   }
 };
@@ -268,7 +268,7 @@ const main = async () => {
   console.log('instance created');
 
   // await createZDAO(instance, goerliSigner, env);
-  await iterateZNAs(instance);
+  // await iterateZNAs(instance);
   // await iterateZDAO(instance, goerliSigner, 'wilder.wheels', env);
 
   // const goerliGnosisOwnerSigner = new ethers.Wallet(
