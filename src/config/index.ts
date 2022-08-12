@@ -15,7 +15,7 @@ export const MultiCallAddress: AddressMap = {
 export const zDAORegistryAddress: AddressMap = {
   [SupportedChainId.MAINNET]: '',
   [SupportedChainId.RINKEBY]: '0x2ae829089678d90027279ab36AE99928F53D8b9e',
-  [SupportedChainId.GOERLI]: '0xd04B0A93E42345F689d5278AB1c6661D5B540920',
+  [SupportedChainId.GOERLI]: '0x96c027373845eB79686bfD984EEed33D825296CA',
   [SupportedChainId.MUMBAI]: '',
   [SupportedChainId.POLYGON]: '',
 };
@@ -61,7 +61,7 @@ export const ethereumZDAOConfig = {
     zDAOChef: '', // todo
   },
   [SupportedChainId.GOERLI]: {
-    zDAOChef: '0x3760E3Ee7c6542A782D49EC4F0c2C92c9647c2df', // todo
+    zDAOChef: '0x9a586ec0d2144B5E6926a4Cfc62bF32aE374652F', // todo
   },
 };
 
