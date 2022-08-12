@@ -66,7 +66,7 @@ export const setEnvPolygon = () => {
           name: 'Wilder Wheels',
           votingToken: '0xa80152CB820463a1B50228D2b8dE50717E849BBd',
           gnosisSafe: '0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa',
-          zNAs: ['wilder.wheels', 'wilder.cats', 'wilder.breasts'],
+          zNAs: ['wilder.wheels', 'wilder.breasts'],
           duration: 172800, // 2 days
         },
         {

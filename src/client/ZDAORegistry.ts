@@ -64,28 +64,22 @@ class ZDAORegistryClient {
     const promises: Promise<zNA>[] = [];
     for (const zDAORecord of result.zdaorecords) {
       promises.push(
-        zDAORecord.zNAs.map((association: any) =>
+        ...zDAORecord.zNAs.map((association: any) =>
           ZNAClient.zNAIdTozNA(BigNumber.from(association.id).toHexString())
         )
       );
     }
     const zNAs: zNA[] = await Promise.all(promises);
 
-    let startIndex = 0;
-    return result.zdaorecords.map((record: any) => {
-      const zDAORecord = {
-        platformType:
-          result.znaassociations[0].zDAORecord.platformType.toNumber() as PlatformType,
-        id: result.znaassociations[0].zDAORecord.zDAOId.toString(),
-        zDAOOwnedBy: result.znaassociations[0].zDAORecord.createdBy.toString(),
-        gnosisSafe: result.znaassociations[0].zDAORecord.gnosisSafe.toString(),
-        name: result.znaassociations[0].zDAORecord.gnosisSafe.toString(),
-        destroyed: false,
-        associatedzNAs: zNAs.slice(startIndex, startIndex + record.zNAs.length),
-      };
-      startIndex += record.zNAs.length;
-      return zDAORecord;
-    });
+    return result.zdaorecords.map((record: any) => ({
+      platformType: record.platformType,
+      id: record.zDAOId.toString(),
+      zDAOOwnedBy: record.createdBy.toString(),
+      gnosisSafe: record.gnosisSafe.toString(),
+      name: record.gnosisSafe.toString(),
+      destroyed: false,
+      associatedzNAs: zNAs.splice(0, record.zNAs.length),
+    }));
   }
 
   async getZDAORecordByZNA(zNA: zNA): Promise<ZDAORecord> {
