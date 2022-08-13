@@ -8,7 +8,7 @@ import {
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
 import fetch from 'cross-fetch';
-import { BigNumberish, ethers } from 'ethers';
+import { BigNumber, BigNumberish, ethers } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
 
 import ZDAOModuleAbi from '../config/constants/abi/ZDAOModule.json';
@@ -49,15 +49,13 @@ class GnosisSafeClient {
 
   async isProposalsExecuted(
     platformType: PlatformType,
-    proposalHashes: string[]
+    proposalHashes: BigNumber[]
   ): Promise<boolean[]> {
     const response = await graphQLQuery(
       this._graphQLClient,
       EXECUTEDPROPOSALS_BY_QUERY,
       {
-        id_in: proposalHashes.map(
-          (proposalHash) => `${platformType}-${proposalHash}`
-        ),
+        proposalHashes: proposalHashes.map((hash) => hash.toString()),
         platformType,
       }
     );

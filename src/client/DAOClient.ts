@@ -319,7 +319,7 @@ class DAOClient implements zDAO {
     const executeds = await this._gnosisSafeClient.isProposalsExecuted(
       PlatformType.Snapshot,
       snapshotProposals.map((proposal) =>
-        ProposalClient.getProposalHash(this.ens, proposal.id).toString()
+        ProposalClient.getProposalHash(this.ens, proposal.id)
       )
     );
 
@@ -374,7 +374,7 @@ class DAOClient implements zDAO {
 
     const executed = await this._gnosisSafeClient.isProposalsExecuted(
       PlatformType.Snapshot,
-      [ProposalClient.getProposalHash(this.ens, proposal.id).toString()]
+      [ProposalClient.getProposalHash(this.ens, proposal.id)]
     );
 
     return await ProposalClient.createInstance(
