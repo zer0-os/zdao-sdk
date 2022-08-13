@@ -1,6 +1,7 @@
 import { BigNumber, ethers } from 'ethers';
 
 import { Polygon, ProposalState, SupportedChainId, zNA } from '../../../src';
+import { ZNAClient } from '../../../src/client';
 import { sleep } from '../../../src/utilities/date';
 import { setEnvPolygon as setEnv } from '../../shared/setupEnv';
 
@@ -12,6 +13,10 @@ const createZDAO = async (
   env: any
 ) => {
   for (const DAO of env.DAOs.goerli) {
+    for (const zNA of DAO.zNAs) {
+      console.log(DAO.name, zNA, ZNAClient.zNATozNAId(zNA));
+    }
+
     if (!(await sdkInstance.doesZDAOExist(DAO.zNAs[0]))) {
       await sdkInstance.createZDAO(signer, undefined, {
         zNA: DAO.zNAs[0],
@@ -41,7 +46,7 @@ const createProposal = async (
   await zDAO.createProposal(signer, undefined, {
     title: 'Hello Proposal',
     body: 'Hello World',
-    choices: ['Approve', 'Deny', 'Absence'],
+    choices: ['Approve', 'Deny'],
     transfer: {
       sender: zDAO.gnosisSafe,
       recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
@@ -267,8 +272,15 @@ const main = async () => {
 
   console.log('instance created');
 
+  // await createProposal(
+  //   instance,
+  //   goerliSigner,
+  //   await instance.getZDAOByZNA('wilder.wheels'),
+  //   env
+  // );
+
   // await createZDAO(instance, goerliSigner, env);
-  // await iterateZNAs(instance);
+  await iterateZNAs(instance);
   // await iterateZDAO(instance, goerliSigner, 'wilder.wheels', env);
 
   // const goerliGnosisOwnerSigner = new ethers.Wallet(

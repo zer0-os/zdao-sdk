@@ -1,23 +1,32 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
+import { GraphQLClient } from 'graphql-request';
 
 import { PlatformType } from '../..';
 import { ZDAORecord } from '../../client/ZDAORegistry';
 import { EthereumDAOConfig, ProposalId, zDAOId } from '../../types';
 import { calculateGasMargin, getToken, getTotalSupply } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
-import { EthereumZDAO, IEthereumZDAO } from '../config/types/EthereumZDAO';
+import { EthereumZDAO } from '../config/types/EthereumZDAO';
 import { EthereumZDAOChef } from '../config/types/EthereumZDAOChef';
 import { EthereumZDAO__factory } from '../config/types/factories/EthereumZDAO__factory';
 import { EthereumZDAOChef__factory } from '../config/types/factories/EthereumZDAOChef__factory';
 import { FxStateEthereumTunnel__factory } from '../config/types/factories/FxStateEthereumTunnel__factory';
 import { FxStateEthereumTunnel } from '../config/types/FxStateEthereumTunnel';
 import { CreatePolygonProposalParams, CreatePolygonZDAOParams } from '../types';
-import { EthereumZDAOProperties } from './types';
+import {
+  ETHEREUMPROPOSAL_BY_QUERY,
+  ETHEREUMPROPOSALS_BY_QUERY,
+  EthereumSubgraphProposal,
+  EthereumSubgraphZDAO,
+  EthereumZDAOProperties,
+  ETHEREUMZDAOS_BY_QUERY,
+} from './types';
 
 class EthereumZDAOChefClient {
   private readonly config: EthereumDAOConfig;
   protected contract!: EthereumZDAOChef;
   protected rootStateSender?: FxStateEthereumTunnel;
+  private readonly zDAOGQLClient: GraphQLClient;
 
   constructor(config: EthereumDAOConfig, provider: ethers.providers.Provider) {
     this.config = config;
@@ -26,6 +35,7 @@ class EthereumZDAOChefClient {
       config.zDAOChef,
       provider
     );
+    this.zDAOGQLClient = new GraphQLClient(config.subgraphUri);
   }
 
   private async getRootStateSender(): Promise<FxStateEthereumTunnel> {
@@ -45,14 +55,33 @@ class EthereumZDAOChefClient {
     return EthereumZDAO__factory.connect(zDAO, GlobalClient.etherRpcProvider);
   }
 
-  getZDAOInfoById(zDAOId: zDAOId): Promise<IEthereumZDAO.ZDAOInfoStructOutput> {
-    return this.contract.getZDAOInfoById(zDAOId);
+  async getZDAOInfoById(zDAOId: zDAOId): Promise<EthereumSubgraphZDAO> {
+    const result = await this.zDAOGQLClient.request(ETHEREUMZDAOS_BY_QUERY, {
+      zDAOId: Number(zDAOId),
+    });
+    const zDAO = result.ethereumZDAOs[0];
+    return {
+      zDAOId: zDAO.zDAORecord.zDAOId,
+      name: zDAO.zDAORecord.name,
+      createdBy: zDAO.zDAORecord.createdBy,
+      gnosisSafe: zDAO.zDAORecord.gnosisSafe,
+      token: zDAO.token,
+      amount: BigNumber.from(zDAO.amount),
+      duration: zDAO.duration,
+      votingDelay: zDAO.votingDelay,
+      votingThreshold: zDAO.votingThreshold,
+      minimumVotingParticipants: zDAO.minimumVotingParticipants,
+      minimumTotalVotingTokens: zDAO.minimumTotalVotingTokens,
+      isRelativeMajority: zDAO.isRelativeMajority,
+      snapshot: zDAO.snapshot,
+      destroyed: zDAO.zDAORecord.destroyed,
+    };
   }
 
   async getZDAOPropertiesById(
     zDAORecord: ZDAORecord
   ): Promise<EthereumZDAOProperties> {
-    const zDAOInfo = await this.contract.getZDAOInfoById(zDAORecord.id);
+    const zDAOInfo = await this.getZDAOInfoById(zDAORecord.id);
 
     const results = await Promise.all([
       getToken(GlobalClient.etherRpcProvider, zDAOInfo.token),
@@ -71,12 +100,12 @@ class EthereumZDAOChefClient {
       votingToken: results[0],
       minimumVotingTokenAmount: zDAOInfo.amount.toString(),
       totalSupplyOfVotingToken: results[1].toString(),
-      votingDuration: zDAOInfo.duration.toNumber(),
-      votingDelay: zDAOInfo.votingDelay.toNumber(),
-      votingThreshold: zDAOInfo.votingThreshold.toNumber(),
-      minimumVotingParticipants: zDAOInfo.minimumVotingParticipants.toNumber(),
+      votingDuration: zDAOInfo.duration,
+      votingDelay: zDAOInfo.votingDelay,
+      votingThreshold: zDAOInfo.votingThreshold,
+      minimumVotingParticipants: zDAOInfo.minimumVotingParticipants,
       minimumTotalVotingTokens: zDAOInfo.minimumTotalVotingTokens.toString(),
-      snapshot: zDAOInfo.snapshot.toNumber(),
+      snapshot: zDAOInfo.snapshot,
       isRelativeMajority: zDAOInfo.isRelativeMajority,
       destroyed: zDAOInfo.destroyed,
     };
@@ -116,6 +145,59 @@ class EthereumZDAOChefClient {
 
   async removeZDAO(signer: ethers.Signer, zDAOId: zDAOId) {
     await GlobalClient.zDAORegistry.removeZDAO(signer, zDAOId);
+  }
+
+  async listProposals(zDAOId: zDAOId): Promise<EthereumSubgraphProposal[]> {
+    const result = await this.zDAOGQLClient.request(
+      ETHEREUMPROPOSALS_BY_QUERY,
+      {
+        zDAOId: Number(zDAOId),
+      }
+    );
+
+    return result.ethereumProposals.map(
+      (proposal: any): EthereumSubgraphProposal => ({
+        zDAOId: proposal.zDAO.zDAOId,
+        proposalId: proposal.proposalId,
+        numberOfChoices: proposal.numberOfChoices,
+        createdBy: proposal.createdBy,
+        snapshot: proposal.snapshot,
+        ipfs: proposal.ipfs,
+        created: proposal.created,
+        canceled: proposal.canceled,
+        calculated: proposal.calculated,
+      })
+    );
+  }
+
+  async getProposal(
+    zDAOId: zDAOId,
+    proposalId: ProposalId
+  ): Promise<EthereumSubgraphProposal | undefined> {
+    const result = await this.zDAOGQLClient.request(ETHEREUMPROPOSAL_BY_QUERY, {
+      zDAOId: Number(zDAOId),
+      proposalId,
+    });
+    if (
+      !result ||
+      !Array.isArray(result.ethereumProposals) ||
+      result.ethereumProposals.length < 1
+    ) {
+      return undefined;
+    }
+
+    const proposal = result.ethereumProposals[0];
+    return {
+      zDAOId: proposal.zDAO.zDAOId,
+      proposalId: proposal.proposalId,
+      numberOfChoices: proposal.numberOfChoices,
+      createdBy: proposal.createdBy,
+      snapshot: proposal.snapshot,
+      ipfs: proposal.ipfs,
+      created: proposal.created,
+      canceled: proposal.canceled,
+      calculated: proposal.calculated,
+    };
   }
 
   async createProposal(

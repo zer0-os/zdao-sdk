@@ -1,4 +1,4 @@
-import { SupportedChainId } from '../types';
+import { EthereumDAOConfig, SupportedChainId } from '../types';
 
 /* -------------------------------------------------------------------------- */
 /*                          Smart Contract Addresses                          */
@@ -15,7 +15,7 @@ export const MultiCallAddress: AddressMap = {
 export const zDAORegistryAddress: AddressMap = {
   [SupportedChainId.MAINNET]: '',
   [SupportedChainId.RINKEBY]: '0x2ae829089678d90027279ab36AE99928F53D8b9e',
-  [SupportedChainId.GOERLI]: '0x96c027373845eB79686bfD984EEed33D825296CA',
+  [SupportedChainId.GOERLI]: '0xC9d640CB7a1Cdfa02b31f0AE36c239380B493448',
   [SupportedChainId.MUMBAI]: '',
   [SupportedChainId.POLYGON]: '',
 };
@@ -53,15 +53,21 @@ export const zDAOModuleSubgraphUri: AddressMap = {
 /* -------------------------------------------------------------------------- */
 /*                             DAO Configurations                             */
 /* -------------------------------------------------------------------------- */
-export const ethereumZDAOConfig = {
+export const ethereumZDAOConfig: { [chainId: number]: EthereumDAOConfig } = {
   [SupportedChainId.MAINNET]: {
     zDAOChef: '', // todo
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
   },
   [SupportedChainId.RINKEBY]: {
     zDAOChef: '', // todo
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-rinkeby',
   },
   [SupportedChainId.GOERLI]: {
-    zDAOChef: '0x9a586ec0d2144B5E6926a4Cfc62bF32aE374652F', // todo
+    zDAOChef: '0xc9DC42076E5323Ae6c2f438302c70E08FaF0cae8', // todo
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-goerli',
   },
 };
 

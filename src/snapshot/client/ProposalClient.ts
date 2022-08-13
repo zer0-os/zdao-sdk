@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 
 import { PlatformType } from '../..';
 import {
@@ -17,11 +17,7 @@ import {
   TokenMetaData,
   ZDAOError,
 } from '../../types';
-import {
-  errorMessageForError,
-  getDecimalAmount,
-  getSigner,
-} from '../../utilities';
+import { errorMessageForError, getSigner } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
 import { SnapshotProposalProperties } from '../snapshot/types';
 import {
@@ -243,23 +239,6 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     throw new NotImplementedError();
   }
 
-  canExecute(): boolean {
-    if (this.zDAO.isRelativeMajority || !this.scores) return false;
-
-    const totalScore = this.scores.reduce(
-      (prev, current) => prev.add(current),
-      BigNumber.from(0)
-    );
-    const totalScoreAsBN = getDecimalAmount(
-      BigNumber.from(totalScore),
-      this.zDAO.votingToken.decimals
-    );
-    if (totalScoreAsBN.gte(this.zDAO.minimumTotalVotingTokens)) {
-      return true;
-    }
-    return false;
-  }
-
   async isExecuted(): Promise<boolean> {
     const executed = await this.zDAO.gnosisSafeClient.isProposalsExecuted(
       PlatformType.Snapshot,
@@ -288,7 +267,7 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     if (!this.metadata) {
       throw new ZDAOError(errorMessageForError('empty-metadata'));
     }
-    if (this.state !== ProposalState.CLOSED || !this.canExecute()) {
+    if (this.state !== ProposalState.AWAITING_EXECUTION) {
       throw new ZDAOError(errorMessageForError('not-executable-proposal'));
     }
 

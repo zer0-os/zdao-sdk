@@ -8,6 +8,9 @@ export interface PolygonDAOConfig {
 
   // Contract Creation block number
   blockNumber: number;
+
+  // subgraphUri to zDAOChef
+  subgraphUri: string;
 }
 
 export interface ProofConfig {

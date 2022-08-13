@@ -9,16 +9,20 @@ import {
   zNSHubAddress,
 } from '../../config';
 import { FleekConfig, SupportedChainId } from '../../types';
-import { PolygonConfig, ProofConfig } from '../types';
+import { PolygonConfig, PolygonDAOConfig, ProofConfig } from '../types';
 
-const polygonZDAOConfig = {
+const polygonZDAOConfig: { [chainId: number]: PolygonDAOConfig } = {
   [SupportedChainId.MUMBAI]: {
-    zDAOChef: '0xEf26Fd04017578E6E4258204F89aC74ED46Cf677', // todo
+    zDAOChef: '0x23E8f1D5BcB960221E405aD53231f932Cdb96f66', // todo
     blockNumber: 27589971, // todo
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-mumbai',
   },
   [SupportedChainId.POLYGON]: {
     zDAOChef: '', // todo
     blockNumber: 0, // todo
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-polygon',
   },
 };
 

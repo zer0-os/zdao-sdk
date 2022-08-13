@@ -6,7 +6,7 @@ import { ZDAORegistry__factory } from '../config/types/factories/ZDAORegistry__f
 import { ZDAORegistry } from '../config/types/ZDAORegistry';
 import { zNAConfig } from '../types';
 import { zDAOId, zDAOProperties, zNA } from '../types';
-import { calculateGasMargin, errorMessageForError } from '../utilities';
+import { calculateGasMargin } from '../utilities';
 import {
   ZDAORECORDS_QUERY,
   ZNAASSOCIATION_BY_QUERY,
@@ -82,7 +82,7 @@ class ZDAORegistryClient {
     }));
   }
 
-  async getZDAORecordByZNA(zNA: zNA): Promise<ZDAORecord> {
+  async getZDAORecordByZNA(zNA: zNA): Promise<ZDAORecord | undefined> {
     const result = await this.registryGQLClient.request(
       ZNAASSOCIATION_BY_QUERY,
       {
@@ -95,7 +95,7 @@ class ZDAORegistryClient {
       !Array.isArray(result.znaassociations) ||
       result.znaassociations.length < 1
     ) {
-      throw new Error(errorMessageForError('not-found-zdao'));
+      return undefined;
     }
     const zNAs: zNA[] = await Promise.all(
       result.znaassociations[0].zDAORecord.zNAs.map((association: any) =>
@@ -104,8 +104,7 @@ class ZDAORegistryClient {
     );
 
     return {
-      platformType:
-        result.znaassociations[0].zDAORecord.platformType.toNumber() as PlatformType,
+      platformType: result.znaassociations[0].zDAORecord.platformType,
       id: result.znaassociations[0].zDAORecord.zDAOId.toString(),
       zDAOOwnedBy: result.znaassociations[0].zDAORecord.createdBy.toString(),
       gnosisSafe: result.znaassociations[0].zDAORecord.gnosisSafe.toString(),

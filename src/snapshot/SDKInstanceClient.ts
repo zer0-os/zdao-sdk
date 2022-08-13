@@ -113,7 +113,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     // get zDAO information associated with zNA
     const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
 
-    if (zDAORecord.id === '0') {
+    if (!zDAORecord) {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 

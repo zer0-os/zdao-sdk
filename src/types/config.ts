@@ -4,6 +4,9 @@ import { ethers } from 'ethers';
 export interface EthereumDAOConfig {
   // address to zDAOChef contract
   zDAOChef: string;
+
+  // subgraphUri where index zDAOChef
+  subgraphUri: string;
 }
 
 export interface zNAConfig {
