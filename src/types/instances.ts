@@ -134,6 +134,11 @@ export interface zDAO extends zDAOProperties {
 
 export interface Proposal extends ProposalProperties {
   /**
+   * Check if proposal is suceeded
+   */
+  canExecute(): boolean;
+
+  /**
    * Get all the votes by proposal id filtering with the function parameter
    * @returns list of votes
    */
