@@ -5,7 +5,7 @@ export const EXECUTEDPROPOSALS_QUERY = gql`
     executedProposals {
       id
       platformType
-      proposalId
+      proposalHash
     }
   }
 `;
@@ -15,7 +15,7 @@ export const EXECUTEDPROPOSALS_BY_QUERY = gql`
     executedProposals(where: { id_in: $id_in }) {
       id
       platformType
-      proposalId
+      proposalHash
     }
   }
 `;

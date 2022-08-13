@@ -9,23 +9,6 @@ export interface ZDAORecord {
   zNAs: zNA[];
 }
 
-export const ZDAORECORDS_QUERY = gql`
-  query zDAORecords {
-    zdaorecords(where: { destroyed: false }) {
-      id
-      platformType
-      zDAOId
-      name
-      gnosisSafe
-      createdBy
-      destroyed
-      zNAs {
-        id
-      }
-    }
-  }
-`;
-
 export const ZNAS_QUERY = gql`
   query zNAAssociation($platformType: Int!) {
     znaassociations(

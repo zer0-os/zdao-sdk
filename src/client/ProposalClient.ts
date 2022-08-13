@@ -274,7 +274,7 @@ class ProposalClient implements Proposal {
   async isExecuted(): Promise<boolean> {
     const executed = await this._gnosisSafeClient.isProposalsExecuted(
       PlatformType.Snapshot,
-      [this.id]
+      [ProposalClient.getProposalHash(this._zDAO.ens, this.id).toString()]
     );
     return executed[0];
   }

@@ -12,7 +12,7 @@ import { BigNumberish, ethers } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
 
 import ZDAOModuleAbi from '../config/constants/abi/ZDAOModule.json';
-import { GnosisSafeConfig, PlatformType, ProposalId } from '../types';
+import { GnosisSafeConfig, PlatformType } from '../types';
 import { graphQLQuery } from '../utilities';
 import { EXECUTEDPROPOSALS_BY_QUERY } from './types';
 
@@ -49,7 +49,7 @@ class GnosisSafeClient {
 
   async isProposalsExecuted(
     platformType: PlatformType,
-    proposalHashes: ProposalId[]
+    proposalHashes: string[]
   ): Promise<boolean[]> {
     const response = await graphQLQuery(
       this._graphQLClient,
@@ -58,6 +58,7 @@ class GnosisSafeClient {
         id_in: proposalHashes.map(
           (proposalHash) => `${platformType}-${proposalHash}`
         ),
+        platformType,
       }
     );
     const filtered = response.executedProposals.map(
