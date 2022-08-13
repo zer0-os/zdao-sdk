@@ -57,7 +57,8 @@ class GnosisSafeClient {
       this.graphQLClient,
       EXECUTEDPROPOSALS_BY_QUERY,
       {
-        id_in: proposalHashes.map((hash) => `${platformType}-${hash}`),
+        proposalHashes: proposalHashes.map((hash) => hash.toString()),
+        platformType,
       }
     );
     const filtered = response.executedProposals.map(

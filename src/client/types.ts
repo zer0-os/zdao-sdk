@@ -1,11 +1,13 @@
 import { gql } from 'graphql-request';
 
 export const EXECUTEDPROPOSALS_BY_QUERY = gql`
-  query ExecutedProposals($id_in: [String]) {
-    executedProposals(where: { id_in: $id_in }) {
+  query ExecutedProposals($platformType: Int!, $proposalHashes: [String!]) {
+    executedProposals(
+      where: { platformType: $platformType, proposalHash_in: $proposalHashes }
+    ) {
       id
       platformType
-      proposalId
+      proposalHash
     }
   }
 `;

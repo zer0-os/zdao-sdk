@@ -273,7 +273,7 @@ class DAOClient
     const executeds = await this.gnosisSafeClient.isProposalsExecuted(
       PlatformType.Polygon,
       ethereumSubgraphProposals.map((raw) =>
-        ProposalClient.getProposalHash(this.id, raw.proposalId.toString())
+        ProposalClient.getProposalHash(this.id, raw.proposalId)
       )
     );
     const promises: Promise<ProposalProperties>[] =
