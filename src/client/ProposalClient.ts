@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import GnosisSafeClient from '../gnosis-safe';
@@ -12,6 +12,7 @@ import {
   VoteId,
 } from '../types';
 import { Choice, Proposal, Vote } from '../types';
+import { generateProposalHash } from '../utilities';
 import { errorMessageForError } from '../utilities/messages';
 import DAOClient from './DAOClient';
 
@@ -121,17 +122,6 @@ class ProposalClient implements Proposal {
     );
     await proposal.getTokenMetadata();
     return proposal;
-  }
-
-  static getProposalHash(zDAOId: string, proposalId: string): BigNumber {
-    return BigNumber.from(
-      ethers.utils.keccak256(
-        ethers.utils.defaultAbiCoder.encode(
-          ['string', 'string'],
-          [zDAOId, proposalId]
-        )
-      )
-    );
   }
 
   private async getTokenMetadata() {
@@ -274,7 +264,7 @@ class ProposalClient implements Proposal {
   async isExecuted(): Promise<boolean> {
     const executed = await this._gnosisSafeClient.isProposalsExecuted(
       PlatformType.Snapshot,
-      [ProposalClient.getProposalHash(this._zDAO.ens, this.id)]
+      [generateProposalHash(PlatformType.Snapshot, this._zDAO.ens, this.id)]
     );
     return executed[0];
   }
@@ -317,7 +307,11 @@ class ProposalClient implements Proposal {
         'executeProposal',
         [
           PlatformType.Snapshot.toString(),
-          ProposalClient.getProposalHash(this._zDAO.ens, this.id).toString(),
+          generateProposalHash(
+            PlatformType.Snapshot,
+            this._zDAO.ens,
+            this.id
+          ).toString(),
           token,
           this.metadata.recipient,
           this.metadata.amount,

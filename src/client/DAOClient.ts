@@ -33,7 +33,11 @@ import {
   zDAOCollectibles,
   zDAOProperties,
 } from '../types';
-import { getDecimalAmount, getFullDisplayBalance } from '../utilities';
+import {
+  generateProposalHash,
+  getDecimalAmount,
+  getFullDisplayBalance,
+} from '../utilities';
 import { errorMessageForError } from '../utilities/messages';
 import ProposalClient from './ProposalClient';
 
@@ -319,7 +323,7 @@ class DAOClient implements zDAO {
     const executeds = await this._gnosisSafeClient.isProposalsExecuted(
       PlatformType.Snapshot,
       snapshotProposals.map((proposal) =>
-        ProposalClient.getProposalHash(this.ens, proposal.id)
+        generateProposalHash(PlatformType.Snapshot, this.ens, proposal.id)
       )
     );
 
@@ -374,7 +378,7 @@ class DAOClient implements zDAO {
 
     const executed = await this._gnosisSafeClient.isProposalsExecuted(
       PlatformType.Snapshot,
-      [ProposalClient.getProposalHash(this.ens, proposal.id)]
+      [generateProposalHash(PlatformType.Snapshot, this.ens, proposal.id)]
     );
 
     return await ProposalClient.createInstance(
