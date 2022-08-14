@@ -22,6 +22,7 @@ import {
 } from '../../types';
 import {
   errorMessageForError,
+  generateProposalHash,
   getFullDisplayBalance,
   getSigner,
   getToken,
@@ -111,8 +112,6 @@ class DAOClient
       ),
     ]);
 
-    const network = await GlobalClient.etherRpcProvider.getNetwork();
-
     const etherZDAOInfo = zDAOInfos[0];
     const instance = await new DAOClient(
       {
@@ -120,7 +119,7 @@ class DAOClient
         zNAs: zDAORecord.associatedzNAs,
         name: zDAORecord.name,
         createdBy: etherZDAOInfo.createdBy,
-        network: network.chainId,
+        network: GlobalClient.etherNetwork,
         gnosisSafe: etherZDAOInfo.gnosisSafe,
         votingToken: tokens[0] as Token,
         minimumVotingTokenAmount: etherZDAOInfo.amount.toString(),
@@ -156,8 +155,12 @@ class DAOClient
     executed: boolean
   ): Promise<ProposalProperties> {
     const created = new Date(ethereumRawProposal.created * 1000);
-    const start = new Date(Number(polygonRawProposal?.startTimestamp) * 1000),
-      end = new Date(Number(polygonRawProposal?.endTimestamp) * 1000),
+    const start = polygonRawProposal
+        ? new Date(Number(polygonRawProposal.startTimestamp) * 1000)
+        : undefined,
+      end = polygonRawProposal
+        ? new Date(Number(polygonRawProposal.endTimestamp) * 1000)
+        : undefined,
       now = new Date();
     const snapshot = polygonRawProposal?.snapshot;
     const scores = polygonRawProposal?.sumOfVotes;
@@ -263,19 +266,25 @@ class DAOClient
   }
 
   async listProposals(): Promise<PolygonProposal[]> {
+    console.time('GlobalClient.listProposals');
     const subgraphProposals = await Promise.all([
       GlobalClient.ethereumZDAOChef.listProposals(this.id),
       GlobalClient.polygonZDAOChef.listProposals(this.id),
     ]);
+    console.timeEnd('GlobalClient.listProposals');
 
+    console.time('isProposalExecuted');
     const ethereumSubgraphProposals = subgraphProposals[0];
     const polygonSubgraphProposals = subgraphProposals[1];
     const executeds = await this.gnosisSafeClient.isProposalsExecuted(
       PlatformType.Polygon,
       ethereumSubgraphProposals.map((raw) =>
-        ProposalClient.getProposalHash(this.id, raw.proposalId)
+        generateProposalHash(PlatformType.Polygon, this.id, raw.proposalId)
       )
     );
+    console.timeEnd('isProposalExecuted');
+
+    console.time('mapToProperties');
     const promises: Promise<ProposalProperties>[] =
       ethereumSubgraphProposals.map((ethereumRawProposal, index) =>
         this.mapToProperties(
@@ -286,14 +295,18 @@ class DAOClient
           executeds[index]
         )
       );
+    console.timeEnd('mapToProperties');
 
     const propertiesAll: ProposalProperties[] = await Promise.all(promises);
 
+    console.time('ProposalClient.createInstance');
     const proposalPromises: Promise<PolygonProposal>[] = propertiesAll.map(
       (properties) => ProposalClient.createInstance(this, properties)
     );
 
-    return await Promise.all(proposalPromises);
+    const proposals = await Promise.all(proposalPromises);
+    console.timeEnd('ProposalClient.createInstance');
+    return proposals;
   }
 
   async getProposal(id: ProposalId): Promise<PolygonProposal> {
@@ -309,7 +322,7 @@ class DAOClient
     }
     const executed = await this.gnosisSafeClient.isProposalsExecuted(
       PlatformType.Polygon,
-      [ProposalClient.getProposalHash(this.id, id)]
+      [generateProposalHash(PlatformType.Polygon, this.id, id)]
     );
     const properties = await this.mapToProperties(
       ethereumSubgraphProposal,

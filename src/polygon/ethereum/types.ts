@@ -5,18 +5,6 @@ import { zDAOId, zDAOProperties } from '../../types';
 
 export type EthereumZDAOProperties = Omit<zDAOProperties, 'state'>;
 
-export interface EthereumSubgraphProposal {
-  zDAOId: zDAOId;
-  proposalId: string;
-  numberOfChoices: number;
-  createdBy: string;
-  snapshot: number;
-  ipfs: string;
-  created: number;
-  canceled: boolean;
-  calculated: boolean;
-}
-
 export interface EthereumSubgraphZDAO {
   zDAOId: zDAOId;
   name: string;
@@ -34,9 +22,20 @@ export interface EthereumSubgraphZDAO {
   destroyed: boolean;
 }
 
+export interface EthereumSubgraphProposal {
+  proposalId: string;
+  numberOfChoices: number;
+  createdBy: string;
+  snapshot: number;
+  ipfs: string;
+  created: number;
+  canceled: boolean;
+  calculated: boolean;
+}
+
 export const ETHEREUMZDAOS_BY_QUERY = gql`
-  query EthereumZDAOs($zDAOId: Int!) {
-    ethereumZDAOs(where: { zDAORecord_: { zDAOId: $zDAOId } }) {
+  query EthereumZDAOs($zDAOId: String!) {
+    ethereumZDAOs(where: { id: $zDAOId }) {
       votingThreshold
       votingDelay
       token
@@ -64,8 +63,8 @@ export const ETHEREUMZDAOS_BY_QUERY = gql`
 `;
 
 export const ETHEREUMPROPOSALS_BY_QUERY = gql`
-  query EthereumProposals($zDAOId: Int!) {
-    ethereumProposals(where: { zDAO_: { zDAOId: $zDAOId } }) {
+  query EthereumProposals($zDAOId: String!) {
+    ethereumProposals(where: { zDAO_: { id: $zDAOId } }) {
       calculated
       canceled
       createdBy
@@ -75,18 +74,13 @@ export const ETHEREUMPROPOSALS_BY_QUERY = gql`
       ipfs
       created
       proposalId
-      zDAO {
-        zDAOId
-      }
     }
   }
 `;
 
 export const ETHEREUMPROPOSAL_BY_QUERY = gql`
-  query EthereumProposal($zDAOId: Int!, $proposalId: String!) {
-    ethereumProposals(
-      where: { zDAO_: { zDAOId: $zDAOId }, proposalId: $proposalId }
-    ) {
+  query EthereumProposal($proposalId: String!) {
+    ethereumProposals(where: { id: $proposalId }) {
       calculated
       canceled
       createdBy
@@ -96,9 +90,6 @@ export const ETHEREUMPROPOSAL_BY_QUERY = gql`
       ipfs
       created
       proposalId
-      zDAO {
-        zDAOId
-      }
     }
   }
 `;

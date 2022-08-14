@@ -43,7 +43,11 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     IPFSClient.initialize(this.config.fleek);
     ZNAClient.initialize(this.config.zNS);
     ZNSHubClient.initialize(this.config.zNA, config.ethereumProvider);
-    GlobalClient.initialize(this.config);
+
+    return (async (config: SnapshotConfig): Promise<SDKInstanceClient> => {
+      await GlobalClient.initialize(config);
+      return this;
+    })(config) as unknown as SDKInstanceClient;
   }
 
   async createZDAO(
@@ -170,7 +174,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
         zNAs: zDAORecord.associatedzNAs,
         name: space.name,
         createdBy: '',
-        network: Number(this.config.snapshot.network),
+        network: GlobalClient.etherNetwork,
         gnosisSafe: zDAORecord.gnosisSafe,
         votingToken: {
           token: strategy.params.address,

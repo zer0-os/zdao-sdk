@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import {
@@ -75,17 +75,6 @@ abstract class AbstractProposalClient<VoteT extends Vote>
 
   get metadata() {
     return this.properties.metadata;
-  }
-
-  static getProposalHash(zDAOId: string, proposalId: string): BigNumber {
-    return BigNumber.from(
-      ethers.utils.keccak256(
-        ethers.utils.defaultAbiCoder.encode(
-          ['string', 'string'],
-          [zDAOId, proposalId]
-        )
-      )
-    );
   }
 
   listVotes(): Promise<VoteT[]> {

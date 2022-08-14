@@ -131,7 +131,7 @@ const iterateZDAO = async (
     'staked amount',
     await sdkInstance.staking.stakedERC20Amount(
       mumbaiSigner.address,
-      zDAO.votingToken.token
+      zDAO.polygonToken?.token ?? ''
     )
   );
 
@@ -257,7 +257,7 @@ const main = async () => {
       from: goerliSigner.address,
     },
     fleek: env.fleek,
-    ipfsGateway: 'snapshot.mypinata.cloud',
+    ipfsGateway: 'zer0.infura-ipfs.io',
     zNSProvider: rinkebyProvider,
   });
 
@@ -275,13 +275,13 @@ const main = async () => {
   // await createProposal(
   //   instance,
   //   goerliSigner,
-  //   await instance.getZDAOByZNA('wilder.wheels'),
+  //   await instance.getZDAOByZNA('wilder.cats'),
   //   env
   // );
 
   // await createZDAO(instance, goerliSigner, env);
-  await iterateZNAs(instance);
-  // await iterateZDAO(instance, goerliSigner, 'wilder.wheels', env);
+  // await iterateZNAs(instance);
+  // await iterateZDAO(instance, goerliSigner, 'wilder.cats', env);
 
   // const goerliGnosisOwnerSigner = new ethers.Wallet(
   //   env.gnosisSafe.goerli.ownerPrivateKey,

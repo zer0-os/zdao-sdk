@@ -8,13 +8,16 @@ import { SnapshotConfig } from '../types';
 class GlobalClient {
   private static config: SnapshotConfig;
   private static etherRpcProviderInst: ethers.providers.Provider;
+  private static etherNetworkNumber: number;
   private static zDAORegistryInst?: ZDAORegistryClient;
   private static ethereumZDAOChefInst?: EthereumZDAOChefClient;
   private static ipfsGatewayHost?: string;
 
-  static initialize(config: SnapshotConfig) {
+  static async initialize(config: SnapshotConfig) {
     GlobalClient.config = config;
     GlobalClient.etherRpcProviderInst = config.ethereumProvider;
+    const network = await config.ethereumProvider.getNetwork();
+    GlobalClient.etherNetworkNumber = network.chainId;
     GlobalClient.zDAORegistryInst = new ZDAORegistryClient(
       config.zNA,
       config.ethereumProvider
@@ -31,6 +34,10 @@ class GlobalClient {
       throw new NotInitializedError();
     }
     return GlobalClient.etherRpcProviderInst;
+  }
+
+  static get etherNetwork() {
+    return GlobalClient.etherNetworkNumber;
   }
 
   static get zDAORegistry() {

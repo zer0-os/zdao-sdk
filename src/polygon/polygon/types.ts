@@ -30,7 +30,6 @@ export interface PolygonSubgraphZDAO {
 }
 
 export interface PolygonSubgraphProposal {
-  zDAOId: zDAOId;
   proposalId: ProposalId;
   numberOfChoices: number;
   startTimestamp: number;
@@ -42,9 +41,15 @@ export interface PolygonSubgraphProposal {
   sumOfVotes: BigNumber[];
 }
 
+export interface PolygonSubgraphVote {
+  voter: string;
+  choice: number;
+  votingPower: BigNumber;
+}
+
 export const POLYGONZDAOS_BY_QUERY = gql`
-  query PolygonZDAOs($zDAOId: Int!) {
-    polygonZDAOs(where: { zDAOId: $zDAOId }) {
+  query PolygonZDAOs($zDAOId: String!) {
+    polygonZDAOs(where: { id: $zDAOId }) {
       destroyed
       duration
       id
@@ -58,31 +63,25 @@ export const POLYGONZDAOS_BY_QUERY = gql`
 `;
 
 export const POLYGONPROPOSALS_BY_QUERY = gql`
-  query PolygonProposals($zDAOId: Int!) {
-    polygonProposals(where: { zDAO_: { zDAOId: $zDAOId } }) {
+  query PolygonProposals($zDAOId: String!) {
+    polygonProposals(where: { zDAO_: { id: $zDAOId } }) {
       calculated
       canceled
       endTimestamp
       id
       numberOfChoices
-      platformType
       proposalId
       snapshot
       startTimestamp
       sumOfVotes
       voters
-      zDAO {
-        zDAOId
-      }
     }
   }
 `;
 
 export const POLYGONPROPOSAL_BY_QUERY = gql`
-  query PolygonProposal($zDAOId: Int!, $proposalId: String!) {
-    polygonProposals(
-      where: { zDAO_: { zDAOId: $zDAOId }, proposalId: $proposalId }
-    ) {
+  query PolygonProposal($proposalId: String!) {
+    polygonProposals(where: { id: $proposalId }) {
       calculated
       canceled
       endTimestamp
@@ -94,9 +93,17 @@ export const POLYGONPROPOSAL_BY_QUERY = gql`
       startTimestamp
       sumOfVotes
       voters
-      zDAO {
-        zDAOId
-      }
+    }
+  }
+`;
+
+export const POLYGONVOTES_BY_QUERY = gql`
+  query PolygonVotes($proposalId: String!) {
+    proposalVotes(where: { proposal_: { id: $proposalId } }) {
+      choice
+      id
+      voter
+      votingPower
     }
   }
 `;

@@ -4,7 +4,13 @@ import { GraphQLClient } from 'graphql-request';
 import { PlatformType } from '../..';
 import { ZDAORecord } from '../../client/ZDAORegistry';
 import { EthereumDAOConfig, ProposalId, zDAOId } from '../../types';
-import { calculateGasMargin, getToken, getTotalSupply } from '../../utilities';
+import {
+  calculateGasMargin,
+  generateProposalId,
+  generateZDAOId,
+  getToken,
+  getTotalSupply,
+} from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import { EthereumZDAO } from '../config/types/EthereumZDAO';
 import { EthereumZDAOChef } from '../config/types/EthereumZDAOChef';
@@ -57,7 +63,7 @@ class EthereumZDAOChefClient {
 
   async getZDAOInfoById(zDAOId: zDAOId): Promise<EthereumSubgraphZDAO> {
     const result = await this.zDAOGQLClient.request(ETHEREUMZDAOS_BY_QUERY, {
-      zDAOId: Number(zDAOId),
+      zDAOId: generateZDAOId(PlatformType.Polygon, zDAOId),
     });
     const zDAO = result.ethereumZDAOs[0];
     return {
@@ -88,14 +94,12 @@ class EthereumZDAOChefClient {
       getTotalSupply(GlobalClient.etherRpcProvider, zDAOInfo.token),
     ]);
 
-    const network = await this.contract.provider.getNetwork();
-
     return {
       id: zDAOInfo.zDAOId.toString(),
       zNAs: zDAORecord.associatedzNAs,
       name: zDAORecord.name,
       createdBy: zDAOInfo.createdBy,
-      network: network.chainId,
+      network: GlobalClient.etherNetwork,
       gnosisSafe: zDAOInfo.gnosisSafe,
       votingToken: results[0],
       minimumVotingTokenAmount: zDAOInfo.amount.toString(),
@@ -151,13 +155,12 @@ class EthereumZDAOChefClient {
     const result = await this.zDAOGQLClient.request(
       ETHEREUMPROPOSALS_BY_QUERY,
       {
-        zDAOId: Number(zDAOId),
+        zDAOId: generateZDAOId(PlatformType.Polygon, zDAOId),
       }
     );
 
     return result.ethereumProposals.map(
       (proposal: any): EthereumSubgraphProposal => ({
-        zDAOId: proposal.zDAO.zDAOId,
         proposalId: proposal.proposalId,
         numberOfChoices: proposal.numberOfChoices,
         createdBy: proposal.createdBy,
@@ -175,8 +178,7 @@ class EthereumZDAOChefClient {
     proposalId: ProposalId
   ): Promise<EthereumSubgraphProposal | undefined> {
     const result = await this.zDAOGQLClient.request(ETHEREUMPROPOSAL_BY_QUERY, {
-      zDAOId: Number(zDAOId),
-      proposalId,
+      proposalId: generateProposalId(PlatformType.Polygon, zDAOId, proposalId),
     });
     if (
       !result ||
@@ -188,7 +190,6 @@ class EthereumZDAOChefClient {
 
     const proposal = result.ethereumProposals[0];
     return {
-      zDAOId: proposal.zDAO.zDAOId,
       proposalId: proposal.proposalId,
       numberOfChoices: proposal.numberOfChoices,
       createdBy: proposal.createdBy,

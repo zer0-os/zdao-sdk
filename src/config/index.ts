@@ -39,6 +39,18 @@ export const zDAOModuleAddress: AddressMap = {
 /* -------------------------------------------------------------------------- */
 /*                                Subgraph Uris                               */
 /* -------------------------------------------------------------------------- */
+export const zDAORegistrySubgraphUri: AddressMap = {
+  [SupportedChainId.MAINNET]:
+    'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
+  [SupportedChainId.RINKEBY]:
+    'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-rinkeby',
+  [SupportedChainId.GOERLI]:
+    'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-goerli',
+  [SupportedChainId.MUMBAI]:
+    'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-mumbai',
+  [SupportedChainId.POLYGON]: '',
+};
+
 export const zDAOModuleSubgraphUri: AddressMap = {
   [SupportedChainId.MAINNET]:
     'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
@@ -46,7 +58,8 @@ export const zDAOModuleSubgraphUri: AddressMap = {
     'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-rinkeby',
   [SupportedChainId.GOERLI]:
     'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-goerli',
-  [SupportedChainId.MUMBAI]: '',
+  [SupportedChainId.MUMBAI]:
+    'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-mumbai',
   [SupportedChainId.POLYGON]: '',
 };
 
@@ -55,7 +68,7 @@ export const zDAOModuleSubgraphUri: AddressMap = {
 /* -------------------------------------------------------------------------- */
 export const ethereumZDAOConfig: { [chainId: number]: EthereumDAOConfig } = {
   [SupportedChainId.MAINNET]: {
-    zDAOChef: '', // todo
+    zDAOChef: '0x7701913b65C9bCDa4d353F77EC12123d57D77f1e', // todo
     subgraphUri:
       'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
   },

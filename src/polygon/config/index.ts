@@ -6,6 +6,7 @@ import {
   zDAOModuleAddress,
   zDAOModuleSubgraphUri,
   zDAORegistryAddress,
+  zDAORegistrySubgraphUri,
   zNSHubAddress,
 } from '../../config';
 import { FleekConfig, SupportedChainId } from '../../types';
@@ -63,8 +64,7 @@ export const developmentConfiguration = ({
   polygonProvider,
   zNA: {
     zDAORegistry: zDAORegistryAddress[SupportedChainId.GOERLI],
-    subgraphUri:
-      'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-goerli',
+    subgraphUri: zDAORegistrySubgraphUri[SupportedChainId.GOERLI],
     zNSHub: zNSHubAddress[SupportedChainId.GOERLI],
   },
   gnosisSafe: {
@@ -94,8 +94,7 @@ export const productionConfiguration = ({
   polygonProvider,
   zNA: {
     zDAORegistry: zDAORegistryAddress[SupportedChainId.MAINNET],
-    subgraphUri:
-      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
+    subgraphUri: zDAORegistrySubgraphUri[SupportedChainId.MAINNET],
     zNSHub: zNSHubAddress[SupportedChainId.MAINNET],
   },
   gnosisSafe: {

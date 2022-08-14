@@ -33,10 +33,12 @@ class SDKInstanceClient implements PolygonSDKInstance {
     IPFSClient.initialize(this.config.fleek);
     ZNAClient.initialize(this.config.zNS);
     ZNSHubClient.initialize(this.config.zNA, config.ethereumProvider);
-    GlobalClient.initialize(this.config);
 
     return (async (config: PolygonConfig): Promise<SDKInstanceClient> => {
-      await ProofClient.initialize(config);
+      await Promise.all([
+        GlobalClient.initialize(config),
+        ProofClient.initialize(config),
+      ]);
       return this;
     })(config) as unknown as SDKInstanceClient;
   }

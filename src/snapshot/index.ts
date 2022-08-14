@@ -4,8 +4,8 @@ import { SnapshotConfig, SnapshotSDKInstance } from './types';
 export * from './config';
 export * from './types';
 
-export const createSDKInstance = (
+export const createSDKInstance = async (
   config: SnapshotConfig
 ): Promise<SnapshotSDKInstance> => {
-  return Promise.resolve(new SDKInstanceClient(config));
+  return await new SDKInstanceClient(config);
 };

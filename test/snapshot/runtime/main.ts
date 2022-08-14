@@ -22,9 +22,9 @@ const createZDAO = async (
       name: DAO.name,
       network: SupportedChainId.RINKEBY,
       gnosisSafe: DAO.gnosisSafe,
-      token: DAO.votingToken,
-      amount: '0',
-      duration: DAO.duration ?? 1800,
+      votingToken: DAO.votingToken,
+      minimumVotingTokenAmount: '0',
+      votingDuration: DAO.duration ?? 1800,
       ens: DAO.ens,
     };
     await sdkInstance.createZDAO(signer, undefined, params);
@@ -129,46 +129,22 @@ const main = async () => {
   const isDev = true;
   const env = setEnv();
 
-  const signer = new ethers.Wallet(
-    process.env.PRIVATE_KEY!,
-    new ethers.providers.JsonRpcProvider(
-      isDev ? env.rpc.rinkeby : env.rpc.mainnet,
-      isDev ? SupportedChainId.RINKEBY : SupportedChainId.MAINNET
-    )
+  const provider = new ethers.providers.JsonRpcProvider(
+    isDev ? env.rpc.rinkeby : env.rpc.mainnet,
+    isDev ? SupportedChainId.RINKEBY : SupportedChainId.MAINNET
   );
+  const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
 
   const config = isDev
     ? Snapshot.developmentConfiguration({
-        ethereum: {
-          zDAOChef: env.contract.zDAOChef.rinkeby,
-          rpcUrl: env.rpc.rinkeby,
-          network: SupportedChainId.RINKEBY,
-          blockNumber: env.contract.zDAOChef.rinkebyBlock,
-        },
-        zNA: {
-          zDAORegistry: env.contract.zDAORegistry.rinkeby,
-          zNSHub: env.contract.zNSHub.rinkeby,
-          rpcUrl: env.rpc.rinkeby,
-          network: SupportedChainId.RINKEBY,
-        },
+        ethereumProvider: provider,
         fleek: env.fleek,
-        ipfsGateway: 'snapshot.mypinata.cloud',
+        ipfsGateway: 'zer0.infura-ipfs.io',
       })
     : Snapshot.productionConfiguration({
-        ethereum: {
-          zDAOChef: env.contract.zDAOChef.mainnet,
-          rpcUrl: env.rpc.mainnet,
-          network: SupportedChainId.RINKEBY,
-          blockNumber: env.contract.zDAOChef.mainnetBlock,
-        },
-        zNA: {
-          zDAORegistry: env.contract.zDAORegistry.mainnet,
-          zNSHub: env.contract.zNSHub.mainnet,
-          rpcUrl: env.rpc.mainnet,
-          network: SupportedChainId.MAINNET,
-        },
+        ethereumProvider: provider,
         fleek: env.fleek,
-        ipfsGateway: 'snapshot.mypinata.cloud',
+        ipfsGateway: 'zer0.infura-ipfs.io',
       });
 
   const sdkInstance: Snapshot.SnapshotSDKInstance =

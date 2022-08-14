@@ -17,7 +17,11 @@ import {
   TokenMetaData,
   ZDAOError,
 } from '../../types';
-import { errorMessageForError, getSigner } from '../../utilities';
+import {
+  errorMessageForError,
+  generateProposalHash,
+  getSigner,
+} from '../../utilities';
 import { SnapshotClient } from '../snapshot';
 import { SnapshotProposalProperties } from '../snapshot/types';
 import {
@@ -242,7 +246,7 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
   async isExecuted(): Promise<boolean> {
     const executed = await this.zDAO.gnosisSafeClient.isProposalsExecuted(
       PlatformType.Snapshot,
-      [ProposalClient.getProposalHash(this.zDAO.ens, this.id)]
+      [generateProposalHash(PlatformType.Snapshot, this.zDAO.ens, this.id)]
     );
     return executed[0];
   }
@@ -291,7 +295,11 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
         'executeProposal',
         [
           PlatformType.Snapshot.toString(),
-          ProposalClient.getProposalHash(this.zDAO.ens, this.id).toString(),
+          generateProposalHash(
+            PlatformType.Snapshot,
+            this.zDAO.ens,
+            this.id
+          ).toString(),
           token,
           this.metadata.recipient,
           this.metadata.amount,

@@ -14,6 +14,7 @@ import {
 } from '../../types';
 import {
   errorMessageForError,
+  generateProposalHash,
   getDecimalAmount,
   getFullDisplayBalance,
   getSigner,
@@ -154,7 +155,7 @@ class DAOClient
     const executeds = await this.gnosisSafeClient.isProposalsExecuted(
       PlatformType.Snapshot,
       snapshotProposals.map((proposal) =>
-        ProposalClient.getProposalHash(this.ens, proposal.id)
+        generateProposalHash(PlatformType.Snapshot, this.ens, proposal.id)
       )
     );
 
@@ -207,7 +208,7 @@ class DAOClient
 
     const executed = await this.gnosisSafeClient.isProposalsExecuted(
       PlatformType.Snapshot,
-      [ProposalClient.getProposalHash(this.ens, proposal.id)]
+      [generateProposalHash(PlatformType.Snapshot, this.ens, proposal.id)]
     );
 
     return await ProposalClient.createInstance(

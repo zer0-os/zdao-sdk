@@ -1,24 +1,18 @@
 import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
-import { zDAOModuleAddress, zDAOModuleSubgraphUri } from '../../config';
 import {
-  EthereumDAOConfig,
-  FleekConfig,
-  SupportedChainId,
-  zNAConfig,
-} from '../../types';
+  ethereumZDAOConfig,
+  zDAOModuleAddress,
+  zDAOModuleSubgraphUri,
+  zDAORegistryAddress,
+  zDAORegistrySubgraphUri,
+  zNSHubAddress,
+} from '../../config';
+import { FleekConfig, SupportedChainId } from '../../types';
 import { SnapshotConfig } from '../types';
 
 export interface ConfigParams {
-  /**
-   * On the development, ethereum network should be Goerli,
-   * On the production, ethereum network should be mainnet
-   */
-  ethereum: EthereumDAOConfig;
-
-  zNA: zNAConfig;
-
   ethereumProvider: ethers.providers.Provider;
 
   /**
@@ -30,15 +24,17 @@ export interface ConfigParams {
 }
 
 export const developmentConfiguration = ({
-  ethereum,
   ethereumProvider,
-  zNA,
   fleek,
   ipfsGateway,
 }: ConfigParams): SnapshotConfig => ({
-  ethereum,
+  ethereum: ethereumZDAOConfig[SupportedChainId.RINKEBY],
   ethereumProvider,
-  zNA,
+  zNA: {
+    zDAORegistry: zDAORegistryAddress[SupportedChainId.RINKEBY],
+    subgraphUri: zDAORegistrySubgraphUri[SupportedChainId.RINKEBY],
+    zNSHub: zNSHubAddress[SupportedChainId.RINKEBY],
+  },
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.rinkeby.gnosis.io',
     gateway: 'https://safe-client.staging.gnosisdev.com',
@@ -51,20 +47,21 @@ export const developmentConfiguration = ({
   isProd: false,
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
-    network: SupportedChainId.RINKEBY.toString(),
   },
 });
 
 export const productionConfiguration = ({
-  ethereum,
   ethereumProvider,
-  zNA,
   fleek,
   ipfsGateway,
 }: ConfigParams): SnapshotConfig => ({
-  ethereum,
+  ethereum: ethereumZDAOConfig[SupportedChainId.MAINNET],
   ethereumProvider,
-  zNA,
+  zNA: {
+    zDAORegistry: zDAORegistryAddress[SupportedChainId.MAINNET],
+    subgraphUri: zDAORegistrySubgraphUri[SupportedChainId.MAINNET],
+    zNSHub: zNSHubAddress[SupportedChainId.MAINNET],
+  },
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
@@ -77,6 +74,5 @@ export const productionConfiguration = ({
   isProd: true,
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
-    network: SupportedChainId.MAINNET.toString(),
   },
 });

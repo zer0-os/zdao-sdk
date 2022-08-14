@@ -2,8 +2,13 @@ import { AddressZero } from '@ethersproject/constants';
 import { BigNumber, ethers } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
 
+import { PlatformType } from '../..';
 import { Choice, ProposalId, zDAOId } from '../../types';
-import { calculateGasMargin } from '../../utilities';
+import {
+  calculateGasMargin,
+  generateProposalId,
+  generateZDAOId,
+} from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import { PolygonZDAO__factory } from '../config/types/factories/PolygonZDAO__factory';
 import { PolygonZDAOChef__factory } from '../config/types/factories/PolygonZDAOChef__factory';
@@ -14,7 +19,9 @@ import {
   POLYGONPROPOSAL_BY_QUERY,
   POLYGONPROPOSALS_BY_QUERY,
   PolygonSubgraphProposal,
+  PolygonSubgraphVote,
   PolygonSubgraphZDAO,
+  POLYGONVOTES_BY_QUERY,
   PolygonZDAOProperties,
   POLYGONZDAOS_BY_QUERY,
 } from './types';
@@ -44,7 +51,7 @@ class PolygonZDAOChefClient {
     zDAOId: zDAOId
   ): Promise<PolygonSubgraphZDAO | undefined> {
     const result = await this.zDAOGQLClient.request(POLYGONZDAOS_BY_QUERY, {
-      zDAOId: Number(zDAOId),
+      zDAOId: generateZDAOId(PlatformType.Polygon, zDAOId),
     });
     if (result.polygonZDAOs.length < 1) {
       return undefined;
@@ -89,12 +96,11 @@ class PolygonZDAOChefClient {
 
   async listProposals(zDAOId: zDAOId): Promise<PolygonSubgraphProposal[]> {
     const result = await this.zDAOGQLClient.request(POLYGONPROPOSALS_BY_QUERY, {
-      zDAOId: Number(zDAOId),
+      zDAOId: generateZDAOId(PlatformType.Polygon, zDAOId),
     });
 
     return result.polygonProposals.map(
       (proposal: any): PolygonSubgraphProposal => ({
-        zDAOId: proposal.zDAO.zDAOId,
         proposalId: proposal.proposalId,
         numberOfChoices: proposal.numberOfChoices,
         startTimestamp: proposal.startTimestamp,
@@ -115,8 +121,7 @@ class PolygonZDAOChefClient {
     proposalId: ProposalId
   ): Promise<PolygonSubgraphProposal | undefined> {
     const result = await this.zDAOGQLClient.request(POLYGONPROPOSAL_BY_QUERY, {
-      zDAOId,
-      proposalId,
+      proposalId: generateProposalId(PlatformType.Polygon, zDAOId, proposalId),
     });
     if (
       !result ||
@@ -129,7 +134,6 @@ class PolygonZDAOChefClient {
     const proposal = result.ethereumProposals[0];
 
     return {
-      zDAOId: proposal.zDAO.zDAOId,
       proposalId: proposal.proposalId,
       numberOfChoices: proposal.numberOfChoices,
       startTimestamp: proposal.startTimestamp,
@@ -142,6 +146,23 @@ class PolygonZDAOChefClient {
         BigNumber.from(votes)
       ),
     };
+  }
+
+  async listVotes(
+    zDAOId: zDAOId,
+    proposalId: ProposalId
+  ): Promise<PolygonSubgraphVote[]> {
+    const result = await this.zDAOGQLClient.request(POLYGONVOTES_BY_QUERY, {
+      proposalId: generateProposalId(PlatformType.Polygon, zDAOId, proposalId),
+    });
+
+    return result.proposalVotes.map(
+      (vote: any): PolygonSubgraphVote => ({
+        choice: vote.choice,
+        voter: vote.voter,
+        votingPower: BigNumber.from(vote.votingPower),
+      })
+    );
   }
 
   async vote(
