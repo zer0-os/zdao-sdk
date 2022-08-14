@@ -116,7 +116,10 @@ class SDKInstanceClient implements PolygonSDKInstance {
 
   async getZDAOByZNA(zNA: zNA): Promise<PolygonZDAO> {
     // get zDAO information associated with zNA
-    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
+    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(
+      PlatformType.Polygon,
+      zNA
+    );
 
     if (!zDAORecord) {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
@@ -127,7 +130,10 @@ class SDKInstanceClient implements PolygonSDKInstance {
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
-    return await GlobalClient.zDAORegistry.doesZDAOExistForZNA(zNA);
+    return await GlobalClient.zDAORegistry.doesZDAOExistForZNA(
+      PlatformType.Polygon,
+      zNA
+    );
   }
 
   async createZDAOFromParams(

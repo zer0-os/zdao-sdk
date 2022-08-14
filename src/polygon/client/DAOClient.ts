@@ -98,6 +98,9 @@ class DAOClient
       GlobalClient.ethereumZDAOChef.getZDAOInfoById(zDAORecord.id),
       GlobalClient.polygonZDAOChef.getZDAOInfoById(zDAORecord.id),
     ]);
+    if (!zDAOInfos[0]) {
+      throw new NotFoundError(errorMessageForError('not-found-zdao'));
+    }
 
     const tokens = await Promise.all([
       getToken(GlobalClient.etherRpcProvider, zDAOInfos[0].token),

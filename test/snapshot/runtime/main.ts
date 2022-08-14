@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 
 import { Snapshot } from '../../../src';
+import { ZNAClient } from '../../../src/client';
 import { SupportedChainId, zNA } from '../../../src/types';
 import { setEnvSnapshot as setEnv } from '../../shared/setupEnv';
 
@@ -14,20 +15,26 @@ const createZDAO = async (
   // isDev should be true
 
   for (const DAO of env.DAOs.rinkeby) {
-    if (await sdkInstance.doesZDAOExist(DAO.ens as zNA)) continue;
+    for (const zNA of DAO.zNAs) {
+      console.log(DAO.name, zNA, ZNAClient.zNATozNAId(zNA));
+    }
 
-    console.log('creating zDAO', DAO);
-    const params: Snapshot.CreateSnapshotZDAOParams = {
-      zNA: DAO.ens,
-      name: DAO.name,
-      network: SupportedChainId.RINKEBY,
-      gnosisSafe: DAO.gnosisSafe,
-      votingToken: DAO.votingToken,
-      minimumVotingTokenAmount: '0',
-      votingDuration: DAO.duration ?? 1800,
-      ens: DAO.ens,
-    };
-    await sdkInstance.createZDAO(signer, undefined, params);
+    if (!(await sdkInstance.doesZDAOExist(DAO.zNAs[0]))) {
+      console.log('creating zDAO', DAO);
+      const params: Snapshot.CreateSnapshotZDAOParams = {
+        zNA: DAO.zNAs[0],
+        name: DAO.name,
+        network: SupportedChainId.RINKEBY,
+        gnosisSafe: DAO.gnosisSafe,
+        votingToken: DAO.votingToken,
+        minimumVotingTokenAmount: '0',
+        votingDuration: DAO.duration ?? 1800,
+        ens: DAO.ens,
+      };
+      await sdkInstance.createZDAO(signer, undefined, params);
+
+      console.log(`DAO ${DAO.zNAs} created`);
+    }
   }
 };
 
@@ -35,7 +42,7 @@ const pagination = async (sdkInstance: Snapshot.SnapshotSDKInstance) => {
   // isDev should be true
 
   const dao: Snapshot.SnapshotZDAO = await sdkInstance.getZDAOByZNA(
-    'joshupgig.eth'
+    'wilder.wheels'
   );
 
   const count = 50;
@@ -150,7 +157,7 @@ const main = async () => {
   const sdkInstance: Snapshot.SnapshotSDKInstance =
     await Snapshot.createSDKInstance(config);
 
-  await createZDAO(sdkInstance, signer, env);
+  // await createZDAO(sdkInstance, signer, env);
   // await createToken(sdkInstance, signer);
   // await pagination(sdkInstance);
   // await immediateVote(sdkInstance, signer);

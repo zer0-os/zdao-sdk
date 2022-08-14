@@ -2,15 +2,27 @@ import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
 import {
-  ethereumZDAOConfig,
   zDAOModuleAddress,
   zDAOModuleSubgraphUri,
   zDAORegistryAddress,
   zDAORegistrySubgraphUri,
   zNSHubAddress,
 } from '../../config';
-import { FleekConfig, SupportedChainId } from '../../types';
+import { EthereumDAOConfig, FleekConfig, SupportedChainId } from '../../types';
 import { PolygonConfig, PolygonDAOConfig, ProofConfig } from '../types';
+
+export const ethereumZDAOConfig: { [chainId: number]: EthereumDAOConfig } = {
+  [SupportedChainId.MAINNET]: {
+    zDAOChef: '0x7701913b65C9bCDa4d353F77EC12123d57D77f1e', // todo
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
+  },
+  [SupportedChainId.GOERLI]: {
+    zDAOChef: '0xc9DC42076E5323Ae6c2f438302c70E08FaF0cae8', // todo
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-goerli',
+  },
+};
 
 const polygonZDAOConfig: { [chainId: number]: PolygonDAOConfig } = {
   [SupportedChainId.MUMBAI]: {

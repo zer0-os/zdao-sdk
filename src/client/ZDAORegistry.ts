@@ -82,12 +82,15 @@ class ZDAORegistryClient {
     }));
   }
 
-  async getZDAORecordByZNA(zNA: zNA): Promise<ZDAORecord | undefined> {
+  async getZDAORecordByZNA(
+    platformType: PlatformType,
+    zNA: zNA
+  ): Promise<ZDAORecord | undefined> {
     const result = await this.registryGQLClient.request(
       ZNAASSOCIATION_BY_QUERY,
       {
         id_in: [ZNAClient.zNATozNAId(zNA)],
-        platformType: PlatformType.Polygon,
+        platformType,
       }
     );
     if (
@@ -114,12 +117,15 @@ class ZDAORegistryClient {
     };
   }
 
-  async doesZDAOExistForZNA(zNA: zNA): Promise<boolean> {
+  async doesZDAOExistForZNA(
+    platformType: PlatformType,
+    zNA: zNA
+  ): Promise<boolean> {
     const result = await this.registryGQLClient.request(
       ZNAASSOCIATION_BY_QUERY,
       {
         id_in: [ZNAClient.zNATozNAId(zNA)],
-        platformType: PlatformType.Polygon,
+        platformType,
       }
     );
     return result.znaassociations.length > 0;

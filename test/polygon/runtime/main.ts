@@ -18,6 +18,8 @@ const createZDAO = async (
     }
 
     if (!(await sdkInstance.doesZDAOExist(DAO.zNAs[0]))) {
+      console.log('creating zDAO', DAO);
+
       await sdkInstance.createZDAO(signer, undefined, {
         zNA: DAO.zNAs[0],
         name: DAO.name,

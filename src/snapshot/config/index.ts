@@ -2,15 +2,27 @@ import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
 import {
-  ethereumZDAOConfig,
   zDAOModuleAddress,
   zDAOModuleSubgraphUri,
   zDAORegistryAddress,
   zDAORegistrySubgraphUri,
   zNSHubAddress,
 } from '../../config';
-import { FleekConfig, SupportedChainId } from '../../types';
+import { EthereumDAOConfig, FleekConfig, SupportedChainId } from '../../types';
 import { SnapshotConfig } from '../types';
+
+export const ethereumZDAOConfig: { [chainId: number]: EthereumDAOConfig } = {
+  [SupportedChainId.MAINNET]: {
+    zDAOChef: '0x7701913b65C9bCDa4d353F77EC12123d57D77f1e', // todo
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
+  },
+  [SupportedChainId.RINKEBY]: {
+    zDAOChef: '0x53A9C5756a28B853Bb4ae645e26bBD65a4115FCA', // todo
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-rinkeby',
+  },
+};
 
 export interface ConfigParams {
   ethereumProvider: ethers.providers.Provider;

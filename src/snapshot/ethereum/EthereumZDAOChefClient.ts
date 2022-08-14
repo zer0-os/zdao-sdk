@@ -1,16 +1,19 @@
 import { ethers } from 'ethers';
+import { GraphQLClient } from 'graphql-request';
 
 import { PlatformType } from '../..';
 import { EthereumDAOConfig, zDAOId } from '../../types';
+import { generateZDAOId } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import { SnapshotZDAOChef__factory } from '../config/types/factories/SnapshotZDAOChef__factory';
 import { SnapshotZDAOChef } from '../config/types/SnapshotZDAOChef';
 import { CreateSnapshotZDAOParams } from '../types';
-import { SnapshotZDAOProperties } from './types';
+import { ETHEREUMZDAOS_BY_QUERY, SnapshotZDAOProperties } from './types';
 
 class EthereumZDAOChefClient {
   private readonly config: EthereumDAOConfig;
   protected readonly contract: SnapshotZDAOChef;
+  private readonly zDAOGQLClient: GraphQLClient;
 
   constructor(config: EthereumDAOConfig, provider: ethers.providers.Provider) {
     this.config = config;
@@ -18,16 +21,30 @@ class EthereumZDAOChefClient {
       config.zDAOChef,
       provider
     );
+    this.zDAOGQLClient = new GraphQLClient(config.subgraphUri);
   }
 
-  async getZDAOPropertiesById(zDAOId: zDAOId): Promise<SnapshotZDAOProperties> {
-    const zDAOInfo = await this.contract.zDAOInfos(zDAOId);
+  async getZDAOPropertiesById(
+    zDAOId: zDAOId
+  ): Promise<SnapshotZDAOProperties | undefined> {
+    const result = await this.zDAOGQLClient.request(ETHEREUMZDAOS_BY_QUERY, {
+      zDAOId: generateZDAOId(PlatformType.Snapshot, zDAOId),
+    });
+    if (
+      !result ||
+      !Array.isArray(result.snapshotZDAOs) ||
+      result.snapshotZDAOs.length < 1
+    ) {
+      return undefined;
+    }
+
+    const zDAO = result.snapshotZDAOs[0];
     return {
-      id: zDAOInfo.id.toString(),
-      snapshot: zDAOInfo.snapshot.toNumber(),
-      ensSpace: zDAOInfo.ensSpace,
-      gnosisSafe: zDAOInfo.gnosisSafe,
-      destroyed: zDAOInfo.destroyed,
+      id: zDAO.zDAORecord.zDAOId,
+      snapshot: zDAO.snapshot,
+      ensSpace: zDAO.ensSpace,
+      gnosisSafe: zDAO.zDAORecord.gnosisSafe,
+      destroyed: zDAO.zDAORecord.destroyed,
     };
   }
 

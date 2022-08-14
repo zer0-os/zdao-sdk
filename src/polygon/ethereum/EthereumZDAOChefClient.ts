@@ -61,10 +61,20 @@ class EthereumZDAOChefClient {
     return EthereumZDAO__factory.connect(zDAO, GlobalClient.etherRpcProvider);
   }
 
-  async getZDAOInfoById(zDAOId: zDAOId): Promise<EthereumSubgraphZDAO> {
+  async getZDAOInfoById(
+    zDAOId: zDAOId
+  ): Promise<EthereumSubgraphZDAO | undefined> {
     const result = await this.zDAOGQLClient.request(ETHEREUMZDAOS_BY_QUERY, {
       zDAOId: generateZDAOId(PlatformType.Polygon, zDAOId),
     });
+    if (
+      !result ||
+      !Array.isArray(result.ethereumZDAOs) ||
+      result.ethereumZDAOs.length < 1
+    ) {
+      return undefined;
+    }
+
     const zDAO = result.ethereumZDAOs[0];
     return {
       zDAOId: zDAO.zDAORecord.zDAOId,
@@ -86,8 +96,11 @@ class EthereumZDAOChefClient {
 
   async getZDAOPropertiesById(
     zDAORecord: ZDAORecord
-  ): Promise<EthereumZDAOProperties> {
+  ): Promise<EthereumZDAOProperties | undefined> {
     const zDAOInfo = await this.getZDAOInfoById(zDAORecord.id);
+    if (!zDAOInfo) {
+      return undefined;
+    }
 
     const results = await Promise.all([
       getToken(GlobalClient.etherRpcProvider, zDAOInfo.token),

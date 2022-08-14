@@ -115,8 +115,10 @@ class SDKInstanceClient implements SnapshotSDKInstance {
 
   async getZDAOByZNA(zNA: zNA): Promise<SnapshotZDAO> {
     // get zDAO information associated with zNA
-    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
-
+    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(
+      PlatformType.Snapshot,
+      zNA
+    );
     if (!zDAORecord) {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
@@ -124,6 +126,9 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     const zDAOInfo = await GlobalClient.ethereumZDAOChef.getZDAOPropertiesById(
       zDAORecord.id
     );
+    if (!zDAOInfo) {
+      throw new NotFoundError(errorMessageForError('not-found-zdao'));
+    }
 
     // should be found by ens in snapshot
     const space = await this.snapshotClient.getSpaceDetails(zDAOInfo.ensSpace);
@@ -207,7 +212,10 @@ class SDKInstanceClient implements SnapshotSDKInstance {
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
-    return await GlobalClient.zDAORegistry.doesZDAOExistForZNA(zNA);
+    return await GlobalClient.zDAORegistry.doesZDAOExistForZNA(
+      PlatformType.Snapshot,
+      zNA
+    );
   }
 
   async createZDAOFromParams(

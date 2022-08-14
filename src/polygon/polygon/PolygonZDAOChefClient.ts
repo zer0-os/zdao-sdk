@@ -131,8 +131,7 @@ class PolygonZDAOChefClient {
       return undefined;
     }
 
-    const proposal = result.ethereumProposals[0];
-
+    const proposal = result.polygonProposals[0];
     return {
       proposalId: proposal.proposalId,
       numberOfChoices: proposal.numberOfChoices,
