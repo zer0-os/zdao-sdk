@@ -115,7 +115,7 @@ class ProposalClient
 
     const sp = await GlobalClient.staking.pastStakingPower(
       accountAddress,
-      this.zDAO.polygonToken!.token,
+      this.zDAO.polygonToken.token,
       this.snapshot!
     );
     if (ethers.BigNumber.from(sp).eq(ethers.BigNumber.from(0))) {

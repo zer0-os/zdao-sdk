@@ -76,7 +76,7 @@ class ZDAORegistryClient {
       id: record.zDAOId.toString(),
       zDAOOwnedBy: record.createdBy.toString(),
       gnosisSafe: record.gnosisSafe.toString(),
-      name: record.gnosisSafe.toString(),
+      name: record.name.toString(),
       destroyed: false,
       associatedzNAs: zNAs.splice(0, record.zNAs.length),
     }));

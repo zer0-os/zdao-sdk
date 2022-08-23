@@ -11,6 +11,12 @@ export interface PolygonDAOConfig {
 
   // subgraphUri to zDAOChef
   subgraphUri: string;
+
+  // address to Staking contract
+  staking: string;
+
+  // address to IChildChainManager contract
+  childChainManager: string;
 }
 
 export interface ProofConfig {

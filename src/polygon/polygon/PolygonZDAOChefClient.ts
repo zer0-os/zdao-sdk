@@ -141,7 +141,7 @@ class PolygonZDAOChefClient {
       snapshot: proposal.snapshot,
       canceled: proposal.canceled,
       calculated: proposal.calculated,
-      sumOfVotes: result.sumOfVotes.map((votes: string) =>
+      sumOfVotes: proposal.sumOfVotes.map((votes: string) =>
         BigNumber.from(votes)
       ),
     };

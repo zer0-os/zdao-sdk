@@ -30,12 +30,16 @@ const polygonZDAOConfig: { [chainId: number]: PolygonDAOConfig } = {
     blockNumber: 27589971, // todo
     subgraphUri:
       'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-mumbai',
+    staking: '0xaB00FB1Ce6E3c9Ea0A9BB5c1124430bBaF98Dac6',
+    childChainManager: '0xb5505a6d998549090530911180f38aC5130101c6',
   },
   [SupportedChainId.POLYGON]: {
     zDAOChef: '', // todo
     blockNumber: 0, // todo
     subgraphUri:
       'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-polygon',
+    staking: '',
+    childChainManager: '0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa',
   },
 };
 

@@ -43,8 +43,12 @@ class GlobalClient {
       config.polygon,
       config.polygonProvider
     );
-    GlobalClient.stakingInst = new StakingClient();
-    GlobalClient.registryInst = new RegistryClient();
+    GlobalClient.stakingInst = new StakingClient({
+      address: config.polygon.staking,
+    });
+    GlobalClient.registryInst = new RegistryClient({
+      address: config.polygon.childChainManager,
+    });
   }
 
   static get etherRpcProvider() {

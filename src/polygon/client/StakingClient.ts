@@ -3,19 +3,14 @@ import { ContractReceipt, ethers } from 'ethers';
 import { FailedTxError } from '../../types';
 import PolygonStakingClient from '../polygon/PolygonStakingClient';
 import { Staking, StakingProperties } from '../types';
-import GlobalClient from './GlobalClient';
 
 class StakingClient implements Staking {
-  protected properties?: StakingProperties;
-  protected polyStaking?: PolygonStakingClient;
+  protected properties: StakingProperties;
+  protected polyStaking: PolygonStakingClient;
 
-  private async getPolygonStakingClient(): Promise<PolygonStakingClient> {
-    if (!this.polyStaking) {
-      const properties =
-        await GlobalClient.polygonZDAOChef.getStakingProperties();
-      this.polyStaking = new PolygonStakingClient(properties.address);
-    }
-    return this.polyStaking;
+  constructor(properties: StakingProperties) {
+    this.properties = properties;
+    this.polyStaking = new PolygonStakingClient(properties.address);
   }
 
   get address() {
@@ -28,8 +23,7 @@ class StakingClient implements Staking {
     amount: string
   ): Promise<ContractReceipt> {
     try {
-      const instance = await this.getPolygonStakingClient();
-      return instance.stakeERC20(signer, token, amount);
+      return this.polyStaking.stakeERC20(signer, token, amount);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -42,8 +36,7 @@ class StakingClient implements Staking {
     tokenId: string
   ): Promise<ContractReceipt> {
     try {
-      const instance = await this.getPolygonStakingClient();
-      return instance.stakeERC721(signer, token, tokenId);
+      return this.polyStaking.stakeERC721(signer, token, tokenId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -56,8 +49,7 @@ class StakingClient implements Staking {
     amount: string
   ): Promise<ContractReceipt> {
     try {
-      const instance = await this.getPolygonStakingClient();
-      return instance.unstakeERC20(signer, token, amount);
+      return this.polyStaking.unstakeERC20(signer, token, amount);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -70,8 +62,7 @@ class StakingClient implements Staking {
     tokenId: string
   ): Promise<ContractReceipt> {
     try {
-      const instance = await this.getPolygonStakingClient();
-      return instance.unstakeERC721(signer, token, tokenId);
+      return this.polyStaking.unstakeERC721(signer, token, tokenId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -79,9 +70,7 @@ class StakingClient implements Staking {
   }
 
   async stakingPower(account: string, token: string): Promise<string> {
-    return this.getPolygonStakingClient().then((instance) =>
-      instance.stakingPower(account, token)
-    );
+    return this.polyStaking.stakingPower(account, token);
   }
 
   async pastStakingPower(
@@ -89,15 +78,11 @@ class StakingClient implements Staking {
     token: string,
     blockNumber: number
   ): Promise<string> {
-    return this.getPolygonStakingClient().then((instance) =>
-      instance.pastStakingPower(account, token, blockNumber)
-    );
+    return this.polyStaking.pastStakingPower(account, token, blockNumber);
   }
 
   async stakedERC20Amount(account: string, token: string): Promise<string> {
-    return this.getPolygonStakingClient().then((instance) =>
-      instance.stakedERC20Amount(account, token)
-    );
+    return this.polyStaking.stakedERC20Amount(account, token);
   }
 
   async isStakedERC721(
@@ -105,9 +90,7 @@ class StakingClient implements Staking {
     token: string,
     tokenId: string
   ): Promise<boolean> {
-    return this.getPolygonStakingClient().then((instance) =>
-      instance.isStakedERC721(account, token, tokenId)
-    );
+    return this.polyStaking.isStakedERC721(account, token, tokenId);
   }
 }
 

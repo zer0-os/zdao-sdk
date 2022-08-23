@@ -1,29 +1,21 @@
 import PolygonRegistryClient from '../polygon/PolygonRegistryClient';
-import { Registry } from '../types';
-import GlobalClient from './GlobalClient';
+import { Registry, RegistryProperties } from '../types';
 
 class RegistryClient implements Registry {
-  protected polyRegistry?: PolygonRegistryClient;
+  protected properties: RegistryProperties;
+  protected polyRegistry: PolygonRegistryClient;
 
-  private async getPolygonRegistryClient(): Promise<PolygonRegistryClient> {
-    if (!this.polyRegistry) {
-      const registryAddress =
-        await GlobalClient.polygonZDAOChef.getRegistryAddress();
-      this.polyRegistry = new PolygonRegistryClient(registryAddress);
-    }
-    return this.polyRegistry;
+  constructor(properties: RegistryProperties) {
+    this.properties = properties;
+    this.polyRegistry = new PolygonRegistryClient(properties.address);
   }
 
   async ethereumToPolygonToken(ethereumToken: string): Promise<string> {
-    return this.getPolygonRegistryClient().then((instance) =>
-      instance.rootToChildToken(ethereumToken)
-    );
+    return this.polyRegistry.rootToChildToken(ethereumToken);
   }
 
   async polygonToEthereumToken(polygonToken: string): Promise<string> {
-    return this.getPolygonRegistryClient().then((instance) =>
-      instance.childToRootToken(polygonToken)
-    );
+    return this.polyRegistry.childToRootToken(polygonToken);
   }
 }
 

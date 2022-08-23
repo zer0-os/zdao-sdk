@@ -87,7 +87,6 @@ export const POLYGONPROPOSAL_BY_QUERY = gql`
       endTimestamp
       id
       numberOfChoices
-      platformType
       proposalId
       snapshot
       startTimestamp

@@ -3,7 +3,7 @@ import { cloneDeep } from 'lodash';
 
 import { PlatformType } from '../..';
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
-import { DEFAULT_ZDAO_DURATION } from '../../config';
+import { DEFAULT_PROPOSAL_CHOICES, DEFAULT_ZDAO_DURATION } from '../../config';
 import ERC20Abi from '../../config/abi/ERC20.json';
 import {
   InvalidError,
@@ -280,7 +280,7 @@ class DAOClient
         spaceId: this.ens,
         title: payload.title,
         body: payload.body ?? '',
-        choices: payload.choices,
+        choices: payload.choices ?? DEFAULT_PROPOSAL_CHOICES,
         delay: this.options.delay,
         duration,
         snapshot,
