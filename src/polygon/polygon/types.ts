@@ -96,9 +96,19 @@ export const POLYGONPROPOSAL_BY_QUERY = gql`
   }
 `;
 
+export const POLYGONCALCULATEDPROPOSAL_BY_QUERY = gql`
+  query PolygonProposal($proposalId: String!) {
+    polygonProposals(where: { id: $proposalId, calculated: true }) {
+      id
+      calculated
+      calculatedTx
+    }
+  }
+`;
+
 export const POLYGONVOTES_BY_QUERY = gql`
   query PolygonVotes($proposalId: String!) {
-    proposalVotes(where: { proposal_: { id: $proposalId } }) {
+    polygonVotes(where: { proposal_: { id: $proposalId } }) {
       choice
       id
       voter

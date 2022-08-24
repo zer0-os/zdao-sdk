@@ -215,7 +215,7 @@ class ProposalClient
     try {
       // check if proposal executed
       const executed = await this.isExecuted();
-      if (!executed) {
+      if (executed) {
         throw new Error(errorMessageForError('proposal-already-executed'));
       }
 

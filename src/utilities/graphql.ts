@@ -18,7 +18,7 @@ export const graphQLQuery = async (
 export const generateProposalHash = (
   platformType: PlatformType,
   zDAOId: string,
-  proposalId: string
+  proposalId: string // proposalId: toHexString(), 0x1, 0x2 ...
 ): BigNumber => {
   return BigNumber.from(
     ethers.utils.keccak256(
@@ -32,16 +32,23 @@ export const generateProposalHash = (
 
 export const generateZDAOId = (
   platformType: PlatformType,
-  zDAOId: zDAOId
+  zDAOId: zDAOId // zDAOId: string number
 ): string => {
+  // platformType: PlatformType.Polygon
+  // zDAOId: 1
+  // expected return: 1.0-1.0
   return `${Number(platformType).toFixed(1)}-${Number(zDAOId).toFixed(1)}`;
 };
 
 export const generateProposalId = (
   platformType: PlatformType,
   zDAOId: zDAOId,
-  proposalId: ProposalId
+  proposalId: ProposalId // proposalId: toHexString(), 0x1, 0x2 ...
 ): string => {
+  // platformType: PlatformType.Polygon
+  // zDAOId: 1
+  // proposalId: 0x
+  // expected return: 1.0-1.0-0x1
   return `${Number(platformType).toFixed(1)}-${Number(zDAOId).toFixed(
     1
   )}-${proposalId}`;

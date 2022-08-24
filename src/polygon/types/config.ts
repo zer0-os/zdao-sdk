@@ -3,33 +3,49 @@ import { ethers } from 'ethers';
 import { Config } from '../../types';
 
 export interface PolygonDAOConfig {
-  // address to zDAOChef contract
+  /**
+   * Address to zDAOChef contract
+   */
   zDAOChef: string;
 
-  // Contract Creation block number
+  /**
+   * Contract Creation block number
+   */
   blockNumber: number;
 
-  // subgraphUri to zDAOChef
+  /**
+   * SubgraphUri to zDAOChef
+   */
   subgraphUri: string;
 
-  // address to Staking contract
+  /**
+   * Address to Staking contract
+   */
   staking: string;
 
-  // address to IChildChainManager contract
+  /**
+   * Address to IChildChainManager contract
+   */
   childChainManager: string;
 }
 
 export interface ProofConfig {
-  // From address
+  /**
+   * From address
+   */
   from: string;
 }
 
 export interface PolygonConfig extends Config {
-  // Polygon DAO configuration
+  /**
+   * Polygon DAO configuration
+   */
   polygon: PolygonDAOConfig;
 
   polygonProvider: ethers.providers.Provider;
 
-  // Proof configuration
+  /**
+   * Proof configuration for @maticnetwork/maticjs
+   */
   proof: ProofConfig;
 }

@@ -389,11 +389,8 @@ class DAOClient
       );
 
       // created proposal id
-      const lastProposalId = (
-        await this.ethereumZDAO.lastProposalId()
-      ).toString();
-
-      return lastProposalId;
+      const lastProposalId = await this.ethereumZDAO.lastProposalId();
+      return lastProposalId.toHexString();
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);

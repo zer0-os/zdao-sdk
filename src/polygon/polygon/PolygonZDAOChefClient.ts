@@ -16,6 +16,7 @@ import { PolygonZDAO } from '../config/types/PolygonZDAO';
 import { PolygonZDAOChef } from '../config/types/PolygonZDAOChef';
 import { PolygonDAOConfig, StakingProperties } from '../types';
 import {
+  POLYGONCALCULATEDPROPOSAL_BY_QUERY,
   POLYGONPROPOSAL_BY_QUERY,
   POLYGONPROPOSALS_BY_QUERY,
   PolygonSubgraphProposal,
@@ -155,7 +156,7 @@ class PolygonZDAOChefClient {
       proposalId: generateProposalId(PlatformType.Polygon, zDAOId, proposalId),
     });
 
-    return result.proposalVotes.map(
+    return result.polygonVotes.map(
       (vote: any): PolygonSubgraphVote => ({
         choice: vote.choice,
         voter: vote.voter,
@@ -203,36 +204,27 @@ class PolygonZDAOChefClient {
     zDAOId: zDAOId,
     proposalId: ProposalId
   ): Promise<string[]> {
-    const currentBlock = await this.contract.provider.getBlockNumber();
-    const creationBlock = this.config.blockNumber;
-
-    // event ProposalCalculated(
-    //   uint256 indexed _zDAOId,
-    //   uint256 indexed _proposalId,
-    //   uint256 _voters,
-    //   uint256 _yes,
-    //   uint256 _no
-    // )
-
-    const blockCount = 3490;
-
-    const filter = this.contract.filters.ProposalCalculated(
-      ethers.BigNumber.from(zDAOId),
-      ethers.BigNumber.from(proposalId)
+    const result = await this.zDAOGQLClient.request(
+      POLYGONCALCULATEDPROPOSAL_BY_QUERY,
+      {
+        proposalId: generateProposalId(
+          PlatformType.Polygon,
+          zDAOId,
+          proposalId
+        ),
+      }
     );
-    const events = [];
-    let fromBlock = creationBlock;
-    while (fromBlock < currentBlock) {
-      const filtered = await this.contract.queryFilter(
-        filter,
-        fromBlock,
-        Math.min(fromBlock + blockCount, currentBlock)
-      );
-      events.push(...filtered);
-      fromBlock += blockCount;
+    if (
+      !result ||
+      !Array.isArray(result.polygonProposals) ||
+      result.polygonProposals.length < 1
+    ) {
+      return [];
     }
 
-    return events.map((event) => event.transactionHash);
+    return result.polygonProposals.map(
+      (proposal: any) => proposal.calculatedTx
+    );
   }
 }
 

@@ -255,9 +255,6 @@ const main = async () => {
   const config = Polygon.developmentConfiguration({
     ethereumProvider: goerliProvider,
     polygonProvider: mumbaiProvider,
-    proof: {
-      from: goerliSigner.address,
-    },
     fleek: env.fleek,
     ipfsGateway: 'zer0.infura-ipfs.io',
     zNSProvider: rinkebyProvider,

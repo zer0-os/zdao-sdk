@@ -9,9 +9,27 @@ import {
   zNSHubAddress,
 } from '../../config';
 import { EthereumDAOConfig, FleekConfig, SupportedChainId } from '../../types';
-import { PolygonConfig, PolygonDAOConfig, ProofConfig } from '../types';
+import { PolygonConfig, PolygonDAOConfig } from '../types';
 
-export const ethereumZDAOConfig: { [chainId: number]: EthereumDAOConfig } = {
+// Temporary private key for checkpointing
+// No need to put ether to this wallet
+export const PrivateKeyForCheckpointing: { [chainId: number]: string } = {
+  [SupportedChainId.MAINNET]:
+    '5db52f15da3b7e4308b1167d0eea27f3dc4d89299987ee35c68bd208150b7fec',
+  [SupportedChainId.GOERLI]:
+    '5db52f15da3b7e4308b1167d0eea27f3dc4d89299987ee35c68bd208150b7fec',
+  [SupportedChainId.POLYGON]:
+    '5db52f15da3b7e4308b1167d0eea27f3dc4d89299987ee35c68bd208150b7fec',
+  [SupportedChainId.MUMBAI]:
+    '5db52f15da3b7e4308b1167d0eea27f3dc4d89299987ee35c68bd208150b7fec',
+};
+
+export const WalletAddressForCheckpointing: { [chainId: number]: string } = {
+  [SupportedChainId.POLYGON]: '0x5C12455d2e12FB8348B0EfbAF1D84D3FA309a080',
+  [SupportedChainId.MUMBAI]: '0x5C12455d2e12FB8348B0EfbAF1D84D3FA309a080',
+};
+
+const EthereumZDAOConfig: { [chainId: number]: EthereumDAOConfig } = {
   [SupportedChainId.MAINNET]: {
     zDAOChef: '0x7701913b65C9bCDa4d353F77EC12123d57D77f1e', // todo
     subgraphUri:
@@ -24,7 +42,7 @@ export const ethereumZDAOConfig: { [chainId: number]: EthereumDAOConfig } = {
   },
 };
 
-const polygonZDAOConfig: { [chainId: number]: PolygonDAOConfig } = {
+const PolygonZDAOConfig: { [chainId: number]: PolygonDAOConfig } = {
   [SupportedChainId.MUMBAI]: {
     zDAOChef: '0x23E8f1D5BcB960221E405aD53231f932Cdb96f66', // todo
     blockNumber: 27589971, // todo
@@ -49,11 +67,6 @@ export interface ConfigParams {
   polygonProvider: ethers.providers.Provider;
 
   /**
-   * Proof configuration for @maticnetwork/maticjs
-   */
-  proof: ProofConfig;
-
-  /**
    * Fleek configuration to upload to IPFS
    */
   fleek: FleekConfig;
@@ -69,14 +82,13 @@ export interface ConfigParams {
 export const developmentConfiguration = ({
   ethereumProvider,
   polygonProvider,
-  proof,
   fleek,
   ipfsGateway,
   zNSProvider,
 }: ConfigParams): PolygonConfig => ({
-  ethereum: ethereumZDAOConfig[SupportedChainId.GOERLI],
+  ethereum: EthereumZDAOConfig[SupportedChainId.GOERLI],
   ethereumProvider,
-  polygon: polygonZDAOConfig[SupportedChainId.MUMBAI],
+  polygon: PolygonZDAOConfig[SupportedChainId.MUMBAI],
   polygonProvider,
   zNA: {
     zDAORegistry: zDAORegistryAddress[SupportedChainId.GOERLI],
@@ -89,7 +101,9 @@ export const developmentConfiguration = ({
     zDAOModule: zDAOModuleAddress[SupportedChainId.GOERLI],
     zDAOModuleSubgraphUri: zDAOModuleSubgraphUri[SupportedChainId.GOERLI],
   },
-  proof,
+  proof: {
+    from: WalletAddressForCheckpointing[SupportedChainId.MUMBAI],
+  },
   fleek,
   ipfsGateway,
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -100,13 +114,12 @@ export const developmentConfiguration = ({
 export const productionConfiguration = ({
   ethereumProvider,
   polygonProvider,
-  proof,
   fleek,
   ipfsGateway,
 }: ConfigParams): PolygonConfig => ({
-  ethereum: ethereumZDAOConfig[SupportedChainId.MAINNET],
+  ethereum: EthereumZDAOConfig[SupportedChainId.MAINNET],
   ethereumProvider,
-  polygon: polygonZDAOConfig[SupportedChainId.POLYGON],
+  polygon: PolygonZDAOConfig[SupportedChainId.POLYGON],
   polygonProvider,
   zNA: {
     zDAORegistry: zDAORegistryAddress[SupportedChainId.MAINNET],
@@ -119,7 +132,9 @@ export const productionConfiguration = ({
     zDAOModule: zDAOModuleAddress[SupportedChainId.MAINNET],
     zDAOModuleSubgraphUri: zDAOModuleSubgraphUri[SupportedChainId.MAINNET],
   },
-  proof,
+  proof: {
+    from: WalletAddressForCheckpointing[SupportedChainId.POLYGON],
+  },
   fleek,
   ipfsGateway,
   zNS: configuration.mainnetConfiguration(ethereumProvider),
