@@ -14,7 +14,7 @@ export const DEFAULT_PROPOSAL_CHOICES = ['Approve', 'Deny'];
 
 export const developmentConfiguration = (
   provider: ethers.providers.Provider,
-  ipfsGateway = 'snapshot.mypinata.cloud'
+  ipfsGateway = 'zer0.infura-ipfs.io'
 ): Config => ({
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
@@ -36,7 +36,7 @@ export const developmentConfiguration = (
 
 export const productionConfiguration = (
   provider: ethers.providers.Provider,
-  ipfsGateway = 'snapshot.mypinata.cloud'
+  ipfsGateway = 'zer0.infura-ipfs.io'
 ): Config => ({
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
