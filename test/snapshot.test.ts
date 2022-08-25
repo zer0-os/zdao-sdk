@@ -30,7 +30,7 @@ describe('Snapshot test', async () => {
       env.rpcUrl,
       env.network
     );
-    config = developmentConfiguration(env.zDAORegistry, provider);
+    config = developmentConfiguration(provider);
     const pk = process.env.PRIVATE_KEY;
     if (!pk) throw new Error(errorMessageForError('no-private-key'));
     signer = new ethers.Wallet(pk, provider);
@@ -56,14 +56,20 @@ describe('Snapshot test', async () => {
         zNAs: [dao.zNA],
         title: dao.title,
         creator: dao.creator,
-        avatar: undefined,
         network: dao.network,
         safeAddress: dao.safeAddress,
+        duration: 86400,
         votingToken: {
           token: dao.votingToken,
           symbol: 'vTEST',
           decimals: 18,
         },
+        amount: '0',
+        totalSupplyOfVotingToken: '100000',
+        votingThreshold: 5001,
+        minimumVotingParticipants: 1,
+        minimumTotalVotingTokens: '0',
+        isRelativeMajority: false,
       },
       undefined
     );
@@ -123,22 +129,26 @@ describe('Snapshot test', async () => {
 
   it('should create a proposal with `erc20-with-balance` strategy and cast a vote', async () => {
     const blockNumber = await signer.provider.getBlockNumber();
-    const proposal = await daoInstance.createProposal(signer, signer.address, {
-      title: 'test proposal',
-      body: 'body',
-      duration: 300, // 5 min
-      snapshot: blockNumber,
-      choices: ['Yes', 'No', 'Absent'],
-      transfer: {
-        sender: daoInstance.safeAddress,
-        recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
-        token: daoInstance.votingToken.token,
-        decimals: daoInstance.votingToken.decimals,
-        symbol: daoInstance.votingToken.symbol,
-        amount: BigNumber.from(10).pow(18).mul(3000).toString(),
-      },
-    });
-    expect(proposal.title).to.be.eq('test proposal');
+    const proposalId = await daoInstance.createProposal(
+      signer,
+      signer.address,
+      {
+        title: 'test proposal',
+        body: 'body',
+        duration: 300, // 5 min
+        snapshot: blockNumber,
+        choices: ['Yes', 'No', 'Absent'],
+        transfer: {
+          sender: daoInstance.safeAddress,
+          recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
+          token: daoInstance.votingToken.token,
+          decimals: daoInstance.votingToken.decimals,
+          symbol: daoInstance.votingToken.symbol,
+          amount: BigNumber.from(10).pow(18).mul(3000).toString(),
+        },
+      }
+    );
+    expect(proposalId).to.be.not.empty;
 
     // const vote = await proposal.vote(signer, 1);
     // expect(vote.length).to.be.gt(0);
@@ -151,20 +161,24 @@ describe('Snapshot test', async () => {
     const daoInstance2 = await sdkInstance.getZDAOByZNA('wilder.cats');
     expect(daoInstance2.ens).to.be.equal('zdao-sky.eth');
 
-    const proposal = await daoInstance2.createProposal(signer, signer.address, {
-      title: 'test proposal',
-      body: 'body',
-      snapshot: blockNumber,
-      choices: ['Yes', 'No', 'Absent'],
-      transfer: {
-        sender: daoInstance.safeAddress,
-        recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
-        token: daoInstance.votingToken.token,
-        decimals: daoInstance.votingToken.decimals,
-        symbol: daoInstance.votingToken.symbol,
-        amount: BigNumber.from(10).pow(18).mul(3000).toString(),
-      },
-    });
-    expect(proposal.title).to.be.eq('test proposal');
+    const proposalId = await daoInstance2.createProposal(
+      signer,
+      signer.address,
+      {
+        title: 'test proposal',
+        body: 'body',
+        snapshot: blockNumber,
+        choices: ['Yes', 'No', 'Absent'],
+        transfer: {
+          sender: daoInstance.safeAddress,
+          recipient: '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
+          token: daoInstance.votingToken.token,
+          decimals: daoInstance.votingToken.decimals,
+          symbol: daoInstance.votingToken.symbol,
+          amount: BigNumber.from(10).pow(18).mul(3000).toString(),
+        },
+      }
+    );
+    expect(proposalId).to.be.not.empty;
   });
 });
