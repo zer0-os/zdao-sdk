@@ -45,10 +45,7 @@ class DAOClient
     properties: zDAOProperties & zDAOOptions,
     options: any
   ) {
-    super(
-      properties,
-      new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
-    );
+    super(properties, new GnosisSafeClient(config.gnosisSafe));
     this.config = config;
     this.zDAOOptions = cloneDeep(properties);
     this.options = options;

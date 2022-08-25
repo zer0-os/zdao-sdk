@@ -75,7 +75,7 @@ class ZDAORegistryClient {
       platformType: record.platformType,
       id: record.zDAOId.toString(),
       zDAOOwnedBy: record.createdBy.toString(),
-      gnosisSafe: record.gnosisSafe.toString(),
+      gnosisSafe: ethers.utils.getAddress(record.gnosisSafe.toString()),
       name: record.name.toString(),
       destroyed: false,
       associatedzNAs: zNAs.splice(0, record.zNAs.length),
@@ -109,9 +109,13 @@ class ZDAORegistryClient {
     return {
       platformType: result.znaassociations[0].zDAORecord.platformType,
       id: result.znaassociations[0].zDAORecord.zDAOId.toString(),
-      zDAOOwnedBy: result.znaassociations[0].zDAORecord.createdBy.toString(),
-      gnosisSafe: result.znaassociations[0].zDAORecord.gnosisSafe.toString(),
-      name: result.znaassociations[0].zDAORecord.gnosisSafe.toString(),
+      zDAOOwnedBy: ethers.utils.getAddress(
+        result.znaassociations[0].zDAORecord.createdBy.toString()
+      ),
+      gnosisSafe: ethers.utils.getAddress(
+        result.znaassociations[0].zDAORecord.gnosisSafe.toString()
+      ),
+      name: result.znaassociations[0].zDAORecord.name.toString(),
       destroyed: false,
       associatedzNAs: zNAs,
     };

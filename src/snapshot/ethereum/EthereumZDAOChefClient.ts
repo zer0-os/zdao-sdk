@@ -43,7 +43,7 @@ class EthereumZDAOChefClient {
       id: zDAO.zDAORecord.zDAOId,
       snapshot: zDAO.snapshot,
       ensSpace: zDAO.ensSpace,
-      gnosisSafe: zDAO.zDAORecord.gnosisSafe,
+      gnosisSafe: ethers.utils.getAddress(zDAO.zDAORecord.gnosisSafe),
       destroyed: zDAO.zDAORecord.destroyed,
     };
   }

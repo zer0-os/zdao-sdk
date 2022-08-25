@@ -20,13 +20,10 @@ import { EXECUTEDPROPOSALS_BY_QUERY } from './types';
 class GnosisSafeClient {
   private readonly config: GnosisSafeConfig;
   private readonly graphQLClient: GraphQLClient;
-  private readonly ipfsGateway: string;
-  private readonly EMPTY_DATA = '0x';
 
-  constructor(config: GnosisSafeConfig, ipfsGateway: string) {
+  constructor(config: GnosisSafeConfig) {
     this.config = config;
     this.graphQLClient = new GraphQLClient(config.zDAOModuleSubgraphUri);
-    this.ipfsGateway = ipfsGateway;
   }
 
   async isOwnerAddress(
@@ -74,6 +71,7 @@ class GnosisSafeClient {
     params: string[],
     value: BigNumberish = '0' // ETH amount to be transferred
   ) {
+    const address = ethers.utils.getAddress(safeAddress);
     const ethAdapter = new EthersAdapter({
       ethers,
       signer,
@@ -81,7 +79,7 @@ class GnosisSafeClient {
     const safeService = new SafeService(this.config.serviceUri);
     const safe = await Safe.create({
       ethAdapter,
-      safeAddress,
+      safeAddress: address,
     });
     const safeSigner = new SafeEthersSigner(safe, safeService, signer.provider);
 
