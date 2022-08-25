@@ -5,7 +5,7 @@ import {
   Instance as zNSInstance,
 } from '@zero-tech/zns-sdk';
 import * as zns from '@zero-tech/zns-sdk';
-import { BigNumber } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
 
 import { zNA, zNAConfig, zNAId } from '../types';
@@ -69,7 +69,9 @@ class zDAORegistryClient {
     return {
       id: result.znaassociations[0].zDAORecord.zDAOId.toString(),
       ens: result.znaassociations[0].zDAORecord.name,
-      gnosisSafe: result.znaassociations[0].zDAORecord.gnosisSafe.toString(),
+      gnosisSafe: ethers.utils.getAddress(
+        result.znaassociations[0].zDAORecord.gnosisSafe.toString()
+      ),
       zNAs,
     };
   }
