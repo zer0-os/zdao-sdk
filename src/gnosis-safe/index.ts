@@ -1,6 +1,3 @@
-import Safe from '@gnosis.pm/safe-core-sdk';
-import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
-import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import {
   SafeBalanceResponse,
   SafeCollectibleResponse,
@@ -8,9 +5,8 @@ import {
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
 import fetch from 'cross-fetch';
-import { BigNumberish, ethers } from 'ethers';
+import { ethers } from 'ethers';
 
-import ERC20Abi from '../config/constants/abi/ERC20.json';
 import { GnosisSafeConfig } from '../types';
 
 class GnosisSafeClient {
@@ -19,80 +15,6 @@ class GnosisSafeClient {
 
   constructor(config: GnosisSafeConfig) {
     this._config = config;
-  }
-
-  async isOwnerAddress(
-    signer: ethers.Signer,
-    safeAddress: string,
-    address: string
-  ): Promise<boolean> {
-    const ethAdapter = new EthersAdapter({
-      ethers,
-      signer,
-    });
-    const safe = await Safe.create({
-      ethAdapter,
-      safeAddress,
-    });
-    const owners = await safe.getOwners();
-    if (!owners.find((owner) => owner === address)) {
-      return false;
-    }
-    return true;
-  }
-
-  async transferEther(
-    safeAddress: string,
-    signer: ethers.Signer,
-    recipient: string,
-    amount: BigNumberish
-  ): Promise<void> {
-    const ethAdapter = new EthersAdapter({
-      ethers,
-      signer,
-    });
-    const safeService = new SafeService(this._config.serviceUri);
-    const safe = await Safe.create({
-      ethAdapter,
-      safeAddress,
-    });
-    const safeSigner = new SafeEthersSigner(safe, safeService, signer.provider);
-
-    await safeSigner.sendTransaction({
-      to: recipient,
-      data: this.EMPTY_DATA,
-      value: amount.toString(),
-    });
-  }
-
-  async transferERC20(
-    safeAddress: string,
-    signer: ethers.Signer,
-    token: string,
-    recipient: string,
-    amount: BigNumberish
-  ): Promise<void> {
-    const ethAdapter = new EthersAdapter({
-      ethers,
-      signer,
-    });
-    const safeService = new SafeService(this._config.serviceUri);
-    const safe = await Safe.create({
-      ethAdapter,
-      safeAddress,
-    });
-    const safeSigner = new SafeEthersSigner(safe, safeService, signer.provider);
-
-    const erc20Interface = new ethers.utils.Interface(ERC20Abi);
-    const txData = erc20Interface.encodeFunctionData('transfer', [
-      recipient,
-      amount,
-    ]);
-    await safeSigner.sendTransaction({
-      value: '0',
-      to: token,
-      data: txData,
-    });
   }
 
   async listAssets(

@@ -268,55 +268,6 @@ class ProposalClient implements Proposal {
     }
     return false;
   }
-
-  async execute(signer: ethers.Signer): Promise<void> {
-    const address = await signer.getAddress();
-    const isOwner = await this._gnosisSafeClient.isOwnerAddress(
-      signer,
-      this._zDAO.safeAddress,
-      address
-    );
-    if (!isOwner) {
-      throw new Error(errorMessageForError('not-gnosis-owner'));
-    }
-
-    if (!this.metadata) {
-      throw new Error(errorMessageForError('empty-metadata'));
-    }
-    if (this.state !== ProposalState.CLOSED || !this.canExecute()) {
-      throw new Error(errorMessageForError('not-executable-proposal'));
-    }
-
-    try {
-      if (
-        !this.metadata?.token ||
-        this.metadata.token.length < 1 ||
-        this.metadata.token === ethers.constants.AddressZero
-      ) {
-        // Ether transfer
-        await this._gnosisSafeClient.transferEther(
-          this._zDAO.safeAddress,
-          signer,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          this.metadata!.recipient,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          this.metadata!.amount.toString()
-        );
-      } else {
-        // ERC20 transfer
-        await this._gnosisSafeClient.transferERC20(
-          this._zDAO.safeAddress,
-          signer,
-          this.metadata.token,
-          this.metadata.recipient,
-          this.metadata.amount.toString()
-        );
-      }
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new Error(errorMsg);
-    }
-  }
 }
 
 export default ProposalClient;
