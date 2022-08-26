@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 
 import { Snapshot } from '../../../src';
+import { ZNAClient } from '../../../src/client';
 import { SupportedChainId, zNA } from '../../../src/types';
 import { setEnvSnapshot as setEnv } from '../../shared/setupEnv';
 
@@ -14,20 +15,26 @@ const createZDAO = async (
   // isDev should be true
 
   for (const DAO of env.DAOs.rinkeby) {
-    if (await sdkInstance.doesZDAOExist(DAO.ens as zNA)) continue;
+    for (const zNA of DAO.zNAs) {
+      console.log(DAO.name, zNA, ZNAClient.zNATozNAId(zNA));
+    }
 
-    console.log('creating zDAO', DAO);
-    const params: Snapshot.CreateSnapshotZDAOParams = {
-      zNA: DAO.ens,
-      name: DAO.name,
-      network: SupportedChainId.RINKEBY,
-      gnosisSafe: DAO.gnosisSafe,
-      token: DAO.votingToken,
-      amount: '0',
-      duration: DAO.duration ?? 1800,
-      ens: DAO.ens,
-    };
-    await sdkInstance.createZDAO(signer, undefined, params);
+    if (!(await sdkInstance.doesZDAOExist(DAO.zNAs[0]))) {
+      console.log('creating zDAO', DAO);
+      const params: Snapshot.CreateSnapshotZDAOParams = {
+        zNA: DAO.zNAs[0],
+        name: DAO.name,
+        network: SupportedChainId.RINKEBY,
+        gnosisSafe: DAO.gnosisSafe,
+        votingToken: DAO.votingToken,
+        minimumVotingTokenAmount: '0',
+        votingDuration: DAO.duration ?? 1800,
+        ens: DAO.ens,
+      };
+      await sdkInstance.createZDAO(signer, undefined, params);
+
+      console.log(`DAO ${DAO.zNAs} created`);
+    }
   }
 };
 
@@ -35,7 +42,7 @@ const pagination = async (sdkInstance: Snapshot.SnapshotSDKInstance) => {
   // isDev should be true
 
   const dao: Snapshot.SnapshotZDAO = await sdkInstance.getZDAOByZNA(
-    'joshupgig.eth'
+    'wilder.wheels'
   );
 
   const count = 50;
@@ -129,52 +136,28 @@ const main = async () => {
   const isDev = true;
   const env = setEnv();
 
-  const signer = new ethers.Wallet(
-    process.env.PRIVATE_KEY!,
-    new ethers.providers.JsonRpcProvider(
-      isDev ? env.rpc.rinkeby : env.rpc.mainnet,
-      isDev ? SupportedChainId.RINKEBY : SupportedChainId.MAINNET
-    )
+  const provider = new ethers.providers.JsonRpcProvider(
+    isDev ? env.rpc.rinkeby : env.rpc.mainnet,
+    isDev ? SupportedChainId.RINKEBY : SupportedChainId.MAINNET
   );
+  const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
 
   const config = isDev
     ? Snapshot.developmentConfiguration({
-        ethereum: {
-          zDAOChef: env.contract.zDAOChef.rinkeby,
-          rpcUrl: env.rpc.rinkeby,
-          network: SupportedChainId.RINKEBY,
-          blockNumber: env.contract.zDAOChef.rinkebyBlock,
-        },
-        zNA: {
-          zDAORegistry: env.contract.zDAORegistry.rinkeby,
-          zNSHub: env.contract.zNSHub.rinkeby,
-          rpcUrl: env.rpc.rinkeby,
-          network: SupportedChainId.RINKEBY,
-        },
+        ethereumProvider: provider,
         fleek: env.fleek,
-        ipfsGateway: 'snapshot.mypinata.cloud',
+        ipfsGateway: 'zer0.infura-ipfs.io',
       })
     : Snapshot.productionConfiguration({
-        ethereum: {
-          zDAOChef: env.contract.zDAOChef.mainnet,
-          rpcUrl: env.rpc.mainnet,
-          network: SupportedChainId.RINKEBY,
-          blockNumber: env.contract.zDAOChef.mainnetBlock,
-        },
-        zNA: {
-          zDAORegistry: env.contract.zDAORegistry.mainnet,
-          zNSHub: env.contract.zNSHub.mainnet,
-          rpcUrl: env.rpc.mainnet,
-          network: SupportedChainId.MAINNET,
-        },
+        ethereumProvider: provider,
         fleek: env.fleek,
-        ipfsGateway: 'snapshot.mypinata.cloud',
+        ipfsGateway: 'zer0.infura-ipfs.io',
       });
 
   const sdkInstance: Snapshot.SnapshotSDKInstance =
     await Snapshot.createSDKInstance(config);
 
-  await createZDAO(sdkInstance, signer, env);
+  // await createZDAO(sdkInstance, signer, env);
   // await createToken(sdkInstance, signer);
   // await pagination(sdkInstance);
   // await immediateVote(sdkInstance, signer);

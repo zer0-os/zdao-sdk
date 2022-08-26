@@ -52,7 +52,7 @@ export interface IZDAORegistryInterface extends utils.Interface {
   functions: {
     "addNewZDAO(uint256,uint256,address,string,bytes)": FunctionFragment;
     "addZNAAssociation(uint256,uint256)": FunctionFragment;
-    "doesZNAExistForZNA(uint256)": FunctionFragment;
+    "doesZDAOExistForZNA(uint256)": FunctionFragment;
     "getZDAOById(uint256)": FunctionFragment;
     "getZDAOByZNA(uint256)": FunctionFragment;
     "listZDAOs(uint256,uint256)": FunctionFragment;
@@ -70,7 +70,7 @@ export interface IZDAORegistryInterface extends utils.Interface {
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "doesZNAExistForZNA",
+    functionFragment: "doesZDAOExistForZNA",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -104,7 +104,7 @@ export interface IZDAORegistryInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "doesZNAExistForZNA",
+    functionFragment: "doesZDAOExistForZNA",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -130,11 +130,11 @@ export interface IZDAORegistryInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "DAOCreated(uint256,uint256,address,address,address)": EventFragment;
-    "DAODestroyed(uint256)": EventFragment;
-    "DAOModified(uint256,address)": EventFragment;
-    "LinkAdded(uint256,uint256)": EventFragment;
-    "LinkRemoved(uint256,uint256)": EventFragment;
+    "DAOCreated(uint256,uint256,address,address,address,string)": EventFragment;
+    "DAODestroyed(uint256,uint256)": EventFragment;
+    "DAOModified(uint256,uint256,address)": EventFragment;
+    "LinkAdded(uint256,uint256,uint256)": EventFragment;
+    "LinkRemoved(uint256,uint256,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
@@ -145,39 +145,43 @@ export interface IZDAORegistryInterface extends utils.Interface {
 }
 
 export type DAOCreatedEvent = TypedEvent<
-  [BigNumber, BigNumber, string, string, string],
+  [BigNumber, BigNumber, string, string, string, string],
   {
     _platformType: BigNumber;
     _zDAOId: BigNumber;
-    _gnosisSafe: string;
-    _creator: string;
     _zDAO: string;
+    _creator: string;
+    _gnosisSafe: string;
+    _name: string;
   }
 >;
 
 export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
 
-export type DAODestroyedEvent = TypedEvent<[BigNumber], { _zDAOId: BigNumber }>;
+export type DAODestroyedEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  { _platformType: BigNumber; _zDAOId: BigNumber }
+>;
 
 export type DAODestroyedEventFilter = TypedEventFilter<DAODestroyedEvent>;
 
 export type DAOModifiedEvent = TypedEvent<
-  [BigNumber, string],
-  { _zDAOId: BigNumber; _gnosisSafe: string }
+  [BigNumber, BigNumber, string],
+  { _platformType: BigNumber; _zDAOId: BigNumber; _gnosisSafe: string }
 >;
 
 export type DAOModifiedEventFilter = TypedEventFilter<DAOModifiedEvent>;
 
 export type LinkAddedEvent = TypedEvent<
-  [BigNumber, BigNumber],
-  { _zDAOId: BigNumber; _zNA: BigNumber }
+  [BigNumber, BigNumber, BigNumber],
+  { _platformType: BigNumber; _zDAOId: BigNumber; _zNA: BigNumber }
 >;
 
 export type LinkAddedEventFilter = TypedEventFilter<LinkAddedEvent>;
 
 export type LinkRemovedEvent = TypedEvent<
-  [BigNumber, BigNumber],
-  { _zDAOId: BigNumber; _zNA: BigNumber }
+  [BigNumber, BigNumber, BigNumber],
+  { _platformType: BigNumber; _zDAOId: BigNumber; _zNA: BigNumber }
 >;
 
 export type LinkRemovedEventFilter = TypedEventFilter<LinkRemovedEvent>;
@@ -225,7 +229,7 @@ export interface IZDAORegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    doesZNAExistForZNA(
+    doesZDAOExistForZNA(
       _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
@@ -275,7 +279,7 @@ export interface IZDAORegistry extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  doesZNAExistForZNA(
+  doesZDAOExistForZNA(
     _zNA: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
@@ -325,7 +329,7 @@ export interface IZDAORegistry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    doesZNAExistForZNA(
+    doesZDAOExistForZNA(
       _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
@@ -361,49 +365,61 @@ export interface IZDAORegistry extends BaseContract {
   };
 
   filters: {
-    "DAOCreated(uint256,uint256,address,address,address)"(
+    "DAOCreated(uint256,uint256,address,address,address,string)"(
       _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
-      _gnosisSafe?: string | null,
+      _zDAO?: string | null,
       _creator?: null,
-      _zDAO?: null
+      _gnosisSafe?: null,
+      _name?: null
     ): DAOCreatedEventFilter;
     DAOCreated(
       _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
-      _gnosisSafe?: string | null,
+      _zDAO?: string | null,
       _creator?: null,
-      _zDAO?: null
+      _gnosisSafe?: null,
+      _name?: null
     ): DAOCreatedEventFilter;
 
-    "DAODestroyed(uint256)"(
+    "DAODestroyed(uint256,uint256)"(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null
     ): DAODestroyedEventFilter;
-    DAODestroyed(_zDAOId?: BigNumberish | null): DAODestroyedEventFilter;
+    DAODestroyed(
+      _platformType?: BigNumberish | null,
+      _zDAOId?: BigNumberish | null
+    ): DAODestroyedEventFilter;
 
-    "DAOModified(uint256,address)"(
+    "DAOModified(uint256,uint256,address)"(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
       _gnosisSafe?: string | null
     ): DAOModifiedEventFilter;
     DAOModified(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
       _gnosisSafe?: string | null
     ): DAOModifiedEventFilter;
 
-    "LinkAdded(uint256,uint256)"(
+    "LinkAdded(uint256,uint256,uint256)"(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
       _zNA?: BigNumberish | null
     ): LinkAddedEventFilter;
     LinkAdded(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
       _zNA?: BigNumberish | null
     ): LinkAddedEventFilter;
 
-    "LinkRemoved(uint256,uint256)"(
+    "LinkRemoved(uint256,uint256,uint256)"(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
       _zNA?: BigNumberish | null
     ): LinkRemovedEventFilter;
     LinkRemoved(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
       _zNA?: BigNumberish | null
     ): LinkRemovedEventFilter;
@@ -425,7 +441,7 @@ export interface IZDAORegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    doesZNAExistForZNA(
+    doesZDAOExistForZNA(
       _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -476,7 +492,7 @@ export interface IZDAORegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    doesZNAExistForZNA(
+    doesZDAOExistForZNA(
       _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

@@ -1,28 +1,31 @@
 import Safe from '@gnosis.pm/safe-core-sdk';
-import { SafeTransactionDataPartial } from '@gnosis.pm/safe-core-sdk-types';
+import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import {
-  getBalances,
-  getCollectibles,
-  getTransactionHistory,
   SafeBalanceResponse,
   SafeCollectibleResponse,
   Transaction as Transaction,
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
-import SafeServiceClient from '@gnosis.pm/safe-service-client';
-import { ethers } from 'ethers';
+import fetch from 'cross-fetch';
+import { BigNumber, BigNumberish, ethers } from 'ethers';
+import { GraphQLClient } from 'graphql-request';
 
-import ERC20Abi from '../config/abi/ERC20.json';
+import { PlatformType } from '..';
+import { ZDAOModule__factory } from '../config/types/factories/ZDAOModule__factory';
 import { GnosisSafeConfig } from '../types';
+import { graphQLQuery } from '../utilities/graphql';
+import { EXECUTEDPROPOSALS_BY_QUERY } from './types';
 
 class GnosisSafeClient {
   private readonly config: GnosisSafeConfig;
+  private readonly graphQLClient: GraphQLClient;
   private readonly ipfsGateway: string;
   private readonly EMPTY_DATA = '0x';
 
   constructor(config: GnosisSafeConfig, ipfsGateway: string) {
     this.config = config;
+    this.graphQLClient = new GraphQLClient(config.zDAOModuleSubgraphUri);
     this.ipfsGateway = ipfsGateway;
   }
 
@@ -46,95 +49,50 @@ class GnosisSafeClient {
     return true;
   }
 
-  async transferEther(
-    gnosisSafe: string,
-    signer: ethers.Signer,
-    recipient: string,
-    amount: ethers.BigNumberish
-  ): Promise<void> {
-    const ethAdapter = new EthersAdapter({
-      ethers,
-      signer,
-    });
-    const safeService = new SafeServiceClient(this.config.serviceUri);
-    const safe = await Safe.create({
-      ethAdapter,
-      safeAddress: gnosisSafe,
-    });
-
-    const signerAddress = await signer.getAddress();
-    // const nonce = await safeService.getNextNonce(gnosisSafe);
-    const transaction: SafeTransactionDataPartial = {
-      to: recipient,
-      data: this.EMPTY_DATA,
-      value: amount.toString(),
-      operation: 0, // Optional
-      safeTxGas: 0, // Optional
-      baseGas: 0, // Optional
-      gasPrice: 0, // Optional
-      gasToken: '0x0000000000000000000000000000000000000000', // Optional
-      refundReceiver: '0x0000000000000000000000000000000000000000', // Optional
-      // nonce: Number(nonce), // Optional
-    };
-
-    const safeTransaction = await safe.createTransaction(transaction);
-    await safe.signTransaction(safeTransaction);
-
-    const safeTxHash = await safe.getTransactionHash(safeTransaction);
-    await safeService.proposeTransaction({
-      safeAddress: gnosisSafe,
-      senderAddress: signerAddress,
-      safeTransaction,
-      safeTxHash,
-    });
+  async isProposalsExecuted(
+    platformType: PlatformType,
+    proposalHashes: BigNumber[]
+  ): Promise<boolean[]> {
+    const response = await graphQLQuery(
+      this.graphQLClient,
+      EXECUTEDPROPOSALS_BY_QUERY,
+      {
+        proposalHashes: proposalHashes.map((hash) => hash.toString()),
+        platformType,
+      }
+    );
+    const filtered = response.executedProposals.map(
+      (proposal: any) => proposal.proposalId
+    );
+    return proposalHashes.map((hash) => filtered.indexOf(hash) >= 0);
   }
 
-  async transferERC20(
-    gnosisSafe: string,
+  async proposeTxFromModule(
+    safeAddress: string,
     signer: ethers.Signer,
-    token: string,
-    recipient: string,
-    amount: ethers.BigNumberish
-  ): Promise<void> {
+    funcName: string,
+    params: string[],
+    value: BigNumberish = '0' // ETH amount to be transferred
+  ) {
     const ethAdapter = new EthersAdapter({
       ethers,
       signer,
     });
-    const safeService = new SafeServiceClient(this.config.serviceUri);
+    const safeService = new SafeService(this.config.serviceUri);
     const safe = await Safe.create({
       ethAdapter,
-      safeAddress: gnosisSafe,
+      safeAddress,
     });
+    const safeSigner = new SafeEthersSigner(safe, safeService, signer.provider);
 
-    const signerAddress = await signer.getAddress();
-    const erc20Interface = new ethers.utils.Interface(ERC20Abi);
-    const txData = erc20Interface.encodeFunctionData('transfer', [
-      recipient,
-      amount,
-    ]);
-    // const nonce = await safeService.getNextNonce(gnosisSafe);
-    const transaction: SafeTransactionDataPartial = {
-      to: token,
-      data: txData,
-      value: '0',
-      operation: 0, // Optional
-      safeTxGas: 0, // Optional
-      baseGas: 0, // Optional
-      gasPrice: 0, // Optional
-      gasToken: '0x0000000000000000000000000000000000000000', // Optional
-      refundReceiver: '0x0000000000000000000000000000000000000000', // Optional
-      // nonce: Number(nonce), // Optional
-    };
+    const moduleInterface = new ethers.utils.Interface(ZDAOModule__factory.abi);
+    const data = moduleInterface.encodeFunctionData(funcName, params);
 
-    const safeTransaction = await safe.createTransaction(transaction);
-    await safe.signTransaction(safeTransaction);
-
-    const safeTxHash = await safe.getTransactionHash(safeTransaction);
-    await safeService.proposeTransaction({
-      safeAddress: gnosisSafe,
-      senderAddress: signerAddress,
-      safeTransaction,
-      safeTxHash,
+    const module = this.config.zDAOModule;
+    await safeSigner.sendTransaction({
+      value,
+      to: module,
+      data,
     });
   }
 
@@ -145,16 +103,9 @@ class GnosisSafeClient {
   ): Promise<SafeBalanceResponse> {
     const address = ethers.utils.getAddress(gnosisSafe);
 
-    return await getBalances(
-      this.config.gateway,
-      network,
-      address,
-      selectedCurrency,
-      {
-        exclude_spam: true,
-        trusted: false,
-      }
-    );
+    const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/balances/${selectedCurrency}?exclude_spam=true&trusted=false`;
+    const res = await fetch(url);
+    return await res.json();
   }
 
   async listCollectibles(
@@ -163,17 +114,9 @@ class GnosisSafeClient {
   ): Promise<SafeCollectibleResponse[]> {
     const address = ethers.utils.getAddress(gnosisSafe);
 
-    const collectibles = await getCollectibles(
-      this.config.gateway,
-      network,
-      address,
-      {
-        exclude_spam: true,
-        trusted: false,
-      }
-    );
-
-    return collectibles;
+    const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/collectibles?exclude_spam=true&trusted=false`;
+    const res = await fetch(url);
+    return await res.json();
   }
 
   async listTransactions(
@@ -182,11 +125,10 @@ class GnosisSafeClient {
   ): Promise<Transaction[]> {
     const address = ethers.utils.getAddress(gnosisSafe);
 
-    const { results } = await getTransactionHistory(
-      this.config.gateway,
-      network,
-      address
-    );
+    const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/transactions/history`;
+
+    const resp = await fetch(url).then((res) => res.json());
+    const { results } = resp;
 
     const filtered = results
       .filter(
@@ -196,7 +138,7 @@ class GnosisSafeClient {
           (tx.transaction.txInfo.direction === 'INCOMING' ||
             tx.transaction.txInfo.direction === 'OUTGOING')
       )
-      .map((tx) => tx as Transaction);
+      .map((tx: TransactionListItem) => tx as Transaction);
 
     return filtered;
   }

@@ -254,7 +254,7 @@ export interface PolygonZDAOChefInterface extends utils.Interface {
     "AdminChanged(address,address)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
     "CastVote(uint256,uint256,address,uint256,uint256)": EventFragment;
-    "DAOCreated(address,uint256,uint256)": EventFragment;
+    "DAOCreated(address,uint256,address,uint256,uint256)": EventFragment;
     "DAODestroyed(uint256)": EventFragment;
     "DAOStakingUpdated(uint256,address)": EventFragment;
     "DAOTokenUpdated(uint256,address)": EventFragment;
@@ -263,7 +263,6 @@ export interface PolygonZDAOChefInterface extends utils.Interface {
     "ProposalCalculated(uint256,uint256,uint256,uint256[])": EventFragment;
     "ProposalCanceled(uint256,uint256)": EventFragment;
     "ProposalCreated(uint256,uint256,uint256,uint256,uint256)": EventFragment;
-    "ProposalExecuted(uint256,uint256)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
@@ -284,7 +283,6 @@ export interface PolygonZDAOChefInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ProposalCalculated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalCanceled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ProposalExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
@@ -318,8 +316,14 @@ export type CastVoteEvent = TypedEvent<
 export type CastVoteEventFilter = TypedEventFilter<CastVoteEvent>;
 
 export type DAOCreatedEvent = TypedEvent<
-  [string, BigNumber, BigNumber],
-  { _zDAO: string; _zDAOId: BigNumber; _duration: BigNumber }
+  [string, BigNumber, string, BigNumber, BigNumber],
+  {
+    _zDAO: string;
+    _zDAOId: BigNumber;
+    _token: string;
+    _duration: BigNumber;
+    _votingDelay: BigNumber;
+  }
 >;
 
 export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
@@ -388,14 +392,6 @@ export type ProposalCreatedEvent = TypedEvent<
 >;
 
 export type ProposalCreatedEventFilter = TypedEventFilter<ProposalCreatedEvent>;
-
-export type ProposalExecutedEvent = TypedEvent<
-  [BigNumber, BigNumber],
-  { _zDAOId: BigNumber; _proposalId: BigNumber }
->;
-
-export type ProposalExecutedEventFilter =
-  TypedEventFilter<ProposalExecutedEvent>;
 
 export type RoleAdminChangedEvent = TypedEvent<
   [string, string, string],
@@ -862,15 +858,19 @@ export interface PolygonZDAOChef extends BaseContract {
       _votingPower?: null
     ): CastVoteEventFilter;
 
-    "DAOCreated(address,uint256,uint256)"(
+    "DAOCreated(address,uint256,address,uint256,uint256)"(
       _zDAO?: string | null,
       _zDAOId?: BigNumberish | null,
-      _duration?: null
+      _token?: string | null,
+      _duration?: null,
+      _votingDelay?: null
     ): DAOCreatedEventFilter;
     DAOCreated(
       _zDAO?: string | null,
       _zDAOId?: BigNumberish | null,
-      _duration?: null
+      _token?: string | null,
+      _duration?: null,
+      _votingDelay?: null
     ): DAOCreatedEventFilter;
 
     "DAODestroyed(uint256)"(
@@ -944,15 +944,6 @@ export interface PolygonZDAOChef extends BaseContract {
       _proposalCreated?: null,
       _currentTimestamp?: null
     ): ProposalCreatedEventFilter;
-
-    "ProposalExecuted(uint256,uint256)"(
-      _zDAOId?: BigNumberish | null,
-      _proposalId?: BigNumberish | null
-    ): ProposalExecutedEventFilter;
-    ProposalExecuted(
-      _zDAOId?: BigNumberish | null,
-      _proposalId?: BigNumberish | null
-    ): ProposalExecutedEventFilter;
 
     "RoleAdminChanged(bytes32,bytes32,bytes32)"(
       role?: BytesLike | null,

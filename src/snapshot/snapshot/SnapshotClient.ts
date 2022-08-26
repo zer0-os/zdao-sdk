@@ -2,11 +2,11 @@ import Client from '@snapshot-labs/snapshot.js';
 import fetch from 'cross-fetch';
 import { addSeconds } from 'date-fns';
 import { ethers } from 'ethers';
-import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
-import { cloneDeep, orderBy } from 'lodash';
+import { GraphQLClient } from 'graphql-request';
+import { orderBy } from 'lodash';
 
 import { NotFoundError, ProposalId, SupportedChainId } from '../../types';
-import { errorMessageForError, timestamp } from '../../utilities';
+import { errorMessageForError, graphQLQuery, timestamp } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import verified from '../config/verified.json';
 import { ENS, SnapshotNetworkConfig } from '../types';
@@ -44,16 +44,6 @@ class SnapshotClient {
 
     this.clientEIP712 = new Client.Client712(config.serviceUri);
     this.graphQLClient = new GraphQLClient(`${config.serviceUri}/graphql`);
-  }
-
-  private async graphQLQuery(
-    query: RequestDocument,
-    variables?: Variables,
-    path = ''
-  ) {
-    const response = await this.graphQLClient.request(query, variables);
-
-    return cloneDeep(!path ? response : response[path]);
   }
 
   ipfsGet(ipfs: string) {
@@ -132,7 +122,8 @@ class SnapshotClient {
   }
 
   async getSpaceDetails(spaceId: ENS): Promise<SnapshotSpaceDetails> {
-    const response = await this.graphQLQuery(
+    const response = await graphQLQuery(
+      this.graphQLClient,
       SPACES_QUERY,
       {
         id_in: [spaceId],
@@ -161,7 +152,8 @@ class SnapshotClient {
   }
 
   async getSpaceOptions(spaceId: ENS): Promise<SnapshotSpaceOptions> {
-    const response = await this.graphQLQuery(
+    const response = await graphQLQuery(
+      this.graphQLClient,
       SPACES_STRATEGIES_QUERY,
       {
         id_in: [spaceId],
@@ -190,7 +182,8 @@ class SnapshotClient {
     from = 0,
     count = 30000
   ): Promise<SnapshotProposalProperties[]> {
-    const response = await this.graphQLQuery(
+    const response = await graphQLQuery(
+      this.graphQLClient,
       PROPOSALS_QUERY,
       {
         spaceId,
@@ -234,7 +227,8 @@ class SnapshotClient {
     ) {
       // latest scores are still pending on calculation
       // it requires to update right now
-      const voteResponse = await this.graphQLQuery(
+      const voteResponse = await graphQLQuery(
+        this.graphQLClient,
         VOTES_QUERY,
         {
           id: proposal.id,
@@ -293,7 +287,8 @@ class SnapshotClient {
   async getProposal(
     params: GetProposalParams
   ): Promise<SnapshotProposalProperties> {
-    const response = await this.graphQLQuery(
+    const response = await graphQLQuery(
+      this.graphQLClient,
       PROPOSAL_QUERY,
       {
         id: params.proposalId,
@@ -330,7 +325,8 @@ class SnapshotClient {
   }
 
   async listVotes(params: ListVotesParams): Promise<SnapshotVoteProperties[]> {
-    const response = await this.graphQLQuery(
+    const response = await graphQLQuery(
+      this.graphQLClient,
       VOTES_QUERY,
       {
         id: params.proposalId,

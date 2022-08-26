@@ -3,6 +3,7 @@ import { cloneDeep } from 'lodash';
 import shortid from 'shortid';
 
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
+import { DEFAULT_PROPOSAL_CHOICES } from '../../config';
 import {
   NotFoundError,
   ProposalId,
@@ -25,7 +26,6 @@ import {
   PolygonProposal,
   PolygonVote,
   PolygonZDAO,
-  VoteChoice,
   zDAOOptions,
 } from '../types';
 import GlobalClient from './GlobalClient';
@@ -123,13 +123,13 @@ class MockDAOClient
       title: payload.title,
       body: payload.body,
       ipfs,
-      choices: [VoteChoice.YES, VoteChoice.NO],
+      choices: payload.choices ?? DEFAULT_PROPOSAL_CHOICES,
       created: now,
       start: now,
       end: new Date(now.getTime() + this.votingDuration * 1000),
       state: ProposalState.ACTIVE,
       snapshot: timestamp(now),
-      scores: ['0', '0'],
+      scores: (payload.choices ?? DEFAULT_PROPOSAL_CHOICES).map((_) => '0'),
       voters: 0,
       metadata: payload.transfer,
     };

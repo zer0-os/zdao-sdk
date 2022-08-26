@@ -124,16 +124,18 @@ export interface Transaction {
   status: TransactionStatus;
 }
 
-export interface zDAOAssets {
+export interface zDAOCoins {
   // total coin amount in USD
   amountInUSD: number;
 
   // list of assets in zDAO
   coins: Coin[];
-
-  // list of collectibles in zDAO
-  collectibles: Collectible[];
 }
+
+// list of collectibles in zDAO
+export type zDAOCollectibles = Collectible[];
+
+export type zDAOAssets = zDAOCoins & { collectibles: zDAOCollectibles };
 
 export interface Token {
   // Token Address
@@ -177,7 +179,7 @@ export interface zDAOProperties {
   // can create a proposal
   votingToken: Token;
 
-  // The minimum number of tokens required on Ethereum to become proposal creator
+  // The minimum number of tokens required on Ethereum to become proposal creator in BigNumber
   minimumVotingTokenAmount: string;
 
   // Total Supply of Voting token (ERC20 or ERC721) in BigNumber
@@ -197,7 +199,7 @@ export interface zDAOProperties {
   minimumVotingParticipants: number;
 
   // The number of votes in support of a proposal required in order
-  // for a vote to succeed
+  // for a vote to succeed in BigNumber
   minimumTotalVotingTokens: string;
 
   // True if relative majority to calculate voting result

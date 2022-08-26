@@ -2,21 +2,30 @@ import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
 import {
-  DAOConfig,
-  FleekConfig,
-  SupportedChainId,
-  zNAConfig,
-} from '../../types';
+  zDAOModuleAddress,
+  zDAOModuleSubgraphUri,
+  zDAORegistryAddress,
+  zDAORegistrySubgraphUri,
+  zNSHubAddress,
+} from '../../config';
+import { EthereumDAOConfig, FleekConfig, SupportedChainId } from '../../types';
 import { SnapshotConfig } from '../types';
 
-export interface ConfigParams {
-  /**
-   * On the development, ethereum network should be Goerli,
-   * On the production, ethereum network should be mainnet
-   */
-  ethereum: DAOConfig;
+export const ethereumZDAOConfig: { [chainId: number]: EthereumDAOConfig } = {
+  [SupportedChainId.MAINNET]: {
+    zDAOChef: '0x7701913b65C9bCDa4d353F77EC12123d57D77f1e', // todo
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
+  },
+  [SupportedChainId.RINKEBY]: {
+    zDAOChef: '0x53A9C5756a28B853Bb4ae645e26bBD65a4115FCA', // todo
+    subgraphUri:
+      'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-rinkeby',
+  },
+};
 
-  zNA: zNAConfig;
+export interface ConfigParams {
+  ethereumProvider: ethers.providers.Provider;
 
   /**
    * Fleek configuration to upload to IPFS
@@ -27,49 +36,55 @@ export interface ConfigParams {
 }
 
 export const developmentConfiguration = ({
-  ethereum,
-  zNA,
+  ethereumProvider,
   fleek,
   ipfsGateway,
 }: ConfigParams): SnapshotConfig => ({
-  ethereum,
-  zNA,
+  ethereum: ethereumZDAOConfig[SupportedChainId.RINKEBY],
+  ethereumProvider,
+  zNA: {
+    zDAORegistry: zDAORegistryAddress[SupportedChainId.RINKEBY],
+    subgraphUri: zDAORegistrySubgraphUri[SupportedChainId.RINKEBY],
+    zNSHub: zNSHubAddress[SupportedChainId.RINKEBY],
+  },
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.rinkeby.gnosis.io',
     gateway: 'https://safe-client.staging.gnosisdev.com',
+    zDAOModule: zDAOModuleAddress[SupportedChainId.RINKEBY],
+    zDAOModuleSubgraphUri: zDAOModuleSubgraphUri[SupportedChainId.RINKEBY],
   },
   fleek,
   ipfsGateway,
-  zNS: configuration.rinkebyConfiguration(
-    new ethers.providers.JsonRpcProvider(ethereum.rpcUrl, ethereum.network)
-  ),
+  zNS: configuration.rinkebyConfiguration(ethereumProvider),
   isProd: false,
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
-    network: SupportedChainId.RINKEBY.toString(),
   },
 });
 
 export const productionConfiguration = ({
-  ethereum,
-  zNA,
+  ethereumProvider,
   fleek,
   ipfsGateway,
 }: ConfigParams): SnapshotConfig => ({
-  ethereum,
-  zNA,
+  ethereum: ethereumZDAOConfig[SupportedChainId.MAINNET],
+  ethereumProvider,
+  zNA: {
+    zDAORegistry: zDAORegistryAddress[SupportedChainId.MAINNET],
+    subgraphUri: zDAORegistrySubgraphUri[SupportedChainId.MAINNET],
+    zNSHub: zNSHubAddress[SupportedChainId.MAINNET],
+  },
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
+    zDAOModule: zDAOModuleAddress[SupportedChainId.MAINNET],
+    zDAOModuleSubgraphUri: zDAOModuleSubgraphUri[SupportedChainId.MAINNET],
   },
   fleek,
   ipfsGateway,
-  zNS: configuration.mainnetConfiguration(
-    new ethers.providers.JsonRpcProvider(ethereum.rpcUrl, ethereum.network)
-  ),
+  zNS: configuration.mainnetConfiguration(ethereumProvider),
   isProd: true,
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
-    network: SupportedChainId.MAINNET.toString(),
   },
 });

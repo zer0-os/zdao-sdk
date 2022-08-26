@@ -1,6 +1,9 @@
 import { POSClient, setProofApi, use } from '@maticnetwork/maticjs';
-import { Web3ClientPlugin } from '@maticnetwork/maticjs-web3';
+import { Web3ClientPlugin } from '@maticnetwork/maticjs-ethers';
+import { Wallet } from 'ethers';
 
+import { SupportedChainId } from '../../types';
+import { PrivateKeyForCheckpointing } from '../config';
 import { PolygonConfig } from '../types';
 
 class ProofClient {
@@ -20,13 +23,19 @@ class ProofClient {
       network: config.isProd ? 'mainnet' : 'testnet',
       version: config.isProd ? 'v1' : 'mumbai',
       parent: {
-        provider: config.ethereum.rpcUrl,
+        provider: new Wallet(
+          PrivateKeyForCheckpointing[SupportedChainId.MAINNET],
+          config.ethereumProvider
+        ),
         defaultConfig: {
           from: config.proof.from,
         },
       },
       child: {
-        provider: config.polygon.rpcUrl,
+        provider: new Wallet(
+          PrivateKeyForCheckpointing[SupportedChainId.POLYGON],
+          config.polygonProvider
+        ),
         defaultConfig: {
           from: config.proof.from,
         },

@@ -1,8 +1,10 @@
 import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
+import { PlatformType } from '../..';
 import { AbstractDAOClient, GnosisSafeClient, IPFSClient } from '../../client';
 import { ZDAORecord } from '../../client/ZDAORegistry';
+import { DEFAULT_PROPOSAL_CHOICES } from '../../config';
 import { IERC20Upgradeable__factory } from '../../config/types/factories/IERC20Upgradeable__factory';
 import { IERC20Upgradeable } from '../../config/types/IERC20Upgradeable';
 import {
@@ -20,13 +22,16 @@ import {
 } from '../../types';
 import {
   errorMessageForError,
+  generateProposalHash,
   getFullDisplayBalance,
   getSigner,
   getToken,
   getTotalSupply,
 } from '../../utilities';
-import { EthereumZDAO, IEthereumZDAO } from '../config/types/EthereumZDAO';
+import { EthereumZDAO } from '../config/types/EthereumZDAO';
 import { PolygonZDAO as PolygonZDAOContract } from '../config/types/PolygonZDAO';
+import { EthereumSubgraphProposal } from '../ethereum/types';
+import { PolygonSubgraphProposal } from '../polygon/types';
 import {
   CreatePolygonProposalParams,
   PolygonConfig,
@@ -93,6 +98,9 @@ class DAOClient
       GlobalClient.ethereumZDAOChef.getZDAOInfoById(zDAORecord.id),
       GlobalClient.polygonZDAOChef.getZDAOInfoById(zDAORecord.id),
     ]);
+    if (!zDAOInfos[0]) {
+      throw new NotFoundError(errorMessageForError('not-found-zdao'));
+    }
 
     const tokens = await Promise.all([
       getToken(GlobalClient.etherRpcProvider, zDAOInfos[0].token),
@@ -114,21 +122,20 @@ class DAOClient
         zNAs: zDAORecord.associatedzNAs,
         name: zDAORecord.name,
         createdBy: etherZDAOInfo.createdBy,
-        network: config.ethereum.network,
+        network: GlobalClient.etherNetwork,
         gnosisSafe: etherZDAOInfo.gnosisSafe,
         votingToken: tokens[0] as Token,
         minimumVotingTokenAmount: etherZDAOInfo.amount.toString(),
         totalSupplyOfVotingToken: tokens[2].toString(),
-        votingDuration: etherZDAOInfo.duration.toNumber(),
-        votingDelay: etherZDAOInfo.votingDelay.toNumber(),
-        votingThreshold: etherZDAOInfo.votingThreshold.toNumber(),
-        minimumVotingParticipants:
-          etherZDAOInfo.minimumVotingParticipants.toNumber(),
+        votingDuration: etherZDAOInfo.duration,
+        votingDelay: etherZDAOInfo.votingDelay,
+        votingThreshold: etherZDAOInfo.votingThreshold,
+        minimumVotingParticipants: etherZDAOInfo.minimumVotingParticipants,
         minimumTotalVotingTokens:
           etherZDAOInfo.minimumTotalVotingTokens.toString(),
         isRelativeMajority: etherZDAOInfo.isRelativeMajority,
         state: zDAOState.PENDING,
-        snapshot: etherZDAOInfo.snapshot.toNumber(),
+        snapshot: etherZDAOInfo.snapshot,
         destroyed: etherZDAOInfo.destroyed,
         polygonToken: tokens[1] as Token,
       },
@@ -146,38 +153,21 @@ class DAOClient
   }
 
   private async mapToProperties(
-    raw: IEthereumZDAO.ProposalStruct
+    ethereumRawProposal: EthereumSubgraphProposal,
+    polygonRawProposal: PolygonSubgraphProposal | undefined,
+    executed: boolean
   ): Promise<ProposalProperties> {
-    const polygonZDAO = await this.getPolygonZDAOContract();
-    const polyProposal = polygonZDAO
-      ? await polygonZDAO.getProposalById(raw.proposalId)
-      : null;
-    const isSyncedProposal = polyProposal
-      ? polyProposal.proposalId.eq(raw.proposalId)
-      : false;
-
-    const created = new Date(Number(raw.created) * 1000);
-    const start =
-        polygonZDAO && polyProposal && isSyncedProposal
-          ? new Date(Number(polyProposal.startTimestamp) * 1000)
-          : undefined,
-      end =
-        polygonZDAO && polyProposal && isSyncedProposal
-          ? new Date(Number(polyProposal.endTimestamp) * 1000)
-          : undefined,
+    const created = new Date(ethereumRawProposal.created * 1000);
+    const start = polygonRawProposal
+        ? new Date(Number(polygonRawProposal.startTimestamp) * 1000)
+        : undefined,
+      end = polygonRawProposal
+        ? new Date(Number(polygonRawProposal.endTimestamp) * 1000)
+        : undefined,
       now = new Date();
-    const snapshot =
-      polygonZDAO && polyProposal && isSyncedProposal
-        ? polyProposal.snapshot.toNumber()
-        : undefined;
-    const scores =
-      polygonZDAO && polyProposal && isSyncedProposal
-        ? polyProposal.votes
-        : undefined;
-    const voters =
-      polygonZDAO && polyProposal && isSyncedProposal
-        ? polyProposal.voters.toNumber()
-        : undefined;
+    const snapshot = polygonRawProposal?.snapshot;
+    const scores = polygonRawProposal?.sumOfVotes;
+    const voters = polygonRawProposal?.voters;
 
     const canExecute = (): boolean => {
       if (!scores || !voters) return false;
@@ -222,8 +212,8 @@ class DAOClient
       return false;
     };
 
-    const mapState = (raw: IEthereumZDAO.ProposalStruct): ProposalState => {
-      if (raw.canceled) {
+    const mapState = (): ProposalState => {
+      if (ethereumRawProposal.canceled) {
         return ProposalState.CANCELED;
       } else if (
         start === undefined ||
@@ -234,36 +224,36 @@ class DAOClient
         return ProposalState.PENDING;
       } else if (now <= end) {
         return ProposalState.ACTIVE;
-      } else if (raw.executed) {
+      } else if (executed) {
         return ProposalState.EXECUTED;
-      } else if (raw.calculated) {
+      } else if (ethereumRawProposal.calculated) {
         return canExecute()
           ? ProposalState.AWAITING_EXECUTION
-          : ProposalState.FAILED;
-      } else if (polyProposal?.calculated) {
+          : ProposalState.CLOSED;
+      } else if (polygonRawProposal?.calculated) {
         return ProposalState.AWAITING_FINALIZATION;
       }
       return ProposalState.AWAITING_CALCULATION;
     };
 
     const ipfsData = await IPFSClient.getJson(
-      raw.ipfs.toString(),
+      ethereumRawProposal.ipfs.toString(),
       GlobalClient.ipfsGateway
     );
     const metadataJson =
       ipfsData.data.message && ipfsData.data.message.transfer;
 
     return {
-      id: raw.proposalId.toString(),
-      createdBy: raw.createdBy,
+      id: ethereumRawProposal.proposalId,
+      createdBy: ethereumRawProposal.createdBy,
       title: ipfsData.data.message.title,
       body: ipfsData.data.message.body,
-      ipfs: raw.ipfs.toString(),
+      ipfs: ethereumRawProposal.ipfs.toString(),
       choices: [VoteChoice.YES, VoteChoice.NO],
       created,
       start,
       end,
-      state: mapState(raw),
+      state: mapState(),
       snapshot,
       scores: scores?.map((score) => score.toString()),
       voters,
@@ -279,46 +269,71 @@ class DAOClient
   }
 
   async listProposals(): Promise<PolygonProposal[]> {
-    const count = 100;
-    let from = 0;
-    let numberOfResults = count;
+    console.time('GlobalClient.listProposals');
+    const subgraphProposals = await Promise.all([
+      GlobalClient.ethereumZDAOChef.listProposals(this.id),
+      GlobalClient.polygonZDAOChef.listProposals(this.id),
+    ]);
+    console.timeEnd('GlobalClient.listProposals');
 
-    const proposalPromises: Promise<PolygonProposal>[] = [];
+    console.time('isProposalExecuted');
+    const ethereumSubgraphProposals = subgraphProposals[0];
+    const polygonSubgraphProposals = subgraphProposals[1];
+    const executeds = await this.gnosisSafeClient.isProposalsExecuted(
+      PlatformType.Polygon,
+      ethereumSubgraphProposals.map((raw) =>
+        generateProposalHash(PlatformType.Polygon, this.id, raw.proposalId)
+      )
+    );
+    console.timeEnd('isProposalExecuted');
 
-    while (numberOfResults === count) {
-      const results: IEthereumZDAO.ProposalStructOutput[] =
-        await this.ethereumZDAO.listProposals(from, count);
-
-      const promises: Promise<ProposalProperties>[] = [];
-      promises.push(
-        ...results.map((proposal) => this.mapToProperties(proposal))
-      );
-
-      const propertiesAll: ProposalProperties[] = await Promise.all(promises);
-      proposalPromises.push(
-        ...propertiesAll.map((properties) =>
-          ProposalClient.createInstance(this, properties)
+    console.time('mapToProperties');
+    const promises: Promise<ProposalProperties>[] =
+      ethereumSubgraphProposals.map((ethereumRawProposal, index) =>
+        this.mapToProperties(
+          ethereumRawProposal,
+          polygonSubgraphProposals.find(
+            (item) => item.proposalId === ethereumRawProposal.proposalId
+          ),
+          executeds[index]
         )
       );
+    console.timeEnd('mapToProperties');
 
-      from += results.length;
-      numberOfResults = results.length;
-    }
-    return await Promise.all(proposalPromises).then((values) =>
-      values.reverse()
+    const propertiesAll: ProposalProperties[] = await Promise.all(promises);
+
+    console.time('ProposalClient.createInstance');
+    const proposalPromises: Promise<PolygonProposal>[] = propertiesAll.map(
+      (properties) => ProposalClient.createInstance(this, properties)
     );
+
+    const proposals = await Promise.all(proposalPromises);
+    console.timeEnd('ProposalClient.createInstance');
+    return proposals;
   }
 
   async getProposal(id: ProposalId): Promise<PolygonProposal> {
-    const proposal = await this.ethereumZDAO.getProposalById(id);
-    if (proposal.proposalId.toString() !== id) {
+    const subgraphProposal = await Promise.all([
+      GlobalClient.ethereumZDAOChef.getProposal(this.id, id),
+      GlobalClient.polygonZDAOChef.getProposal(this.id, id),
+    ]);
+
+    const ethereumSubgraphProposal = subgraphProposal[0];
+    const polygonSubgraphProposal = subgraphProposal[1];
+    if (!ethereumSubgraphProposal) {
       throw new NotFoundError(errorMessageForError('not-found-proposal'));
     }
-
-    return await ProposalClient.createInstance(
-      this,
-      await this.mapToProperties(proposal)
+    const executed = await this.gnosisSafeClient.isProposalsExecuted(
+      PlatformType.Polygon,
+      [generateProposalHash(PlatformType.Polygon, this.id, id)]
     );
+    const properties = await this.mapToProperties(
+      ethereumSubgraphProposal,
+      polygonSubgraphProposal,
+      executed[0]
+    );
+
+    return await ProposalClient.createInstance(this, properties);
   }
 
   async createProposal(
@@ -332,6 +347,13 @@ class DAOClient
     }
     if (!this.votingDuration) {
       throw new Error(errorMessageForError('invalid-proposal-duration'));
+    }
+
+    if (payload.transfer) {
+      payload.choices = DEFAULT_PROPOSAL_CHOICES;
+    }
+    if (!payload.choices) {
+      payload.choices = DEFAULT_PROPOSAL_CHOICES;
     }
 
     const signer = getSigner(provider, account);
@@ -367,11 +389,8 @@ class DAOClient
       );
 
       // created proposal id
-      const lastProposalId = (
-        await this.ethereumZDAO.lastProposalId()
-      ).toString();
-
-      return lastProposalId;
+      const lastProposalId = await this.ethereumZDAO.lastProposalId();
+      return lastProposalId.toHexString();
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);

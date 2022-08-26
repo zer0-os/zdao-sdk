@@ -316,11 +316,11 @@ export interface ZDAORegistryInterface extends utils.Interface {
   events: {
     "AdminChanged(address,address)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
-    "DAOCreated(uint256,uint256,address,address,address)": EventFragment;
-    "DAODestroyed(uint256)": EventFragment;
-    "DAOModified(uint256,address)": EventFragment;
-    "LinkAdded(uint256,uint256)": EventFragment;
-    "LinkRemoved(uint256,uint256)": EventFragment;
+    "DAOCreated(uint256,uint256,address,address,address,string)": EventFragment;
+    "DAODestroyed(uint256,uint256)": EventFragment;
+    "DAOModified(uint256,uint256,address)": EventFragment;
+    "LinkAdded(uint256,uint256,uint256)": EventFragment;
+    "LinkRemoved(uint256,uint256,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
@@ -358,39 +358,43 @@ export type BeaconUpgradedEvent = TypedEvent<[string], { beacon: string }>;
 export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
 
 export type DAOCreatedEvent = TypedEvent<
-  [BigNumber, BigNumber, string, string, string],
+  [BigNumber, BigNumber, string, string, string, string],
   {
     _platformType: BigNumber;
     _zDAOId: BigNumber;
-    _gnosisSafe: string;
-    _creator: string;
     _zDAO: string;
+    _creator: string;
+    _gnosisSafe: string;
+    _name: string;
   }
 >;
 
 export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
 
-export type DAODestroyedEvent = TypedEvent<[BigNumber], { _zDAOId: BigNumber }>;
+export type DAODestroyedEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  { _platformType: BigNumber; _zDAOId: BigNumber }
+>;
 
 export type DAODestroyedEventFilter = TypedEventFilter<DAODestroyedEvent>;
 
 export type DAOModifiedEvent = TypedEvent<
-  [BigNumber, string],
-  { _zDAOId: BigNumber; _gnosisSafe: string }
+  [BigNumber, BigNumber, string],
+  { _platformType: BigNumber; _zDAOId: BigNumber; _gnosisSafe: string }
 >;
 
 export type DAOModifiedEventFilter = TypedEventFilter<DAOModifiedEvent>;
 
 export type LinkAddedEvent = TypedEvent<
-  [BigNumber, BigNumber],
-  { _zDAOId: BigNumber; _zNA: BigNumber }
+  [BigNumber, BigNumber, BigNumber],
+  { _platformType: BigNumber; _zDAOId: BigNumber; _zNA: BigNumber }
 >;
 
 export type LinkAddedEventFilter = TypedEventFilter<LinkAddedEvent>;
 
 export type LinkRemovedEvent = TypedEvent<
-  [BigNumber, BigNumber],
-  { _zDAOId: BigNumber; _zNA: BigNumber }
+  [BigNumber, BigNumber, BigNumber],
+  { _platformType: BigNumber; _zDAOId: BigNumber; _zNA: BigNumber }
 >;
 
 export type LinkRemovedEventFilter = TypedEventFilter<LinkRemovedEvent>;
@@ -1001,49 +1005,61 @@ export interface ZDAORegistry extends BaseContract {
     ): BeaconUpgradedEventFilter;
     BeaconUpgraded(beacon?: string | null): BeaconUpgradedEventFilter;
 
-    "DAOCreated(uint256,uint256,address,address,address)"(
+    "DAOCreated(uint256,uint256,address,address,address,string)"(
       _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
-      _gnosisSafe?: string | null,
+      _zDAO?: string | null,
       _creator?: null,
-      _zDAO?: null
+      _gnosisSafe?: null,
+      _name?: null
     ): DAOCreatedEventFilter;
     DAOCreated(
       _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
-      _gnosisSafe?: string | null,
+      _zDAO?: string | null,
       _creator?: null,
-      _zDAO?: null
+      _gnosisSafe?: null,
+      _name?: null
     ): DAOCreatedEventFilter;
 
-    "DAODestroyed(uint256)"(
+    "DAODestroyed(uint256,uint256)"(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null
     ): DAODestroyedEventFilter;
-    DAODestroyed(_zDAOId?: BigNumberish | null): DAODestroyedEventFilter;
+    DAODestroyed(
+      _platformType?: BigNumberish | null,
+      _zDAOId?: BigNumberish | null
+    ): DAODestroyedEventFilter;
 
-    "DAOModified(uint256,address)"(
+    "DAOModified(uint256,uint256,address)"(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
       _gnosisSafe?: string | null
     ): DAOModifiedEventFilter;
     DAOModified(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
       _gnosisSafe?: string | null
     ): DAOModifiedEventFilter;
 
-    "LinkAdded(uint256,uint256)"(
+    "LinkAdded(uint256,uint256,uint256)"(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
       _zNA?: BigNumberish | null
     ): LinkAddedEventFilter;
     LinkAdded(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
       _zNA?: BigNumberish | null
     ): LinkAddedEventFilter;
 
-    "LinkRemoved(uint256,uint256)"(
+    "LinkRemoved(uint256,uint256,uint256)"(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
       _zNA?: BigNumberish | null
     ): LinkRemovedEventFilter;
     LinkRemoved(
+      _platformType?: BigNumberish | null,
       _zDAOId?: BigNumberish | null,
       _zNA?: BigNumberish | null
     ): LinkRemovedEventFilter;

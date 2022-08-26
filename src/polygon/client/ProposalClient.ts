@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 
+import { PlatformType } from '../..';
 import { AbstractProposalClient } from '../../client';
 import {
   AlreadyDestroyedError,
@@ -11,7 +12,12 @@ import {
   ProposalState,
   ZDAOError,
 } from '../../types';
-import { errorMessageForError, getSigner } from '../../utilities';
+import {
+  errorMessageForError,
+  generateProposalHash,
+  getSigner,
+} from '../../utilities';
+import { PolygonSubgraphVote } from '../polygon/types';
 import {
   CalculatePolygonProposalParams,
   ExecutePolygonProposalParams,
@@ -44,30 +50,16 @@ class ProposalClient
   }
 
   async listVotes(): Promise<PolygonVote[]> {
-    const polygonZDAO = await this.zDAO.getPolygonZDAOContract();
-    if (!polygonZDAO) {
-      throw new NotSyncStateError();
-    }
+    const subgraphVotes = await GlobalClient.polygonZDAOChef.listVotes(
+      this.zDAO.id,
+      this.id
+    );
 
-    const count = 30000;
-    let from = 0;
-    let numberOfResults = count;
-    const votes: PolygonVote[] = [];
-
-    while (numberOfResults === count) {
-      const results = await polygonZDAO.listVoters(this.id, from, count);
-
-      votes.push(
-        ...[...Array(results.voters.length).keys()].map((index: number) => ({
-          voter: results.voters[index],
-          choice: results.choices[index].toNumber() as Choice,
-          votes: results.votes[index].toString(),
-        }))
-      );
-      from += results.length;
-      numberOfResults = results.length;
-    }
-    return votes;
+    return subgraphVotes.map((vote: PolygonSubgraphVote) => ({
+      voter: vote.voter,
+      choice: vote.choice as Choice,
+      votes: vote.votingPower.toString(),
+    }));
   }
 
   async getVotingPowerOfUser(account: string): Promise<string> {
@@ -85,21 +77,13 @@ class ProposalClient
       throw new NotSyncStateError();
     }
 
-    const polyProposal = polygonZDAO
-      ? await polygonZDAO.getProposalById(this.id)
-      : null;
-    const isSyncedProposal = polyProposal
-      ? polyProposal.proposalId.eq(this.id)
-      : false;
+    const subgraphProposal = await GlobalClient.polygonZDAOChef.getProposal(
+      this.zDAO.id,
+      this.id
+    );
 
-    const scores =
-      polygonZDAO && polyProposal && isSyncedProposal
-        ? polyProposal.votes.map((vote) => vote.toString())
-        : undefined;
-    const voters =
-      polygonZDAO && polyProposal && isSyncedProposal
-        ? polyProposal.voters.toNumber()
-        : undefined;
+    const scores = subgraphProposal?.sumOfVotes.map((vote) => vote.toString());
+    const voters = subgraphProposal?.voters;
     this.properties.scores = scores;
     this.properties.voters = voters;
 
@@ -131,7 +115,7 @@ class ProposalClient
 
     const sp = await GlobalClient.staking.pastStakingPower(
       accountAddress,
-      this.zDAO.polygonToken!.token,
+      this.zDAO.polygonToken.token,
       this.snapshot!
     );
     if (ethers.BigNumber.from(sp).eq(ethers.BigNumber.from(0))) {
@@ -196,6 +180,14 @@ class ProposalClient
     }
   }
 
+  async isExecuted(): Promise<boolean> {
+    const executed = await this.zDAO.gnosisSafeClient.isProposalsExecuted(
+      PlatformType.Polygon,
+      [generateProposalHash(PlatformType.Polygon, this.zDAO.id, this.id)]
+    );
+    return executed[0];
+  }
+
   async execute(
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
@@ -221,37 +213,34 @@ class ProposalClient
     }
 
     try {
-      if (
+      // check if proposal executed
+      const executed = await this.isExecuted();
+      if (executed) {
+        throw new Error(errorMessageForError('proposal-already-executed'));
+      }
+
+      const token =
         !this.metadata?.token ||
         this.metadata.token.length < 1 ||
         this.metadata.token === ethers.constants.AddressZero
-      ) {
-        // Ether transfer
-        await this.zDAO.gnosisSafeClient.transferEther(
-          this.zDAO.gnosisSafe,
-          signer,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          this.metadata!.recipient,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          this.metadata!.amount.toString()
-        );
-      } else {
-        // ERC20 transfer
-        await this.zDAO.gnosisSafeClient.transferERC20(
-          this.zDAO.gnosisSafe,
-          signer,
-          this.metadata.token,
-          this.metadata.recipient,
-          this.metadata.amount.toString()
-        );
-      }
+          ? ethers.constants.AddressZero
+          : this.metadata.token;
 
-      const daoId = this.zDAO.id;
-      const proposalId = this.id;
-      await GlobalClient.ethereumZDAOChef.executeProposal(
+      await this.zDAO.gnosisSafeClient.proposeTxFromModule(
+        this.zDAO.gnosisSafe,
         signer,
-        daoId,
-        proposalId
+        'executeProposal',
+        [
+          PlatformType.Polygon.toString(),
+          generateProposalHash(
+            PlatformType.Polygon,
+            this.zDAO.id,
+            this.id
+          ).toString(),
+          token,
+          this.metadata.recipient,
+          this.metadata.amount,
+        ]
       );
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;

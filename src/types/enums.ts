@@ -32,8 +32,6 @@ export enum ProposalState {
   AWAITING_FINALIZATION = 'AWAITING_FINALIZATION',
   // The proposal is succeeded in voting and is ready to execute the proposal.
   AWAITING_EXECUTION = 'AWAITING_EXECUTING',
-  // The proposal failed on voting.
-  FAILED = 'FAILED',
   // The proposal was closed without execution, Gnosis Owners can execute as they decide, this state is only available on Snapshot.org
   CLOSED = 'CLOSED',
   // The proposal is successfully executed

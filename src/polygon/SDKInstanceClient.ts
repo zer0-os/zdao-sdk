@@ -1,6 +1,7 @@
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
 import { ethers } from 'ethers';
 
+import { PlatformType } from '..';
 import { IPFSClient, ZNAClient } from '../client';
 import ZNSHubClient from '../client/ZNSHubClient';
 import {
@@ -31,11 +32,13 @@ class SDKInstanceClient implements PolygonSDKInstance {
 
     IPFSClient.initialize(this.config.fleek);
     ZNAClient.initialize(this.config.zNS);
-    ZNSHubClient.initialize(this.config.zNA);
-    GlobalClient.initialize(this.config);
+    ZNSHubClient.initialize(this.config.zNA, config.ethereumProvider);
 
     return (async (config: PolygonConfig): Promise<SDKInstanceClient> => {
-      await ProofClient.initialize(config);
+      await Promise.all([
+        GlobalClient.initialize(config),
+        ProofClient.initialize(config),
+      ]);
       return this;
     })(config) as unknown as SDKInstanceClient;
   }
@@ -70,7 +73,7 @@ class SDKInstanceClient implements PolygonSDKInstance {
         throw new InvalidError(errorMessageForError('not-zna-owner'));
       }
 
-      await GlobalClient.ethereumZDAOChef.addNewDAO(signer, {
+      await GlobalClient.ethereumZDAOChef.addNewZDAO(signer, {
         ...params,
         zNA: zNAId,
       });
@@ -87,7 +90,7 @@ class SDKInstanceClient implements PolygonSDKInstance {
   ): Promise<void> {
     try {
       const signer = getSigner(provider, account);
-      await GlobalClient.ethereumZDAOChef.removeDAO(signer, zDAOId);
+      await GlobalClient.ethereumZDAOChef.removeZDAO(signer, zDAOId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -95,20 +98,13 @@ class SDKInstanceClient implements PolygonSDKInstance {
   }
 
   async listZNAs(): Promise<zNA[]> {
-    const zDAORecords = await GlobalClient.zDAORegistry.listZDAOs();
-
-    // collect all the associated zNAs
-    const zNAs: zNA[] = [];
-    for (const zDAORecord of zDAORecords) {
-      zNAs.push(...zDAORecord.associatedzNAs);
-    }
-
-    // remove duplicated entries
-    return zNAs.filter((value, index) => zNAs.indexOf(value) === index);
+    return await GlobalClient.zDAORegistry.listZNAs(PlatformType.Polygon);
   }
 
   async listZDAOs(): Promise<PolygonZDAO[]> {
-    const zDAORecords = await GlobalClient.zDAORegistry.listZDAOs();
+    const zDAORecords = await GlobalClient.zDAORegistry.listZDAOs(
+      PlatformType.Polygon
+    );
 
     const promises: Promise<PolygonZDAO>[] = [];
     for (const zDAORecord of zDAORecords) {
@@ -120,9 +116,12 @@ class SDKInstanceClient implements PolygonSDKInstance {
 
   async getZDAOByZNA(zNA: zNA): Promise<PolygonZDAO> {
     // get zDAO information associated with zNA
-    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
+    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(
+      PlatformType.Polygon,
+      zNA
+    );
 
-    if (zDAORecord.id === '0') {
+    if (!zDAORecord) {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 
@@ -131,7 +130,10 @@ class SDKInstanceClient implements PolygonSDKInstance {
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
-    return await GlobalClient.zDAORegistry.doesZDAOExistForZNA(zNA);
+    return await GlobalClient.zDAORegistry.doesZDAOExistForZNA(
+      PlatformType.Polygon,
+      zNA
+    );
   }
 
   async createZDAOFromParams(

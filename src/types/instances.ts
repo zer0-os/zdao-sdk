@@ -15,6 +15,8 @@ import {
   Transaction,
   Vote,
   zDAOAssets,
+  zDAOCoins,
+  zDAOCollectibles,
   zDAOProperties,
 } from './structures';
 
@@ -127,6 +129,18 @@ export interface SDKInstance<
 
 export interface zDAO<VoteT extends Vote, ProposalT extends Proposal<VoteT>>
   extends zDAOProperties {
+  /**
+   * Get the list of coins and total amount in USD
+   * @return list of coins
+   */
+  listAssetsCoins(): Promise<zDAOCoins>;
+
+  /**
+   * Get the list of collectibles
+   * @return list of collectibles
+   */
+  listAssetsCollectibles(): Promise<zDAOCollectibles>;
+
   /**
    * Get the list of zDAO assets and amount in USD
    * @returns assets in zDAO

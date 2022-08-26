@@ -1,6 +1,7 @@
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
 import { BigNumber, ethers } from 'ethers';
 
+import { PlatformType } from '..';
 import { IPFSClient, ZNAClient } from '../client';
 import ZNSHubClient from '../client/ZNSHubClient';
 import {
@@ -41,8 +42,12 @@ class SDKInstanceClient implements SnapshotSDKInstance {
 
     IPFSClient.initialize(this.config.fleek);
     ZNAClient.initialize(this.config.zNS);
-    ZNSHubClient.initialize(this.config.zNA);
-    GlobalClient.initialize(this.config);
+    ZNSHubClient.initialize(this.config.zNA, config.ethereumProvider);
+
+    return (async (config: SnapshotConfig): Promise<SDKInstanceClient> => {
+      await GlobalClient.initialize(config);
+      return this;
+    })(config) as unknown as SDKInstanceClient;
   }
 
   async createZDAO(
@@ -71,7 +76,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
         throw new InvalidError(errorMessageForError('not-zna-owner'));
       }
 
-      await GlobalClient.ethereumZDAOChef.addNewDAO(signer, {
+      await GlobalClient.ethereumZDAOChef.addNewZDAO(signer, {
         ...params,
         zNA: zNAId,
       });
@@ -88,7 +93,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
   ): Promise<void> {
     try {
       const signer = getSigner(provider, account);
-      await GlobalClient.ethereumZDAOChef.removeDAO(signer, zDAOId);
+      await GlobalClient.ethereumZDAOChef.removeZDAO(signer, zDAOId);
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
@@ -96,16 +101,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
   }
 
   async listZNAs(): Promise<zNA[]> {
-    const zDAORecords = await GlobalClient.zDAORegistry.listZDAOs();
-
-    // collect all the associated zNAs
-    const zNAs: zNA[] = [];
-    for (const zDAORecord of zDAORecords) {
-      zNAs.push(...zDAORecord.associatedzNAs);
-    }
-
-    // remove duplicated entries
-    return zNAs.filter((value, index) => zNAs.indexOf(value) === index);
+    return await GlobalClient.zDAORegistry.listZNAs(PlatformType.Snapshot);
   }
 
   async listZDAOs(): Promise<SnapshotZDAO[]> {
@@ -119,15 +115,20 @@ class SDKInstanceClient implements SnapshotSDKInstance {
 
   async getZDAOByZNA(zNA: zNA): Promise<SnapshotZDAO> {
     // get zDAO information associated with zNA
-    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(zNA);
-
-    if (zDAORecord.id === '0') {
+    const zDAORecord = await GlobalClient.zDAORegistry.getZDAORecordByZNA(
+      PlatformType.Snapshot,
+      zNA
+    );
+    if (!zDAORecord) {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 
     const zDAOInfo = await GlobalClient.ethereumZDAOChef.getZDAOPropertiesById(
       zDAORecord.id
     );
+    if (!zDAOInfo) {
+      throw new NotFoundError(errorMessageForError('not-found-zdao'));
+    }
 
     // should be found by ens in snapshot
     const space = await this.snapshotClient.getSpaceDetails(zDAOInfo.ensSpace);
@@ -178,7 +179,7 @@ class SDKInstanceClient implements SnapshotSDKInstance {
         zNAs: zDAORecord.associatedzNAs,
         name: space.name,
         createdBy: '',
-        network: Number(this.config.snapshot.network),
+        network: GlobalClient.etherNetwork,
         gnosisSafe: zDAORecord.gnosisSafe,
         votingToken: {
           token: strategy.params.address,
@@ -211,7 +212,10 @@ class SDKInstanceClient implements SnapshotSDKInstance {
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
-    return await GlobalClient.zDAORegistry.doesZDAOExistForZNA(zNA);
+    return await GlobalClient.zDAORegistry.doesZDAOExistForZNA(
+      PlatformType.Snapshot,
+      zNA
+    );
   }
 
   async createZDAOFromParams(

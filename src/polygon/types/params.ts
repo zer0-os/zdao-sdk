@@ -19,7 +19,7 @@ export interface CreatePolygonZDAOParams extends CreateZDAOParams {
   minimumVotingParticipants: number;
 
   // The number of votes in support of a proposal required in order
-  // for a vote to succeed
+  // for a vote to succeed in BigNumber
   minimumTotalVotingTokens: string;
 }
 

@@ -37,7 +37,7 @@ export interface CreateProposalParams {
   body: string;
 
   // Array of choices
-  choices: string[];
+  choices?: string[];
 
   // Token meta data to be transfered if this proposal has been succeeded
   transfer?: TokenMetaData;

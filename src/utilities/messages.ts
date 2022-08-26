@@ -132,8 +132,16 @@ const ErrorMessages = [
     value: 'Not found proposal duration',
   },
   {
+    key: 'invalid-choices-for-funding-proposal',
+    value: 'Funding proposal should have only two choices',
+  },
+  {
     key: 'not-executable-proposal',
     value: 'Not a executable proposal',
+  },
+  {
+    key: 'proposal-already-executed',
+    value: 'Proposal was already executed',
   },
   {
     key: 'not-support-total-supply',
