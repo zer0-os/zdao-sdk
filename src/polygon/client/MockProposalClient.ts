@@ -1,11 +1,10 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
 import { AbstractProposalClient } from '../../client';
 import { NotImplementedError, ProposalProperties } from '../../types';
 import { getSigner } from '../../utilities';
 import {
   CalculatePolygonProposalParams,
-  ExecutePolygonProposalParams,
   FinalizePolygonProposalParams,
   PolygonProposal,
   PolygonVote,
@@ -23,6 +22,49 @@ class MockProposalClient
   constructor(properties: ProposalProperties, zDAO: MockDAOClient) {
     super(properties);
     this.zDAO = zDAO;
+  }
+
+  canExecute(): boolean {
+    if (!this.scores || !this.voters) return false;
+
+    const sumOfScores = this.scores.reduce(
+      (prev, current) => prev.add(current),
+      BigNumber.from(0)
+    );
+    const zero = BigNumber.from(0);
+    if (
+      this.voters < this.zDAO.minimumVotingParticipants ||
+      sumOfScores.lt(BigNumber.from(this.zDAO.minimumTotalVotingTokens)) // <
+    ) {
+      return false;
+    }
+
+    // if relative majority, the denominator should be sum of yes and no votes
+    if (
+      this.zDAO.isRelativeMajority &&
+      sumOfScores.gt(zero) &&
+      BigNumber.from(this.scores[0])
+        .mul(BigNumber.from(10000))
+        .div(sumOfScores)
+        .gte(BigNumber.from(this.zDAO.votingThreshold))
+    ) {
+      return true;
+    }
+
+    const totalSupply = BigNumber.from(this.zDAO.totalSupplyOfVotingToken);
+
+    // if absolute majority, the denominator should be total supply
+    if (
+      !this.zDAO.isRelativeMajority &&
+      totalSupply.gt(zero) &&
+      BigNumber.from(this.scores[0])
+        .mul(10000)
+        .div(totalSupply)
+        .gte(BigNumber.from(this.zDAO.votingThreshold))
+    ) {
+      return true;
+    }
+    return false;
   }
 
   listVotes(): Promise<PolygonVote[]> {
@@ -76,14 +118,6 @@ class MockProposalClient
     _: ethers.providers.Web3Provider | ethers.Wallet,
     _2: string | undefined,
     _3: FinalizePolygonProposalParams
-  ): Promise<void> {
-    throw new NotImplementedError();
-  }
-
-  execute(
-    _: ethers.providers.Web3Provider | ethers.Wallet,
-    _2: string | undefined,
-    _3: ExecutePolygonProposalParams
   ): Promise<void> {
     throw new NotImplementedError();
   }

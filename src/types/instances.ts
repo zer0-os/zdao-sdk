@@ -4,7 +4,6 @@ import {
   CalculateProposalParams,
   CreateProposalParams,
   CreateZDAOParams,
-  ExecuteProposalParams,
   FinalizeProposalParams,
   PaginationParam,
   VoteProposalParams,
@@ -34,9 +33,6 @@ type CalculateProposalParamsType<T extends CalculateProposalParams> =
 
 type FinalizeProposalParamsType<T extends FinalizeProposalParams> =
   T extends FinalizeProposalParams ? T : FinalizeProposalParams;
-
-type ExecuteProposalParamsType<T extends ExecuteProposalParams> =
-  T extends ExecuteProposalParams ? T : ExecuteProposalParams;
 
 export interface SDKInstance<
   VoteT extends Vote,
@@ -183,6 +179,12 @@ export interface zDAO<VoteT extends Vote, ProposalT extends Proposal<VoteT>>
 
 export interface Proposal<VoteT extends Vote> extends ProposalProperties {
   /**
+   * Check if proposal is succeeded
+   * @returns true if proposal is succeeded
+   */
+  canExecute(): boolean;
+
+  /**
    * Get all the votes by proposal id filtering with the function parameter
    * @returns list of votes
    */
@@ -236,20 +238,5 @@ export interface Proposal<VoteT extends Vote> extends ProposalProperties {
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
     payload: FinalizeProposalParamsType<FinalizeProposalParams>
-  ): Promise<void>;
-
-  /**
-   * Execute a proposal in zDAO
-   * @param provider Web3 provider or wallet
-   * @param account signer address
-   * @param payload parameters for proposal execution
-   * @returns transaction response
-   * @exception throw Error if signer is not Gnosis Safe owner
-   * @exception throw Error if proposal does not conain meta data to transfer tokens
-   */
-  execute(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string | undefined,
-    payload: ExecuteProposalParamsType<ExecuteProposalParams>
   ): Promise<void>;
 }

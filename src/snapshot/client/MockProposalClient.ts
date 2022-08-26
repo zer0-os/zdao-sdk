@@ -1,10 +1,10 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
 import { AbstractProposalClient } from '../../client';
 import { NotImplementedError, ProposalProperties } from '../../types';
+import { getDecimalAmount } from '../../utilities';
 import {
   CalculateSnapshotProposalParams,
-  ExecuteSnapshotProposalParams,
   FinalizeSnapshotProposalParams,
   SnapshotProposal,
   SnapshotVote,
@@ -19,6 +19,23 @@ class MockProposalClient extends AbstractProposalClient<SnapshotVote> {
   constructor(properties: ProposalProperties, zDAO: MockDAOClient) {
     super(properties);
     this.zDAO = zDAO;
+  }
+
+  canExecute(): boolean {
+    if (this.zDAO.isRelativeMajority || !this.scores) return false;
+
+    const totalScore = this.scores.reduce(
+      (prev, current) => prev.add(current),
+      BigNumber.from(0)
+    );
+    const totalScoreAsBN = getDecimalAmount(
+      totalScore,
+      this.zDAO.votingToken.decimals
+    );
+    if (totalScoreAsBN.gte(this.zDAO.minimumTotalVotingTokens)) {
+      return true;
+    }
+    return false;
   }
 
   listVotes(): Promise<SnapshotVote[]> {
@@ -63,14 +80,6 @@ class MockProposalClient extends AbstractProposalClient<SnapshotVote> {
     _: ethers.providers.Web3Provider | ethers.Wallet,
     _2: string | undefined,
     _3: FinalizeSnapshotProposalParams
-  ): Promise<void> {
-    throw new NotImplementedError();
-  }
-
-  execute(
-    _: ethers.providers.Web3Provider | ethers.Wallet,
-    _2: string | undefined,
-    _3: ExecuteSnapshotProposalParams
   ): Promise<void> {
     throw new NotImplementedError();
   }

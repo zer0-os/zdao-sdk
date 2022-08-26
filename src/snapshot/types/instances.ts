@@ -5,7 +5,6 @@ import {
   CalculateSnapshotProposalParams,
   CreateSnapshotProposalParams,
   CreateSnapshotZDAOParams,
-  ExecuteSnapshotProposalParams,
   FinalizeSnapshotProposalParams,
   VoteSnapshotProposalParams,
 } from './params';
@@ -89,18 +88,6 @@ export interface SnapshotProposal extends Proposal<SnapshotVote> {
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
     payload: FinalizeSnapshotProposalParams
-  ): Promise<void>;
-
-  /**
-   * Override execute function in Proposal
-   * @param provider
-   * @param account
-   * @param payload
-   */
-  execute(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string | undefined,
-    payload: ExecuteSnapshotProposalParams
   ): Promise<void>;
 }
 

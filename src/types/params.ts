@@ -54,9 +54,6 @@ export interface CalculateProposalParams {}
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface FinalizeProposalParams {}
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface ExecuteProposalParams {}
-
 export interface PaginationParam {
   // From number, starting at 1
   from: number;

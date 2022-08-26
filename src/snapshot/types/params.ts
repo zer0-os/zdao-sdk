@@ -2,7 +2,6 @@ import {
   CalculateProposalParams,
   CreateProposalParams,
   CreateZDAOParams,
-  ExecuteProposalParams,
   FinalizeProposalParams,
   VoteProposalParams,
 } from '../../types';
@@ -25,5 +24,3 @@ export type VoteSnapshotProposalParams = VoteProposalParams;
 export type CalculateSnapshotProposalParams = CalculateProposalParams;
 
 export type FinalizeSnapshotProposalParams = FinalizeProposalParams;
-
-export type ExecuteSnapshotProposalParams = ExecuteProposalParams;

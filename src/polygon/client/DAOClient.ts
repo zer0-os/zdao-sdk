@@ -1,7 +1,6 @@
 import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
-import { PlatformType } from '../..';
 import { AbstractDAOClient, GnosisSafeClient, IPFSClient } from '../../client';
 import { ZDAORecord } from '../../client/ZDAORegistry';
 import { DEFAULT_PROPOSAL_CHOICES } from '../../config';
@@ -22,7 +21,6 @@ import {
 } from '../../types';
 import {
   errorMessageForError,
-  generateProposalHash,
   getFullDisplayBalance,
   getSigner,
   getToken,
@@ -154,8 +152,7 @@ class DAOClient
 
   private async mapToProperties(
     ethereumRawProposal: EthereumSubgraphProposal,
-    polygonRawProposal: PolygonSubgraphProposal | undefined,
-    executed: boolean
+    polygonRawProposal: PolygonSubgraphProposal | undefined
   ): Promise<ProposalProperties> {
     const created = new Date(ethereumRawProposal.created * 1000);
     const start = polygonRawProposal
@@ -169,49 +166,6 @@ class DAOClient
     const scores = polygonRawProposal?.sumOfVotes;
     const voters = polygonRawProposal?.voters;
 
-    const canExecute = (): boolean => {
-      if (!scores || !voters) return false;
-
-      const sumOfScores = scores.reduce(
-        (prev, current) => prev.add(current),
-        BigNumber.from(0)
-      );
-      const zero = BigNumber.from(0);
-      if (
-        voters < this.minimumVotingParticipants ||
-        sumOfScores.lt(BigNumber.from(this.minimumTotalVotingTokens)) // <
-      ) {
-        return false;
-      }
-
-      // if relative majority, the denominator should be sum of yes and no votes
-      if (
-        this.isRelativeMajority &&
-        sumOfScores.gt(zero) &&
-        scores[0]
-          .mul(BigNumber.from(10000))
-          .div(sumOfScores)
-          .gte(BigNumber.from(this.votingThreshold))
-      ) {
-        return true;
-      }
-
-      const totalSupply = BigNumber.from(this.totalSupplyOfVotingToken);
-
-      // if absolute majority, the denominator should be total supply
-      if (
-        !this.isRelativeMajority &&
-        totalSupply.gt(zero) &&
-        scores[0]
-          .mul(10000)
-          .div(totalSupply)
-          .gte(BigNumber.from(this.votingThreshold))
-      ) {
-        return true;
-      }
-      return false;
-    };
-
     const mapState = (): ProposalState => {
       if (ethereumRawProposal.canceled) {
         return ProposalState.CANCELED;
@@ -224,12 +178,8 @@ class DAOClient
         return ProposalState.PENDING;
       } else if (now <= end) {
         return ProposalState.ACTIVE;
-      } else if (executed) {
-        return ProposalState.EXECUTED;
       } else if (ethereumRawProposal.calculated) {
-        return canExecute()
-          ? ProposalState.AWAITING_EXECUTION
-          : ProposalState.CLOSED;
+        return ProposalState.CLOSED;
       } else if (polygonRawProposal?.calculated) {
         return ProposalState.AWAITING_FINALIZATION;
       }
@@ -269,46 +219,31 @@ class DAOClient
   }
 
   async listProposals(): Promise<PolygonProposal[]> {
-    console.time('GlobalClient.listProposals');
     const subgraphProposals = await Promise.all([
       GlobalClient.ethereumZDAOChef.listProposals(this.id),
       GlobalClient.polygonZDAOChef.listProposals(this.id),
     ]);
-    console.timeEnd('GlobalClient.listProposals');
 
-    console.time('isProposalExecuted');
     const ethereumSubgraphProposals = subgraphProposals[0];
     const polygonSubgraphProposals = subgraphProposals[1];
-    const executeds = await this.gnosisSafeClient.isProposalsExecuted(
-      PlatformType.Polygon,
-      ethereumSubgraphProposals.map((raw) =>
-        generateProposalHash(PlatformType.Polygon, this.id, raw.proposalId)
-      )
-    );
-    console.timeEnd('isProposalExecuted');
 
-    console.time('mapToProperties');
     const promises: Promise<ProposalProperties>[] =
-      ethereumSubgraphProposals.map((ethereumRawProposal, index) =>
+      ethereumSubgraphProposals.map((ethereumRawProposal) =>
         this.mapToProperties(
           ethereumRawProposal,
           polygonSubgraphProposals.find(
             (item) => item.proposalId === ethereumRawProposal.proposalId
-          ),
-          executeds[index]
+          )
         )
       );
-    console.timeEnd('mapToProperties');
 
     const propertiesAll: ProposalProperties[] = await Promise.all(promises);
 
-    console.time('ProposalClient.createInstance');
     const proposalPromises: Promise<PolygonProposal>[] = propertiesAll.map(
       (properties) => ProposalClient.createInstance(this, properties)
     );
 
     const proposals = await Promise.all(proposalPromises);
-    console.timeEnd('ProposalClient.createInstance');
     return proposals;
   }
 
@@ -323,14 +258,9 @@ class DAOClient
     if (!ethereumSubgraphProposal) {
       throw new NotFoundError(errorMessageForError('not-found-proposal'));
     }
-    const executed = await this.gnosisSafeClient.isProposalsExecuted(
-      PlatformType.Polygon,
-      [generateProposalHash(PlatformType.Polygon, this.id, id)]
-    );
     const properties = await this.mapToProperties(
       ethereumSubgraphProposal,
-      polygonSubgraphProposal,
-      executed[0]
+      polygonSubgraphProposal
     );
 
     return await ProposalClient.createInstance(this, properties);

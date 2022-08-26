@@ -209,10 +209,6 @@ const iterateZDAO = async (
           console.error(error);
         }
       }
-    } else if (proposal.state === ProposalState.AWAITING_EXECUTION) {
-      console.log('... executing');
-      await proposal.execute(goerliGnosisOwnerSigner, undefined, {});
-      console.log('executed', proposal.id);
     }
   }
 };

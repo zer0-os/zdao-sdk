@@ -2,7 +2,6 @@ import {
   CalculateProposalParams,
   CreateProposalParams,
   CreateZDAOParams,
-  ExecuteProposalParams,
   FinalizeProposalParams,
   VoteProposalParams,
 } from '../../types';
@@ -32,5 +31,3 @@ export type CalculatePolygonProposalParams = CalculateProposalParams;
 export interface FinalizePolygonProposalParams extends FinalizeProposalParams {
   txHash: string;
 }
-
-export type ExecutePolygonProposalParams = ExecuteProposalParams;

@@ -1,6 +1,5 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
-import { PlatformType } from '../..';
 import {
   AbstractProposalClient,
   GnosisSafeClient,
@@ -8,25 +7,22 @@ import {
 } from '../../client';
 import {
   Choice,
-  FailedTxError,
   InvalidError,
   NotImplementedError,
   PaginationParam,
   ProposalProperties,
   ProposalState,
   TokenMetaData,
-  ZDAOError,
 } from '../../types';
 import {
   errorMessageForError,
-  generateProposalHash,
+  getDecimalAmount,
   getSigner,
 } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
 import { SnapshotProposalProperties } from '../snapshot/types';
 import {
   CalculateSnapshotProposalParams,
-  ExecuteSnapshotProposalParams,
   FinalizeSnapshotProposalParams,
   SnapshotProposal,
   SnapshotVote,
@@ -123,6 +119,23 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     } catch (error) {
       return undefined;
     }
+  }
+
+  canExecute(): boolean {
+    if (this.zDAO.isRelativeMajority || !this.scores) return false;
+
+    const totalScore = this.scores.reduce(
+      (prev, current) => prev.add(current),
+      BigNumber.from(0)
+    );
+    const totalScoreAsBN = getDecimalAmount(
+      totalScore,
+      this.zDAO.votingToken.decimals
+    );
+    if (totalScoreAsBN.gte(this.zDAO.minimumTotalVotingTokens)) {
+      return true;
+    }
+    return false;
   }
 
   async listVotes(pagination?: PaginationParam): Promise<SnapshotVote[]> {
@@ -241,74 +254,6 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     _3: FinalizeSnapshotProposalParams
   ): Promise<void> {
     throw new NotImplementedError();
-  }
-
-  async isExecuted(): Promise<boolean> {
-    const executed = await this.zDAO.gnosisSafeClient.isProposalsExecuted(
-      PlatformType.Snapshot,
-      [generateProposalHash(PlatformType.Snapshot, this.zDAO.ens, this.id)]
-    );
-    return executed[0];
-  }
-
-  async execute(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string | undefined,
-    _: ExecuteSnapshotProposalParams
-  ): Promise<void> {
-    const signer = getSigner(provider, account);
-
-    const address = account ?? (await signer.getAddress());
-    const isOwner = await this.gnosisSafeClient.isOwnerAddress(
-      signer,
-      this.zDAO.gnosisSafe,
-      address
-    );
-    if (!isOwner) {
-      throw new ZDAOError(errorMessageForError('not-gnosis-owner'));
-    }
-
-    if (!this.metadata) {
-      throw new ZDAOError(errorMessageForError('empty-metadata'));
-    }
-    if (this.state !== ProposalState.AWAITING_EXECUTION) {
-      throw new ZDAOError(errorMessageForError('not-executable-proposal'));
-    }
-
-    try {
-      // check if proposal executed
-      const executed = await this.isExecuted();
-      if (!executed) {
-        throw new Error(errorMessageForError('proposal-already-executed'));
-      }
-
-      const token =
-        !this.metadata?.token ||
-        this.metadata.token.length < 1 ||
-        this.metadata.token === ethers.constants.AddressZero
-          ? ethers.constants.AddressZero
-          : this.metadata.token;
-
-      await this.gnosisSafeClient.proposeTxFromModule(
-        this.zDAO.gnosisSafe,
-        signer,
-        'executeProposal',
-        [
-          PlatformType.Snapshot.toString(),
-          generateProposalHash(
-            PlatformType.Snapshot,
-            this.zDAO.ens,
-            this.id
-          ).toString(),
-          token,
-          this.metadata.recipient,
-          this.metadata.amount,
-        ]
-      );
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
-    }
   }
 }
 
