@@ -71,7 +71,7 @@ class MockDAOClient
       name: params.name,
       createdBy: await signer.getAddress(),
       network: results[0],
-      gnosisSafe: params.gnosisSafe,
+      gnosisSafe: ethers.utils.getAddress(params.gnosisSafe),
       votingToken: results[1],
       minimumVotingTokenAmount: params.minimumVotingTokenAmount,
       totalSupplyOfVotingToken: results[2].toString(),
@@ -89,7 +89,7 @@ class MockDAOClient
 
     return new MockDAOClient(
       properties,
-      new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
+      new GnosisSafeClient(config.gnosisSafe)
     );
   }
 

@@ -180,9 +180,9 @@ class SDKInstanceClient implements SnapshotSDKInstance {
         name: space.name,
         createdBy: '',
         network: GlobalClient.etherNetwork,
-        gnosisSafe: zDAORecord.gnosisSafe,
+        gnosisSafe: ethers.utils.getAddress(zDAORecord.gnosisSafe),
         votingToken: {
-          token: strategy.params.address,
+          token: ethers.utils.getAddress(strategy.params.address),
           symbol,
           decimals,
         },
