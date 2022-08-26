@@ -121,9 +121,9 @@ class DAOClient
         id: zDAORecord.id,
         zNAs: zDAORecord.associatedzNAs,
         name: zDAORecord.name,
-        createdBy: etherZDAOInfo.createdBy,
+        createdBy: ethers.utils.getAddress(etherZDAOInfo.createdBy),
         network: GlobalClient.etherNetwork,
-        gnosisSafe: etherZDAOInfo.gnosisSafe,
+        gnosisSafe: ethers.utils.getAddress(etherZDAOInfo.gnosisSafe),
         votingToken: tokens[0] as Token,
         minimumVotingTokenAmount: etherZDAOInfo.amount.toString(),
         totalSupplyOfVotingToken: tokens[2].toString(),
@@ -139,7 +139,7 @@ class DAOClient
         destroyed: etherZDAOInfo.destroyed,
         polygonToken: tokens[1] as Token,
       },
-      new GnosisSafeClient(config.gnosisSafe, config.ipfsGateway)
+      new GnosisSafeClient(config.gnosisSafe)
     );
     return instance;
   }
