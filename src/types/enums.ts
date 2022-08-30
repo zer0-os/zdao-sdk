@@ -30,25 +30,30 @@ export enum ProposalState {
   // The calculated voting result arrived on Ethereum and is ready to finalize
   // the result.
   AWAITING_FINALIZATION = 'AWAITING_FINALIZATION',
-  // The proposal is succeeded in voting and is ready to execute the proposal.
-  AWAITING_EXECUTION = 'AWAITING_EXECUTING',
-  // The proposal was closed without execution, Gnosis Owners can execute as they decide, this state is only available on Snapshot.org
+  // The proposal was closed, Gnosis Owners can execute manually as they decide.
   CLOSED = 'CLOSED',
-  // The proposal is successfully executed
-  EXECUTED = 'EXECUTED',
 }
 
+/**
+ * Gnosis Safe asset type
+ */
 export enum AssetType {
   ERC20 = 'ERC20',
   ERC721 = 'ERC721',
   NATIVE_TOKEN = 'NATIVE_TOKEN',
 }
 
+/**
+ * Gnosis Safe transaction type
+ */
 export enum TransactionType {
   SENT = 'SENT',
   RECEIVED = 'RECEIVED',
 }
 
+/**
+ * Gnosis Safe transaction status
+ */
 export enum TransactionStatus {
   AWAITING_CONFIRMATIONS = 'AWAITING_CONFIRMATIONS',
   AWAITING_EXECUTION = 'AWAITING_EXECUTION',

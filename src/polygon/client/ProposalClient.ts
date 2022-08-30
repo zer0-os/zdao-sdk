@@ -1,6 +1,5 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
-import { PlatformType } from '../..';
 import { AbstractProposalClient } from '../../client';
 import {
   AlreadyDestroyedError,
@@ -10,17 +9,11 @@ import {
   NotSyncStateError,
   ProposalProperties,
   ProposalState,
-  ZDAOError,
 } from '../../types';
-import {
-  errorMessageForError,
-  generateProposalHash,
-  getSigner,
-} from '../../utilities';
+import { errorMessageForError, getSigner } from '../../utilities';
 import { PolygonSubgraphVote } from '../polygon/types';
 import {
   CalculatePolygonProposalParams,
-  ExecutePolygonProposalParams,
   FinalizePolygonProposalParams,
   PolygonProposal,
   PolygonVote,
@@ -47,6 +40,49 @@ class ProposalClient
   ): Promise<PolygonProposal> {
     const proposal = new ProposalClient(properties, zDAO);
     return proposal;
+  }
+
+  canExecute(): boolean {
+    if (!this.scores || !this.voters) return false;
+
+    const sumOfScores = this.scores.reduce(
+      (prev, current) => prev.add(current),
+      BigNumber.from(0)
+    );
+    const zero = BigNumber.from(0);
+    if (
+      this.voters < this.zDAO.minimumVotingParticipants ||
+      sumOfScores.lt(BigNumber.from(this.zDAO.minimumTotalVotingTokens)) // <
+    ) {
+      return false;
+    }
+
+    // if relative majority, the denominator should be sum of yes and no votes
+    if (
+      this.zDAO.isRelativeMajority &&
+      sumOfScores.gt(zero) &&
+      BigNumber.from(this.scores[0])
+        .mul(BigNumber.from(10000))
+        .div(sumOfScores)
+        .gte(BigNumber.from(this.zDAO.votingThreshold))
+    ) {
+      return true;
+    }
+
+    const totalSupply = BigNumber.from(this.zDAO.totalSupplyOfVotingToken);
+
+    // if absolute majority, the denominator should be total supply
+    if (
+      !this.zDAO.isRelativeMajority &&
+      totalSupply.gt(zero) &&
+      BigNumber.from(this.scores[0])
+        .mul(10000)
+        .div(totalSupply)
+        .gte(BigNumber.from(this.zDAO.votingThreshold))
+    ) {
+      return true;
+    }
+    return false;
   }
 
   async listVotes(): Promise<PolygonVote[]> {
@@ -174,74 +210,6 @@ class ProposalClient
 
       const proof = await ProofClient.generate(payload.txHash);
       await GlobalClient.ethereumZDAOChef.receiveMessage(signer, proof);
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
-    }
-  }
-
-  async isExecuted(): Promise<boolean> {
-    const executed = await this.zDAO.gnosisSafeClient.isProposalsExecuted(
-      PlatformType.Polygon,
-      [generateProposalHash(PlatformType.Polygon, this.zDAO.id, this.id)]
-    );
-    return executed[0];
-  }
-
-  async execute(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string | undefined,
-    _: ExecutePolygonProposalParams
-  ) {
-    const signer = getSigner(provider, account);
-
-    const signerAccount = account ?? (await signer.getAddress());
-    const isOwner = await this.zDAO.gnosisSafeClient.isOwnerAddress(
-      signer,
-      this.zDAO.gnosisSafe,
-      signerAccount
-    );
-    if (!isOwner) {
-      throw new ZDAOError(errorMessageForError('not-gnosis-owner'));
-    }
-
-    if (!this.metadata) {
-      throw new ZDAOError(errorMessageForError('empty-metadata'));
-    }
-    if (this.state !== ProposalState.AWAITING_EXECUTION) {
-      throw new ZDAOError(errorMessageForError('not-executable-proposal'));
-    }
-
-    try {
-      // check if proposal executed
-      const executed = await this.isExecuted();
-      if (executed) {
-        throw new Error(errorMessageForError('proposal-already-executed'));
-      }
-
-      const token =
-        !this.metadata?.token ||
-        this.metadata.token.length < 1 ||
-        this.metadata.token === ethers.constants.AddressZero
-          ? ethers.constants.AddressZero
-          : this.metadata.token;
-
-      await this.zDAO.gnosisSafeClient.proposeTxFromModule(
-        this.zDAO.gnosisSafe,
-        signer,
-        'executeProposal',
-        [
-          PlatformType.Polygon.toString(),
-          generateProposalHash(
-            PlatformType.Polygon,
-            this.zDAO.id,
-            this.id
-          ).toString(),
-          token,
-          this.metadata.recipient,
-          this.metadata.amount,
-        ]
-      );
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);

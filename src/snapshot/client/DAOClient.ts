@@ -1,7 +1,6 @@
 import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
-import { PlatformType } from '../..';
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
 import { DEFAULT_PROPOSAL_CHOICES, DEFAULT_ZDAO_DURATION } from '../../config';
 import ERC20Abi from '../../config/abi/ERC20.json';
@@ -14,7 +13,6 @@ import {
 } from '../../types';
 import {
   errorMessageForError,
-  generateProposalHash,
   getDecimalAmount,
   getFullDisplayBalance,
   getSigner,
@@ -93,35 +91,13 @@ class DAOClient
     return zDAO;
   }
 
-  private mapState(
-    scores: number[],
-    state: string,
-    executed: boolean
-  ): ProposalState {
+  private mapState(state: string): ProposalState {
     if (state === 'pending') {
       return ProposalState.PENDING;
     } else if (state === 'active') {
       return ProposalState.ACTIVE;
     }
-    return executed
-      ? ProposalState.EXECUTED
-      : this.canExecute(scores)
-      ? ProposalState.AWAITING_EXECUTION
-      : ProposalState.CLOSED;
-  }
-
-  private canExecute(scores: number[]): boolean {
-    if (this.isRelativeMajority) return false;
-
-    const totalScore = scores.reduce((prev, current) => prev + current, 0);
-    const totalScoreAsBN = getDecimalAmount(
-      BigNumber.from(totalScore),
-      this.votingToken.decimals
-    );
-    if (totalScoreAsBN.gte(this.minimumTotalVotingTokens)) {
-      return true;
-    }
-    return false;
+    return ProposalState.CLOSED;
   }
 
   async listProposals(
@@ -149,13 +125,6 @@ class DAOClient
       numberOfResults = results.length;
     }
 
-    const executeds = await this.gnosisSafeClient.isProposalsExecuted(
-      PlatformType.Snapshot,
-      snapshotProposals.map((proposal) =>
-        generateProposalHash(PlatformType.Snapshot, this.ens, proposal.id)
-      )
-    );
-
     // create all instances
     const promises: Promise<SnapshotProposal>[] = snapshotProposals.map(
       (proposal, index): Promise<SnapshotProposal> =>
@@ -173,11 +142,7 @@ class DAOClient
             created: proposal.created,
             start: proposal.start,
             end: proposal.end,
-            state: this.mapState(
-              proposal.scores,
-              proposal.state,
-              executeds[index]
-            ),
+            state: this.mapState(proposal.state),
             snapshot: Number(proposal.snapshot),
             scores: proposal.scores.map((score) => score.toString()),
             voters: proposal.votes,
@@ -203,11 +168,6 @@ class DAOClient
       proposalId: id,
     });
 
-    const executed = await this.gnosisSafeClient.isProposalsExecuted(
-      PlatformType.Snapshot,
-      [generateProposalHash(PlatformType.Snapshot, this.ens, proposal.id)]
-    );
-
     return await ProposalClient.createInstance(
       this,
       this.snapshotClient,
@@ -222,7 +182,7 @@ class DAOClient
         created: proposal.created,
         start: proposal.start,
         end: proposal.end,
-        state: this.mapState(proposal.scores, proposal.state, executed[0]),
+        state: this.mapState(proposal.state),
         snapshot: Number(proposal.snapshot),
         scores: proposal.scores.map((score) => score.toString()),
         voters: proposal.votes,

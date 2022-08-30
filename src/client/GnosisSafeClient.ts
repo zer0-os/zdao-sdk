@@ -1,6 +1,3 @@
-import Safe from '@gnosis.pm/safe-core-sdk';
-import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
-import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import {
   SafeBalanceResponse,
   SafeCollectibleResponse,
@@ -8,90 +5,15 @@ import {
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
 import fetch from 'cross-fetch';
-import { BigNumber, BigNumberish, ethers } from 'ethers';
-import { GraphQLClient } from 'graphql-request';
+import { ethers } from 'ethers';
 
-import { PlatformType } from '..';
-import { ZDAOModule__factory } from '../config/types/factories/ZDAOModule__factory';
 import { GnosisSafeConfig } from '../types';
-import { graphQLQuery } from '../utilities/graphql';
-import { EXECUTEDPROPOSALS_BY_QUERY } from './types';
 
 class GnosisSafeClient {
   private readonly config: GnosisSafeConfig;
-  private readonly graphQLClient: GraphQLClient;
 
   constructor(config: GnosisSafeConfig) {
     this.config = config;
-    this.graphQLClient = new GraphQLClient(config.zDAOModuleSubgraphUri);
-  }
-
-  async isOwnerAddress(
-    signer: ethers.Signer,
-    gnosisSafe: string,
-    address: string
-  ): Promise<boolean> {
-    const ethAdapter = new EthersAdapter({
-      ethers,
-      signer,
-    });
-    const safe = await Safe.create({
-      ethAdapter,
-      safeAddress: gnosisSafe,
-    });
-    const owners = await safe.getOwners();
-    if (!owners.find((owner) => owner === address)) {
-      return false;
-    }
-    return true;
-  }
-
-  async isProposalsExecuted(
-    platformType: PlatformType,
-    proposalHashes: BigNumber[]
-  ): Promise<boolean[]> {
-    const response = await graphQLQuery(
-      this.graphQLClient,
-      EXECUTEDPROPOSALS_BY_QUERY,
-      {
-        proposalHashes: proposalHashes.map((hash) => hash.toString()),
-        platformType,
-      }
-    );
-    const filtered = response.executedProposals.map(
-      (proposal: any) => proposal.proposalId
-    );
-    return proposalHashes.map((hash) => filtered.indexOf(hash) >= 0);
-  }
-
-  async proposeTxFromModule(
-    safeAddress: string,
-    signer: ethers.Signer,
-    funcName: string,
-    params: string[],
-    value: BigNumberish = '0' // ETH amount to be transferred
-  ) {
-    const address = ethers.utils.getAddress(safeAddress);
-    const ethAdapter = new EthersAdapter({
-      ethers,
-      signer,
-    });
-    const safeService = new SafeService(this.config.serviceUri);
-    const safe = await Safe.create({
-      ethAdapter,
-      safeAddress: address,
-    });
-    const safeSigner = new SafeEthersSigner(safe, safeService, signer.provider);
-
-    const moduleInterface = new ethers.utils.Interface(ZDAOModule__factory.abi);
-    const data = moduleInterface.encodeFunctionData(funcName, params);
-
-    const module = this.config.zDAOModule;
-    await safeSigner.sendTransaction({
-      value,
-      to: module,
-      data,
-    });
   }
 
   async listAssets(

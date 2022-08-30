@@ -5,7 +5,6 @@ import {
   CalculatePolygonProposalParams,
   CreatePolygonProposalParams,
   CreatePolygonZDAOParams,
-  ExecutePolygonProposalParams,
   FinalizePolygonProposalParams,
   VotePolygonProposalParams,
 } from './params';
@@ -153,18 +152,6 @@ export interface PolygonProposal extends Proposal<PolygonVote> {
     provider: ethers.providers.Web3Provider | ethers.Wallet,
     account: string | undefined,
     payload: FinalizePolygonProposalParams
-  ): Promise<void>;
-
-  /**
-   * Override execute function in Proposal
-   * @param provider
-   * @param account
-   * @param payload
-   */
-  execute(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
-    account: string | undefined,
-    payload: ExecutePolygonProposalParams
   ): Promise<void>;
 }
 

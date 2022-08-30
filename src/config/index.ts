@@ -24,25 +24,10 @@ export const zNSHubAddress: AddressMap = {
   [SupportedChainId.GOERLI]: '0x9a35367c5e8C01cd009885e497a33a9761938832',
 };
 
-export const zDAOModuleAddress: AddressMap = {
-  [SupportedChainId.MAINNET]: '', // todo
-  [SupportedChainId.RINKEBY]: '0xa2E65CB5864E8425A13f7406b86da87ed7b11ae4',
-  [SupportedChainId.GOERLI]: '0x97199c4d45037c1D12F24048Ea8a19A564A4b661',
-};
-
 /* -------------------------------------------------------------------------- */
 /*                                Subgraph Uris                               */
 /* -------------------------------------------------------------------------- */
 export const zDAORegistrySubgraphUri: AddressMap = {
-  [SupportedChainId.MAINNET]:
-    'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
-  [SupportedChainId.RINKEBY]:
-    'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-rinkeby',
-  [SupportedChainId.GOERLI]:
-    'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-goerli',
-};
-
-export const zDAOModuleSubgraphUri: AddressMap = {
   [SupportedChainId.MAINNET]:
     'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
   [SupportedChainId.RINKEBY]:

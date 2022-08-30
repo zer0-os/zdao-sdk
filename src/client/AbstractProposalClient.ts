@@ -3,7 +3,6 @@ import { cloneDeep } from 'lodash';
 
 import {
   CalculateProposalParams,
-  ExecuteProposalParams,
   FinalizeProposalParams,
   NotImplementedError,
   Proposal,
@@ -77,6 +76,10 @@ abstract class AbstractProposalClient<VoteT extends Vote>
     return this.properties.metadata;
   }
 
+  canExecute(): boolean {
+    throw new NotImplementedError();
+  }
+
   listVotes(): Promise<VoteT[]> {
     throw new NotImplementedError();
   }
@@ -109,14 +112,6 @@ abstract class AbstractProposalClient<VoteT extends Vote>
     _: ethers.providers.Web3Provider | ethers.Wallet,
     _2: string | undefined,
     _3: FinalizeProposalParams
-  ): Promise<void> {
-    throw new NotImplementedError();
-  }
-
-  execute(
-    _: ethers.providers.Web3Provider | ethers.Wallet,
-    _2: string | undefined,
-    _3: ExecuteProposalParams
   ): Promise<void> {
     throw new NotImplementedError();
   }

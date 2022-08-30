@@ -140,7 +140,7 @@ export interface EthereumZDAOInterface extends utils.Interface {
   contractName: "EthereumZDAO";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "__ZDAO_init(address,address,uint256,address,address,(address,uint256,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
+    "__ZDAO_init(address,uint256,address,address,(address,uint256,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
     "calculateProposal(uint256,uint256,uint256[])": FunctionFragment;
     "cancelProposal(address,uint256)": FunctionFragment;
     "createProposal(address,string[],string)": FunctionFragment;
@@ -165,7 +165,6 @@ export interface EthereumZDAOInterface extends utils.Interface {
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "setDestroyed(bool)": FunctionFragment;
-    "setZDAOModule(address)": FunctionFragment;
     "state(uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
@@ -174,7 +173,6 @@ export interface EthereumZDAOInterface extends utils.Interface {
     "version()": FunctionFragment;
     "zDAOChef()": FunctionFragment;
     "zDAOInfo()": FunctionFragment;
-    "zDAOModule()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -184,7 +182,6 @@ export interface EthereumZDAOInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "__ZDAO_init",
     values: [
-      string,
       string,
       BigNumberish,
       string,
@@ -276,10 +273,6 @@ export interface EthereumZDAOInterface extends utils.Interface {
     functionFragment: "setDestroyed",
     values: [boolean]
   ): string;
-  encodeFunctionData(
-    functionFragment: "setZDAOModule",
-    values: [string]
-  ): string;
   encodeFunctionData(functionFragment: "state", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
@@ -297,10 +290,6 @@ export interface EthereumZDAOInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
   encodeFunctionData(functionFragment: "zDAOChef", values?: undefined): string;
   encodeFunctionData(functionFragment: "zDAOInfo", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "zDAOModule",
-    values?: undefined
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
@@ -379,10 +368,6 @@ export interface EthereumZDAOInterface extends utils.Interface {
     functionFragment: "setDestroyed",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "setZDAOModule",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "state", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
@@ -400,7 +385,6 @@ export interface EthereumZDAOInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOChef", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOInfo", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "zDAOModule", data: BytesLike): Result;
 
   events: {
     "AdminChanged(address,address)": EventFragment;
@@ -510,7 +494,6 @@ export interface EthereumZDAO extends BaseContract {
 
     __ZDAO_init(
       _zDAOChef: string,
-      _zDAOModule: string,
       _zDAOId: BigNumberish,
       _createdBy: string,
       _gnosisSafe: string,
@@ -645,11 +628,6 @@ export interface EthereumZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setZDAOModule(
-      _zDAOModule: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     state(
       _proposalId: BigNumberish,
       overrides?: CallOverrides
@@ -713,15 +691,12 @@ export interface EthereumZDAO extends BaseContract {
         destroyed: boolean;
       }
     >;
-
-    zDAOModule(overrides?: CallOverrides): Promise<[string]>;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
   __ZDAO_init(
     _zDAOChef: string,
-    _zDAOModule: string,
     _zDAOId: BigNumberish,
     _createdBy: string,
     _gnosisSafe: string,
@@ -852,11 +827,6 @@ export interface EthereumZDAO extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setZDAOModule(
-    _zDAOModule: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   state(_proposalId: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
   supportsInterface(
@@ -918,14 +888,11 @@ export interface EthereumZDAO extends BaseContract {
     }
   >;
 
-  zDAOModule(overrides?: CallOverrides): Promise<string>;
-
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
     __ZDAO_init(
       _zDAOChef: string,
-      _zDAOModule: string,
       _zDAOId: BigNumberish,
       _createdBy: string,
       _gnosisSafe: string,
@@ -1051,11 +1018,6 @@ export interface EthereumZDAO extends BaseContract {
 
     setDestroyed(_destroyed: boolean, overrides?: CallOverrides): Promise<void>;
 
-    setZDAOModule(
-      _zDAOModule: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     state(
       _proposalId: BigNumberish,
       overrides?: CallOverrides
@@ -1119,8 +1081,6 @@ export interface EthereumZDAO extends BaseContract {
         destroyed: boolean;
       }
     >;
-
-    zDAOModule(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
@@ -1195,7 +1155,6 @@ export interface EthereumZDAO extends BaseContract {
 
     __ZDAO_init(
       _zDAOChef: string,
-      _zDAOModule: string,
       _zDAOId: BigNumberish,
       _createdBy: string,
       _gnosisSafe: string,
@@ -1307,11 +1266,6 @@ export interface EthereumZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setZDAOModule(
-      _zDAOModule: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     state(
       _proposalId: BigNumberish,
       overrides?: CallOverrides
@@ -1343,8 +1297,6 @@ export interface EthereumZDAO extends BaseContract {
     zDAOChef(overrides?: CallOverrides): Promise<BigNumber>;
 
     zDAOInfo(overrides?: CallOverrides): Promise<BigNumber>;
-
-    zDAOModule(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1354,7 +1306,6 @@ export interface EthereumZDAO extends BaseContract {
 
     __ZDAO_init(
       _zDAOChef: string,
-      _zDAOModule: string,
       _zDAOId: BigNumberish,
       _createdBy: string,
       _gnosisSafe: string,
@@ -1466,11 +1417,6 @@ export interface EthereumZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setZDAOModule(
-      _zDAOModule: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     state(
       _proposalId: BigNumberish,
       overrides?: CallOverrides
@@ -1502,7 +1448,5 @@ export interface EthereumZDAO extends BaseContract {
     zDAOChef(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     zDAOInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    zDAOModule(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

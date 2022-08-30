@@ -2,8 +2,6 @@ import { configuration } from '@zero-tech/zns-sdk';
 import { ethers } from 'ethers';
 
 import {
-  zDAOModuleAddress,
-  zDAOModuleSubgraphUri,
   zDAORegistryAddress,
   zDAORegistrySubgraphUri,
   zNSHubAddress,
@@ -83,7 +81,7 @@ export const developmentConfiguration = ({
   ethereumProvider,
   polygonProvider,
   fleek,
-  ipfsGateway,
+  ipfsGateway = 'zer0.infura-ipfs.io',
   zNSProvider,
 }: ConfigParams): PolygonConfig => ({
   ethereum: EthereumZDAOConfig[SupportedChainId.GOERLI],
@@ -98,8 +96,6 @@ export const developmentConfiguration = ({
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.goerli.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
-    zDAOModule: zDAOModuleAddress[SupportedChainId.GOERLI],
-    zDAOModuleSubgraphUri: zDAOModuleSubgraphUri[SupportedChainId.GOERLI],
   },
   proof: {
     from: WalletAddressForCheckpointing[SupportedChainId.MUMBAI],
@@ -115,7 +111,7 @@ export const productionConfiguration = ({
   ethereumProvider,
   polygonProvider,
   fleek,
-  ipfsGateway,
+  ipfsGateway = 'zer0.infura-ipfs.io',
 }: ConfigParams): PolygonConfig => ({
   ethereum: EthereumZDAOConfig[SupportedChainId.MAINNET],
   ethereumProvider,
@@ -129,8 +125,6 @@ export const productionConfiguration = ({
   gnosisSafe: {
     serviceUri: 'https://safe-transaction.gnosis.io',
     gateway: 'https://safe-client.gnosis.io',
-    zDAOModule: zDAOModuleAddress[SupportedChainId.MAINNET],
-    zDAOModuleSubgraphUri: zDAOModuleSubgraphUri[SupportedChainId.MAINNET],
   },
   proof: {
     from: WalletAddressForCheckpointing[SupportedChainId.POLYGON],
