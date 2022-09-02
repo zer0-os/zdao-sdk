@@ -28,9 +28,6 @@
   },
   "homepage": "https://github.com/zer0-os/zdao-sdk#readme",
   "dependencies": {
-    "@gnosis.pm/safe-core-sdk": "2.0.0",
-    "@gnosis.pm/safe-ethers-adapters": "0.1.0-alpha.8",
-    "@gnosis.pm/safe-ethers-lib": "1.0.0",
     "@gnosis.pm/safe-react-gateway-sdk": "2.10.1",
     "@snapshot-labs/snapshot.js": "0.3.56",
     "@types/lodash": "4.14.180",

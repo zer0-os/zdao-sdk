@@ -169,13 +169,4 @@ export interface Proposal extends ProposalProperties {
     account: string,
     choice: Choice
   ): Promise<VoteId>;
-
-  /**
-   * Execute a proposal in zDAO
-   * @param signer signer wallet
-   * @returns transaction response
-   * @exception throw Error if signer is not Gnosis Safe owner
-   * @exception throw Error if proposal does not conain meta data to transfer tokens
-   */
-  execute(signer: ethers.Signer): Promise<void>;
 }

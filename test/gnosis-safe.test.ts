@@ -4,7 +4,6 @@ import { ethers } from 'ethers';
 
 import DAOClient from '../src/client/DAOClient';
 import { developmentConfiguration } from '../src/config';
-import GnosisSafeClient from '../src/gnosis-safe';
 import {
   AssetType,
   Coin,
@@ -35,7 +34,7 @@ describe('Gnosis Safe test', async () => {
       env.rpcUrl,
       env.network
     );
-    config = developmentConfiguration(env.zDAORegistry, provider);
+    config = developmentConfiguration(provider);
     const pk = process.env.PRIVATE_KEY;
     if (!pk) throw new Error(errorMessageForError('no-private-key'));
     signer = new ethers.Wallet(pk, provider);
@@ -59,14 +58,20 @@ describe('Gnosis Safe test', async () => {
         zNAs: [dao.zNA],
         title: dao.title,
         creator: dao.creator,
-        avatar: undefined,
         network: dao.network,
         safeAddress: dao.safeAddress,
+        duration: 86400,
         votingToken: {
           token: dao.votingToken,
           symbol: 'vTEST',
           decimals: 18,
         },
+        amount: '0',
+        totalSupplyOfVotingToken: '100000',
+        votingThreshold: 5001,
+        minimumVotingParticipants: 1,
+        minimumTotalVotingTokens: '0',
+        isRelativeMajority: false,
       },
       undefined
     );
@@ -119,14 +124,20 @@ describe('Gnosis Safe test', async () => {
         zNAs: [dao.zNA],
         title: dao.title,
         creator: dao.creator,
-        avatar: undefined,
         network: dao.network,
         safeAddress: dao.safeAddress,
+        duration: 86400,
         votingToken: {
           token: dao.votingToken,
           symbol: 'vTEST',
           decimals: 18,
         },
+        amount: '0',
+        totalSupplyOfVotingToken: '100000',
+        votingThreshold: 5001,
+        minimumVotingParticipants: 1,
+        minimumTotalVotingTokens: '0',
+        isRelativeMajority: false,
       },
       undefined
     );
@@ -162,14 +173,20 @@ describe('Gnosis Safe test', async () => {
         zNAs: [dao.zNA],
         title: dao.title,
         creator: dao.creator,
-        avatar: undefined,
         network: dao.network,
         safeAddress: dao.safeAddress,
+        duration: 86400,
         votingToken: {
           token: dao.votingToken,
           symbol: 'vTEST',
           decimals: 18,
         },
+        amount: '0',
+        totalSupplyOfVotingToken: '100000',
+        votingThreshold: 5001,
+        minimumVotingParticipants: 1,
+        minimumTotalVotingTokens: '0',
+        isRelativeMajority: false,
       },
       undefined
     );
@@ -202,54 +219,5 @@ describe('Gnosis Safe test', async () => {
         tx.to === '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b'
     );
     expect(toFiltered.length).to.be.gt(0);
-  });
-
-  it('should check if it is owner', async () => {
-    const gnosisSafe = new GnosisSafeClient(config.gnosisSafe);
-    const notOwner = await gnosisSafe.isOwnerAddress(
-      signer,
-      daoInstance.safeAddress,
-      '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b'
-    );
-    expect(notOwner).to.be.equal(false);
-
-    const isOwner = await gnosisSafe.isOwnerAddress(
-      signer,
-      daoInstance.safeAddress,
-      '0x0905939Cae1b09287872c5D96a41617fF3Bb777a'
-    );
-    expect(isOwner).to.be.equal(true);
-  });
-
-  it('should propose transaction by owner', async () => {
-    const gnosisSafe = new GnosisSafeClient(config.gnosisSafe);
-
-    const provider = new ethers.providers.JsonRpcProvider(
-      env.rpcUrl,
-      env.network
-    );
-    const ownerSigner = new ethers.Wallet(
-      process.env.GNOSIS_OWNER_PRIVATE_KEY!,
-      provider
-    );
-
-    await expect(
-      gnosisSafe.transferEther(
-        daoInstance.safeAddress,
-        ownerSigner,
-        '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
-        '100000000000000'
-      )
-    ).to.be.not.rejected;
-
-    await expect(
-      gnosisSafe.transferERC20(
-        daoInstance.safeAddress,
-        ownerSigner,
-        daoInstance.votingToken.token,
-        '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b',
-        '100000000000000'
-      )
-    ).to.be.not.rejected;
   });
 });

@@ -1,5 +1,4 @@
 import { createInstance as createZNSInstance } from '@zero-tech/zns-sdk';
-import * as zns from '@zero-tech/zns-sdk';
 import { BigNumber, ethers } from 'ethers';
 
 import { createSDKInstance } from '../../src';
@@ -193,8 +192,8 @@ const iterateZNAs = async (sdkInstance: SDKInstance) => {
       dao.totalSupplyOfVotingToken
     );
 
-    // const proposals = await dao.listProposals();
-    // console.log('proposals', proposals);
+    const proposals = await dao.listProposals();
+    console.log('proposals', proposals.length);
 
     // const assets = await dao.listAssets();
     // console.log('assets', assets);
@@ -212,15 +211,8 @@ const performance = async (sdkInstance: SDKInstance, signer: ethers.Wallet) => {
   const zDAO = await sdkInstance.getZDAOByZNA('wilder.skydao2');
   console.log('zDAO', zDAO);
 
-  // const proposals = await zDAO.listProposals();
-  // console.log('proposals', proposals);
-
-  const proposal = await zDAO.getProposal(
-    '0x3c28cfe3c537166310f66458a32133fe552c8a6f9d7ee3ba0ce4e0a73618fa51'
-  );
-  console.log('proposal', proposal);
-
-  await proposal.execute(signer);
+  const proposals = await zDAO.listProposals();
+  console.log('proposals', proposals);
 };
 
 const main = async () => {
@@ -234,16 +226,8 @@ const main = async () => {
   const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
 
   const config: Config = isDev
-    ? developmentConfiguration(
-        env.zDAORegistry,
-        provider,
-        'snapshot.mypinata.cloud'
-      )
-    : productionConfiguration(
-        env.zDAORegistry,
-        provider,
-        'snapshot.mypinata.cloud'
-      );
+    ? developmentConfiguration(provider, 'zer0.infura-ipfs.io')
+    : productionConfiguration(provider, 'zer0.infura-ipfs.io');
 
   console.time('createSDKInstance');
   const sdkInstance: SDKInstance = createSDKInstance(config);
@@ -252,34 +236,6 @@ const main = async () => {
   console.log('zNS.config', config.zNS);
 
   const znsInstance = createZNSInstance(config.zNS);
-  // console.log('wilder.moto', zns.domains.domainNameToId('wilder.moto'));
-  // console.log('wilder.skydao', zns.domains.domainNameToId('wilder.skydao'));
-  console.log('wilder.moto', zns.domains.domainNameToId('wilder.moto'));
-
-  // console.log(
-  //   '0x617b3c878abfceb89eb62b7a24f393569c822946bbc9175c6c65a7d2647c5402',
-  //   await znsInstance
-  //     .getDomainById(
-  //       '0x617b3c878abfceb89eb62b7a24f393569c822946bbc9175c6c65a7d2647c5402'
-  //     )
-  //     .then((domain) => domain.name)
-  // );
-  // console.log(
-  //   '0x81a205879073b617f10e379fbb3558ac869fe9f182b029307f9e216d736dc3f4',
-  //   await znsInstance
-  //     .getDomainById(
-  //       '0x81a205879073b617f10e379fbb3558ac869fe9f182b029307f9e216d736dc3f4'
-  //     )
-  //     .then((domain) => domain.name)
-  // );
-  // console.log(
-  //   '0x45483a3a19b4ce3eb27a6d8e0b4d1eb6561c94af65b268fc1038d45130e65796',
-  //   await znsInstance
-  //     .getDomainById(
-  //       '0x45483a3a19b4ce3eb27a6d8e0b4d1eb6561c94af65b268fc1038d45130e65796'
-  //     )
-  //     .then((domain) => domain.name)
-  // );
 
   // await createProposal(sdkInstance, signer);
   // await createToken(sdkInstance, signer);
@@ -299,8 +255,8 @@ const main = async () => {
   //   }),
   //   2
   // );
-  // await iterateZNAs(sdkInstance);
-  await performance(sdkInstance, signer);
+  await iterateZNAs(sdkInstance);
+  // await performance(sdkInstance, signer);
 
   console.log('Finished successfully');
 };
