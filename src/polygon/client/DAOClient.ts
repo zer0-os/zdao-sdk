@@ -25,6 +25,7 @@ import {
   getSigner,
   getToken,
   getTotalSupply,
+  trimHexString,
 } from '../../utilities';
 import { EthereumZDAO } from '../config/types/EthereumZDAO';
 import { PolygonZDAO as PolygonZDAOContract } from '../config/types/PolygonZDAO';
@@ -270,7 +271,7 @@ class DAOClient
     if (payload.transfer) {
       payload.choices = DEFAULT_PROPOSAL_CHOICES;
     }
-    if (!payload.choices) {
+    if (!payload.choices || payload.choices.length < 1) {
       payload.choices = DEFAULT_PROPOSAL_CHOICES;
     }
 
@@ -305,7 +306,7 @@ class DAOClient
         payload,
         ipfs
       );
-      return proposalId.toHexString();
+      return trimHexString(proposalId.toHexString());
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
