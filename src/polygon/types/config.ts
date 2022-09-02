@@ -9,11 +9,6 @@ export interface PolygonDAOConfig {
   zDAOChef: string;
 
   /**
-   * Contract Creation block number
-   */
-  blockNumber: number;
-
-  /**
    * SubgraphUri to zDAOChef
    */
   subgraphUri: string;

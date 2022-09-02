@@ -15,7 +15,7 @@ export const MultiCallAddress: AddressMap = {
 export const zDAORegistryAddress: AddressMap = {
   [SupportedChainId.MAINNET]: '', // todo
   [SupportedChainId.RINKEBY]: '0x9c870c0B043E8ce4a7CFa31e82185C7a07fA3573',
-  [SupportedChainId.GOERLI]: '0xC9d640CB7a1Cdfa02b31f0AE36c239380B493448',
+  [SupportedChainId.GOERLI]: '0x48a1c7776f3611b260BAa1e604D0263F0659b93a',
 };
 
 export const zNSHubAddress: AddressMap = {

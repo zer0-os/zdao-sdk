@@ -34,7 +34,7 @@ const EthereumZDAOConfig: { [chainId: number]: EthereumDAOConfig } = {
       'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
   },
   [SupportedChainId.GOERLI]: {
-    zDAOChef: '0xc9DC42076E5323Ae6c2f438302c70E08FaF0cae8', // todo
+    zDAOChef: '0xE0b528F804C3C7FCF352e2702D521a7D34039284', // todo
     subgraphUri:
       'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-goerli',
   },
@@ -42,8 +42,7 @@ const EthereumZDAOConfig: { [chainId: number]: EthereumDAOConfig } = {
 
 const PolygonZDAOConfig: { [chainId: number]: PolygonDAOConfig } = {
   [SupportedChainId.MUMBAI]: {
-    zDAOChef: '0x23E8f1D5BcB960221E405aD53231f932Cdb96f66', // todo
-    blockNumber: 27589971, // todo
+    zDAOChef: '0xD49e88e1020408661029Ee8ADb9c37C8e582D695', // todo
     subgraphUri:
       'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-mumbai',
     staking: '0xaB00FB1Ce6E3c9Ea0A9BB5c1124430bBaF98Dac6',
@@ -51,7 +50,6 @@ const PolygonZDAOConfig: { [chainId: number]: PolygonDAOConfig } = {
   },
   [SupportedChainId.POLYGON]: {
     zDAOChef: '', // todo
-    blockNumber: 0, // todo
     subgraphUri:
       'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-polygon',
     staking: '',
