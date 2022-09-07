@@ -219,7 +219,7 @@ class EthereumZDAOChefClient {
     zDAOId: zDAOId,
     payload: CreatePolygonProposalParams,
     ipfs: string
-  ) {
+  ): Promise<BigNumber> {
     const gasEstimated = await this.contract
       .connect(signer)
       .estimateGas.createProposal(zDAOId, payload.choices!, ipfs);
@@ -229,7 +229,33 @@ class EthereumZDAOChefClient {
       .createProposal(zDAOId, payload.choices!, ipfs, {
         gasLimit: calculateGasMargin(gasEstimated),
       });
-    return await tx.wait();
+
+    const proposalCreatedTopic = ethers.utils.id(
+      'ProposalCreated(uint256,uint256,uint256,address,uint256,string)'
+    );
+    const proposalCreatedInterface = new ethers.utils.Interface([
+      'event ProposalCreated(uint256 indexed _zDAOId, uint256 indexed _proposalId, uint256 indexed _numberOfChoices, address _createdBy, uint256 _snapshot, string _ipfs)',
+    ]);
+
+    return await tx
+      .wait()
+      .then((receipt: ethers.ContractReceipt) => {
+        if (!receipt.events) {
+          throw new Error('Not found emitted events');
+        }
+        const events = receipt.events?.filter(
+          (event: ethers.Event) => event.topics[0] === proposalCreatedTopic
+        );
+        if (events.length < 1) {
+          throw new Error('Not found ProposalCreated events');
+        }
+        const lastEvent = events.slice(-1)[0];
+        const parsed = proposalCreatedInterface.parseLog(lastEvent);
+        return parsed.args._proposalId;
+      })
+      .catch((reason) => {
+        throw new Error(reason);
+      });
   }
 
   async cancelProposal(

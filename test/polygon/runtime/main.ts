@@ -45,10 +45,10 @@ const createProposal = async (
   zDAO: Polygon.PolygonZDAO,
   env: any
 ) => {
-  await zDAO.createProposal(signer, undefined, {
+  const proposalId = await zDAO.createProposal(signer, undefined, {
     title: 'Hello Proposal',
     body: 'Hello World',
-    choices: ['Approve', 'Deny'],
+    choices: ['Approve', 'Deny', 'Absent'],
     transfer: {
       sender: zDAO.gnosisSafe,
       recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
@@ -58,7 +58,7 @@ const createProposal = async (
       amount: BigNumber.from(10).pow(18).mul(50).toString(),
     },
   });
-  console.log('proposal created');
+  console.log('proposal created', proposalId);
 };
 
 const iterateZNAs = async (sdkInstance: Polygon.PolygonSDKInstance) => {

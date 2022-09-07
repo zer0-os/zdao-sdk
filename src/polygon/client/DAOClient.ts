@@ -25,6 +25,7 @@ import {
   getSigner,
   getToken,
   getTotalSupply,
+  trimHexString,
 } from '../../utilities';
 import { EthereumZDAO } from '../config/types/EthereumZDAO';
 import { PolygonZDAO as PolygonZDAOContract } from '../config/types/PolygonZDAO';
@@ -59,29 +60,10 @@ class DAOClient
     super(properties, gnosisSafeClient);
     this.zDAOOptions = cloneDeep(properties);
 
-    return (async (): Promise<DAOClient> => {
-      this.rootTokenContract = IERC20Upgradeable__factory.connect(
-        properties.votingToken.token,
-        GlobalClient.etherRpcProvider
-      );
-
-      const promises: Promise<any>[] = [
-        GlobalClient.ethereumZDAOChef.getZDAOById(this.properties.id),
-        this.getPolygonZDAOContract(),
-      ];
-      const results = await Promise.all(promises);
-
-      this.ethereumZDAO = results[0] as EthereumZDAO;
-      this.polygonZDAO = results[1] as PolygonZDAOContract;
-
-      if (this.polygonZDAO) {
-        this.properties.state = zDAOState.ACTIVE;
-      }
-      if (properties.destroyed) {
-        this.properties.state = zDAOState.CANCELED;
-      }
-      return this;
-    })() as unknown as DAOClient;
+    this.rootTokenContract = IERC20Upgradeable__factory.connect(
+      properties.votingToken.token,
+      GlobalClient.etherRpcProvider
+    );
   }
 
   get polygonToken() {
@@ -96,15 +78,19 @@ class DAOClient
       GlobalClient.ethereumZDAOChef.getZDAOInfoById(zDAORecord.id),
       GlobalClient.polygonZDAOChef.getZDAOInfoById(zDAORecord.id),
     ]);
-    if (!zDAOInfos[0]) {
+
+    const etherZDAOInfo = zDAOInfos[0];
+    const polyZDAOInfo = zDAOInfos[1];
+
+    if (!etherZDAOInfo) {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 
     const tokens = await Promise.all([
-      getToken(GlobalClient.etherRpcProvider, zDAOInfos[0].token),
-      zDAOInfos[1] &&
-        getToken(GlobalClient.polyRpcProvider, zDAOInfos[1].token),
-      getTotalSupply(GlobalClient.etherRpcProvider, zDAOInfos[0].token).catch(
+      getToken(GlobalClient.etherRpcProvider, etherZDAOInfo.token),
+      polyZDAOInfo &&
+        getToken(GlobalClient.polyRpcProvider, polyZDAOInfo.token),
+      getTotalSupply(GlobalClient.etherRpcProvider, etherZDAOInfo.token).catch(
         () => {
           throw new InvalidError(
             errorMessageForError('not-support-total-supply')
@@ -113,8 +99,7 @@ class DAOClient
       ),
     ]);
 
-    const etherZDAOInfo = zDAOInfos[0];
-    const instance = await new DAOClient(
+    const instance = new DAOClient(
       {
         id: zDAORecord.id,
         zNAs: zDAORecord.associatedzNAs,
@@ -132,7 +117,11 @@ class DAOClient
         minimumTotalVotingTokens:
           etherZDAOInfo.minimumTotalVotingTokens.toString(),
         isRelativeMajority: etherZDAOInfo.isRelativeMajority,
-        state: zDAOState.PENDING,
+        state: etherZDAOInfo.destroyed
+          ? zDAOState.CANCELED
+          : polyZDAOInfo
+          ? zDAOState.ACTIVE
+          : zDAOState.PENDING,
         snapshot: etherZDAOInfo.snapshot,
         destroyed: etherZDAOInfo.destroyed,
         polygonToken: tokens[1] as Token,
@@ -282,7 +271,7 @@ class DAOClient
     if (payload.transfer) {
       payload.choices = DEFAULT_PROPOSAL_CHOICES;
     }
-    if (!payload.choices) {
+    if (!payload.choices || payload.choices.length < 1) {
       payload.choices = DEFAULT_PROPOSAL_CHOICES;
     }
 
@@ -311,16 +300,13 @@ class DAOClient
     try {
       const ipfs = await AbstractDAOClient.uploadToIPFS(signer, payload);
 
-      await GlobalClient.ethereumZDAOChef.createProposal(
+      const proposalId = await GlobalClient.ethereumZDAOChef.createProposal(
         signer,
         this.id,
         payload,
         ipfs
       );
-
-      // created proposal id
-      const lastProposalId = await this.ethereumZDAO.lastProposalId();
-      return lastProposalId.toHexString();
+      return trimHexString(proposalId.toHexString());
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new FailedTxError(errorMsg);
