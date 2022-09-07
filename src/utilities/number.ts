@@ -35,3 +35,7 @@ export const getFormatedValue = (value: any) =>
     minimumFractionDigits: 0,
     maximumFractionDigits: DECIMALS,
   });
+
+export const trimHexString = (hex: string) => {
+  return `0x${hex.replace(/^0x0+/g, '')}`;
+};

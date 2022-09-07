@@ -108,15 +108,13 @@ class ProposalClient
   }
 
   async updateScoresAndVotes(): Promise<PolygonProposal> {
-    const polygonZDAO = await this.zDAO.getPolygonZDAOContract();
-    if (!polygonZDAO) {
-      throw new NotSyncStateError();
-    }
-
     const subgraphProposal = await GlobalClient.polygonZDAOChef.getProposal(
       this.zDAO.id,
       this.id
     );
+    if (!subgraphProposal) {
+      throw new NotSyncStateError();
+    }
 
     const scores = subgraphProposal?.sumOfVotes.map((vote) => vote.toString());
     const voters = subgraphProposal?.voters;
