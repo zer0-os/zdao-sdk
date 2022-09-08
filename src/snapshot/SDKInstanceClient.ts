@@ -1,5 +1,5 @@
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 
 import { PlatformType } from '..';
 import { IPFSClient, ZNAClient } from '../client';
@@ -10,16 +10,10 @@ import {
   InvalidError,
   NotFoundError,
   zDAOId,
-  zDAOState,
   zNA,
   zNAId,
 } from '../types';
-import {
-  errorMessageForError,
-  getDecimalAmount,
-  getSigner,
-  getTotalSupply,
-} from '../utilities';
+import { errorMessageForError, getSigner } from '../utilities';
 import DAOClient from './client/DAOClient';
 import GlobalClient from './client/GlobalClient';
 import MockDAOClient from './client/MockDAOClient';
@@ -105,11 +99,14 @@ class SDKInstanceClient implements SnapshotSDKInstance {
   }
 
   async listZDAOs(): Promise<SnapshotZDAO[]> {
-    const zNAs = await this.listZNAs();
-
-    const promises: Promise<SnapshotZDAO>[] = zNAs.map((zNA) =>
-      this.getZDAOByZNA(zNA)
+    const zDAORecords = await GlobalClient.zDAORegistry.listZDAOs(
+      PlatformType.Snapshot
     );
+
+    const promises: Promise<SnapshotZDAO>[] = [];
+    for (const zDAORecord of zDAORecords) {
+      promises.push(DAOClient.createInstance(this.config, zDAORecord));
+    }
     return await Promise.all(promises);
   }
 
@@ -123,92 +120,8 @@ class SDKInstanceClient implements SnapshotSDKInstance {
       throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 
-    const zDAOInfo = await GlobalClient.ethereumZDAOChef.getZDAOPropertiesById(
-      zDAORecord.id
-    );
-    if (!zDAOInfo) {
-      throw new NotFoundError(errorMessageForError('not-found-zdao'));
-    }
-
-    // should be found by ens in snapshot
-    const space = await this.snapshotClient.getSpaceDetails(zDAOInfo.ensSpace);
-    if (!space) {
-      throw new NotFoundError(
-        errorMessageForError('not-found-ens-in-snapshot')
-      );
-    }
-
-    // strategy is used to check if voter holds minimum token amount
-    const strategy = space.strategies.find(
-      (strategy) =>
-        strategy.name.startsWith('erc20') || strategy.name.startsWith('erc721')
-    );
-    if (!strategy) {
-      throw new NotFoundError(
-        errorMessageForError('not-found-strategy-in-snapshot')
-      );
-    }
-
-    const symbol = strategy.params.symbol;
-    const decimals = strategy.params.decimals ?? 0;
-
-    const totalSupplyOfVotingToken = await getTotalSupply(
-      GlobalClient.etherRpcProvider,
-      strategy.params.address
-    ).catch(() => {
-      throw new InvalidError(errorMessageForError('not-support-total-supply'));
-    });
-    const minimumTotalVotingTokens = space.quorum
-      ? getDecimalAmount(
-          BigNumber.from(space.quorum.toString()),
-          decimals
-        ).toString()
-      : '0';
-    const votingThreshold =
-      totalSupplyOfVotingToken === BigNumber.from(0)
-        ? 0
-        : BigNumber.from(minimumTotalVotingTokens)
-            .mul(10000)
-            .div(totalSupplyOfVotingToken)
-            .toNumber();
-
-    return await DAOClient.createInstance(
-      this.config,
-      {
-        id: zDAORecord.id,
-        zNAs: zDAORecord.associatedzNAs,
-        name: space.name,
-        createdBy: zDAORecord.zDAOOwnedBy,
-        network: GlobalClient.etherNetwork,
-        gnosisSafe: zDAORecord.gnosisSafe,
-        votingToken: {
-          token: ethers.utils.getAddress(strategy.params.address),
-          symbol,
-          decimals,
-        },
-        minimumVotingTokenAmount: space.threshold
-          ? getDecimalAmount(
-              BigNumber.from(space.threshold.toString()),
-              decimals
-            ).toString()
-          : '0',
-        totalSupplyOfVotingToken: totalSupplyOfVotingToken.toString(),
-        votingDuration: space.duration ? Number(space.duration) : 0,
-        votingDelay: space.delay ?? 0,
-        votingThreshold,
-        minimumVotingParticipants: 1,
-        minimumTotalVotingTokens,
-        isRelativeMajority: false,
-        state: zDAOState.ACTIVE,
-        snapshot: 0,
-        destroyed: false,
-        ens: space.id,
-      },
-      {
-        delay: space.delay,
-        strategies: space.strategies,
-      }
-    );
+    const instance = await DAOClient.createInstance(this.config, zDAORecord);
+    return instance;
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
