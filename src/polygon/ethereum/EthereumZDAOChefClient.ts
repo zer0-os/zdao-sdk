@@ -10,6 +10,7 @@ import {
   generateZDAOId,
   getToken,
   getTotalSupply,
+  validateAddress,
 } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import { EthereumZDAO } from '../config/types/EthereumZDAO';
@@ -79,8 +80,8 @@ class EthereumZDAOChefClient {
     return {
       zDAOId: zDAO.zDAORecord.zDAOId,
       name: zDAO.zDAORecord.name,
-      createdBy: zDAO.zDAORecord.createdBy,
-      gnosisSafe: ethers.utils.getAddress(zDAO.zDAORecord.gnosisSafe),
+      createdBy: validateAddress(zDAO.zDAORecord.createdBy.toString()),
+      gnosisSafe: validateAddress(zDAO.zDAORecord.gnosisSafe.toString()),
       token: zDAO.token,
       amount: BigNumber.from(zDAO.amount),
       duration: zDAO.duration,
@@ -111,9 +112,9 @@ class EthereumZDAOChefClient {
       id: zDAOInfo.zDAOId.toString(),
       zNAs: zDAORecord.associatedzNAs,
       name: zDAORecord.name,
-      createdBy: ethers.utils.getAddress(zDAOInfo.createdBy),
+      createdBy: validateAddress(zDAOInfo.createdBy.toString()),
       network: GlobalClient.etherNetwork,
-      gnosisSafe: ethers.utils.getAddress(zDAOInfo.gnosisSafe),
+      gnosisSafe: validateAddress(zDAOInfo.gnosisSafe.toString()),
       votingToken: results[0],
       minimumVotingTokenAmount: zDAOInfo.amount.toString(),
       totalSupplyOfVotingToken: results[1].toString(),
@@ -205,7 +206,7 @@ class EthereumZDAOChefClient {
     return {
       proposalId: proposal.proposalId,
       numberOfChoices: proposal.numberOfChoices,
-      createdBy: proposal.createdBy,
+      createdBy: validateAddress(proposal.createdBy.toString()),
       snapshot: proposal.snapshot,
       ipfs: proposal.ipfs,
       created: proposal.created,

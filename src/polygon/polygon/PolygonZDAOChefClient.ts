@@ -8,6 +8,7 @@ import {
   calculateGasMargin,
   generateProposalId,
   generateZDAOId,
+  validateAddress,
 } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import { PolygonZDAO__factory } from '../config/types/factories/PolygonZDAO__factory';
@@ -60,7 +61,7 @@ class PolygonZDAOChefClient {
     const zDAO = result.polygonZDAOs[0];
     return {
       zDAOId: zDAO.zDAOId,
-      token: zDAO.token,
+      token: validateAddress(zDAO.token.toString()),
       duration: zDAO.duration,
       votingDelay: zDAO.votingDelay,
       snapshot: zDAO.snapshot,
@@ -75,9 +76,9 @@ class PolygonZDAOChefClient {
 
     return (
       zDAOInfo && {
-        id: zDAOInfo?.zDAOId,
-        duration: zDAOInfo?.duration,
-        token: zDAOInfo.token,
+        id: zDAOInfo.zDAOId,
+        duration: zDAOInfo.duration,
+        token: validateAddress(zDAOInfo.token.toString()),
         snapshot: zDAOInfo.snapshot,
         destroyed: zDAOInfo.destroyed,
       }
@@ -159,7 +160,7 @@ class PolygonZDAOChefClient {
     return result.polygonVotes.map(
       (vote: any): PolygonSubgraphVote => ({
         choice: vote.choice,
-        voter: vote.voter,
+        voter: validateAddress(vote.voter.toString()),
         votingPower: BigNumber.from(vote.votingPower),
       })
     );

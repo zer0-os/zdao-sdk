@@ -178,9 +178,9 @@ class SDKInstanceClient implements SnapshotSDKInstance {
         id: zDAORecord.id,
         zNAs: zDAORecord.associatedzNAs,
         name: space.name,
-        createdBy: '',
+        createdBy: zDAORecord.zDAOOwnedBy,
         network: GlobalClient.etherNetwork,
-        gnosisSafe: ethers.utils.getAddress(zDAORecord.gnosisSafe),
+        gnosisSafe: zDAORecord.gnosisSafe,
         votingToken: {
           token: ethers.utils.getAddress(strategy.params.address),
           symbol,
