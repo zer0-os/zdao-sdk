@@ -6,7 +6,7 @@ import {
   Instance as zNSInstance,
 } from '@zero-tech/zns-sdk';
 
-import { zNA, zNAId } from '../types';
+import { NetworkError, zNA, zNAId } from '../types';
 
 class ZNAClient {
   private static znsInstance: zNSInstance;
@@ -47,16 +47,19 @@ class ZNAClient {
       '0xf281ebd0f3960561d77d80f40f28cc753078dc41d3f2385c3d2e2835405b4d5f'
     )
       return Promise.resolve('joshupgig.eth');
-
     if (
       zNAId ===
       '0xf0142b0fe9dceca45b0855af027129b798a130146ccfd7d238ce9e151b6feb56'
     )
       return Promise.resolve('dappchain.eth');
 
-    return ZNAClient.znsInstance
-      .getDomainById(zNAId)
-      .then((domain: Domain) => domain.name);
+    try {
+      return await ZNAClient.znsInstance
+        .getDomainById(zNAId)
+        .then((domain: Domain) => domain.name);
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 
   static zNATozNAId(zNA: zNA): zNAId {
@@ -72,7 +75,11 @@ class ZNAClient {
     if (zNA === 'dappchain.eth')
       return '0xf0142b0fe9dceca45b0855af027129b798a130146ccfd7d238ce9e151b6feb56';
 
-    return domains.domainNameToId(zNA);
+    try {
+      return domains.domainNameToId(zNA);
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 }
 

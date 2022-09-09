@@ -1,7 +1,7 @@
 import fleek from '@fleekhq/fleek-storage-js';
 import fetch from 'cross-fetch';
 
-import { FleekConfig } from '../types';
+import { FleekConfig, NetworkError } from '../types';
 
 class IPFSClient {
   private static config: FleekConfig;
@@ -29,9 +29,13 @@ class IPFSClient {
   }
 
   static async getJson(uri: string, gateway: string) {
-    const url = IPFSClient.getUrl(uri, gateway);
-    if (!url) return {};
-    return fetch(url).then((res) => res.json());
+    try {
+      const url = IPFSClient.getUrl(uri, gateway);
+      if (!url) return {};
+      return fetch(url).then((res) => res.json());
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 
   static async getJsonByProtocol(
@@ -39,18 +43,26 @@ class IPFSClient {
     ipfsHash: string,
     protocolType = 'ipfs'
   ) {
-    const url = `https://${gateway}/${protocolType}/${ipfsHash}`;
-    return fetch(url).then((res) => res.json());
+    try {
+      const url = `https://${gateway}/${protocolType}/${ipfsHash}`;
+      return fetch(url).then((res) => res.json());
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 
   static async upload(key: string, body: any): Promise<string> {
-    const result = await fleek.upload({
-      apiKey: IPFSClient.config.apiKey,
-      apiSecret: IPFSClient.config.apiSecret,
-      key,
-      data: JSON.stringify(body),
-    });
-    return result.hashV0;
+    try {
+      const result = await fleek.upload({
+        apiKey: IPFSClient.config.apiKey,
+        apiSecret: IPFSClient.config.apiSecret,
+        key,
+        data: JSON.stringify(body),
+      });
+      return result.hashV0;
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 }
 

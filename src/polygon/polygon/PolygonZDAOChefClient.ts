@@ -3,11 +3,18 @@ import { BigNumber, ethers } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
 
 import { PlatformType } from '../..';
-import { Choice, ProposalId, zDAOId } from '../../types';
+import {
+  Choice,
+  FailedTxError,
+  NetworkError,
+  ProposalId,
+  zDAOId,
+} from '../../types';
 import {
   calculateGasMargin,
   generateProposalId,
   generateZDAOId,
+  graphQLQuery,
   validateAddress,
 } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
@@ -40,21 +47,29 @@ class PolygonZDAOChefClient {
   }
 
   async getZDAOById(zDAOId: zDAOId): Promise<PolygonZDAO | null> {
-    const iPolygonZDAO = await this.contract.getZDAOById(zDAOId);
-    if (!iPolygonZDAO || iPolygonZDAO === AddressZero) return null;
+    try {
+      const iPolygonZDAO = await this.contract.getZDAOById(zDAOId);
+      if (!iPolygonZDAO || iPolygonZDAO === AddressZero) return null;
 
-    return PolygonZDAO__factory.connect(
-      iPolygonZDAO,
-      GlobalClient.polyRpcProvider
-    );
+      return PolygonZDAO__factory.connect(
+        iPolygonZDAO,
+        GlobalClient.polyRpcProvider
+      );
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 
   async getZDAOInfoById(
     zDAOId: zDAOId
   ): Promise<PolygonSubgraphZDAO | undefined> {
-    const result = await this.zDAOGQLClient.request(POLYGONZDAOS_BY_QUERY, {
-      zDAOId: generateZDAOId(PlatformType.Polygon, zDAOId),
-    });
+    const result = await graphQLQuery(
+      this.zDAOGQLClient,
+      POLYGONZDAOS_BY_QUERY,
+      {
+        zDAOId: generateZDAOId(PlatformType.Polygon, zDAOId),
+      }
+    );
     if (result.polygonZDAOs.length < 1) {
       return undefined;
     }
@@ -86,10 +101,14 @@ class PolygonZDAOChefClient {
   }
 
   async getStakingProperties(): Promise<StakingProperties> {
-    const address = await this.contract.staking();
-    return {
-      address,
-    };
+    try {
+      const address = await this.contract.staking();
+      return {
+        address,
+      };
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 
   getRegistryAddress(): Promise<string> {
@@ -97,9 +116,13 @@ class PolygonZDAOChefClient {
   }
 
   async listProposals(zDAOId: zDAOId): Promise<PolygonSubgraphProposal[]> {
-    const result = await this.zDAOGQLClient.request(POLYGONPROPOSALS_BY_QUERY, {
-      zDAOId: generateZDAOId(PlatformType.Polygon, zDAOId),
-    });
+    const result = await graphQLQuery(
+      this.zDAOGQLClient,
+      POLYGONPROPOSALS_BY_QUERY,
+      {
+        zDAOId: generateZDAOId(PlatformType.Polygon, zDAOId),
+      }
+    );
 
     return result.polygonProposals.map(
       (proposal: any): PolygonSubgraphProposal => ({
@@ -122,9 +145,17 @@ class PolygonZDAOChefClient {
     zDAOId: zDAOId,
     proposalId: ProposalId
   ): Promise<PolygonSubgraphProposal | undefined> {
-    const result = await this.zDAOGQLClient.request(POLYGONPROPOSAL_BY_QUERY, {
-      proposalId: generateProposalId(PlatformType.Polygon, zDAOId, proposalId),
-    });
+    const result = await graphQLQuery(
+      this.zDAOGQLClient,
+      POLYGONPROPOSAL_BY_QUERY,
+      {
+        proposalId: generateProposalId(
+          PlatformType.Polygon,
+          zDAOId,
+          proposalId
+        ),
+      }
+    );
     if (
       !result ||
       !Array.isArray(result.polygonProposals) ||
@@ -153,9 +184,17 @@ class PolygonZDAOChefClient {
     zDAOId: zDAOId,
     proposalId: ProposalId
   ): Promise<PolygonSubgraphVote[]> {
-    const result = await this.zDAOGQLClient.request(POLYGONVOTES_BY_QUERY, {
-      proposalId: generateProposalId(PlatformType.Polygon, zDAOId, proposalId),
-    });
+    const result = await graphQLQuery(
+      this.zDAOGQLClient,
+      POLYGONVOTES_BY_QUERY,
+      {
+        proposalId: generateProposalId(
+          PlatformType.Polygon,
+          zDAOId,
+          proposalId
+        ),
+      }
+    );
 
     return result.polygonVotes.map(
       (vote: any): PolygonSubgraphVote => ({
@@ -172,16 +211,21 @@ class PolygonZDAOChefClient {
     proposalId: ProposalId,
     choice: Choice
   ) {
-    const gasEstimated = await this.contract
-      .connect(signer)
-      .estimateGas.vote(zDAOId, proposalId, choice);
+    try {
+      const gasEstimated = await this.contract
+        .connect(signer)
+        .estimateGas.vote(zDAOId, proposalId, choice);
 
-    const tx = await this.contract
-      .connect(signer)
-      .vote(zDAOId, proposalId, choice, {
-        gasLimit: calculateGasMargin(gasEstimated),
-      });
-    return await tx.wait();
+      const tx = await this.contract
+        .connect(signer)
+        .vote(zDAOId, proposalId, choice, {
+          gasLimit: calculateGasMargin(gasEstimated),
+        });
+      return await tx.wait();
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 
   async calculateProposal(
@@ -189,23 +233,29 @@ class PolygonZDAOChefClient {
     zDAOId: zDAOId,
     proposalId: ProposalId
   ) {
-    const gasEstimated = await this.contract
-      .connect(signer)
-      .estimateGas.calculateProposal(zDAOId, proposalId);
+    try {
+      const gasEstimated = await this.contract
+        .connect(signer)
+        .estimateGas.calculateProposal(zDAOId, proposalId);
 
-    const tx = await this.contract
-      .connect(signer)
-      .calculateProposal(zDAOId, proposalId, {
-        gasLimit: calculateGasMargin(gasEstimated),
-      });
-    return await tx.wait();
+      const tx = await this.contract
+        .connect(signer)
+        .calculateProposal(zDAOId, proposalId, {
+          gasLimit: calculateGasMargin(gasEstimated),
+        });
+      return await tx.wait();
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 
   async getCheckPointingHashes(
     zDAOId: zDAOId,
     proposalId: ProposalId
   ): Promise<string[]> {
-    const result = await this.zDAOGQLClient.request(
+    const result = await graphQLQuery(
+      this.zDAOGQLClient,
       POLYGONCALCULATEDPROPOSAL_BY_QUERY,
       {
         proposalId: generateProposalId(

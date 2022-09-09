@@ -11,6 +11,7 @@ import {
   PaginationParam,
   ProposalId,
   ProposalState,
+  ZDAOError,
   zDAOProperties,
   zDAOState,
 } from '../../types';
@@ -187,7 +188,7 @@ class DAOClient
 
     // create all instances
     const promises: Promise<SnapshotProposal>[] = snapshotProposals.map(
-      (proposal, index): Promise<SnapshotProposal> =>
+      (proposal): Promise<SnapshotProposal> =>
         ProposalClient.createInstance(
           this,
           this.snapshotClient,
@@ -280,7 +281,7 @@ class DAOClient
 
     const balance = await contract.balanceOf(account);
     if (balance.lt(this.minimumVotingTokenAmount)) {
-      throw new Error(
+      throw new ZDAOError(
         errorMessageForError('should-hold-token', {
           amount: getFullDisplayBalance(
             BigNumber.from(this.minimumVotingTokenAmount),

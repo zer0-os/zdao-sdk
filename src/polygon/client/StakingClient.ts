@@ -1,6 +1,5 @@
 import { ContractReceipt, ethers } from 'ethers';
 
-import { FailedTxError } from '../../types';
 import PolygonStakingClient from '../polygon/PolygonStakingClient';
 import { Staking, StakingProperties } from '../types';
 
@@ -22,12 +21,7 @@ class StakingClient implements Staking {
     token: string,
     amount: string
   ): Promise<ContractReceipt> {
-    try {
-      return this.polyStaking.stakeERC20(signer, token, amount);
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
-    }
+    return this.polyStaking.stakeERC20(signer, token, amount);
   }
 
   async stakeERC721(
@@ -35,12 +29,7 @@ class StakingClient implements Staking {
     token: string,
     tokenId: string
   ): Promise<ContractReceipt> {
-    try {
-      return this.polyStaking.stakeERC721(signer, token, tokenId);
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
-    }
+    return this.polyStaking.stakeERC721(signer, token, tokenId);
   }
 
   async unstakeERC20(
@@ -48,12 +37,7 @@ class StakingClient implements Staking {
     token: string,
     amount: string
   ): Promise<ContractReceipt> {
-    try {
-      return this.polyStaking.unstakeERC20(signer, token, amount);
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
-    }
+    return this.polyStaking.unstakeERC20(signer, token, amount);
   }
 
   async unstakeERC721(
@@ -61,12 +45,7 @@ class StakingClient implements Staking {
     token: string,
     tokenId: string
   ): Promise<ContractReceipt> {
-    try {
-      return this.polyStaking.unstakeERC721(signer, token, tokenId);
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
-    }
+    return this.polyStaking.unstakeERC721(signer, token, tokenId);
   }
 
   async stakingPower(account: string, token: string): Promise<string> {

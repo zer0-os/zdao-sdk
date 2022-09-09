@@ -1,3 +1,4 @@
+import { NetworkError } from '../../types';
 import GlobalClient from '../client/GlobalClient';
 import { IChildChainManager__factory } from '../config/types/factories/IChildChainManager__factory';
 import { IChildChainManager } from '../config/types/IChildChainManager';
@@ -12,12 +13,20 @@ class PolygonRegistryClient {
     );
   }
 
-  rootToChildToken(rootToken: string): Promise<string> {
-    return this.contract.rootToChildToken(rootToken);
+  async rootToChildToken(rootToken: string): Promise<string> {
+    try {
+      return await this.contract.rootToChildToken(rootToken);
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 
-  childToRootToken(childToken: string): Promise<string> {
-    return this.contract.childToRootToken(childToken);
+  async childToRootToken(childToken: string): Promise<string> {
+    try {
+      return await this.contract.childToRootToken(childToken);
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 }
 
