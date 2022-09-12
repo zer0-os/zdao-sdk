@@ -53,3 +53,11 @@ export const generateProposalId = (
     1
   )}-${proposalId}`;
 };
+
+export const validateAddress = (address: string) => {
+  if (address === '0x00000000') {
+    // 0x00000000 == Address(0) in subgraph
+    return ethers.constants.AddressZero;
+  }
+  return ethers.utils.getAddress(address);
+};

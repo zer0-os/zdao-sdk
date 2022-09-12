@@ -3,7 +3,7 @@ import { GraphQLClient } from 'graphql-request';
 
 import { PlatformType } from '../..';
 import { EthereumDAOConfig, zDAOId } from '../../types';
-import { generateZDAOId } from '../../utilities';
+import { generateZDAOId, validateAddress } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import { SnapshotZDAOChef__factory } from '../config/types/factories/SnapshotZDAOChef__factory';
 import { SnapshotZDAOChef } from '../config/types/SnapshotZDAOChef';
@@ -43,7 +43,7 @@ class EthereumZDAOChefClient {
       id: zDAO.zDAORecord.zDAOId,
       snapshot: zDAO.snapshot,
       ensSpace: zDAO.ensSpace,
-      gnosisSafe: ethers.utils.getAddress(zDAO.zDAORecord.gnosisSafe),
+      gnosisSafe: validateAddress(zDAO.zDAORecord.gnosisSafe.toString()),
       destroyed: zDAO.zDAORecord.destroyed,
     };
   }

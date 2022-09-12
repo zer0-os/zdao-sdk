@@ -6,7 +6,7 @@ import { ZDAORegistry__factory } from '../config/types/factories/ZDAORegistry__f
 import { ZDAORegistry } from '../config/types/ZDAORegistry';
 import { zNAConfig } from '../types';
 import { zDAOId, zDAOProperties, zNA } from '../types';
-import { calculateGasMargin } from '../utilities';
+import { calculateGasMargin, validateAddress } from '../utilities';
 import {
   ZDAORECORDS_QUERY,
   ZNAASSOCIATION_BY_QUERY,
@@ -74,8 +74,8 @@ class ZDAORegistryClient {
     return result.zdaorecords.map((record: any) => ({
       platformType: record.platformType,
       id: record.zDAOId.toString(),
-      zDAOOwnedBy: record.createdBy.toString(),
-      gnosisSafe: ethers.utils.getAddress(record.gnosisSafe.toString()),
+      zDAOOwnedBy: validateAddress(record.createdBy.toString()),
+      gnosisSafe: validateAddress(record.gnosisSafe.toString()),
       name: record.name.toString(),
       destroyed: false,
       associatedzNAs: zNAs.splice(0, record.zNAs.length),
@@ -106,16 +106,13 @@ class ZDAORegistryClient {
       )
     );
 
+    const zDAORecord = result.znaassociations[0].zDAORecord;
     return {
-      platformType: result.znaassociations[0].zDAORecord.platformType,
-      id: result.znaassociations[0].zDAORecord.zDAOId.toString(),
-      zDAOOwnedBy: ethers.utils.getAddress(
-        result.znaassociations[0].zDAORecord.createdBy.toString()
-      ),
-      gnosisSafe: ethers.utils.getAddress(
-        result.znaassociations[0].zDAORecord.gnosisSafe.toString()
-      ),
-      name: result.znaassociations[0].zDAORecord.name.toString(),
+      platformType: zDAORecord.platformType,
+      id: zDAORecord.zDAOId.toString(),
+      zDAOOwnedBy: validateAddress(zDAORecord.createdBy.toString()),
+      gnosisSafe: validateAddress(zDAORecord.gnosisSafe.toString()),
+      name: zDAORecord.name.toString(),
       destroyed: false,
       associatedzNAs: zNAs,
     };
