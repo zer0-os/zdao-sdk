@@ -3,6 +3,7 @@ import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
 import { cloneDeep } from 'lodash';
 
 import { PlatformType, ProposalId, zDAOId } from '..';
+import { NetworkError } from '../types';
 
 export const graphQLQuery = async (
   graphQLClient: GraphQLClient,
@@ -10,9 +11,13 @@ export const graphQLQuery = async (
   variables?: Variables,
   path = ''
 ) => {
-  const response = await graphQLClient.request(query, variables);
+  try {
+    const response = await graphQLClient.request(query, variables);
 
-  return cloneDeep(!path ? response : response[path]);
+    return cloneDeep(!path ? response : response[path]);
+  } catch (error: any) {
+    throw new NetworkError(error.message);
+  }
 };
 
 export const generateProposalHash = (

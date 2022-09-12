@@ -9,6 +9,7 @@ import {
   FailedTxError,
   InvalidError,
   NotFoundError,
+  ZDAOError,
   zDAOId,
   zNA,
   zNAId,
@@ -60,7 +61,7 @@ class SDKInstanceClient implements PolygonSDKInstance {
       throw new AlreadyExistError(errorMessageForError('already-exist-zdao'));
     }
     if (!params.votingDuration) {
-      throw new Error(errorMessageForError('invalid-zdao-duration'));
+      throw new ZDAOError(errorMessageForError('invalid-zdao-duration'));
     }
 
     try {

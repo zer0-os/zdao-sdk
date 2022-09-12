@@ -5,7 +5,13 @@ import { ethers } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
 import { orderBy } from 'lodash';
 
-import { NotFoundError, ProposalId, SupportedChainId } from '../../types';
+import {
+  NetworkError,
+  NotFoundError,
+  ProposalId,
+  SupportedChainId,
+  ZDAOError,
+} from '../../types';
 import { errorMessageForError, graphQLQuery, timestamp } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import verified from '../config/verified.json';
@@ -47,7 +53,11 @@ class SnapshotClient {
   }
 
   ipfsGet(ipfs: string) {
-    return Client.utils.ipfsGet(GlobalClient.ipfsGateway, ipfs);
+    try {
+      return Client.utils.ipfsGet(GlobalClient.ipfsGateway, ipfs);
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 
   private generateStrategies(
@@ -71,54 +81,58 @@ class SnapshotClient {
     if (this.spaces.length > 0) {
       return this.spaces;
     }
-    const exploreObj: any = await fetch(
-      `${this.config.serviceUri}/api/explore`
-    ).then((res) => res.json());
-    const spaces2 = Object.entries(exploreObj.spaces).map(
-      ([id, space]: any) => {
-        // map manually selected categories for verified spaces that don't have set their categories yet
-        // set to empty array if space.categories is missing
-        space.categories = space.categories?.length ? space.categories : [];
-        space.avatarUri = Client.utils.getUrl(
-          space.avatar,
-          GlobalClient.ipfsGateway
-        );
-        return [id, { id, ...space }];
-      }
-    );
-    const filters = spaces2
-      .map(([id, space]) => {
-        const followers = space.followers ?? 0;
-        const followers1d = space.followers_1d ?? 0;
-        const isVerified = (verified as any)[id] || 0;
-        let score = followers1d + followers / 4;
-        if (isVerified === 1) score = score * 2;
-        return {
-          ...space,
-          followers,
-          score,
-        };
-      })
-      .filter(
-        (space) =>
-          ((network === SupportedChainId.MAINNET.toString() &&
-            !space.private) ||
-            network !== SupportedChainId.MAINNET.toString()) &&
-          (verified as any)[space.id] !== -1
-      )
-      .filter((space) => space.network === network);
-    const list = orderBy(filters, ['followers', 'score'], ['desc', 'desc']);
-    this.spaces = list.map((item: any) => ({
-      id: item.id,
-      name: item.name,
-      avatar: item.avatarUri,
-      network: item.network,
-      admins: item.admins,
-      period: item.voting.period ? item.voting.period : undefined,
-      strategies: item.strategies,
-      followers: item.followers,
-    }));
-    return this.spaces;
+    try {
+      const exploreObj: any = await fetch(
+        `${this.config.serviceUri}/api/explore`
+      ).then((res) => res.json());
+      const spaces2 = Object.entries(exploreObj.spaces).map(
+        ([id, space]: any) => {
+          // map manually selected categories for verified spaces that don't have set their categories yet
+          // set to empty array if space.categories is missing
+          space.categories = space.categories?.length ? space.categories : [];
+          space.avatarUri = Client.utils.getUrl(
+            space.avatar,
+            GlobalClient.ipfsGateway
+          );
+          return [id, { id, ...space }];
+        }
+      );
+      const filters = spaces2
+        .map(([id, space]) => {
+          const followers = space.followers ?? 0;
+          const followers1d = space.followers_1d ?? 0;
+          const isVerified = (verified as any)[id] || 0;
+          let score = followers1d + followers / 4;
+          if (isVerified === 1) score = score * 2;
+          return {
+            ...space,
+            followers,
+            score,
+          };
+        })
+        .filter(
+          (space) =>
+            ((network === SupportedChainId.MAINNET.toString() &&
+              !space.private) ||
+              network !== SupportedChainId.MAINNET.toString()) &&
+            (verified as any)[space.id] !== -1
+        )
+        .filter((space) => space.network === network);
+      const list = orderBy(filters, ['followers', 'score'], ['desc', 'desc']);
+      this.spaces = list.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        avatar: item.avatarUri,
+        network: item.network,
+        admins: item.admins,
+        period: item.voting.period ? item.voting.period : undefined,
+        strategies: item.strategies,
+        followers: item.followers,
+      }));
+      return this.spaces;
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 
   async getSpaceDetails(spaceId: ENS): Promise<SnapshotSpaceDetails> {
@@ -135,6 +149,7 @@ class SnapshotClient {
         errorMessageForError('not-found-ens-in-snapshot')
       );
     }
+
     const item = response[0];
     return {
       id: item.id,
@@ -161,10 +176,10 @@ class SnapshotClient {
       'spaces'
     );
     const filter = response.filter((item: any) => item.id === spaceId);
-
     if (filter.length < 1) {
-      throw Error(errorMessageForError('not-found-ens-in-snapshot'));
+      throw new ZDAOError(errorMessageForError('not-found-ens-in-snapshot'));
     }
+
     return {
       strategies: filter[0].strategies,
       threshold: filter[0].filters.minScore,
@@ -193,6 +208,7 @@ class SnapshotClient {
       },
       'proposals'
     );
+
     return response.map(
       (response: any): SnapshotProposalProperties => ({
         id: response.id,
@@ -249,13 +265,18 @@ class SnapshotClient {
       }
 
       // Get scores
-      const scores = await Client.utils.getScores(
-        params.spaceId,
-        strategies,
-        params.network,
-        voters,
-        Number(proposal.snapshot)
-      );
+      let scores: any[] = [];
+      try {
+        scores = await Client.utils.getScores(
+          params.spaceId,
+          strategies,
+          params.network,
+          voters,
+          Number(proposal.snapshot)
+        );
+      } catch (error: any) {
+        throw new NetworkError(error.message);
+      }
 
       const votes = voteResponse.map((vote: any) => {
         vote.scores = strategies.map(
@@ -343,13 +364,18 @@ class SnapshotClient {
       const voters = response.map((vote: any) => vote.voter);
 
       // Get scores
-      const scores = await Client.utils.getScores(
-        params.spaceId,
-        params.strategies,
-        params.network,
-        voters,
-        params.snapshot
-      );
+      let scores: any[] = [];
+      try {
+        scores = await Client.utils.getScores(
+          params.spaceId,
+          params.strategies,
+          params.network,
+          voters,
+          params.snapshot
+        );
+      } catch (error: any) {
+        throw new NetworkError(error.message);
+      }
 
       return response.map((vote: any) => {
         vote.scores = params.strategies.map(
@@ -378,13 +404,18 @@ class SnapshotClient {
       params.symbol
     );
 
-    let scores: any = await Client.utils.getScores(
-      params.spaceId,
-      strategies,
-      params.network,
-      [params.voter],
-      params.snapshot
-    );
+    let scores: any[] = [];
+    try {
+      scores = await Client.utils.getScores(
+        params.spaceId,
+        strategies,
+        params.network,
+        [params.voter],
+        params.snapshot
+      );
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
     scores = scores.map((score: any) =>
       Object.values(score).reduce((a, b: any) => a + b, 0)
     );
@@ -394,13 +425,18 @@ class SnapshotClient {
   async getVotingPower(params: VotingPowerParams): Promise<number> {
     const { strategies } = await this.getSpaceOptions(params.spaceId);
 
-    let scores: any = await Client.utils.getScores(
-      params.spaceId,
-      strategies,
-      params.network,
-      [params.voter],
-      Number(params.snapshot)
-    );
+    let scores: any[] = [];
+    try {
+      scores = await Client.utils.getScores(
+        params.spaceId,
+        strategies,
+        params.network,
+        [params.voter],
+        Number(params.snapshot)
+      );
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
     scores = scores.map((score: any) =>
       Object.values(score).reduce((a, b: any) => a + b, 0)
     );
@@ -476,12 +512,16 @@ class SnapshotClient {
   }
 
   async forceUpdateScoresAndVotes(proposalId: ProposalId) {
-    // There are tricky method to update proposal scores and voters immediately after voting
-    const updateScoreApi = `${this.config.serviceUri}/api/scores/${proposalId}`;
-    await fetch(updateScoreApi, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    }); // .then((value) => value.json().then((json) => console.log(json)));
+    try {
+      // There are tricky method to update proposal scores and voters immediately after voting
+      const updateScoreApi = `${this.config.serviceUri}/api/scores/${proposalId}`;
+      await fetch(updateScoreApi, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      }); // .then((value) => value.json().then((json) => console.log(json)));
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 }
 

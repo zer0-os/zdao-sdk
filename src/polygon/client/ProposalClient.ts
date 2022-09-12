@@ -4,8 +4,8 @@ import { AbstractProposalClient } from '../../client';
 import {
   AlreadyDestroyedError,
   Choice,
-  FailedTxError,
   InvalidError,
+  NetworkError,
   NotSyncStateError,
   ProposalProperties,
   ProposalState,
@@ -34,10 +34,10 @@ class ProposalClient
     this.zDAO = zDAO;
   }
 
-  static async createInstance(
+  static createInstance(
     zDAO: DAOClient,
     properties: ProposalProperties
-  ): Promise<PolygonProposal> {
+  ): PolygonProposal {
     const proposal = new ProposalClient(properties, zDAO);
     return proposal;
   }
@@ -104,7 +104,13 @@ class ProposalClient
       throw new NotSyncStateError();
     }
 
-    return (await polygonZDAO.votingPowerOfVoter(this.id, account)).toString();
+    try {
+      return (
+        await polygonZDAO.votingPowerOfVoter(this.id, account)
+      ).toString();
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 
   async updateScoresAndVotes(): Promise<PolygonProposal> {
@@ -156,19 +162,14 @@ class ProposalClient
       throw new InvalidError(errorMessageForError('zero-voting-power'));
     }
 
-    try {
-      const daoId = this.zDAO.id;
-      const proposalId = this.id;
-      await GlobalClient.polygonZDAOChef.vote(
-        signer,
-        daoId,
-        proposalId,
-        payload.choice
-      );
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
-    }
+    const daoId = this.zDAO.id;
+    const proposalId = this.id;
+    await GlobalClient.polygonZDAOChef.vote(
+      signer,
+      daoId,
+      proposalId,
+      payload.choice
+    );
   }
 
   async calculate(
@@ -179,18 +180,13 @@ class ProposalClient
     const daoId = this.zDAO.id;
     const proposalId = this.id;
 
-    try {
-      const signer = getSigner(provider, account);
+    const signer = getSigner(provider, account);
 
-      await GlobalClient.polygonZDAOChef.calculateProposal(
-        signer,
-        daoId,
-        proposalId
-      );
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
-    }
+    await GlobalClient.polygonZDAOChef.calculateProposal(
+      signer,
+      daoId,
+      proposalId
+    );
   }
 
   async finalize(
@@ -203,29 +199,19 @@ class ProposalClient
       throw new AlreadyDestroyedError();
     }
 
-    try {
-      const signer = getSigner(provider, account);
+    const signer = getSigner(provider, account);
 
-      const proof = await ProofClient.generate(payload.txHash);
-      await GlobalClient.ethereumZDAOChef.receiveMessage(signer, proof);
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
-    }
+    const proof = await ProofClient.generate(payload.txHash);
+    await GlobalClient.ethereumZDAOChef.receiveMessage(signer, proof);
   }
 
   getCheckPointingHashes(): Promise<string[]> {
-    try {
-      if (this.state === ProposalState.AWAITING_FINALIZATION)
-        return GlobalClient.polygonZDAOChef.getCheckPointingHashes(
-          this.zDAO.id,
-          this.id
-        );
-      return Promise.resolve([]);
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
-    }
+    if (this.state === ProposalState.AWAITING_FINALIZATION)
+      return GlobalClient.polygonZDAOChef.getCheckPointingHashes(
+        this.zDAO.id,
+        this.id
+      );
+    return Promise.resolve([]);
   }
 }
 

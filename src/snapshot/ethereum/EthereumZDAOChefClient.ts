@@ -3,7 +3,7 @@ import { GraphQLClient } from 'graphql-request';
 
 import { PlatformType } from '../..';
 import { EthereumDAOConfig, zDAOId } from '../../types';
-import { generateZDAOId, validateAddress } from '../../utilities';
+import { generateZDAOId, graphQLQuery, validateAddress } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
 import { SnapshotZDAOChef__factory } from '../config/types/factories/SnapshotZDAOChef__factory';
 import { SnapshotZDAOChef } from '../config/types/SnapshotZDAOChef';
@@ -27,9 +27,13 @@ class EthereumZDAOChefClient {
   async getZDAOPropertiesById(
     zDAOId: zDAOId
   ): Promise<SnapshotZDAOProperties | undefined> {
-    const result = await this.zDAOGQLClient.request(ETHEREUMZDAOS_BY_QUERY, {
-      zDAOId: generateZDAOId(PlatformType.Snapshot, zDAOId),
-    });
+    const result = await graphQLQuery(
+      this.zDAOGQLClient,
+      ETHEREUMZDAOS_BY_QUERY,
+      {
+        zDAOId: generateZDAOId(PlatformType.Snapshot, zDAOId),
+      }
+    );
     if (
       !result ||
       !Array.isArray(result.snapshotZDAOs) ||

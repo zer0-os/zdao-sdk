@@ -3,13 +3,19 @@ import { GraphQLClient } from 'graphql-request';
 
 import { PlatformType } from '../..';
 import { ZDAORecord } from '../../client/ZDAORegistry';
-import { EthereumDAOConfig, ProposalId, zDAOId } from '../../types';
+import {
+  EthereumDAOConfig,
+  FailedTxError,
+  ProposalId,
+  zDAOId,
+} from '../../types';
 import {
   calculateGasMargin,
   generateProposalId,
   generateZDAOId,
   getToken,
   getTotalSupply,
+  graphQLQuery,
   validateAddress,
 } from '../../utilities';
 import GlobalClient from '../client/GlobalClient';
@@ -65,9 +71,13 @@ class EthereumZDAOChefClient {
   async getZDAOInfoById(
     zDAOId: zDAOId
   ): Promise<EthereumSubgraphZDAO | undefined> {
-    const result = await this.zDAOGQLClient.request(ETHEREUMZDAOS_BY_QUERY, {
-      zDAOId: generateZDAOId(PlatformType.Polygon, zDAOId),
-    });
+    const result = await graphQLQuery(
+      this.zDAOGQLClient,
+      ETHEREUMZDAOS_BY_QUERY,
+      {
+        zDAOId: generateZDAOId(PlatformType.Polygon, zDAOId),
+      }
+    );
     if (
       !result ||
       !Array.isArray(result.ethereumZDAOs) ||
@@ -130,35 +140,40 @@ class EthereumZDAOChefClient {
   }
 
   async addNewZDAO(signer: ethers.Signer, payload: CreatePolygonZDAOParams) {
-    await GlobalClient.zDAORegistry.addNewZDAO(
-      signer,
-      PlatformType.Polygon,
-      payload.zNA,
-      payload.gnosisSafe,
-      payload.name,
-      ethers.utils.defaultAbiCoder.encode(
-        [
-          'address',
-          'uint256',
-          'uint256',
-          'uint256',
-          'uint256',
-          'uint256',
-          'uint256',
-          'bool',
-        ],
-        [
-          payload.votingToken,
-          payload.minimumVotingTokenAmount,
-          payload.votingDuration,
-          payload.votingDelay ?? 0,
-          payload.votingThreshold,
-          payload.minimumVotingParticipants,
-          payload.minimumTotalVotingTokens,
-          payload.isRelativeMajority,
-        ]
-      )
-    );
+    try {
+      await GlobalClient.zDAORegistry.addNewZDAO(
+        signer,
+        PlatformType.Polygon,
+        payload.zNA,
+        payload.gnosisSafe,
+        payload.name,
+        ethers.utils.defaultAbiCoder.encode(
+          [
+            'address',
+            'uint256',
+            'uint256',
+            'uint256',
+            'uint256',
+            'uint256',
+            'uint256',
+            'bool',
+          ],
+          [
+            payload.votingToken,
+            payload.minimumVotingTokenAmount,
+            payload.votingDuration,
+            payload.votingDelay ?? 0,
+            payload.votingThreshold,
+            payload.minimumVotingParticipants,
+            payload.minimumTotalVotingTokens,
+            payload.isRelativeMajority,
+          ]
+        )
+      );
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 
   async removeZDAO(signer: ethers.Signer, zDAOId: zDAOId) {
@@ -166,7 +181,8 @@ class EthereumZDAOChefClient {
   }
 
   async listProposals(zDAOId: zDAOId): Promise<EthereumSubgraphProposal[]> {
-    const result = await this.zDAOGQLClient.request(
+    const result = await graphQLQuery(
+      this.zDAOGQLClient,
       ETHEREUMPROPOSALS_BY_QUERY,
       {
         zDAOId: generateZDAOId(PlatformType.Polygon, zDAOId),
@@ -191,9 +207,17 @@ class EthereumZDAOChefClient {
     zDAOId: zDAOId,
     proposalId: ProposalId
   ): Promise<EthereumSubgraphProposal | undefined> {
-    const result = await this.zDAOGQLClient.request(ETHEREUMPROPOSAL_BY_QUERY, {
-      proposalId: generateProposalId(PlatformType.Polygon, zDAOId, proposalId),
-    });
+    const result = await graphQLQuery(
+      this.zDAOGQLClient,
+      ETHEREUMPROPOSAL_BY_QUERY,
+      {
+        proposalId: generateProposalId(
+          PlatformType.Polygon,
+          zDAOId,
+          proposalId
+        ),
+      }
+    );
     if (
       !result ||
       !Array.isArray(result.ethereumProposals) ||
@@ -221,42 +245,47 @@ class EthereumZDAOChefClient {
     payload: CreatePolygonProposalParams,
     ipfs: string
   ): Promise<BigNumber> {
-    const gasEstimated = await this.contract
-      .connect(signer)
-      .estimateGas.createProposal(zDAOId, payload.choices!, ipfs);
+    try {
+      const gasEstimated = await this.contract
+        .connect(signer)
+        .estimateGas.createProposal(zDAOId, payload.choices!, ipfs);
 
-    const tx = await this.contract
-      .connect(signer)
-      .createProposal(zDAOId, payload.choices!, ipfs, {
-        gasLimit: calculateGasMargin(gasEstimated),
-      });
+      const tx = await this.contract
+        .connect(signer)
+        .createProposal(zDAOId, payload.choices!, ipfs, {
+          gasLimit: calculateGasMargin(gasEstimated),
+        });
 
-    const proposalCreatedTopic = ethers.utils.id(
-      'ProposalCreated(uint256,uint256,uint256,address,uint256,string)'
-    );
-    const proposalCreatedInterface = new ethers.utils.Interface([
-      'event ProposalCreated(uint256 indexed _zDAOId, uint256 indexed _proposalId, uint256 indexed _numberOfChoices, address _createdBy, uint256 _snapshot, string _ipfs)',
-    ]);
+      const proposalCreatedTopic = ethers.utils.id(
+        'ProposalCreated(uint256,uint256,uint256,address,uint256,string)'
+      );
+      const proposalCreatedInterface = new ethers.utils.Interface([
+        'event ProposalCreated(uint256 indexed _zDAOId, uint256 indexed _proposalId, uint256 indexed _numberOfChoices, address _createdBy, uint256 _snapshot, string _ipfs)',
+      ]);
 
-    return await tx
-      .wait()
-      .then((receipt: ethers.ContractReceipt) => {
-        if (!receipt.events) {
-          throw new Error('Not found emitted events');
-        }
-        const events = receipt.events?.filter(
-          (event: ethers.Event) => event.topics[0] === proposalCreatedTopic
-        );
-        if (events.length < 1) {
-          throw new Error('Not found ProposalCreated events');
-        }
-        const lastEvent = events.slice(-1)[0];
-        const parsed = proposalCreatedInterface.parseLog(lastEvent);
-        return parsed.args._proposalId;
-      })
-      .catch((reason) => {
-        throw new Error(reason);
-      });
+      return await tx
+        .wait()
+        .then((receipt: ethers.ContractReceipt) => {
+          if (!receipt.events) {
+            throw new Error('Not found emitted events');
+          }
+          const events = receipt.events?.filter(
+            (event: ethers.Event) => event.topics[0] === proposalCreatedTopic
+          );
+          if (events.length < 1) {
+            throw new Error('Not found ProposalCreated events');
+          }
+          const lastEvent = events.slice(-1)[0];
+          const parsed = proposalCreatedInterface.parseLog(lastEvent);
+          return parsed.args._proposalId;
+        })
+        .catch((reason) => {
+          throw new Error(reason);
+        });
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 
   async cancelProposal(
@@ -264,28 +293,38 @@ class EthereumZDAOChefClient {
     zDAOId: zDAOId,
     proposalId: ProposalId
   ) {
-    const gasEstimated = await this.contract
-      .connect(signer)
-      .estimateGas.cancelProposal(zDAOId, proposalId);
+    try {
+      const gasEstimated = await this.contract
+        .connect(signer)
+        .estimateGas.cancelProposal(zDAOId, proposalId);
 
-    const tx = await this.contract
-      .connect(signer)
-      .cancelProposal(zDAOId, proposalId, {
-        gasLimit: calculateGasMargin(gasEstimated),
-      });
-    return await tx.wait();
+      const tx = await this.contract
+        .connect(signer)
+        .cancelProposal(zDAOId, proposalId, {
+          gasLimit: calculateGasMargin(gasEstimated),
+        });
+      return await tx.wait();
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 
   async receiveMessage(signer: ethers.Signer, proof: string) {
-    const instance = await this.getRootStateSender();
-    const gasEstimated = await instance
-      .connect(signer)
-      .estimateGas.receiveMessage(proof);
+    try {
+      const instance = await this.getRootStateSender();
+      const gasEstimated = await instance
+        .connect(signer)
+        .estimateGas.receiveMessage(proof);
 
-    const tx = await instance.connect(signer).receiveMessage(proof, {
-      gasLimit: calculateGasMargin(gasEstimated),
-    });
-    return await tx.wait();
+      const tx = await instance.connect(signer).receiveMessage(proof, {
+        gasLimit: calculateGasMargin(gasEstimated),
+      });
+      return await tx.wait();
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new FailedTxError(errorMsg);
+    }
   }
 }
 

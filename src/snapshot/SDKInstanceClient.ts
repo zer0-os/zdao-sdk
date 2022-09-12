@@ -6,7 +6,6 @@ import { IPFSClient, ZNAClient } from '../client';
 import ZNSHubClient from '../client/ZNSHubClient';
 import {
   AlreadyExistError,
-  FailedTxError,
   InvalidError,
   NotFoundError,
   zDAOId,
@@ -60,24 +59,19 @@ class SDKInstanceClient implements SnapshotSDKInstance {
       );
     }
 
-    try {
-      const signer = getSigner(provider, account);
-      const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
+    const signer = getSigner(provider, account);
+    const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
 
-      // signer should be owner of zNA
-      const signerAccount = account ?? (await signer.getAddress());
-      if (!(await ZNSHubClient.isOwnerOf(zNAId, signerAccount))) {
-        throw new InvalidError(errorMessageForError('not-zna-owner'));
-      }
-
-      await GlobalClient.ethereumZDAOChef.addNewZDAO(signer, {
-        ...params,
-        zNA: zNAId,
-      });
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
+    // signer should be owner of zNA
+    const signerAccount = account ?? (await signer.getAddress());
+    if (!(await ZNSHubClient.isOwnerOf(zNAId, signerAccount))) {
+      throw new InvalidError(errorMessageForError('not-zna-owner'));
     }
+
+    await GlobalClient.ethereumZDAOChef.addNewZDAO(signer, {
+      ...params,
+      zNA: zNAId,
+    });
   }
 
   async deleteZDAO(
@@ -85,13 +79,8 @@ class SDKInstanceClient implements SnapshotSDKInstance {
     account: string | undefined,
     zDAOId: zDAOId
   ): Promise<void> {
-    try {
-      const signer = getSigner(provider, account);
-      await GlobalClient.ethereumZDAOChef.removeZDAO(signer, zDAOId);
-    } catch (error: any) {
-      const errorMsg = error?.data?.message ?? error.message;
-      throw new FailedTxError(errorMsg);
-    }
+    const signer = getSigner(provider, account);
+    await GlobalClient.ethereumZDAOChef.removeZDAO(signer, zDAOId);
   }
 
   async listZNAs(): Promise<zNA[]> {

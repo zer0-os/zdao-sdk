@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 
 import { IZNSHub__factory } from '../config/types/factories/IZNSHub__factory';
 import { IZNSHub } from '../config/types/IZNSHub';
-import { zNAConfig, zNAId } from '../types';
+import { NetworkError, zNAConfig, zNAId } from '../types';
 
 class ZNSHubClient {
   protected static contract: IZNSHub;
@@ -12,12 +12,20 @@ class ZNSHubClient {
   }
 
   static async ownerOf(zNAId: zNAId): Promise<string> {
-    return ZNSHubClient.contract.ownerOf(zNAId);
+    try {
+      return await ZNSHubClient.contract.ownerOf(zNAId);
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 
   static async isOwnerOf(zNAId: zNAId, account: string): Promise<boolean> {
-    const owner = await ZNSHubClient.contract.ownerOf(zNAId);
-    return owner.toLowerCase() === account.toLowerCase();
+    try {
+      const owner = await ZNSHubClient.contract.ownerOf(zNAId);
+      return owner.toLowerCase() === account.toLowerCase();
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 }
 

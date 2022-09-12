@@ -228,11 +228,9 @@ class DAOClient
 
     const propertiesAll: ProposalProperties[] = await Promise.all(promises);
 
-    const proposalPromises: Promise<PolygonProposal>[] = propertiesAll.map(
-      (properties) => ProposalClient.createInstance(this, properties)
+    const proposals: PolygonProposal[] = propertiesAll.map((properties) =>
+      ProposalClient.createInstance(this, properties)
     );
-
-    const proposals = await Promise.all(proposalPromises);
     return proposals;
   }
 
@@ -247,12 +245,12 @@ class DAOClient
     if (!ethereumSubgraphProposal) {
       throw new NotFoundError(errorMessageForError('not-found-proposal'));
     }
+
     const properties = await this.mapToProperties(
       ethereumSubgraphProposal,
       polygonSubgraphProposal
     );
-
-    return await ProposalClient.createInstance(this, properties);
+    return ProposalClient.createInstance(this, properties);
   }
 
   async createProposal(
@@ -297,9 +295,8 @@ class DAOClient
       throw new NotSyncStateError();
     }
 
+    const ipfs = await AbstractDAOClient.uploadToIPFS(signer, payload);
     try {
-      const ipfs = await AbstractDAOClient.uploadToIPFS(signer, payload);
-
       const proposalId = await GlobalClient.ethereumZDAOChef.createProposal(
         signer,
         this.id,

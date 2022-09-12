@@ -2,7 +2,7 @@ import { POSClient, setProofApi, use } from '@maticnetwork/maticjs';
 import { Web3ClientPlugin } from '@maticnetwork/maticjs-ethers';
 import { Wallet } from 'ethers';
 
-import { SupportedChainId } from '../../types';
+import { NetworkError, SupportedChainId, UnknownError } from '../../types';
 import { PrivateKeyForCheckpointing } from '../config';
 import { PolygonConfig } from '../types';
 
@@ -14,45 +14,57 @@ class ProofClient {
   static posClient: POSClient;
 
   static async initialize(config: PolygonConfig) {
-    setProofApi(ProofClient.PROOF_API);
-    use(Web3ClientPlugin);
+    try {
+      setProofApi(ProofClient.PROOF_API);
+      use(Web3ClientPlugin);
 
-    ProofClient.posClient = new POSClient();
+      ProofClient.posClient = new POSClient();
 
-    await ProofClient.posClient.init({
-      network: config.isProd ? 'mainnet' : 'testnet',
-      version: config.isProd ? 'v1' : 'mumbai',
-      parent: {
-        provider: new Wallet(
-          PrivateKeyForCheckpointing[SupportedChainId.MAINNET],
-          config.ethereumProvider
-        ),
-        defaultConfig: {
-          from: config.proof.from,
+      await ProofClient.posClient.init({
+        network: config.isProd ? 'mainnet' : 'testnet',
+        version: config.isProd ? 'v1' : 'mumbai',
+        parent: {
+          provider: new Wallet(
+            PrivateKeyForCheckpointing[SupportedChainId.MAINNET],
+            config.ethereumProvider
+          ),
+          defaultConfig: {
+            from: config.proof.from,
+          },
         },
-      },
-      child: {
-        provider: new Wallet(
-          PrivateKeyForCheckpointing[SupportedChainId.POLYGON],
-          config.polygonProvider
-        ),
-        defaultConfig: {
-          from: config.proof.from,
+        child: {
+          provider: new Wallet(
+            PrivateKeyForCheckpointing[SupportedChainId.POLYGON],
+            config.polygonProvider
+          ),
+          defaultConfig: {
+            from: config.proof.from,
+          },
         },
-      },
-    });
+      });
+    } catch (error: any) {
+      throw new UnknownError(error.message);
+    }
   }
 
   static isCheckPointed(txHash: string): Promise<boolean> {
-    return ProofClient.posClient.isCheckPointed(txHash);
+    try {
+      return ProofClient.posClient.isCheckPointed(txHash);
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 
   static generate(txHash: string): Promise<string> {
-    return ProofClient.posClient.exitUtil.buildPayloadForExit(
-      txHash,
-      ProofClient.SEND_MESSAGE_EVENT_SIG,
-      true
-    );
+    try {
+      return ProofClient.posClient.exitUtil.buildPayloadForExit(
+        txHash,
+        ProofClient.SEND_MESSAGE_EVENT_SIG,
+        true
+      );
+    } catch (error: any) {
+      throw new NetworkError(error.message);
+    }
   }
 }
 

@@ -33,6 +33,12 @@ class NotSyncStateError extends ZDAOError {
   }
 }
 
+class NetworkError extends ZDAOError {
+  constructor(message: string) {
+    super(message, 'NetworkError');
+  }
+}
+
 class FailedTxError extends ZDAOError {
   constructor(message: string) {
     super(message, 'FailedTxError');
@@ -63,15 +69,23 @@ class InvalidError extends ZDAOError {
   }
 }
 
+class UnknownError extends ZDAOError {
+  constructor(message: string) {
+    super(message, 'UnknownError');
+  }
+}
+
 export {
   AlreadyDestroyedError,
   AlreadyExistError,
   FailedTxError,
   InvalidError,
   InvalidSignerError,
+  NetworkError,
   NotFoundError,
   NotImplementedError,
   NotInitializedError,
   NotSyncStateError,
+  UnknownError,
   ZDAOError,
 };

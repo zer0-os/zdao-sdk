@@ -36,8 +36,8 @@ const ErrorMessages = [
     value: 'Invalid Token amount to become proposal creator',
   },
   {
-    key: 'empty-voting-token',
-    value: 'Empty ERC20 Voting Token address',
+    key: 'empty-ipfs-data',
+    value: 'Empty IPFS data',
   },
   {
     key: 'invalid-quorum-amount',
@@ -114,6 +114,10 @@ const ErrorMessages = [
   {
     key: 'not-found-strategy-in-snapshot',
     value: 'Not found any token related strategyies in snapshot',
+  },
+  {
+    key: 'invalid-token',
+    value: 'Invalid Token',
   },
   {
     key: 'invalid-parameter',

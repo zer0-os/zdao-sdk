@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 
 import ERC20Abi from '../config/abi/ERC20.json';
 import ERC721Abi from '../config/abi/ERC721.json';
-import { InvalidSignerError, Token } from '../types';
+import { InvalidSignerError, NetworkError, Token, ZDAOError } from '../types';
 import { errorMessageForError } from './messages';
 
 export const getSigner = (
@@ -49,14 +49,18 @@ export const getToken = async (
     // eslint-disable-next-line no-empty
   } catch (error) {}
 
-  throw new Error(errorMessageForError('empty-voting-token'));
+  throw new ZDAOError(errorMessageForError('invalid-token'));
 };
 
 export const getTotalSupply = async (
   provider: ethers.providers.Provider,
   token: string
 ): Promise<ethers.BigNumber> => {
-  const contract = new ethers.Contract(token, ERC20Abi, provider);
-  const totalSupply = await contract.totalSupply();
-  return totalSupply;
+  try {
+    const contract = new ethers.Contract(token, ERC20Abi, provider);
+    const totalSupply = await contract.totalSupply();
+    return totalSupply;
+  } catch (error: any) {
+    throw new NetworkError(error.message);
+  }
 };

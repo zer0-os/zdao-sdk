@@ -83,42 +83,41 @@ class ProposalClient extends AbstractProposalClient<SnapshotVote> {
     ipfsGateway: string,
     ipfs: string
   ): Promise<TokenMetaData | undefined> {
-    try {
-      if (!ipfs) return undefined;
+    if (!ipfs) return undefined;
 
-      const ipfsData = await IPFSClient.getJson(ipfs, ipfsGateway);
-      if (!ipfsData.data || !ipfsData.data.message) {
-        throw new InvalidError(errorMessageForError('empty-voting-token'));
-      }
-
-      const metadataJson = JSON.parse(ipfsData.data.message.metadata);
-      if (
-        !metadataJson.sender ||
-        !metadataJson.recipient ||
-        !metadataJson.token ||
-        !metadataJson.amount
-      ) {
-        return undefined;
-      }
-
-      const sender = metadataJson.sender;
-      const recipient = metadataJson.recipient;
-      const token = metadataJson.token;
-      const decimals = metadataJson.decimals ?? 18;
-      const symbol = metadataJson.symbol ?? 'zToken';
-      const amount = metadataJson.amount;
-
-      return {
-        sender,
-        recipient,
-        token,
-        decimals,
-        symbol,
-        amount,
-      };
-    } catch (error) {
+    const ipfsData = await IPFSClient.getJson(ipfs, ipfsGateway);
+    if (!ipfsData.data || !ipfsData.data.message) {
+      throw new InvalidError(errorMessageForError('empty-ipfs-data'));
+    }
+    if (!ipfsData.data.message.metadata) {
       return undefined;
     }
+
+    const metadataJson = JSON.parse(ipfsData.data.message.metadata);
+    if (
+      !metadataJson.sender ||
+      !metadataJson.recipient ||
+      !metadataJson.token ||
+      !metadataJson.amount
+    ) {
+      return undefined;
+    }
+
+    const sender = metadataJson.sender;
+    const recipient = metadataJson.recipient;
+    const token = metadataJson.token;
+    const decimals = metadataJson.decimals ?? 18;
+    const symbol = metadataJson.symbol ?? 'zToken';
+    const amount = metadataJson.amount;
+
+    return {
+      sender,
+      recipient,
+      token,
+      decimals,
+      symbol,
+      amount,
+    };
   }
 
   canExecute(): boolean {
