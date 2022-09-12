@@ -2,20 +2,24 @@ import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import { AbstractDAOClient, GnosisSafeClient } from '../../client';
-import { DEFAULT_PROPOSAL_CHOICES, DEFAULT_ZDAO_DURATION } from '../../config';
+import { ZDAORecord } from '../../client/ZDAORegistry';
+import { DEFAULT_PROPOSAL_CHOICES } from '../../config';
 import ERC20Abi from '../../config/abi/ERC20.json';
 import {
   InvalidError,
+  NotFoundError,
   PaginationParam,
   ProposalId,
   ProposalState,
   zDAOProperties,
+  zDAOState,
 } from '../../types';
 import {
   errorMessageForError,
   getDecimalAmount,
   getFullDisplayBalance,
   getSigner,
+  getTotalSupply,
 } from '../../utilities';
 import { SnapshotClient } from '../snapshot';
 import {
@@ -41,14 +45,14 @@ class DAOClient
   private constructor(
     config: SnapshotConfig,
     properties: zDAOProperties & zDAOOptions,
+    snapshotClient: SnapshotClient,
     options: any
   ) {
     super(properties, new GnosisSafeClient(config.gnosisSafe));
     this.config = config;
     this.zDAOOptions = cloneDeep(properties);
+    this.snapshotClient = snapshotClient;
     this.options = options;
-
-    this.snapshotClient = new SnapshotClient(config.snapshot);
   }
 
   get ens() {
@@ -57,37 +61,93 @@ class DAOClient
 
   static async createInstance(
     config: SnapshotConfig,
-    properties: zDAOProperties & zDAOOptions,
-    options: any
+    zDAORecord: ZDAORecord
   ): Promise<SnapshotZDAO> {
-    if (options === undefined) {
-      const snapshotClient = new SnapshotClient(config.snapshot);
-      const { strategies, threshold, duration, delay, quorum } =
-        await snapshotClient.getSpaceOptions(properties.ens);
-      options = { strategies, delay };
-      properties.votingDuration = duration ?? DEFAULT_ZDAO_DURATION;
-      properties.minimumVotingTokenAmount = threshold
-        ? getDecimalAmount(
-            BigNumber.from(threshold),
-            properties.votingToken.decimals
-          ).toString()
-        : '0';
-      properties.minimumTotalVotingTokens = quorum
-        ? getDecimalAmount(
-            BigNumber.from(quorum),
-            properties.votingToken.decimals
-          ).toString()
-        : '0';
-      properties.votingThreshold =
-        properties.totalSupplyOfVotingToken === '0'
-          ? 0
-          : BigNumber.from(properties.minimumTotalVotingTokens)
-              .mul(10000)
-              .div(properties.totalSupplyOfVotingToken)
-              .toNumber();
+    const zDAOInfo = await GlobalClient.ethereumZDAOChef.getZDAOPropertiesById(
+      zDAORecord.id
+    );
+    if (!zDAOInfo) {
+      throw new NotFoundError(errorMessageForError('not-found-zdao'));
     }
 
-    const zDAO = new DAOClient(config, properties, options);
+    // should be found by ens in snapshot
+    const snapshotClient = new SnapshotClient(config.snapshot);
+    const space = await snapshotClient.getSpaceDetails(zDAOInfo.ensSpace);
+    if (!space) {
+      throw new NotFoundError(
+        errorMessageForError('not-found-ens-in-snapshot')
+      );
+    }
+
+    // strategy is used to check if voter holds minimum token amount
+    const strategy = space.strategies.find(
+      (strategy) =>
+        strategy.name.startsWith('erc20') || strategy.name.startsWith('erc721')
+    );
+    if (!strategy) {
+      throw new NotFoundError(
+        errorMessageForError('not-found-strategy-in-snapshot')
+      );
+    }
+
+    const symbol = strategy.params.symbol;
+    const decimals = strategy.params.decimals ?? 0;
+
+    const totalSupplyOfVotingToken = await getTotalSupply(
+      GlobalClient.etherRpcProvider,
+      strategy.params.address
+    ).catch(() => {
+      throw new InvalidError(errorMessageForError('not-support-total-supply'));
+    });
+    const minimumTotalVotingTokens = space.quorum
+      ? getDecimalAmount(
+          BigNumber.from(space.quorum.toString()),
+          decimals
+        ).toString()
+      : '0';
+    const votingThreshold =
+      totalSupplyOfVotingToken === BigNumber.from(0)
+        ? 0
+        : BigNumber.from(minimumTotalVotingTokens)
+            .mul(10000)
+            .div(totalSupplyOfVotingToken)
+            .toNumber();
+
+    const properties: zDAOProperties & zDAOOptions = {
+      id: zDAORecord.id,
+      zNAs: zDAORecord.associatedzNAs,
+      name: space.name,
+      createdBy: '',
+      network: GlobalClient.etherNetwork,
+      gnosisSafe: ethers.utils.getAddress(zDAORecord.gnosisSafe),
+      votingToken: {
+        token: ethers.utils.getAddress(strategy.params.address),
+        symbol,
+        decimals,
+      },
+      minimumVotingTokenAmount: space.threshold
+        ? getDecimalAmount(
+            BigNumber.from(space.threshold.toString()),
+            decimals
+          ).toString()
+        : '0',
+      totalSupplyOfVotingToken: totalSupplyOfVotingToken.toString(),
+      votingDuration: space.duration ? Number(space.duration) : 0,
+      votingDelay: space.delay ?? 0,
+      votingThreshold,
+      minimumVotingParticipants: 1,
+      minimumTotalVotingTokens,
+      isRelativeMajority: false,
+      state: zDAOState.ACTIVE,
+      snapshot: 0,
+      destroyed: false,
+      ens: space.id,
+    };
+
+    const zDAO = new DAOClient(config, properties, snapshotClient, {
+      delay: space.delay,
+      strategies: space.strategies,
+    });
     return zDAO;
   }
 
