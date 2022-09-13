@@ -36,14 +36,22 @@ export const getToken = async (
     // eslint-disable-next-line no-empty
   } catch (error) {}
 
-  throw new Error(errorMessageForError('empty-voting-token'));
+  throw new Error(errorMessageForError('invalid-token'));
 };
 
 export const getTotalSupply = async (
   provider: ethers.providers.Provider,
   token: string
 ): Promise<ethers.BigNumber> => {
-  const contract = new ethers.Contract(token, ERC20Abi, provider);
-  const totalSupply = await contract.totalSupply();
-  return totalSupply;
+  try {
+    const contract = new ethers.Contract(token, ERC20Abi, provider);
+    const totalSupply = await contract.totalSupply();
+    return totalSupply;
+  } catch (error: any) {
+    throw new Error(
+      errorMessageForError('network-error', {
+        message: error.message,
+      })
+    );
+  }
 };

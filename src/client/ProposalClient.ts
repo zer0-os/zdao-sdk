@@ -119,42 +119,43 @@ class ProposalClient implements Proposal {
   }
 
   private async getTokenMetadata() {
-    try {
-      if (!this.ipfs || this.metadata) return;
+    if (!this.ipfs || this.metadata) return;
 
-      const ipfsData = await this._snapshotClient.ipfsGet(this.ipfs);
-      if (!ipfsData.data || !ipfsData.data.message) {
-        throw new Error(errorMessageForError('empty-voting-token'));
-      }
+    const ipfsData = await this._snapshotClient.ipfsGet(this.ipfs);
+    if (!ipfsData.data || !ipfsData.data.message) {
+      throw new Error(errorMessageForError('empty-voting-token'));
+    }
+    if (!ipfsData.data.message.metadata) {
+      this._properties.metadata = undefined;
+      return;
+    }
 
-      const metadataJson = JSON.parse(ipfsData.data.message.metadata);
-      if (
-        !metadataJson.sender ||
-        !metadataJson.recipient ||
-        !metadataJson.token ||
-        !metadataJson.amount
-      ) {
-        this._properties.metadata = undefined;
-        return;
-      }
+    const metadataJson = JSON.parse(ipfsData.data.message.metadata);
+    if (
+      !metadataJson.sender ||
+      !metadataJson.recipient ||
+      !metadataJson.token ||
+      !metadataJson.amount
+    ) {
+      this._properties.metadata = undefined;
+      return;
+    }
 
-      const sender = metadataJson.sender;
-      const recipient = metadataJson.recipient;
-      const token = metadataJson.token;
-      const decimals = metadataJson.decimals ?? 18;
-      const symbol = metadataJson.symbol ?? 'zToken';
-      const amount = metadataJson.amount;
+    const sender = metadataJson.sender;
+    const recipient = metadataJson.recipient;
+    const token = metadataJson.token;
+    const decimals = metadataJson.decimals ?? 18;
+    const symbol = metadataJson.symbol ?? 'zToken';
+    const amount = metadataJson.amount;
 
-      this._properties.metadata = {
-        sender,
-        recipient,
-        token,
-        decimals,
-        symbol,
-        amount,
-      };
-      // eslint-disable-next-line no-empty
-    } catch (error) {}
+    this._properties.metadata = {
+      sender,
+      recipient,
+      token,
+      decimals,
+      symbol,
+      amount,
+    };
   }
 
   async listVotes(pagination?: PaginationParam): Promise<Vote[]> {

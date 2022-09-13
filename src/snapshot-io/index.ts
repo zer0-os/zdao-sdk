@@ -47,7 +47,41 @@ class SnapshotClient {
   }
 
   ipfsGet(ipfs: string) {
-    return Client.utils.ipfsGet(this._config.ipfsGateway, ipfs);
+    try {
+      return Client.utils.ipfsGet(this._config.ipfsGateway, ipfs);
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
+  }
+
+  private getScores(
+    space: string,
+    strategies: any[],
+    network: string,
+    addresses: string[],
+    snapshot?: number | string,
+    scoreApiUrl?: string
+  ): Promise<any> {
+    try {
+      return Client.utils.getScores(
+        space,
+        strategies,
+        network,
+        addresses,
+        snapshot,
+        scoreApiUrl
+      );
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
   }
 
   private generateStrategies(
@@ -71,9 +105,19 @@ class SnapshotClient {
     if (this._spaces.length > 0) {
       return this._spaces;
     }
-    const exploreObj: any = await fetch(
-      `${this._config.serviceUri}/api/explore`
-    ).then((res) => res.json());
+
+    let exploreObj: any;
+    try {
+      exploreObj = await fetch(`${this._config.serviceUri}/api/explore`).then(
+        (res) => res.json()
+      );
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
     const spaces2 = Object.entries(exploreObj.spaces).map(
       ([id, space]: any) => {
         // map manually selected categories for verified spaces that don't have set their categories yet
@@ -133,6 +177,7 @@ class SnapshotClient {
     if (response.length < 1) {
       throw Error(errorMessageForError('not-found-ens-in-snapshot'));
     }
+
     const item = response[0];
     return {
       id: item.id,
@@ -159,10 +204,10 @@ class SnapshotClient {
       'spaces'
     );
     const filter = response.filter((item: any) => item.id === spaceId);
-
     if (filter.length < 1) {
       throw Error(errorMessageForError('not-found-ens-in-snapshot'));
     }
+
     return {
       strategies: filter[0].strategies,
       threshold: filter[0].filters.minScore,
@@ -247,7 +292,7 @@ class SnapshotClient {
       }
 
       // Get scores
-      const scores = await Client.utils.getScores(
+      const scores = await this.getScores(
         params.spaceId,
         strategies,
         params.network,
@@ -339,7 +384,7 @@ class SnapshotClient {
       const voters = response.map((vote: any) => vote.voter);
 
       // Get scores
-      const scores = await Client.utils.getScores(
+      const scores = await this.getScores(
         params.spaceId,
         params.strategies,
         params.network,
@@ -374,7 +419,7 @@ class SnapshotClient {
       params.symbol
     );
 
-    let scores: any = await Client.utils.getScores(
+    let scores: any = await this.getScores(
       params.spaceId,
       strategies,
       params.network,
@@ -390,7 +435,7 @@ class SnapshotClient {
   async getVotingPower(params: VotingPowerParams): Promise<number> {
     const { strategies } = await this.getSpaceOptions(params.spaceId);
 
-    let scores: any = await Client.utils.getScores(
+    let scores: any = await this.getScores(
       params.spaceId,
       strategies,
       params.network,
@@ -411,38 +456,47 @@ class SnapshotClient {
     const startDateTime = new Date();
     const delay = params.delay ?? 0;
 
-    const response: any = await this._clientEIP712.proposal(provider, account, {
-      from: account,
-      space: params.spaceId,
-      timestamp: timestamp(new Date()),
-      type: 'single-choice',
-      title: params.title,
-      body: params.body,
-      choices: params.choices,
-      start: timestamp(startDateTime) + delay,
-      end: timestamp(addSeconds(startDateTime, params.duration)) + delay,
-      snapshot: Number(params.snapshot),
-      network: params.network,
-      strategies:
-        JSON.stringify(params.strategies) ??
-        JSON.stringify(
-          this.generateStrategies(
-            params.token.token,
-            params.token.decimals,
-            params.token.symbol
-          )
-        ),
-      plugins: '{}',
-      metadata: params.transfer
-        ? JSON.stringify({
-            sender: params.transfer.sender,
-            recipient: params.transfer.recipient,
-            token: params.transfer.token,
-            decimals: params.transfer.decimals,
-            amount: params.transfer.amount,
-          })
-        : '{}',
-    });
+    let response: any;
+    try {
+      response = await this._clientEIP712.proposal(provider, account, {
+        from: account,
+        space: params.spaceId,
+        timestamp: timestamp(new Date()),
+        type: 'single-choice',
+        title: params.title,
+        body: params.body,
+        choices: params.choices,
+        start: timestamp(startDateTime) + delay,
+        end: timestamp(addSeconds(startDateTime, params.duration)) + delay,
+        snapshot: Number(params.snapshot),
+        network: params.network,
+        strategies:
+          JSON.stringify(params.strategies) ??
+          JSON.stringify(
+            this.generateStrategies(
+              params.token.token,
+              params.token.decimals,
+              params.token.symbol
+            )
+          ),
+        plugins: '{}',
+        metadata: params.transfer
+          ? JSON.stringify({
+              sender: params.transfer.sender,
+              recipient: params.transfer.recipient,
+              token: params.transfer.token,
+              decimals: params.transfer.decimals,
+              amount: params.transfer.amount,
+            })
+          : '{}',
+      });
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
 
     if (!response.id || !response.ipfs) {
       throw Error(errorMessageForError('failed-create-proposal'));
@@ -459,25 +513,42 @@ class SnapshotClient {
     account: string,
     params: VoteProposalParams
   ): Promise<string> {
-    const response: any = await this._clientEIP712.vote(provider, account, {
-      space: params.spaceId,
-      proposal: params.proposalId,
-      type: 'single-choice', // payload.proposalType,
-      choice: params.choice,
-      metadata: JSON.stringify({}),
-    });
+    let response: any;
+    try {
+      response = await this._clientEIP712.vote(provider, account, {
+        space: params.spaceId,
+        proposal: params.proposalId,
+        type: 'single-choice', // payload.proposalType,
+        choice: params.choice,
+        metadata: JSON.stringify({}),
+      });
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
 
     await this.forceUpdateScoresAndVotes(params.proposalId);
     return response.id;
   }
 
   async forceUpdateScoresAndVotes(proposalId: ProposalId) {
-    // There are tricky method to update proposal scores and voters immediately after voting
-    const updateScoreApi = `${this._config.serviceUri}/api/scores/${proposalId}`;
-    await fetch(updateScoreApi, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    }); // .then((value) => value.json().then((json) => console.log(json)));
+    try {
+      // There are tricky method to update proposal scores and voters immediately after voting
+      const updateScoreApi = `${this._config.serviceUri}/api/scores/${proposalId}`;
+      await fetch(updateScoreApi, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
   }
 }
 

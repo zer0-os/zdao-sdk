@@ -38,11 +38,8 @@ class SDKInstanceClient implements SDKInstance {
 
   async getZDAOByZNA(zNA: zNA): Promise<zDAO> {
     // get zDAO information associated with zNA
-    const zDAORecord: ZDAORecord = await this._zDAORegistryClient
-      .getZDAORecordByZNA(zNA)
-      .catch(() => {
-        throw new Error(errorMessageForError('not-found-zdao'));
-      });
+    const zDAORecord: ZDAORecord =
+      await this._zDAORegistryClient.getZDAORecordByZNA(zNA);
 
     // should be found by ens in snapshot
     const space = await this._snapshotClient.getSpaceDetails(zDAORecord.ens);
@@ -65,9 +62,7 @@ class SDKInstanceClient implements SDKInstance {
     const totalSupplyOfVotingToken = await getTotalSupply(
       this._config.provider,
       strategy.params.address
-    ).catch(() => {
-      throw new Error(errorMessageForError('not-found-strategy-in-snapshot'));
-    });
+    );
     const minimumTotalVotingTokens = space.quorum
       ? getDecimalAmount(
           BigNumber.from(space.quorum.toString()),
@@ -235,9 +230,7 @@ class SDKInstanceClient implements SDKInstance {
 
     const calls = await Promise.all([
       getToken(this._config.provider, found.votingToken),
-      getTotalSupply(this._config.provider, found.votingToken).catch(() => {
-        throw new Error(errorMessageForError('not-found-strategy-in-snapshot'));
-      }),
+      getTotalSupply(this._config.provider, found.votingToken),
     ]);
 
     return await DAOClient.createInstance(

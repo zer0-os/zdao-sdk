@@ -56,6 +56,10 @@ const ErrorMessages = [
     value: 'Not found any token related strategyies in snapshot',
   },
   {
+    key: 'invalid-token',
+    value: 'Invalid Token',
+  },
+  {
     key: 'invalid-ens',
     value: 'Invalid ENS',
   },
@@ -78,6 +82,10 @@ const ErrorMessages = [
   {
     key: 'not-support-total-supply',
     value: 'Voting token does not support total supply',
+  },
+  {
+    key: 'network-error',
+    value: 'Network Error: %message%',
   },
 ] as const;
 

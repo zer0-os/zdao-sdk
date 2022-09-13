@@ -25,13 +25,29 @@ class zDAORegistryClient {
   }
 
   private async zNAIdTozNA(zNAId: zNAId): Promise<zNA> {
-    return this._znsInstance
-      .getDomainById(zNAId)
-      .then((domain: Domain) => domain.name);
+    try {
+      return this._znsInstance
+        .getDomainById(zNAId)
+        .then((domain: Domain) => domain.name);
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
   }
 
   private zNATozNAId(zNA: zNA): zNAId {
-    return zns.domains.domainNameToId(zNA);
+    try {
+      return zns.domains.domainNameToId(zNA);
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
   }
 
   async listZNAs(): Promise<zNA[]> {
@@ -66,12 +82,11 @@ class zDAORegistryClient {
       )
     );
 
+    const zDAORecord = result.znaassociations[0].zDAORecord;
     return {
-      id: result.znaassociations[0].zDAORecord.zDAOId.toString(),
-      ens: result.znaassociations[0].zDAORecord.name,
-      gnosisSafe: ethers.utils.getAddress(
-        result.znaassociations[0].zDAORecord.gnosisSafe.toString()
-      ),
+      id: zDAORecord.zDAOId.toString(),
+      ens: zDAORecord.name,
+      gnosisSafe: ethers.utils.getAddress(zDAORecord.gnosisSafe.toString()),
       zNAs,
     };
   }
