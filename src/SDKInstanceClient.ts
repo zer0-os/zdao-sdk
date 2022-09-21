@@ -21,18 +21,18 @@ import zDAORegistryClient from './zDAORegistry';
 import { ZDAORecord } from './zDAORegistry/types';
 
 class SDKInstanceClient implements SDKInstance {
-  private readonly _config: Config;
-  private readonly _zDAORegistryClient: zDAORegistryClient;
-  private readonly _snapshotClient: SnapshotClient;
-  private readonly _gnosisSafeClient: GnosisSafeClient;
-  protected _params: CreateZDAOParams[];
+  private readonly config: Config;
+  private readonly zDAORegistryClient: zDAORegistryClient;
+  private readonly snapshotClient: SnapshotClient;
+  private readonly gnosisSafeClient: GnosisSafeClient;
+  protected params: CreateZDAOParams[];
 
   constructor(config: Config) {
-    this._config = config;
-    this._zDAORegistryClient = new zDAORegistryClient(config.zNA, config.zNS);
-    this._snapshotClient = new SnapshotClient(config.snapshot);
-    this._gnosisSafeClient = new GnosisSafeClient(config.gnosisSafe);
-    this._params = [];
+    this.config = config;
+    this.zDAORegistryClient = new zDAORegistryClient(config.zNA, config.zNS);
+    this.snapshotClient = new SnapshotClient(config.snapshot);
+    this.gnosisSafeClient = new GnosisSafeClient(config.gnosisSafe);
+    this.params = [];
   }
 
   async createGnosisSafeWallet(
@@ -41,7 +41,7 @@ class SDKInstanceClient implements SDKInstance {
     threshold: number
   ): Promise<string> {
     try {
-      return await this._gnosisSafeClient.deployNewSafe(
+      return await this.gnosisSafeClient.deployNewSafe(
         signer,
         owners,
         threshold
@@ -52,16 +52,16 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async listZNAs(): Promise<zNA[]> {
-    return await this._zDAORegistryClient.listZNAs();
+    return await this.zDAORegistryClient.listZNAs();
   }
 
   async getZDAOByZNA(zNA: zNA): Promise<zDAO> {
     // get zDAO information associated with zNA
     const zDAORecord: ZDAORecord =
-      await this._zDAORegistryClient.getZDAORecordByZNA(zNA);
+      await this.zDAORegistryClient.getZDAORecordByZNA(zNA);
 
     // should be found by ens in snapshot
-    const space = await this._snapshotClient.getSpaceDetails(zDAORecord.ens);
+    const space = await this.snapshotClient.getSpaceDetails(zDAORecord.ens);
     if (!space) {
       throw new Error(errorMessageForError('not-found-ens-in-snapshot'));
     }
@@ -79,7 +79,7 @@ class SDKInstanceClient implements SDKInstance {
     const decimals = strategy.params.decimals ?? 0;
 
     const totalSupplyOfVotingToken = await getTotalSupply(
-      this._config.provider,
+      this.config.provider,
       strategy.params.address
     );
     const minimumTotalVotingTokens = space.quorum
@@ -97,14 +97,16 @@ class SDKInstanceClient implements SDKInstance {
             .toNumber();
 
     return await DAOClient.createInstance(
-      this._config,
+      this.config,
+      this.snapshotClient,
+      this.gnosisSafeClient,
       {
         id: zDAORecord.id,
         ens: zDAORecord.ens,
         zNAs: zDAORecord.zNAs,
         title: space.name,
         creator: space.admins.length > 0 ? space.admins[0] : zDAORecord.ens,
-        network: this._config.snapshot.network, // space.network,
+        network: this.config.snapshot.network, // space.network,
         duration: space.duration,
         safeAddress: zDAORecord.gnosisSafe,
         votingToken: {
@@ -132,7 +134,7 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
-    return await this._zDAORegistryClient.doesZDAOExist(zNA);
+    return await this.zDAORegistryClient.doesZDAOExist(zNA);
   }
 
   async createZToken(
@@ -188,7 +190,7 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   async createZDAOFromParams(param: CreateZDAOParams): Promise<zDAO> {
-    const found = this._params.find(
+    const found = this.params.find(
       (item: CreateZDAOParams) => item.zNA === param.zNA
     );
     if (found) {
@@ -204,15 +206,17 @@ class SDKInstanceClient implements SDKInstance {
       throw new Error(errorMessageForError('empty-voting-token'));
     }
 
-    this._params.push(param);
+    this.params.push(param);
 
     const calls = await Promise.all([
-      getToken(this._config.provider, param.votingToken),
-      getTotalSupply(this._config.provider, param.votingToken),
+      getToken(this.config.provider, param.votingToken),
+      getTotalSupply(this.config.provider, param.votingToken),
     ]);
 
     return await DAOClient.createInstance(
-      this._config,
+      this.config,
+      this.snapshotClient,
+      this.gnosisSafeClient,
       {
         id: shortid.generate(),
         ens: param.ens,
@@ -235,7 +239,7 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   listZNAsFromParams(): Promise<zNA[]> {
-    return Promise.resolve(this._params.map((param) => param.zNA));
+    return Promise.resolve(this.params.map((param) => param.zNA));
   }
 
   async getZDAOByZNAFromParams(zNA: zNA): Promise<zDAO> {
@@ -243,16 +247,18 @@ class SDKInstanceClient implements SDKInstance {
       throw new Error(errorMessageForError('not-found-zdao'));
     }
 
-    const found = this._params.find((param) => param.zNA === zNA);
+    const found = this.params.find((param) => param.zNA === zNA);
     if (!found) throw new Error(errorMessageForError('not-found-zdao'));
 
     const calls = await Promise.all([
-      getToken(this._config.provider, found.votingToken),
-      getTotalSupply(this._config.provider, found.votingToken),
+      getToken(this.config.provider, found.votingToken),
+      getTotalSupply(this.config.provider, found.votingToken),
     ]);
 
     return await DAOClient.createInstance(
-      this._config,
+      this.config,
+      this.snapshotClient,
+      this.gnosisSafeClient,
       {
         id: shortid.generate(),
         ens: found.ens,
@@ -275,7 +281,7 @@ class SDKInstanceClient implements SDKInstance {
   }
 
   doesZDAOExistFromParams(zNA: zNA): Promise<boolean> {
-    const found = this._params.find((param) => param.zNA === zNA);
+    const found = this.params.find((param) => param.zNA === zNA);
     return Promise.resolve(found ? true : false);
   }
 }
