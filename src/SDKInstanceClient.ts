@@ -4,6 +4,7 @@ import shortid from 'shortid';
 import DAOClient from './client/DAOClient';
 import ERC1967ProxyAbi from './config/constants/abi/ERC1967Proxy.json';
 import ZeroTokenAbi from './config/constants/abi/ZeroToken.json';
+import GnosisSafeClient from './gnosis-safe';
 import SnapshotClient from './snapshot-io';
 import {
   Config,
@@ -23,13 +24,31 @@ class SDKInstanceClient implements SDKInstance {
   private readonly _config: Config;
   private readonly _zDAORegistryClient: zDAORegistryClient;
   private readonly _snapshotClient: SnapshotClient;
+  private readonly _gnosisSafeClient: GnosisSafeClient;
   protected _params: CreateZDAOParams[];
 
   constructor(config: Config) {
     this._config = config;
     this._zDAORegistryClient = new zDAORegistryClient(config.zNA, config.zNS);
     this._snapshotClient = new SnapshotClient(config.snapshot);
+    this._gnosisSafeClient = new GnosisSafeClient(config.gnosisSafe);
     this._params = [];
+  }
+
+  async createGnosisSafeWallet(
+    signer: ethers.Signer,
+    owners: string[],
+    threshold: number
+  ): Promise<string> {
+    try {
+      return await this._gnosisSafeClient.deployNewSafe(
+        signer,
+        owners,
+        threshold
+      );
+    } catch (error: any) {
+      throw new Error(errorMessageForError('failed-create-gnosis-safe'));
+    }
   }
 
   async listZNAs(): Promise<zNA[]> {
@@ -163,8 +182,7 @@ class SDKInstanceClient implements SDKInstance {
       }
 
       return proxyContract.address;
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
       throw new Error(errorMessageForError('failed-create-token'));
     }
   }

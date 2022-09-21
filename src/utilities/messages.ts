@@ -40,6 +40,10 @@ const ErrorMessages = [
     value: 'Not implemented',
   },
   {
+    key: 'failed-create-gnosis-safe',
+    value: 'Failed to create Gnosis Safe Wallet',
+  },
+  {
     key: 'failed-create-token',
     value: 'Failed to create zToken',
   },

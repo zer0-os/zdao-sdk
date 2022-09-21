@@ -19,6 +19,18 @@ import {
 
 export interface SDKInstance {
   /**
+   * Create Gnosis Safe wallet
+   * @param signer signer to pay gas fee
+   * @param owners list of owners in Gnosis Safe wallet
+   * @param threshold minimum number of owners that requires confirmation
+   */
+  createGnosisSafeWallet(
+    signer: ethers.Signer,
+    owners: string[],
+    threshold: number
+  ): Promise<string>;
+
+  /**
    * Get all the list of zNA
    * @returns list of zNA
    */

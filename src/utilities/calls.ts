@@ -23,7 +23,7 @@ export const getToken = async (
       decimals,
     };
     // eslint-disable-next-line no-empty
-  } catch (error) {}
+  } catch (error: any) {}
   try {
     const contract = new ethers.Contract(token, ERC721Abi, provider);
     const symbol = await contract.symbol();
@@ -34,7 +34,7 @@ export const getToken = async (
       decimals: 0,
     };
     // eslint-disable-next-line no-empty
-  } catch (error) {}
+  } catch (error: any) {}
 
   throw new Error(errorMessageForError('invalid-token'));
 };
