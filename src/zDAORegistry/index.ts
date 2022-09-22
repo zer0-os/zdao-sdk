@@ -1,53 +1,25 @@
-import {
-  Config as zNSConfig,
-  createInstance as createZNSInstance,
-  Domain,
-  Instance as zNSInstance,
-} from '@zero-tech/zns-sdk';
-import * as zns from '@zero-tech/zns-sdk';
 import { BigNumber, ethers } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
 
-import { zNA, zNAConfig, zNAId } from '../types';
+import ZNAClient from '../client/ZNAClient';
+import { ZDAORegistry__factory } from '../config/types/factories/ZDAORegistry__factory';
+import { ZDAORegistry } from '../config/types/ZDAORegistry';
+import { zDAOId, zNA, zNAConfig } from '../types';
 import { errorMessageForError } from '../utilities';
 import { graphQLQuery } from '../utilities/graphql';
+import { calculateGasMargin } from '../utilities/tx';
 import { ZDAORecord, ZNAASSOCIATION_BY_QUERY, ZNAS_QUERY } from './types';
 
 class zDAORegistryClient {
-  private readonly _config: zNAConfig;
-  private readonly _znsInstance: zNSInstance;
-  private readonly _registryGQLClient;
+  private readonly contract: ZDAORegistry;
+  private readonly _registryGQLClient: GraphQLClient;
 
-  constructor(config: zNAConfig, zNSConfig: zNSConfig) {
-    this._config = config;
-    this._znsInstance = createZNSInstance(zNSConfig);
+  constructor(config: zNAConfig, provider: ethers.providers.Provider) {
+    this.contract = ZDAORegistry__factory.connect(
+      config.zDAORegistry,
+      provider
+    );
     this._registryGQLClient = new GraphQLClient(config.subgraphUri);
-  }
-
-  private async zNAIdTozNA(zNAId: zNAId): Promise<zNA> {
-    try {
-      return this._znsInstance
-        .getDomainById(zNAId)
-        .then((domain: Domain) => domain.name);
-    } catch (error: any) {
-      throw new Error(
-        errorMessageForError('network-error', {
-          message: error.message,
-        })
-      );
-    }
-  }
-
-  private zNATozNAId(zNA: zNA): zNAId {
-    try {
-      return zns.domains.domainNameToId(zNA);
-    } catch (error: any) {
-      throw new Error(
-        errorMessageForError('network-error', {
-          message: error.message,
-        })
-      );
-    }
   }
 
   async listZNAs(): Promise<zNA[]> {
@@ -55,7 +27,7 @@ class zDAORegistryClient {
       platformType: 0,
     });
     const promises: Promise<zNA>[] = result.znaassociations.map((zNA: any) =>
-      this.zNAIdTozNA(BigNumber.from(zNA.id).toHexString())
+      ZNAClient.zNAIdTozNA(BigNumber.from(zNA.id).toHexString())
     );
     return await Promise.all(promises);
   }
@@ -65,7 +37,7 @@ class zDAORegistryClient {
       this._registryGQLClient,
       ZNAASSOCIATION_BY_QUERY,
       {
-        id_in: [this.zNATozNAId(zNA)],
+        id_in: [ZNAClient.zNATozNAId(zNA)],
         platformType: 0,
       }
     );
@@ -78,7 +50,7 @@ class zDAORegistryClient {
     }
     const zNAs: zNA[] = await Promise.all(
       result.znaassociations[0].zDAORecord.zNAs.map((association: any) =>
-        this.zNAIdTozNA(BigNumber.from(association.id).toHexString())
+        ZNAClient.zNAIdTozNA(BigNumber.from(association.id).toHexString())
       )
     );
 
@@ -96,11 +68,58 @@ class zDAORegistryClient {
       this._registryGQLClient,
       ZNAASSOCIATION_BY_QUERY,
       {
-        id_in: [this.zNATozNAId(zNA)],
+        id_in: [ZNAClient.zNATozNAId(zNA)],
         platformType: 0,
       }
     );
     return result.znaassociations.length > 0;
+  }
+
+  async addNewZDAO(
+    signer: ethers.Signer,
+    zNA: zNA,
+    ensSpace: string,
+    gnosisSafe: string
+  ) {
+    try {
+      const gasEstimated = await this.contract
+        .connect(signer)
+        .estimateGas.addNewDAO(ensSpace, gnosisSafe);
+
+      const tx = await this.contract
+        .connect(signer)
+        .addNewDAO(ensSpace, gnosisSafe, {
+          gasLimit: calculateGasMargin(gasEstimated),
+        });
+      return await tx.wait();
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new Error(
+        errorMessageForError('transaction-error', {
+          message: errorMsg,
+        })
+      );
+    }
+  }
+
+  async removeZDAO(signer: ethers.Signer, zDAOId: zDAOId) {
+    try {
+      const gasEstimated = await this.contract
+        .connect(signer)
+        .estimateGas.adminRemoveDAO(zDAOId);
+
+      const tx = await this.contract.connect(signer).adminRemoveDAO(zDAOId, {
+        gasLimit: calculateGasMargin(gasEstimated),
+      });
+      return await tx.wait();
+    } catch (error: any) {
+      const errorMsg = error?.data?.message ?? error.message;
+      throw new Error(
+        errorMessageForError('transaction-error', {
+          message: errorMsg,
+        })
+      );
+    }
   }
 }
 

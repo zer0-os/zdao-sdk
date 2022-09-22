@@ -5,7 +5,7 @@ import {
   CreateZDAOParams,
   PaginationParam,
 } from './params';
-import { Choice, ProposalId, VoteId, zNA } from './primitives';
+import { Choice, ProposalId, VoteId, zDAOId, zNA } from './primitives';
 import {
   ProposalProperties,
   TokenMintOptions,
@@ -18,6 +18,30 @@ import {
 } from './structures';
 
 export interface SDKInstance {
+  /**
+   * Create zDAO
+   * @param provider Web3 provider or wallet
+   * @param account signer address
+   * @param params
+   */
+  createZDAO(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    params: CreateZDAOParams
+  ): Promise<void>;
+
+  /**
+   * Delete zDAO
+   * @param provider Web3 provider or wallet
+   * @param account signer address
+   * @param zDAOId
+   */
+  deleteZDAO(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    zDAOId: zDAOId
+  ): Promise<void>;
+
   /**
    * Get all the list of zNA
    * @returns list of zNA

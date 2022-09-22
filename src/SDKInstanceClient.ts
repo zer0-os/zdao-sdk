@@ -2,8 +2,10 @@ import { BigNumber, ethers } from 'ethers';
 import shortid from 'shortid';
 
 import DAOClient from './client/DAOClient';
-import ERC1967ProxyAbi from './config/constants/abi/ERC1967Proxy.json';
-import ZeroTokenAbi from './config/constants/abi/ZeroToken.json';
+import ZNAClient from './client/ZNAClient';
+import ZNSHubClient from './client/ZNSHubClient';
+import ERC1967ProxyAbi from './config/abi/ERC1967Proxy.json';
+import ZeroTokenAbi from './config/abi/ZeroToken.json';
 import SnapshotClient from './snapshot-io';
 import {
   Config,
@@ -11,10 +13,12 @@ import {
   SDKInstance,
   TokenMintOptions,
   zDAO,
+  zDAOId,
   zNA,
+  zNAId,
 } from './types';
 import { getDecimalAmount } from './utilities';
-import { getToken, getTotalSupply } from './utilities/calls';
+import { getSigner, getToken, getTotalSupply } from './utilities/calls';
 import { errorMessageForError } from './utilities/messages';
 import zDAORegistryClient from './zDAORegistry';
 import { ZDAORecord } from './zDAORegistry/types';
@@ -27,9 +31,49 @@ class SDKInstanceClient implements SDKInstance {
 
   constructor(config: Config) {
     this._config = config;
-    this._zDAORegistryClient = new zDAORegistryClient(config.zNA, config.zNS);
+    this._zDAORegistryClient = new zDAORegistryClient(
+      config.zNA,
+      config.provider
+    );
     this._snapshotClient = new SnapshotClient(config.snapshot);
     this._params = [];
+
+    ZNAClient.initialize(config.zNS);
+  }
+
+  async createZDAO(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    params: CreateZDAOParams
+  ): Promise<void> {
+    if (await this.doesZDAOExist(params.zNA)) {
+      throw new Error(errorMessageForError('already-exist-zdao'));
+    }
+
+    const signer = getSigner(provider, account);
+    const zNAId: zNAId = ZNAClient.zNATozNAId(params.zNA);
+
+    // signer should be owner of zNA
+    const signerAccount = account ?? (await signer.getAddress());
+    if (!(await ZNSHubClient.isOwnerOf(zNAId, signerAccount))) {
+      throw new Error(errorMessageForError('not-zna-owner'));
+    }
+
+    await this._zDAORegistryClient.addNewZDAO(
+      signer,
+      params.zNA,
+      params.ens,
+      params.safeAddress
+    );
+  }
+
+  async deleteZDAO(
+    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    account: string | undefined,
+    zDAOId: zDAOId
+  ): Promise<void> {
+    const signer = getSigner(provider, account);
+    await this._zDAORegistryClient.removeZDAO(signer, zDAOId);
   }
 
   async listZNAs(): Promise<zNA[]> {
