@@ -38,6 +38,7 @@ class SDKInstanceClient implements SDKInstance {
     this._snapshotClient = new SnapshotClient(config.snapshot);
     this._params = [];
 
+    ZNSHubClient.initialize(config.zNA, config.provider);
     ZNAClient.initialize(config.zNS);
   }
 

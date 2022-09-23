@@ -4,7 +4,7 @@ import { GraphQLClient } from 'graphql-request';
 import ZNAClient from '../client/ZNAClient';
 import { ZDAORegistry__factory } from '../config/types/factories/ZDAORegistry__factory';
 import { ZDAORegistry } from '../config/types/ZDAORegistry';
-import { zDAOId, zNA, zNAConfig } from '../types';
+import { zDAOId, zNA, zNAConfig, zNAId } from '../types';
 import { errorMessageForError } from '../utilities';
 import { graphQLQuery } from '../utilities/graphql';
 import { calculateGasMargin } from '../utilities/tx';
@@ -91,7 +91,21 @@ class zDAORegistryClient {
         .addNewDAO(ensSpace, gnosisSafe, {
           gasLimit: calculateGasMargin(gasEstimated),
         });
-      return await tx.wait();
+      await tx.wait();
+
+      const lastZDAOId = await this.contract.numberOfzDAOs();
+
+      const zNAId: zNAId = ZNAClient.zNATozNAId(zNA);
+      const gasEstimated2 = await this.contract
+        .connect(signer)
+        .estimateGas.addZNAAssociation(lastZDAOId, zNAId);
+
+      const tx2 = await this.contract
+        .connect(signer)
+        .addZNAAssociation(lastZDAOId, zNAId, {
+          gasLimit: calculateGasMargin(gasEstimated2),
+        });
+      await tx2.wait();
     } catch (error: any) {
       const errorMsg = error?.data?.message ?? error.message;
       throw new Error(
