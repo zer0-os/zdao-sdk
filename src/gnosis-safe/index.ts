@@ -13,11 +13,11 @@ import { GnosisSafeConfig } from '../types';
 import { errorMessageForError } from '../utilities';
 
 class GnosisSafeClient {
-  private readonly _config: GnosisSafeConfig;
+  private readonly config: GnosisSafeConfig;
   private readonly EMPTY_DATA = '0x';
 
   constructor(config: GnosisSafeConfig) {
-    this._config = config;
+    this.config = config;
   }
 
   async getOwners(

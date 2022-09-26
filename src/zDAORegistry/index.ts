@@ -14,19 +14,19 @@ import { graphQLQuery } from '../utilities/graphql';
 import { ZDAORecord, ZNAASSOCIATION_BY_QUERY, ZNAS_QUERY } from './types';
 
 class zDAORegistryClient {
-  private readonly _config: zNAConfig;
-  private readonly _znsInstance: zNSInstance;
-  private readonly _registryGQLClient;
+  private readonly config: zNAConfig;
+  private readonly znsInstance: zNSInstance;
+  private readonly registryGQLClient;
 
   constructor(config: zNAConfig, zNSConfig: zNSConfig) {
-    this._config = config;
-    this._znsInstance = createZNSInstance(zNSConfig);
-    this._registryGQLClient = new GraphQLClient(config.subgraphUri);
+    this.config = config;
+    this.znsInstance = createZNSInstance(zNSConfig);
+    this.registryGQLClient = new GraphQLClient(config.subgraphUri);
   }
 
   private async zNAIdTozNA(zNAId: zNAId): Promise<zNA> {
     try {
-      return this._znsInstance
+      return this.znsInstance
         .getDomainById(zNAId)
         .then((domain: Domain) => domain.name);
     } catch (error: any) {
@@ -51,7 +51,7 @@ class zDAORegistryClient {
   }
 
   async listZNAs(): Promise<zNA[]> {
-    const result = await graphQLQuery(this._registryGQLClient, ZNAS_QUERY, {
+    const result = await graphQLQuery(this.registryGQLClient, ZNAS_QUERY, {
       platformType: 0,
     });
     const promises: Promise<zNA>[] = result.znaassociations.map((zNA: any) =>
@@ -62,7 +62,7 @@ class zDAORegistryClient {
 
   async getZDAORecordByZNA(zNA: zNA): Promise<ZDAORecord> {
     const result = await graphQLQuery(
-      this._registryGQLClient,
+      this.registryGQLClient,
       ZNAASSOCIATION_BY_QUERY,
       {
         id_in: [this.zNATozNAId(zNA)],
@@ -93,7 +93,7 @@ class zDAORegistryClient {
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
     const result = await graphQLQuery(
-      this._registryGQLClient,
+      this.registryGQLClient,
       ZNAASSOCIATION_BY_QUERY,
       {
         id_in: [this.zNATozNAId(zNA)],
