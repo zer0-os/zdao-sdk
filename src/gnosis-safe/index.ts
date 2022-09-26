@@ -1,3 +1,5 @@
+import Safe, { SafeAccountConfig, SafeFactory } from '@gnosis.pm/safe-core-sdk';
+import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import {
   SafeBalanceResponse,
   SafeCollectibleResponse,
@@ -16,6 +18,45 @@ class GnosisSafeClient {
 
   constructor(config: GnosisSafeConfig) {
     this._config = config;
+  }
+
+  async getOwners(
+    signer: ethers.Signer,
+    safeAddress: string
+  ): Promise<string[]> {
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signer,
+    });
+    const safe = await Safe.create({
+      ethAdapter,
+      safeAddress,
+    });
+    const owners = await safe.getOwners();
+    return owners;
+  }
+
+  async deployNewSafe(
+    signer: ethers.Signer,
+    owners: string[],
+    threshold: number
+  ): Promise<string> {
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signer,
+    });
+    const safeFactory = await SafeFactory.create({
+      ethAdapter,
+      isL1SafeMasterCopy: true,
+    });
+
+    const safeAccountConfig: SafeAccountConfig = {
+      owners,
+      threshold,
+    };
+    const safeSdk = await safeFactory.deploySafe({ safeAccountConfig });
+
+    return safeSdk.getAddress();
   }
 
   async listAssets(
