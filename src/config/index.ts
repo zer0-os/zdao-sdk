@@ -4,20 +4,17 @@ import { ethers } from 'ethers';
 import { Config, SupportedChainId } from '../types';
 
 type AddressMap = { [chainId: number]: string };
-export const MultiCallAddress: AddressMap = {
-  [SupportedChainId.MAINNET]: '0x1F98415757620B543A52E61c46B32eB19261F984',
-  [SupportedChainId.ROPSTEN]: '0x53c43764255c17bd724f74c4ef150724ac50a3ed',
-  [SupportedChainId.RINKEBY]: '0x42ad527de7d4e9d9d011ac45b31d8551f8fe9821',
-};
 
 export const zDAORegistryAddress: AddressMap = {
   [SupportedChainId.MAINNET]: '0x7701913b65C9bCDa4d353F77EC12123d57D77f1e',
   [SupportedChainId.RINKEBY]: '0x73D44dEa3A3334aB2504443479aD531FfeD2d2D9',
+  [SupportedChainId.GOERLI]: '0x4d681D8245e956E1cb295Abe870DF6736EA5F70e',
 };
 
 export const zNSHubAddress: AddressMap = {
   [SupportedChainId.MAINNET]: '0x6141d5cb3517215a03519a464bf9c39814df7479',
   [SupportedChainId.RINKEBY]: '0x7F918CbbBf37e4358ad5f060F15110151d14E59e',
+  [SupportedChainId.GOERLI]: '0xce1fE2DA169C313Eb00a2bad25103D2B9617b5e1',
 };
 
 export const DEFAULT_PROPOSAL_CHOICES = ['Approve', 'Deny'];
@@ -29,21 +26,21 @@ export const developmentConfiguration = (
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
     ipfsGateway,
-    network: SupportedChainId.RINKEBY.toString(),
+    network: SupportedChainId.GOERLI.toString(),
   },
   gnosisSafe: {
-    serviceUri: 'https://safe-transaction.rinkeby.gnosis.io',
+    serviceUri: 'https://safe-transaction.goerli.gnosis.io',
     gateway: 'https://safe-client.staging.gnosisdev.com',
     ipfsGateway,
   },
   zNA: {
-    zDAORegistry: zDAORegistryAddress[SupportedChainId.RINKEBY],
+    zDAORegistry: zDAORegistryAddress[SupportedChainId.GOERLI],
     subgraphUri:
-      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-rinkeby',
-    zNSHub: zNSHubAddress[SupportedChainId.RINKEBY],
+      'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-goerli',
+    zNSHub: zNSHubAddress[SupportedChainId.GOERLI],
   },
   provider,
-  zNS: configuration.rinkebyConfiguration(provider),
+  zNS: configuration.rinkebyConfiguration(provider), // todo, will update with goerliConfiguration
 });
 
 export const productionConfiguration = (
