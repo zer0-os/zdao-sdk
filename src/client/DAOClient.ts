@@ -10,7 +10,7 @@ import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import { DEFAULT_PROPOSAL_CHOICES } from '../config';
-import ERC20Abi from '../config/constants/abi/ERC20.json';
+import ERC20Abi from '../config/abi/ERC20.json';
 import GnosisSafeClient from '../gnosis-safe';
 import SnapshotClient from '../snapshot-io';
 import { SnapshotProposal } from '../snapshot-io/types';
@@ -32,7 +32,11 @@ import {
   zDAOCollectibles,
   zDAOProperties,
 } from '../types';
-import { getDecimalAmount, getFullDisplayBalance } from '../utilities';
+import {
+  getDecimalAmount,
+  getFullDisplayBalance,
+  getSigner,
+} from '../utilities';
 import { errorMessageForError } from '../utilities/messages';
 import ProposalClient from './ProposalClient';
 
@@ -386,6 +390,9 @@ class DAOClient implements zDAO {
       payload.choices = DEFAULT_PROPOSAL_CHOICES;
     }
 
+    const signer = getSigner(provider, account);
+    const signerAddress = await signer.getAddress();
+
     // signer should have valid amount of voting token on Ethereum
     const contract = new ethers.Contract(
       this.votingToken.token,
@@ -393,7 +400,7 @@ class DAOClient implements zDAO {
       provider
     );
 
-    const balance = await contract.balanceOf(account);
+    const balance = await contract.balanceOf(signerAddress);
     if (balance.lt(this.amount)) {
       throw new Error(
         errorMessageForError('should-hold-token', {
@@ -408,7 +415,7 @@ class DAOClient implements zDAO {
     const duration = this.duration ?? payload.duration;
     const { id: proposalId } = await this.snapshotClient.createProposal(
       provider,
-      account,
+      signerAddress,
       {
         spaceId: this.ens,
         title: payload.title,

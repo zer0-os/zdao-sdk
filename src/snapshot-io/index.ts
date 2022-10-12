@@ -5,7 +5,7 @@ import { ethers } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
 import { orderBy } from 'lodash';
 
-import verified from '../config/constants/verified.json';
+import verified from '../config/verified.json';
 import { ENS, ProposalId, SnapshotConfig, SupportedChainId } from '../types';
 import { timestamp } from '../utilities/date';
 import { graphQLQuery } from '../utilities/graphql';

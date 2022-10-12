@@ -52,16 +52,6 @@ const createProposal = async (
   console.log('proposal created');
 };
 
-const createToken = async (sdkInstance: SDKInstance, signer: ethers.Wallet) => {
-  // isDev should be true
-
-  const token = await sdkInstance.createZToken(signer, 'zSample', 'ZSAMPLE', {
-    target: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-    amount: BigNumber.from(10).pow(18).mul(10000).toString(),
-  });
-  console.log('new token', token);
-};
-
 const pagination = async (sdkInstance: SDKInstance) => {
   // isDev should be false
 

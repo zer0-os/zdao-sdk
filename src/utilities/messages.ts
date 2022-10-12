@@ -24,6 +24,10 @@ const ErrorMessages = [
     value: 'Empty Voting ERC20 Token address',
   },
   {
+    key: 'not-zna-owner',
+    value: 'Not a zNA owner',
+  },
+  {
     key: 'already-exist-zdao',
     value: 'zDAO already exists',
   },
@@ -60,6 +64,10 @@ const ErrorMessages = [
     value: 'Not found any token related strategyies in snapshot',
   },
   {
+    key: 'invalid-parameter',
+    value: 'Invalid parameter: %name%',
+  },
+  {
     key: 'invalid-token',
     value: 'Invalid Token',
   },
@@ -76,6 +84,10 @@ const ErrorMessages = [
     value: 'Funding proposal should have only two choices',
   },
   {
+    key: 'invalid-signer',
+    value: 'Invalid Signer',
+  },
+  {
     key: 'should-hold-token',
     value: 'Should hold at least %amount% tokens',
   },
@@ -90,6 +102,10 @@ const ErrorMessages = [
   {
     key: 'network-error',
     value: 'Network Error: %message%',
+  },
+  {
+    key: 'transaction-error',
+    value: 'Transaction Error: %message%',
   },
 ] as const;
 

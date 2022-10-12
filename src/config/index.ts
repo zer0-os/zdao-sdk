@@ -10,6 +10,16 @@ export const MultiCallAddress: AddressMap = {
   [SupportedChainId.RINKEBY]: '0x42ad527de7d4e9d9d011ac45b31d8551f8fe9821',
 };
 
+export const zDAORegistryAddress: AddressMap = {
+  [SupportedChainId.MAINNET]: '0x7701913b65C9bCDa4d353F77EC12123d57D77f1e',
+  [SupportedChainId.RINKEBY]: '0x73D44dEa3A3334aB2504443479aD531FfeD2d2D9',
+};
+
+export const zNSHubAddress: AddressMap = {
+  [SupportedChainId.MAINNET]: '0x6141d5cb3517215a03519a464bf9c39814df7479',
+  [SupportedChainId.RINKEBY]: '0x7F918CbbBf37e4358ad5f060F15110151d14E59e',
+};
+
 export const DEFAULT_PROPOSAL_CHOICES = ['Approve', 'Deny'];
 
 export const developmentConfiguration = (
@@ -27,8 +37,10 @@ export const developmentConfiguration = (
     ipfsGateway,
   },
   zNA: {
+    zDAORegistry: zDAORegistryAddress[SupportedChainId.RINKEBY],
     subgraphUri:
       'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-rinkeby',
+    zNSHub: zNSHubAddress[SupportedChainId.RINKEBY],
   },
   provider,
   zNS: configuration.rinkebyConfiguration(provider),
@@ -49,8 +61,10 @@ export const productionConfiguration = (
     ipfsGateway,
   },
   zNA: {
+    zDAORegistry: zDAORegistryAddress[SupportedChainId.MAINNET],
     subgraphUri:
       'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry',
+    zNSHub: zNSHubAddress[SupportedChainId.MAINNET],
   },
   provider,
   zNS: configuration.mainnetConfiguration(provider),

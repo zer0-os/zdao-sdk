@@ -8,7 +8,6 @@ import {
 import { Choice, ProposalId, VoteId, zNA } from './primitives';
 import {
   ProposalProperties,
-  TokenMintOptions,
   Transaction,
   Vote,
   zDAOAssets,
@@ -18,18 +17,6 @@ import {
 } from './structures';
 
 export interface SDKInstance {
-  /**
-   * Create Gnosis Safe wallet
-   * @param signer signer to pay gas fee
-   * @param owners list of owners in Gnosis Safe wallet
-   * @param threshold minimum number of owners that requires confirmation
-   */
-  createGnosisSafeWallet(
-    signer: ethers.Signer,
-    owners: string[],
-    threshold: number
-  ): Promise<string>;
-
   /**
    * Get all the list of zNA
    * @returns list of zNA
@@ -50,19 +37,6 @@ export interface SDKInstance {
    * @returns true if zNA exists
    */
   doesZDAOExist(zNA: zNA): Promise<boolean>;
-
-  /**
-   * Create new zToken with given name and symbol and return deployed address
-   * @param name name of zToken
-   * @param symbol symbol of zToken
-   * @param options mint options
-   */
-  createZToken(
-    signer: ethers.Signer,
-    name: string,
-    symbol: string,
-    options?: TokenMintOptions
-  ): Promise<string>;
 
   /**
    * Create zDAO from parameters for test
