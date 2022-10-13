@@ -36,7 +36,7 @@ export const developmentConfiguration = (
   zNA: {
     zDAORegistry: zDAORegistryAddress[SupportedChainId.GOERLI],
     subgraphUri:
-      'https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry-goerli',
+      'https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-goerli',
     zNSHub: zNSHubAddress[SupportedChainId.GOERLI],
   },
   provider,
