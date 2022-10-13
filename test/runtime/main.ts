@@ -141,7 +141,7 @@ const iterateZNAs = async (sdkInstance: SDKInstance) => {
 };
 
 const main = async () => {
-  const isDev = false;
+  const isDev = true;
   const env = setEnv(isDev);
 
   const provider = new ethers.providers.JsonRpcProvider(

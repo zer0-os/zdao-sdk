@@ -77,7 +77,7 @@ describe('Gnosis Safe test', async () => {
     // should contain collectibles
     const collectible = assets.collectibles.find(
       (item: Collectible) =>
-        item.address === '0xa4F6C921f914ff7972D7C55c15f015419326e0Ca'
+        item.address === '0x009A11617dF427319210e842D6B202f3831e0116'
     );
     expect(collectible).to.be.not.equal(undefined);
     // should contain metadata
@@ -111,7 +111,7 @@ describe('Gnosis Safe test', async () => {
     // should contain tx to `0x8a6AAe4B05601CDe4cecbb99941f724D7292867b`
     const toFiltered = filtered.filter(
       (tx: Transaction) =>
-        tx.to === '0x8a6AAe4B05601CDe4cecbb99941f724D7292867b'
+        tx.to === '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C'
     );
     expect(toFiltered.length).to.be.gt(0);
   });
