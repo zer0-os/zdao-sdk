@@ -1018,28 +1018,33 @@
   dependencies:
     tslib "^2.3.0"
 
-"@zero-tech/zauction-sdk@^0.0.44":
-  version "0.0.44"
-  resolved "https://registry.yarnpkg.com/@zero-tech/zauction-sdk/-/zauction-sdk-0.0.44.tgz#7958ee6f8300eb79908849d71e634f18271fd5f2"
-  integrity sha512-9tGqV2uz+adiVi80A++HLWZ+TSQIETawWQ0y9Bmy4L0uDtDm9q6fr/dupOk9WGR43M0i6aCCvBVLZNf8XklR+g==
+"@zero-tech/zauction-sdk@0.2.10":
+  version "0.2.10"
+  resolved "https://registry.yarnpkg.com/@zero-tech/zauction-sdk/-/zauction-sdk-0.2.10.tgz#72109095d93d7043304f9b4b38f3200a16c61567"
+  integrity sha512-iqyJRBdZpPLzhm7WhCaFrhVcG0Sl6YfOWKiV8Ai56556SOd5ThWYpcZmK9QdO0V/DD3hyo3Y0cE+9axfy7DSgg==
   dependencies:
     "@apollo/client" "3.4.10"
     "@ethersproject/abi" "5.4.1"
     "@ethersproject/bytes" "5.4.0"
     "@ethersproject/providers" "5.4.5"
+    consola "2.15.3"
     cross-fetch "3.1.4"
     graphql "15.5.3"
 
-"@zero-tech/zns-sdk@^0.1.18":
-  version "0.1.33"
-  resolved "https://registry.yarnpkg.com/@zero-tech/zns-sdk/-/zns-sdk-0.1.33.tgz#3305264750c3e40fc04e9b9644a707a3ea62f2fc"
-  integrity sha512-/rSH9Ar4/WMH6IwzjKiJPepGpNCIhTwVj3dGFfDJkzpd0/UJjr3Jj15r8SBCkogUv8vrQFEeIRiKb5pwqqw0fg==
+"@zero-tech/zns-sdk@0.8.13":
+  version "0.8.13"
+  resolved "https://registry.yarnpkg.com/@zero-tech/zns-sdk/-/zns-sdk-0.8.13.tgz#4c81cffc418f5654c99665f5cb1e69cc7d67591d"
+  integrity sha512-XbYNjimXz77IJ46F+/wtYGi30IYj+L9BZZOG5AVwVDtUbi1jLN+YsveZWEA+Iw7b+IyurOBGFv+U1JSffs+GIw==
   dependencies:
     "@apollo/client" "3.4.10"
     "@ethersproject/abi" "5.4.1"
     "@ethersproject/bytes" "5.4.0"
     "@ethersproject/providers" "5.4.5"
+    coingecko-api "1.0.10"
+    consola "2.15.3"
     cross-fetch "3.1.4"
+    dotenv "16.0.1"
+    env-var "7.1.1"
     graphql "15.5.3"
     lolex "6.0.0"
 
@@ -1257,6 +1262,11 @@ cliui@^7.0.2:
     strip-ansi "^6.0.0"
     wrap-ansi "^7.0.0"
 
+coingecko-api@1.0.10:
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/coingecko-api/-/coingecko-api-1.0.10.tgz#ac8694d5999f00727fe55f0078ce2917603076b2"
+  integrity sha512-7YLLC85+daxAw5QlBWoHVBVpJRwoPr4HtwanCr8V/WRjoyHTa1Lb9DQAvv4MDJZHiz4no6HGnDQnddtjV35oRA==
+
 color-convert@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/color-convert/-/color-convert-2.0.1.tgz#72d3a68d598c9bdb3af2ad1e84f21d896abd4de3"
@@ -1280,6 +1290,11 @@ concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
   integrity sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==
+
+consola@2.15.3:
+  version "2.15.3"
+  resolved "https://registry.yarnpkg.com/consola/-/consola-2.15.3.tgz#2e11f98d6a4be71ff72e0bdf07bd23e12cb61550"
+  integrity sha512-9vAdYbHj6x2fLKC4+oPH0kFzY/orMZyG2Aj+kNylHxKGJ/Ed4dpNyAQYwJOdqO4zdM7XpVHmyejQDcQHrnuXbw==
 
 create-require@^1.1.0:
   version "1.1.1"
@@ -1384,6 +1399,11 @@ dotenv@16.0.0:
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.0.0.tgz#c619001253be89ebb638d027b609c75c26e47411"
   integrity sha512-qD9WU0MPM4SWLPJy/r2Be+2WgQj8plChsyrCNQzW/0WjvcJQiKQJ9mH3ZgB3fxbUUxgc/11ZJ0Fi5KiimWGz2Q==
 
+dotenv@16.0.1:
+  version "16.0.1"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.0.1.tgz#8f8f9d94876c35dac989876a5d3a82a267fdce1d"
+  integrity sha512-1K6hR6wtk2FviQ4kEiSjFiH5rpzEVi8WW0x96aztHVMhEspNpc4DVOUTEHtEva5VThQ8IaBX1Pe4gSzpVVUsKQ==
+
 elliptic@6.5.4:
   version "6.5.4"
   resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.4.tgz#da37cebd31e79a1367e941b592ed1fbebd58abbb"
@@ -1401,6 +1421,11 @@ emoji-regex@^8.0.0:
   version "8.0.0"
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-8.0.0.tgz#e818fd69ce5ccfcb404594f842963bf53164cc37"
   integrity sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==
+
+env-var@7.1.1:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/env-var/-/env-var-7.1.1.tgz#c1697f8dfded0b54418dc9bbd78a82119910e57c"
+  integrity sha512-4+vvlq+wwGQNwY/nI3/+Ojc1MKHCmITRJ6VWkQzDtMD6fAEb60ACRUCnlIAonMKW9YzqYmYxbyVu9vTb++yNRg==
 
 env-var@7.3.0:
   version "7.3.0"
