@@ -1,55 +1,42 @@
-import {
-  Config as zNSConfig,
-  createInstance as createZNSInstance,
-  Domain,
-  Instance as zNSInstance,
-} from '@zero-tech/zns-sdk';
-import * as zns from '@zero-tech/zns-sdk';
 import { BigNumber, ethers } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
 
-import { zNA, zNAConfig, zNAId } from '../types';
+import ZNAClient from '../client/ZNAClient';
+import { ZDAORegistry__factory } from '../config/types/factories/ZDAORegistry__factory';
+import { ZDAORegistry } from '../config/types/ZDAORegistry';
+import { zNA, zNAConfig } from '../types';
 import { errorMessageForError } from '../utilities';
 import { graphQLQuery } from '../utilities/graphql';
 import { ZDAORecord, ZNAASSOCIATION_BY_QUERY, ZNAS_QUERY } from './types';
 
 class zDAORegistryClient {
-  private readonly _config: zNAConfig;
-  private readonly _znsInstance: zNSInstance;
-  private readonly _registryGQLClient;
+  private readonly contract: ZDAORegistry;
+  private readonly registryGQLClient: GraphQLClient;
 
-  constructor(config: zNAConfig, zNSConfig: zNSConfig) {
-    this._config = config;
-    this._znsInstance = createZNSInstance(zNSConfig);
-    this._registryGQLClient = new GraphQLClient(config.subgraphUri);
-  }
-
-  private async zNAIdTozNA(zNAId: zNAId): Promise<zNA> {
-    return this._znsInstance
-      .getDomainById(zNAId)
-      .then((domain: Domain) => domain.name);
-  }
-
-  private zNATozNAId(zNA: zNA): zNAId {
-    return zns.domains.domainNameToId(zNA);
+  constructor(config: zNAConfig, provider: ethers.providers.Provider) {
+    this.contract = ZDAORegistry__factory.connect(
+      config.zDAORegistry,
+      provider
+    );
+    this.registryGQLClient = new GraphQLClient(config.subgraphUri);
   }
 
   async listZNAs(): Promise<zNA[]> {
-    const result = await graphQLQuery(this._registryGQLClient, ZNAS_QUERY, {
+    const result = await graphQLQuery(this.registryGQLClient, ZNAS_QUERY, {
       platformType: 0,
     });
     const promises: Promise<zNA>[] = result.znaassociations.map((zNA: any) =>
-      this.zNAIdTozNA(BigNumber.from(zNA.id).toHexString())
+      ZNAClient.zNAIdTozNA(BigNumber.from(zNA.id).toHexString())
     );
     return await Promise.all(promises);
   }
 
   async getZDAORecordByZNA(zNA: zNA): Promise<ZDAORecord> {
     const result = await graphQLQuery(
-      this._registryGQLClient,
+      this.registryGQLClient,
       ZNAASSOCIATION_BY_QUERY,
       {
-        id_in: [this.zNATozNAId(zNA)],
+        id_in: [ZNAClient.zNATozNAId(zNA)],
         platformType: 0,
       }
     );
@@ -62,26 +49,25 @@ class zDAORegistryClient {
     }
     const zNAs: zNA[] = await Promise.all(
       result.znaassociations[0].zDAORecord.zNAs.map((association: any) =>
-        this.zNAIdTozNA(BigNumber.from(association.id).toHexString())
+        ZNAClient.zNAIdTozNA(BigNumber.from(association.id).toHexString())
       )
     );
 
+    const zDAORecord = result.znaassociations[0].zDAORecord;
     return {
-      id: result.znaassociations[0].zDAORecord.zDAOId.toString(),
-      ens: result.znaassociations[0].zDAORecord.name,
-      gnosisSafe: ethers.utils.getAddress(
-        result.znaassociations[0].zDAORecord.gnosisSafe.toString()
-      ),
+      id: zDAORecord.zDAOId.toString(),
+      ens: zDAORecord.name,
+      gnosisSafe: ethers.utils.getAddress(zDAORecord.gnosisSafe.toString()),
       zNAs,
     };
   }
 
   async doesZDAOExist(zNA: zNA): Promise<boolean> {
     const result = await graphQLQuery(
-      this._registryGQLClient,
+      this.registryGQLClient,
       ZNAASSOCIATION_BY_QUERY,
       {
-        id_in: [this.zNATozNAId(zNA)],
+        id_in: [ZNAClient.zNATozNAId(zNA)],
         platformType: 0,
       }
     );
