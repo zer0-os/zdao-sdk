@@ -1,0 +1,304 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "daoId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "ensSpace",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "gnosisSafe",
+        "type": "address"
+      }
+    ],
+    "name": "DAOCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "daoId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "zNA",
+        "type": "uint256"
+      }
+    ],
+    "name": "LinkAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "daoId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "zNA",
+        "type": "uint256"
+      }
+    ],
+    "name": "LinkRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "ensSpace", "type": "string" },
+      { "internalType": "address", "name": "gnosisSafe", "type": "address" }
+    ],
+    "name": "addNewDAO",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "daoId", "type": "uint256" },
+      { "internalType": "uint256", "name": "zNA", "type": "uint256" }
+    ],
+    "name": "addZNAAssociation",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "zNA", "type": "uint256" }],
+    "name": "doeszDAOExistForzNA",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "ensSpace", "type": "string" }
+    ],
+    "name": "getzDAOByEns",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "string", "name": "ensSpace", "type": "string" },
+          {
+            "internalType": "address",
+            "name": "gnosisSafe",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "associatedzNAs",
+            "type": "uint256[]"
+          }
+        ],
+        "internalType": "struct IZDAORegistry.ZDAORecord",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "daoId", "type": "uint256" }
+    ],
+    "name": "getzDAOById",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "string", "name": "ensSpace", "type": "string" },
+          {
+            "internalType": "address",
+            "name": "gnosisSafe",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "associatedzNAs",
+            "type": "uint256[]"
+          }
+        ],
+        "internalType": "struct IZDAORegistry.ZDAORecord",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "zNA", "type": "uint256" }],
+    "name": "getzDaoByZNA",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "string", "name": "ensSpace", "type": "string" },
+          {
+            "internalType": "address",
+            "name": "gnosisSafe",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "associatedzNAs",
+            "type": "uint256[]"
+          }
+        ],
+        "internalType": "struct IZDAORegistry.ZDAORecord",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_znsHub", "type": "address" }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "startIndex", "type": "uint256" },
+      { "internalType": "uint256", "name": "endIndex", "type": "uint256" }
+    ],
+    "name": "listzDAOs",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "string", "name": "ensSpace", "type": "string" },
+          {
+            "internalType": "address",
+            "name": "gnosisSafe",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "associatedzNAs",
+            "type": "uint256[]"
+          }
+        ],
+        "internalType": "struct IZDAORegistry.ZDAORecord[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "numberOfzDAOs",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "daoId", "type": "uint256" },
+      { "internalType": "uint256", "name": "zNA", "type": "uint256" }
+    ],
+    "name": "removeZNAAssociation",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_znsHub", "type": "address" }
+    ],
+    "name": "setZNSHub",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "newOwner", "type": "address" }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "name": "zDAORecords",
+    "outputs": [
+      { "internalType": "uint256", "name": "id", "type": "uint256" },
+      { "internalType": "string", "name": "ensSpace", "type": "string" },
+      { "internalType": "address", "name": "gnosisSafe", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "znsHub",
+    "outputs": [
+      { "internalType": "contract IZNSHub", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

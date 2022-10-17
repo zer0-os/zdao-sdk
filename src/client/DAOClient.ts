@@ -10,7 +10,7 @@ import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import { DEFAULT_PROPOSAL_CHOICES } from '../config';
-import ERC20Abi from '../config/abi/ERC20.json';
+import ERC20Abi from '../config/constants/abi/ERC20.json';
 import GnosisSafeClient from '../gnosis-safe';
 import SnapshotClient from '../snapshot-io';
 import { SnapshotProposal } from '../snapshot-io/types';
@@ -32,101 +32,97 @@ import {
   zDAOCollectibles,
   zDAOProperties,
 } from '../types';
-import {
-  getDecimalAmount,
-  getFullDisplayBalance,
-  getSigner,
-} from '../utilities';
+import { getDecimalAmount, getFullDisplayBalance } from '../utilities';
 import { errorMessageForError } from '../utilities/messages';
 import ProposalClient from './ProposalClient';
 
 class DAOClient implements zDAO {
-  protected readonly snapshotClient: SnapshotClient;
-  protected readonly gnosisSafeClient: GnosisSafeClient;
-  protected readonly properties: zDAOProperties;
-  private readonly options: any;
+  private readonly _config: Config;
+  protected readonly _snapshotClient: SnapshotClient;
+  protected readonly _gnosisSafeClient: GnosisSafeClient;
+  protected readonly _properties: zDAOProperties;
+  private readonly _options: any;
 
   private constructor(
-    snapshotClient: SnapshotClient,
-    gnosisSafeClient: GnosisSafeClient,
+    config: Config,
     properties: zDAOProperties,
     options: any
   ) {
-    this.properties = cloneDeep(properties);
-    this.options = options;
+    this._config = config;
+    this._properties = cloneDeep(properties);
+    this._options = options;
 
-    this.snapshotClient = snapshotClient;
-    this.gnosisSafeClient = gnosisSafeClient;
+    this._snapshotClient = new SnapshotClient(config.snapshot);
+    this._gnosisSafeClient = new GnosisSafeClient(config.gnosisSafe);
   }
 
   get id() {
-    return this.properties.id;
+    return this._properties.id;
   }
 
   get ens() {
-    return this.properties.ens;
+    return this._properties.ens;
   }
 
   get zNAs() {
-    return this.properties.zNAs;
+    return this._properties.zNAs;
   }
 
   get title() {
-    return this.properties.title;
+    return this._properties.title;
   }
 
   get creator() {
-    return this.properties.creator;
+    return this._properties.creator;
   }
 
   get network() {
-    return this.properties.network;
+    return this._properties.network;
   }
 
   get duration() {
-    return this.properties.duration;
+    return this._properties.duration;
   }
 
   get safeAddress() {
-    return this.properties.safeAddress;
+    return this._properties.safeAddress;
   }
 
   get votingToken() {
-    return this.properties.votingToken;
+    return this._properties.votingToken;
   }
 
   get amount() {
-    return this.properties.amount;
+    return this._properties.amount;
   }
 
   get totalSupplyOfVotingToken() {
-    return this.properties.totalSupplyOfVotingToken;
+    return this._properties.totalSupplyOfVotingToken;
   }
 
   get votingThreshold() {
-    return this.properties.votingThreshold;
+    return this._properties.votingThreshold;
   }
 
   get minimumVotingParticipants() {
-    return this.properties.minimumVotingParticipants;
+    return this._properties.minimumVotingParticipants;
   }
 
   get minimumTotalVotingTokens() {
-    return this.properties.minimumTotalVotingTokens;
+    return this._properties.minimumTotalVotingTokens;
   }
 
   get isRelativeMajority() {
-    return this.properties.isRelativeMajority;
+    return this._properties.isRelativeMajority;
   }
 
   static async createInstance(
     config: Config,
-    snapshotClient: SnapshotClient,
-    gnosisSafeClient: GnosisSafeClient,
     properties: zDAOProperties,
     options: any
   ): Promise<zDAO> {
     if (options === undefined) {
+      const snapshotClient = new SnapshotClient(config.snapshot);
       const { strategies, threshold, duration, delay, quorum } =
         await snapshotClient.getSpaceOptions(properties.ens);
       options = { strategies, delay };
@@ -152,17 +148,12 @@ class DAOClient implements zDAO {
               .toNumber();
     }
 
-    const zDAO = new DAOClient(
-      snapshotClient,
-      gnosisSafeClient,
-      properties,
-      options
-    );
+    const zDAO = new DAOClient(config, properties, options);
     return zDAO;
   }
 
   async listAssetsCoins(): Promise<zDAOCoins> {
-    const results = await this.gnosisSafeClient.listAssets(
+    const results = await this._gnosisSafeClient.listAssets(
       this.safeAddress,
       this.network
     );
@@ -182,7 +173,7 @@ class DAOClient implements zDAO {
   }
 
   async listAssetsCollectibles(): Promise<zDAOCollectibles> {
-    const results = await this.gnosisSafeClient.listCollectibles(
+    const results = await this._gnosisSafeClient.listCollectibles(
       this.safeAddress,
       this.network
     );
@@ -216,7 +207,7 @@ class DAOClient implements zDAO {
 
   async listTransactions(): Promise<Transaction[]> {
     const transactions: GnosisTransaction[] =
-      await this.gnosisSafeClient.listTransactions(
+      await this._gnosisSafeClient.listTransactions(
         this.safeAddress,
         this.network
       );
@@ -288,7 +279,7 @@ class DAOClient implements zDAO {
     // get the list of proposals
     while (numberOfResults === limit) {
       const results: SnapshotProposal[] =
-        await this.snapshotClient.listProposals(
+        await this._snapshotClient.listProposals(
           this.ens,
           this.network,
           from,
@@ -307,8 +298,8 @@ class DAOClient implements zDAO {
       (proposal: SnapshotProposal): Promise<Proposal> =>
         ProposalClient.createInstance(
           this,
-          this.snapshotClient,
-          this.gnosisSafeClient,
+          this._snapshotClient,
+          this._gnosisSafeClient,
           {
             id: proposal.id,
             type: proposal.type,
@@ -327,7 +318,7 @@ class DAOClient implements zDAO {
             votes: proposal.votes,
           },
           {
-            strategies: this.options.strategies,
+            strategies: this._options.strategies,
             scores_state: proposal.scores_state,
           }
         )
@@ -337,19 +328,19 @@ class DAOClient implements zDAO {
   }
 
   async getProposal(id: ProposalId): Promise<Proposal> {
-    await this.snapshotClient.forceUpdateScoresAndVotes(id);
+    await this._snapshotClient.forceUpdateScoresAndVotes(id);
 
-    const proposal: SnapshotProposal = await this.snapshotClient.getProposal({
+    const proposal: SnapshotProposal = await this._snapshotClient.getProposal({
       spaceId: this.ens,
       network: this.network,
-      strategies: this.options.strategies,
+      strategies: this._options.strategies,
       proposalId: id,
     });
 
     return await ProposalClient.createInstance(
       this,
-      this.snapshotClient,
-      this.gnosisSafeClient,
+      this._snapshotClient,
+      this._gnosisSafeClient,
       {
         id: proposal.id,
         type: proposal.type,
@@ -368,7 +359,7 @@ class DAOClient implements zDAO {
         votes: proposal.votes,
       },
       {
-        strategies: this.options.strategies,
+        strategies: this._options.strategies,
         scores_state: proposal.scores_state,
       }
     );
@@ -390,9 +381,6 @@ class DAOClient implements zDAO {
       payload.choices = DEFAULT_PROPOSAL_CHOICES;
     }
 
-    const signer = getSigner(provider, account);
-    const signerAddress = await signer.getAddress();
-
     // signer should have valid amount of voting token on Ethereum
     const contract = new ethers.Contract(
       this.votingToken.token,
@@ -400,7 +388,7 @@ class DAOClient implements zDAO {
       provider
     );
 
-    const balance = await contract.balanceOf(signerAddress);
+    const balance = await contract.balanceOf(account);
     if (balance.lt(this.amount)) {
       throw new Error(
         errorMessageForError('should-hold-token', {
@@ -413,19 +401,19 @@ class DAOClient implements zDAO {
     }
 
     const duration = this.duration ?? payload.duration;
-    const { id: proposalId } = await this.snapshotClient.createProposal(
+    const { id: proposalId } = await this._snapshotClient.createProposal(
       provider,
-      signerAddress,
+      account,
       {
         spaceId: this.ens,
         title: payload.title,
         body: payload.body ?? '',
         choices: payload.choices,
-        delay: this.options.delay,
+        delay: this._options.delay,
         duration: duration!,
         snapshot: Number(payload.snapshot),
         network: this.network,
-        strategies: this.options.strategies,
+        strategies: this._options.strategies,
         token: this.votingToken,
         transfer: payload.transfer && {
           sender: this.safeAddress,

@@ -1,7 +1,5 @@
 import fetch from 'cross-fetch';
 
-import { errorMessageForError } from './messages';
-
 export function getUrl(uri: string, gateway: string) {
   const ipfsGateway = `https://${gateway}`;
   if (!uri) return null;
@@ -21,19 +19,11 @@ export function getUrl(uri: string, gateway: string) {
 }
 
 export async function ipfsJson(uri: string, gateway: string) {
-  try {
-    const url = getUrl(uri, gateway);
-    if (!url) return {};
-    const res = await fetch(url);
-    const data = await res.json();
-    return data;
-  } catch (error: any) {
-    throw new Error(
-      errorMessageForError('network-error', {
-        message: error.message,
-      })
-    );
-  }
+  const url = getUrl(uri, gateway);
+  if (!url) return {};
+  const res = await fetch(url);
+  const data = await res.json();
+  return data;
 }
 
 export async function ipfsGet(
@@ -41,16 +31,8 @@ export async function ipfsGet(
   ipfsHash: string,
   protocolType = 'ipfs'
 ) {
-  try {
-    const url = `https://${gateway}/${protocolType}/${ipfsHash}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    return data;
-  } catch (error: any) {
-    throw new Error(
-      errorMessageForError('network-error', {
-        message: error.message,
-      })
-    );
-  }
+  const url = `https://${gateway}/${protocolType}/${ipfsHash}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return data;
 }

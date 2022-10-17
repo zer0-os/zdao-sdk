@@ -16,11 +16,11 @@ import { errorMessageForError } from '../utilities/messages';
 import DAOClient from './DAOClient';
 
 class ProposalClient implements Proposal {
-  private readonly zDAO: DAOClient;
-  private readonly snapshotClient: SnapshotClient;
-  private readonly gnosisSafeClient: GnosisSafeClient;
-  protected readonly properties: ProposalProperties;
-  private readonly options: any;
+  private readonly _zDAO: DAOClient;
+  private readonly _snapshotClient: SnapshotClient;
+  private readonly _gnosisSafeClient: GnosisSafeClient;
+  protected readonly _properties: ProposalProperties;
+  private readonly _options: any;
 
   private constructor(
     zDAO: DAOClient,
@@ -29,76 +29,75 @@ class ProposalClient implements Proposal {
     properties: ProposalProperties,
     options: any
   ) {
-    this.zDAO = zDAO;
-    this.snapshotClient = snapshotClient;
-    this.gnosisSafeClient = gnosisSafeClient;
-
-    this.properties = cloneDeep(properties);
-    this.options = options;
+    this._zDAO = zDAO;
+    this._snapshotClient = snapshotClient;
+    this._gnosisSafeClient = gnosisSafeClient;
+    this._properties = cloneDeep(properties);
+    this._options = options;
   }
 
   get id() {
-    return this.properties.id;
+    return this._properties.id;
   }
 
   get type() {
-    return this.properties.type;
+    return this._properties.type;
   }
 
   get author() {
-    return this.properties.author;
+    return this._properties.author;
   }
 
   get title() {
-    return this.properties.title;
+    return this._properties.title;
   }
 
   get body() {
-    return this.properties.body;
+    return this._properties.body;
   }
 
   get ipfs() {
-    return this.properties.ipfs;
+    return this._properties.ipfs;
   }
 
   get choices() {
-    return this.properties.choices;
+    return this._properties.choices;
   }
 
   get created() {
-    return this.properties.created;
+    return this._properties.created;
   }
 
   get start() {
-    return this.properties.start;
+    return this._properties.start;
   }
 
   get end() {
-    return this.properties.end;
+    return this._properties.end;
   }
 
   get state() {
-    return this.properties.state;
+    return this._properties.state;
   }
 
   get network() {
-    return this.properties.network;
+    return this._properties.network;
   }
 
   get snapshot() {
-    return this.properties.snapshot;
+    return this._properties.snapshot;
   }
 
   get scores() {
-    return this.properties.scores;
+    return this._properties.scores;
   }
 
   get votes() {
-    return this.properties.votes;
+    return this._properties.votes;
   }
 
   get metadata() {
-    return this.properties.metadata;
+    return this._properties.metadata;
   }
 
   static async createInstance(
@@ -120,43 +119,42 @@ class ProposalClient implements Proposal {
   }
 
   private async getTokenMetadata() {
-    if (!this.ipfs || this.metadata) return;
+    try {
+      if (!this.ipfs || this.metadata) return;
 
-    const ipfsData = await this.snapshotClient.ipfsGet(this.ipfs);
-    if (!ipfsData.data || !ipfsData.data.message) {
-      throw new Error(errorMessageForError('empty-voting-token'));
-    }
-    if (!ipfsData.data.message.metadata) {
-      this.properties.metadata = undefined;
-      return;
-    }
+      const ipfsData = await this._snapshotClient.ipfsGet(this.ipfs);
+      if (!ipfsData.data || !ipfsData.data.message) {
+        throw new Error(errorMessageForError('empty-voting-token'));
+      }
 
-    const metadataJson = JSON.parse(ipfsData.data.message.metadata);
-    if (
-      !metadataJson.sender ||
-      !metadataJson.recipient ||
-      !metadataJson.token ||
-      !metadataJson.amount
-    ) {
-      this.properties.metadata = undefined;
-      return;
-    }
+      const metadataJson = JSON.parse(ipfsData.data.message.metadata);
+      if (
+        !metadataJson.sender ||
+        !metadataJson.recipient ||
+        !metadataJson.token ||
+        !metadataJson.amount
+      ) {
+        this._properties.metadata = undefined;
+        return;
+      }
 
-    const sender = metadataJson.sender;
-    const recipient = metadataJson.recipient;
-    const token = metadataJson.token;
-    const decimals = metadataJson.decimals ?? 18;
-    const symbol = metadataJson.symbol ?? 'zToken';
-    const amount = metadataJson.amount;
+      const sender = metadataJson.sender;
+      const recipient = metadataJson.recipient;
+      const token = metadataJson.token;
+      const decimals = metadataJson.decimals ?? 18;
+      const symbol = metadataJson.symbol ?? 'zToken';
+      const amount = metadataJson.amount;
 
-    this.properties.metadata = {
-      sender,
-      recipient,
-      token,
-      decimals,
-      symbol,
-      amount,
-    };
+      this._properties.metadata = {
+        sender,
+        recipient,
+        token,
+        decimals,
+        symbol,
+        amount,
+      };
+      // eslint-disable-next-line no-empty
+    } catch (error) {}
   }
 
   async listVotes(pagination?: PaginationParam): Promise<Vote[]> {
@@ -167,12 +165,12 @@ class ProposalClient implements Proposal {
     const votes: Vote[] = [];
 
     while (numberOfResults === limit) {
-      const results = await this.snapshotClient.listVotes({
-        spaceId: this.zDAO.ens,
-        network: this.zDAO.network,
-        strategies: this.options.strategies,
+      const results = await this._snapshotClient.listVotes({
+        spaceId: this._zDAO.ens,
+        network: this._zDAO.network,
+        strategies: this._options.strategies,
         proposalId: this.id,
-        scores_state: this.options.scores_state,
+        scores_state: this._options.scores_state,
         snapshot: Number(this.snapshot),
         from,
         count: count >= limit ? limit : count,
@@ -193,8 +191,8 @@ class ProposalClient implements Proposal {
   }
 
   async getVotingPowerOfUser(account: string): Promise<number> {
-    return this.snapshotClient.getVotingPower({
-      spaceId: this.zDAO.ens,
+    return this._snapshotClient.getVotingPower({
+      spaceId: this._zDAO.ens,
       network: this.network,
       snapshot: Number(this.snapshot),
       voter: account,
@@ -214,34 +212,34 @@ class ProposalClient implements Proposal {
     };
 
     const snapshotProposal: SnapshotProposal = {
-      id: this.properties.id,
-      type: this.properties.type,
-      author: this.properties.author,
-      title: this.properties.title,
-      body: this.properties.body,
-      ipfs: this.properties.ipfs,
-      choices: this.properties.choices,
-      created: this.properties.created,
-      start: this.properties.start,
-      end: this.properties.end,
-      state: mapState(this.properties.state),
-      scores_state: this.options.scores_state,
-      network: this.properties.network,
-      snapshot: Number(this.properties.snapshot),
-      scores: this.properties.scores,
-      votes: this.properties.votes,
+      id: this._properties.id,
+      type: this._properties.type,
+      author: this._properties.author,
+      title: this._properties.title,
+      body: this._properties.body,
+      ipfs: this._properties.ipfs,
+      choices: this._properties.choices,
+      created: this._properties.created,
+      start: this._properties.start,
+      end: this._properties.end,
+      state: mapState(this._properties.state),
+      scores_state: this._options.scores_state,
+      network: this._properties.network,
+      snapshot: Number(this._properties.snapshot),
+      scores: this._properties.scores,
+      votes: this._properties.votes,
     };
 
-    const updated = await this.snapshotClient.updateScoresAndVotes(
+    const updated = await this._snapshotClient.updateScoresAndVotes(
       snapshotProposal,
       {
-        spaceId: this.zDAO.ens,
-        network: this.zDAO.network,
-        strategies: this.options.strategies,
+        spaceId: this._zDAO.ens,
+        network: this._zDAO.network,
+        strategies: this._options.strategies,
       }
     );
-    this.properties.scores = updated.scores;
-    this.properties.votes = updated.votes;
+    this._properties.scores = updated.scores;
+    this._properties.votes = updated.votes;
     return this;
   }
 
@@ -250,22 +248,22 @@ class ProposalClient implements Proposal {
     account: string,
     choice: Choice
   ): Promise<VoteId> {
-    return this.snapshotClient.voteProposal(provider, account, {
-      spaceId: this.zDAO.ens,
+    return this._snapshotClient.voteProposal(provider, account, {
+      spaceId: this._zDAO.ens,
       proposalId: this.id,
       choice,
     });
   }
 
   canExecute(): boolean {
-    if (this.zDAO.isRelativeMajority) return false;
+    if (this._zDAO.isRelativeMajority) return false;
 
     const totalScore = this.scores.reduce((prev, current) => prev + current, 0);
     const totalScoreAsBN = getDecimalAmount(
       BigNumber.from(totalScore),
-      this.zDAO.votingToken.decimals
+      this._zDAO.votingToken.decimals
     );
-    if (totalScoreAsBN.gte(this.zDAO.minimumTotalVotingTokens)) {
+    if (totalScoreAsBN.gte(this._zDAO.minimumTotalVotingTokens)) {
       return true;
     }
     return false;
