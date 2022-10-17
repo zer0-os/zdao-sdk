@@ -1,4 +1,5 @@
 import Client from '@snapshot-labs/snapshot.js';
+import { Proposal } from '@snapshot-labs/snapshot.js/dist/sign/types';
 import fetch from 'cross-fetch';
 import { addSeconds } from 'date-fns';
 import { ethers } from 'ethers';
@@ -465,21 +466,13 @@ class SnapshotClient {
         type: 'single-choice',
         title: params.title,
         body: params.body,
+        discussion: '',
         choices: params.choices,
         start: timestamp(startDateTime) + delay,
         end: timestamp(addSeconds(startDateTime, params.duration)) + delay,
         snapshot: Number(params.snapshot),
-        network: params.network,
-        strategies:
-          JSON.stringify(params.strategies) ??
-          JSON.stringify(
-            this.generateStrategies(
-              params.token.token,
-              params.token.decimals,
-              params.token.symbol
-            )
-          ),
         plugins: '{}',
+        // Proposal(snapshot.js) does not metadata, force uploading to IPFS
         metadata: params.transfer
           ? JSON.stringify({
               sender: params.transfer.sender,
@@ -489,7 +482,7 @@ class SnapshotClient {
               amount: params.transfer.amount,
             })
           : '{}',
-      });
+      } as unknown as Proposal);
     } catch (error: any) {
       throw new Error(
         errorMessageForError('network-error', {
@@ -520,7 +513,6 @@ class SnapshotClient {
         proposal: params.proposalId,
         type: 'single-choice', // payload.proposalType,
         choice: params.choice,
-        metadata: JSON.stringify({}),
       });
     } catch (error: any) {
       throw new Error(
