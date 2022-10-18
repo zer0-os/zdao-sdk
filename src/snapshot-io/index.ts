@@ -466,13 +466,21 @@ class SnapshotClient {
         type: 'single-choice',
         title: params.title,
         body: params.body,
-        discussion: '',
         choices: params.choices,
         start: timestamp(startDateTime) + delay,
         end: timestamp(addSeconds(startDateTime, params.duration)) + delay,
         snapshot: Number(params.snapshot),
+        network: params.network,
+        strategies:
+          JSON.stringify(params.strategies) ??
+          JSON.stringify(
+            this.generateStrategies(
+              params.token.token,
+              params.token.decimals,
+              params.token.symbol
+            )
+          ),
         plugins: '{}',
-        // Proposal(snapshot.js) does not metadata, force uploading to IPFS
         metadata: params.transfer
           ? JSON.stringify({
               sender: params.transfer.sender,
@@ -513,6 +521,7 @@ class SnapshotClient {
         proposal: params.proposalId,
         type: 'single-choice', // payload.proposalType,
         choice: params.choice,
+        metadata: JSON.stringify({}),
       });
     } catch (error: any) {
       throw new Error(
