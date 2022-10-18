@@ -1,6 +1,6 @@
 {
   "name": "@zero-tech/zdao-sdk",
-  "version": "0.12.1",
+  "version": "0.11.1",
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -35,7 +35,6 @@
     "cross-fetch": "3.1.5",
     "date-fns": "2.28.0",
     "dotenv": "16.0.0",
-    "ethers": "5.6.0",
     "graphql": "16.3.0",
     "graphql-request": "4.1.0",
     "graphql-tag": "2.12.6",
@@ -44,8 +43,9 @@
     "typescript": "4.6.2"
   },
   "peerDependencies": {
-    "@zero-tech/zauction-sdk": ">=0.0.44",
-    "@zero-tech/zns-sdk": ">=0.1.18"
+    "@zero-tech/zauction-sdk": ">=0.2.11",
+    "@zero-tech/zns-sdk": ">=0.8.13",
+    "ethers": ">=5.4.6"
   },
   "devDependencies": {
     "@types/chai": "4.3.0",
@@ -55,15 +55,17 @@
     "@types/node-fetch": "2.6.1",
     "@typescript-eslint/eslint-plugin": "5.15.0",
     "@typescript-eslint/parser": "5.15.0",
-    "@zero-tech/zauction-sdk": "^0.0.44",
-    "@zero-tech/zns-sdk": "^0.1.18",
+    "@zero-tech/zauction-sdk": "0.2.11",
+    "@zero-tech/zns-sdk": "0.8.13",
     "chai": "4.3.6",
     "chai-as-promised": "7.1.1",
+    "env-var": "7.3.0",
     "eslint": "8.11.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "4.0.0",
     "eslint-plugin-simple-import-sort": "7.0.0",
     "eslint-plugin-unused-imports": "2.0.0",
+    "ethers": "^5.4.6",
     "mocha": "9.2.2",
     "node-fetch": "3.2.3",
     "prettier": "2.5.1",

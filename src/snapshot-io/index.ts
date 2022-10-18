@@ -1,11 +1,12 @@
 import Client from '@snapshot-labs/snapshot.js';
+import { Proposal } from '@snapshot-labs/snapshot.js/dist/sign/types';
 import fetch from 'cross-fetch';
 import { addSeconds } from 'date-fns';
 import { ethers } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
 import { orderBy } from 'lodash';
 
-import verified from '../config/constants/verified.json';
+import verified from '../config/verified.json';
 import { ENS, ProposalId, SnapshotConfig, SupportedChainId } from '../types';
 import { timestamp } from '../utilities/date';
 import { graphQLQuery } from '../utilities/graphql';
@@ -34,20 +35,54 @@ import {
 } from './types';
 
 class SnapshotClient {
-  private readonly _config: SnapshotConfig;
-  private readonly _clientEIP712;
-  private readonly _graphQLClient;
-  private _spaces: SnapshotSpace[] = [];
+  private readonly config: SnapshotConfig;
+  private readonly clientEIP712;
+  private readonly graphQLClient;
+  private spaces: SnapshotSpace[] = [];
 
   constructor(config: SnapshotConfig) {
-    this._config = config;
+    this.config = config;
 
-    this._clientEIP712 = new Client.Client712(config.serviceUri);
-    this._graphQLClient = new GraphQLClient(`${config.serviceUri}/graphql`);
+    this.clientEIP712 = new Client.Client712(config.serviceUri);
+    this.graphQLClient = new GraphQLClient(`${config.serviceUri}/graphql`);
   }
 
   ipfsGet(ipfs: string) {
-    return Client.utils.ipfsGet(this._config.ipfsGateway, ipfs);
+    try {
+      return Client.utils.ipfsGet(this.config.ipfsGateway, ipfs);
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
+  }
+
+  private getScores(
+    space: string,
+    strategies: any[],
+    network: string,
+    addresses: string[],
+    snapshot?: number | string,
+    scoreApiUrl?: string
+  ): Promise<any> {
+    try {
+      return Client.utils.getScores(
+        space,
+        strategies,
+        network,
+        addresses,
+        snapshot,
+        scoreApiUrl
+      );
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
   }
 
   private generateStrategies(
@@ -68,12 +103,22 @@ class SnapshotClient {
   }
 
   async listSpaces(network: string): Promise<SnapshotSpace[]> {
-    if (this._spaces.length > 0) {
-      return this._spaces;
+    if (this.spaces.length > 0) {
+      return this.spaces;
     }
-    const exploreObj: any = await fetch(
-      `${this._config.serviceUri}/api/explore`
-    ).then((res) => res.json());
+
+    let exploreObj: any;
+    try {
+      exploreObj = await fetch(`${this.config.serviceUri}/api/explore`).then(
+        (res) => res.json()
+      );
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
     const spaces2 = Object.entries(exploreObj.spaces).map(
       ([id, space]: any) => {
         // map manually selected categories for verified spaces that don't have set their categories yet
@@ -81,7 +126,7 @@ class SnapshotClient {
         space.categories = space.categories?.length ? space.categories : [];
         space.avatarUri = Client.utils.getUrl(
           space.avatar,
-          this._config.ipfsGateway
+          this.config.ipfsGateway
         );
         return [id, { id, ...space }];
       }
@@ -108,7 +153,7 @@ class SnapshotClient {
       )
       .filter((space) => space.network === network);
     const list = orderBy(filters, ['followers', 'score'], ['desc', 'desc']);
-    this._spaces = list.map((item: any) => ({
+    this.spaces = list.map((item: any) => ({
       id: item.id,
       name: item.name,
       avatar: item.avatarUri,
@@ -118,12 +163,12 @@ class SnapshotClient {
       strategies: item.strategies,
       followers: item.followers,
     }));
-    return this._spaces;
+    return this.spaces;
   }
 
   async getSpaceDetails(spaceId: ENS): Promise<SnapshotSpaceDetails> {
     const response = await graphQLQuery(
-      this._graphQLClient,
+      this.graphQLClient,
       SPACES_QUERY,
       {
         id_in: [spaceId],
@@ -133,11 +178,12 @@ class SnapshotClient {
     if (response.length < 1) {
       throw Error(errorMessageForError('not-found-ens-in-snapshot'));
     }
+
     const item = response[0];
     return {
       id: item.id,
       name: item.name,
-      avatar: Client.utils.getUrl(item.avatar, this._config.ipfsGateway),
+      avatar: Client.utils.getUrl(item.avatar, this.config.ipfsGateway),
       network: item.network,
       duration: item.voting.period,
       followers: item.followersCount,
@@ -151,7 +197,7 @@ class SnapshotClient {
 
   async getSpaceOptions(spaceId: ENS): Promise<SnapshotSpaceOptions> {
     const response = await graphQLQuery(
-      this._graphQLClient,
+      this.graphQLClient,
       SPACES_STRATEGIES_QUERY,
       {
         id_in: [spaceId],
@@ -159,10 +205,10 @@ class SnapshotClient {
       'spaces'
     );
     const filter = response.filter((item: any) => item.id === spaceId);
-
     if (filter.length < 1) {
       throw Error(errorMessageForError('not-found-ens-in-snapshot'));
     }
+
     return {
       strategies: filter[0].strategies,
       threshold: filter[0].filters.minScore,
@@ -181,7 +227,7 @@ class SnapshotClient {
     count = 30000
   ): Promise<SnapshotProposal[]> {
     const response = await graphQLQuery(
-      this._graphQLClient,
+      this.graphQLClient,
       PROPOSALS_QUERY,
       {
         spaceId,
@@ -226,7 +272,7 @@ class SnapshotClient {
       // latest scores are still pending on calculation
       // it requires to update right now
       const voteResponse = await graphQLQuery(
-        this._graphQLClient,
+        this.graphQLClient,
         VOTES_QUERY,
         {
           id: proposal.id,
@@ -247,7 +293,7 @@ class SnapshotClient {
       }
 
       // Get scores
-      const scores = await Client.utils.getScores(
+      const scores = await this.getScores(
         params.spaceId,
         strategies,
         params.network,
@@ -284,7 +330,7 @@ class SnapshotClient {
 
   async getProposal(params: GetProposalParams): Promise<SnapshotProposal> {
     const response = await graphQLQuery(
-      this._graphQLClient,
+      this.graphQLClient,
       PROPOSAL_QUERY,
       {
         id: params.proposalId,
@@ -322,7 +368,7 @@ class SnapshotClient {
 
   async listVotes(params: ListVotesParams): Promise<SnapshotVote[]> {
     const response = await graphQLQuery(
-      this._graphQLClient,
+      this.graphQLClient,
       VOTES_QUERY,
       {
         id: params.proposalId,
@@ -339,7 +385,7 @@ class SnapshotClient {
       const voters = response.map((vote: any) => vote.voter);
 
       // Get scores
-      const scores = await Client.utils.getScores(
+      const scores = await this.getScores(
         params.spaceId,
         params.strategies,
         params.network,
@@ -374,7 +420,7 @@ class SnapshotClient {
       params.symbol
     );
 
-    let scores: any = await Client.utils.getScores(
+    let scores: any = await this.getScores(
       params.spaceId,
       strategies,
       params.network,
@@ -390,7 +436,7 @@ class SnapshotClient {
   async getVotingPower(params: VotingPowerParams): Promise<number> {
     const { strategies } = await this.getSpaceOptions(params.spaceId);
 
-    let scores: any = await Client.utils.getScores(
+    let scores: any = await this.getScores(
       params.spaceId,
       strategies,
       params.network,
@@ -411,38 +457,47 @@ class SnapshotClient {
     const startDateTime = new Date();
     const delay = params.delay ?? 0;
 
-    const response: any = await this._clientEIP712.proposal(provider, account, {
-      from: account,
-      space: params.spaceId,
-      timestamp: timestamp(new Date()),
-      type: 'single-choice',
-      title: params.title,
-      body: params.body,
-      choices: params.choices,
-      start: timestamp(startDateTime) + delay,
-      end: timestamp(addSeconds(startDateTime, params.duration)) + delay,
-      snapshot: Number(params.snapshot),
-      network: params.network,
-      strategies:
-        JSON.stringify(params.strategies) ??
-        JSON.stringify(
-          this.generateStrategies(
-            params.token.token,
-            params.token.decimals,
-            params.token.symbol
-          )
-        ),
-      plugins: '{}',
-      metadata: params.transfer
-        ? JSON.stringify({
-            sender: params.transfer.sender,
-            recipient: params.transfer.recipient,
-            token: params.transfer.token,
-            decimals: params.transfer.decimals,
-            amount: params.transfer.amount,
-          })
-        : '{}',
-    });
+    let response: any;
+    try {
+      response = await this.clientEIP712.proposal(provider, account, {
+        from: account,
+        space: params.spaceId,
+        timestamp: timestamp(new Date()),
+        type: 'single-choice',
+        title: params.title,
+        body: params.body,
+        choices: params.choices,
+        start: timestamp(startDateTime) + delay,
+        end: timestamp(addSeconds(startDateTime, params.duration)) + delay,
+        snapshot: Number(params.snapshot),
+        network: params.network,
+        strategies:
+          JSON.stringify(params.strategies) ??
+          JSON.stringify(
+            this.generateStrategies(
+              params.token.token,
+              params.token.decimals,
+              params.token.symbol
+            )
+          ),
+        plugins: '{}',
+        metadata: params.transfer
+          ? JSON.stringify({
+              sender: params.transfer.sender,
+              recipient: params.transfer.recipient,
+              token: params.transfer.token,
+              decimals: params.transfer.decimals,
+              amount: params.transfer.amount,
+            })
+          : '{}',
+      } as unknown as Proposal);
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
 
     if (!response.id || !response.ipfs) {
       throw Error(errorMessageForError('failed-create-proposal'));
@@ -459,25 +514,42 @@ class SnapshotClient {
     account: string,
     params: VoteProposalParams
   ): Promise<string> {
-    const response: any = await this._clientEIP712.vote(provider, account, {
-      space: params.spaceId,
-      proposal: params.proposalId,
-      type: 'single-choice', // payload.proposalType,
-      choice: params.choice,
-      metadata: JSON.stringify({}),
-    });
+    let response: any;
+    try {
+      response = await this.clientEIP712.vote(provider, account, {
+        space: params.spaceId,
+        proposal: params.proposalId,
+        type: 'single-choice', // payload.proposalType,
+        choice: params.choice,
+        metadata: JSON.stringify({}),
+      });
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
 
     await this.forceUpdateScoresAndVotes(params.proposalId);
     return response.id;
   }
 
   async forceUpdateScoresAndVotes(proposalId: ProposalId) {
-    // There are tricky method to update proposal scores and voters immediately after voting
-    const updateScoreApi = `${this._config.serviceUri}/api/scores/${proposalId}`;
-    await fetch(updateScoreApi, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    }); // .then((value) => value.json().then((json) => console.log(json)));
+    try {
+      // There are tricky method to update proposal scores and voters immediately after voting
+      const updateScoreApi = `${this.config.serviceUri}/api/scores/${proposalId}`;
+      await fetch(updateScoreApi, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message,
+        })
+      );
+    }
   }
 }
 
