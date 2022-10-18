@@ -40,7 +40,7 @@ export const developmentConfiguration = (
     zNSHub: zNSHubAddress[SupportedChainId.GOERLI],
   },
   provider,
-  zNS: configuration.rinkebyConfiguration(provider), // todo, will update with goerliConfiguration
+  zNS: configuration.goerliConfiguration(provider),
 });
 
 export const productionConfiguration = (

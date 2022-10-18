@@ -699,7 +699,7 @@
   dependencies:
     tslib "^2.3.0"
 
-"@zero-tech/zauction-sdk@0.2.11":
+"@zero-tech/zauction-sdk@^0.2.11":
   version "0.2.11"
   resolved "https://registry.yarnpkg.com/@zero-tech/zauction-sdk/-/zauction-sdk-0.2.11.tgz#09503981127be0d86ea1f3da8ecd294690cb42b7"
   integrity sha512-KyS+J0oLxyUi611CFkBSedoz/pRuoY3C8H50Uomk/pjtCoUmnFYWaxztzTT2qyqXuziGTeXAajM2mZghII+S9Q==
@@ -712,15 +712,21 @@
     cross-fetch "3.1.4"
     graphql "15.5.3"
 
-"@zero-tech/zns-sdk@0.8.13":
-  version "0.8.13"
-  resolved "https://registry.yarnpkg.com/@zero-tech/zns-sdk/-/zns-sdk-0.8.13.tgz#4c81cffc418f5654c99665f5cb1e69cc7d67591d"
-  integrity sha512-XbYNjimXz77IJ46F+/wtYGi30IYj+L9BZZOG5AVwVDtUbi1jLN+YsveZWEA+Iw7b+IyurOBGFv+U1JSffs+GIw==
+"@zero-tech/zero-contracts@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@zero-tech/zero-contracts/-/zero-contracts-0.0.4.tgz#47e126a515a8abd8b04b4a9d8b7e25ee65e69bbd"
+  integrity sha512-nqDoLsUlTf7shanR9mzi8E7OzfSWzlaZtLrpwgCIojYnDjf/oUJ4N3iF00vCt1jmDRzP61EoNo3I0yQFg6m60Q==
+
+"@zero-tech/zns-sdk@^0.8.17":
+  version "0.8.17"
+  resolved "https://registry.yarnpkg.com/@zero-tech/zns-sdk/-/zns-sdk-0.8.17.tgz#0be9edd5d154432da67901d71b1167a555c4c3a2"
+  integrity sha512-MNYV/zUQh4K0Zad5ytJUnAa/mnuONfjMOd3a/dv8ZuFtIGxUAAhoMBi3OYnNEvZff4jR0EGlPb+7pY/+04LPlQ==
   dependencies:
     "@apollo/client" "3.4.10"
     "@ethersproject/abi" "5.4.1"
     "@ethersproject/bytes" "5.4.0"
     "@ethersproject/providers" "5.4.5"
+    "@zero-tech/zero-contracts" "^0.0.4"
     coingecko-api "1.0.10"
     consola "2.15.3"
     cross-fetch "3.1.4"

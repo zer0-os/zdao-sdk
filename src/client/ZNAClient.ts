@@ -19,7 +19,7 @@ class ZNAClient {
   static async zNAIdTozNA(zNAId: zNAId): Promise<zNA> {
     try {
       return await ZNAClient.znsInstance
-        .getDomainById(zNAId)
+        .getDomainById(zNAId, false)
         .then((domain: Domain) => domain.name);
     } catch (error: any) {
       throw new Error(
