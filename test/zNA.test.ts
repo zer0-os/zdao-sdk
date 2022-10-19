@@ -1,6 +1,6 @@
+import { JsonRpcProvider } from '@ethersproject/providers';
 import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
-import { ethers } from 'ethers';
 
 import { createSDKInstance } from '../src';
 import { developmentConfiguration } from '../src/config';
@@ -14,10 +14,7 @@ describe('zNA test', async () => {
   let sdkInstance: SDKInstance;
 
   beforeEach('setup', async () => {
-    const provider = new ethers.providers.JsonRpcProvider(
-      env.rpcUrl,
-      env.network
-    );
+    const provider = new JsonRpcProvider(env.rpcUrl, env.network);
     const config: Config = developmentConfiguration(provider);
 
     sdkInstance = createSDKInstance(config);
@@ -25,38 +22,38 @@ describe('zNA test', async () => {
 
   it('should create successfully', async () => {
     const zDAO: zDAO = await sdkInstance.createZDAOFromParams({
-      ens: 'joshupgig.eth',
-      zNA: 'joshupgig.eth',
-      title: 'zDAO',
+      ens: env.DAOs[0].ens,
+      zNA: env.DAOs[0].zNAs[0],
+      title: env.DAOs[0].title,
       creator: 'creator',
       network: env.network,
-      safeAddress: '0x7a935d07d097146f143A45aA79FD8624353abD5D',
-      votingToken: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+      safeAddress: env.DAOs[0].safeAddress,
+      votingToken: env.DAOs[0].votingToken,
     });
 
-    expect(zDAO.ens).to.be.equal('joshupgig.eth');
+    expect(zDAO.ens).to.be.equal(env.DAOs[0].ens);
   });
 
   it('should throw error if create same zNA', async () => {
     await sdkInstance.createZDAOFromParams({
-      ens: 'joshupgig.eth',
-      zNA: 'zDAO.eth',
-      title: 'zDAO',
+      ens: env.DAOs[0].ens,
+      zNA: env.DAOs[0].zNAs[0],
+      title: env.DAOs[0].title,
       creator: 'creator',
       network: env.network,
-      safeAddress: 'safeAddress',
-      votingToken: 'voting token',
+      safeAddress: env.DAOs[0].safeAddress,
+      votingToken: env.DAOs[0].votingToken,
     });
 
     await expect(
       sdkInstance.createZDAOFromParams({
-        ens: 'joshupgig.eth',
-        zNA: 'zDAO.eth',
-        title: 'zDAO1',
-        creator: 'creator1',
+        ens: env.DAOs[0].ens,
+        zNA: env.DAOs[0].zNAs[0],
+        title: env.DAOs[0].title,
+        creator: 'creator',
         network: env.network,
-        safeAddress: 'safeAddress1',
-        votingToken: 'voting token1',
+        safeAddress: env.DAOs[0].safeAddress,
+        votingToken: env.DAOs[0].votingToken,
       })
     ).to.be.rejectedWith('zDAO already exists');
   });

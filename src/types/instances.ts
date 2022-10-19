@@ -1,4 +1,5 @@
-import { ethers } from 'ethers';
+import { Web3Provider } from '@ethersproject/providers';
+import { Wallet } from '@ethersproject/wallet';
 
 import {
   CreateProposalParams,
@@ -8,7 +9,6 @@ import {
 import { Choice, ProposalId, VoteId, zNA } from './primitives';
 import {
   ProposalProperties,
-  TokenMintOptions,
   Transaction,
   Vote,
   zDAOAssets,
@@ -38,19 +38,6 @@ export interface SDKInstance {
    * @returns true if zNA exists
    */
   doesZDAOExist(zNA: zNA): Promise<boolean>;
-
-  /**
-   * Create new zToken with given name and symbol and return deployed address
-   * @param name name of zToken
-   * @param symbol symbol of zToken
-   * @param options mint options
-   */
-  createZToken(
-    signer: ethers.Signer,
-    name: string,
-    symbol: string,
-    options?: TokenMintOptions
-  ): Promise<string>;
 
   /**
    * Create zDAO from parameters for test
@@ -126,7 +113,7 @@ export interface zDAO extends zDAOProperties {
    * @returns proposal id if success
    */
   createProposal(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    provider: Web3Provider | Wallet,
     account: string,
     payload: CreateProposalParams
   ): Promise<ProposalId>;
@@ -165,7 +152,7 @@ export interface Proposal extends ProposalProperties {
    * @returns vote id if successfully cast a vote
    */
   vote(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    provider: Web3Provider | Wallet,
     account: string,
     choice: Choice
   ): Promise<VoteId>;
