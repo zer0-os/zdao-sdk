@@ -1,3 +1,7 @@
+import { BigNumber } from '@ethersproject/bignumber';
+import { Contract } from '@ethersproject/contracts';
+import { Web3Provider } from '@ethersproject/providers';
+import { Wallet } from '@ethersproject/wallet';
 import {
   Erc20Transfer as GnosisErc20Transfer,
   Erc721Transfer as GnosisErc721Transfer,
@@ -6,7 +10,6 @@ import {
   Transfer as GnosisTransfer,
   TransferInfo as GnosisTransferInfo,
 } from '@gnosis.pm/safe-react-gateway-sdk';
-import { BigNumber, ethers } from 'ethers';
 import { cloneDeep } from 'lodash';
 
 import { DEFAULT_PROPOSAL_CHOICES } from '../config';
@@ -375,7 +378,7 @@ class DAOClient implements zDAO {
   }
 
   async createProposal(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    provider: Web3Provider | Wallet,
     account: string,
     payload: CreateProposalParams
   ): Promise<ProposalId> {
@@ -394,11 +397,7 @@ class DAOClient implements zDAO {
     const signerAddress = await signer.getAddress();
 
     // signer should have valid amount of voting token on Ethereum
-    const contract = new ethers.Contract(
-      this.votingToken.token,
-      ERC20Abi,
-      provider
-    );
+    const contract = new Contract(this.votingToken.token, ERC20Abi, provider);
 
     const balance = await contract.balanceOf(signerAddress);
     if (balance.lt(this.amount)) {

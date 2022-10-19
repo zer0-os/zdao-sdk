@@ -1,4 +1,5 @@
-import { ethers } from 'ethers';
+import { Web3Provider } from '@ethersproject/providers';
+import { Wallet } from '@ethersproject/wallet';
 
 import {
   CreateProposalParams,
@@ -112,7 +113,7 @@ export interface zDAO extends zDAOProperties {
    * @returns proposal id if success
    */
   createProposal(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    provider: Web3Provider | Wallet,
     account: string,
     payload: CreateProposalParams
   ): Promise<ProposalId>;
@@ -151,7 +152,7 @@ export interface Proposal extends ProposalProperties {
    * @returns vote id if successfully cast a vote
    */
   vote(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    provider: Web3Provider | Wallet,
     account: string,
     choice: Choice
   ): Promise<VoteId>;

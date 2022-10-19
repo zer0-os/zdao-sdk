@@ -28,6 +28,12 @@
   },
   "homepage": "https://github.com/zer0-os/zdao-sdk#readme",
   "dependencies": {
+    "@ethersproject/abstract-signer": "^5.4.1",
+    "@ethersproject/address": "^5.4.0",
+    "@ethersproject/bignumber": "^5.4.2",
+    "@ethersproject/contracts": "^5.4.1",
+    "@ethersproject/providers": "^5.4.5",
+    "@ethersproject/wallet": "^5.4.0",
     "@gnosis.pm/safe-react-gateway-sdk": "2.10.1",
     "@snapshot-labs/snapshot.js": "0.3.56",
     "@types/lodash": "4.14.180",

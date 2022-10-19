@@ -1,5 +1,5 @@
+import { Provider } from '@ethersproject/providers';
 import { Config as zNSConfig } from '@zero-tech/zns-sdk';
-import { ethers } from 'ethers';
 
 export interface SnapshotConfig {
   // uri to Snaphost Hub
@@ -35,5 +35,5 @@ export interface Config {
   gnosisSafe: GnosisSafeConfig;
   zNA: zNAConfig;
   zNS: zNSConfig;
-  provider: ethers.providers.Provider; // web3 provider
+  provider: Provider; // web3 provider
 }

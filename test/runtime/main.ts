@@ -1,5 +1,7 @@
+import { BigNumber } from '@ethersproject/bignumber';
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { Wallet } from '@ethersproject/wallet';
 import { createInstance as createZNSInstance } from '@zero-tech/zns-sdk';
-import { BigNumber, ethers } from 'ethers';
 
 import { createSDKInstance } from '../../src';
 import {
@@ -21,7 +23,7 @@ import { setEnv } from '../shared/setupEnv';
 
 const createProposal = async (
   sdkInstance: SDKInstance,
-  signer: ethers.Wallet,
+  signer: Wallet,
   zDAO: zDAO
 ) => {
   const blockNumber = await signer.provider.getBlockNumber();
@@ -86,7 +88,7 @@ const pagination = async (sdkInstance: SDKInstance, zDAO: zDAO) => {
 
 const immediateVote = async (
   sdkInstance: SDKInstance,
-  signer: ethers.Wallet,
+  signer: Wallet,
   zDAO: zDAO,
   proposalId: ProposalId,
   choice: Choice
@@ -144,11 +146,8 @@ const main = async () => {
   const isDev = true;
   const env = setEnv(isDev);
 
-  const provider = new ethers.providers.JsonRpcProvider(
-    env.rpcUrl,
-    env.network
-  );
-  const signer = new ethers.Wallet(env.privateKey, provider);
+  const provider = new JsonRpcProvider(env.rpcUrl, env.network);
+  const signer = new Wallet(env.privateKey, provider);
 
   const config: Config = isDev
     ? developmentConfiguration(provider, 'zer0.infura-ipfs.io')
@@ -184,7 +183,7 @@ const main = async () => {
       zDAO.totalSupplyOfVotingToken
     );
 
-    await createProposal(sdkInstance, signer, zDAO);
+    // await createProposal(sdkInstance, signer, zDAO);
     await pagination(sdkInstance, zDAO);
     // await immediateVote(
     //   sdkInstance,

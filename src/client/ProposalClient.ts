@@ -1,4 +1,6 @@
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber } from '@ethersproject/bignumber';
+import { Web3Provider } from '@ethersproject/providers';
+import { Wallet } from '@ethersproject/wallet';
 import { cloneDeep } from 'lodash';
 
 import GnosisSafeClient from '../gnosis-safe';
@@ -246,7 +248,7 @@ class ProposalClient implements Proposal {
   }
 
   async vote(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    provider: Web3Provider | Wallet,
     account: string,
     choice: Choice
   ): Promise<VoteId> {

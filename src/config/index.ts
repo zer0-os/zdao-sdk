@@ -1,5 +1,5 @@
+import { Provider } from '@ethersproject/providers';
 import { configuration } from '@zero-tech/zns-sdk';
-import { ethers } from 'ethers';
 
 import { Config, SupportedChainId } from '../types';
 
@@ -20,7 +20,7 @@ export const zNSHubAddress: AddressMap = {
 export const DEFAULT_PROPOSAL_CHOICES = ['Approve', 'Deny'];
 
 export const developmentConfiguration = (
-  provider: ethers.providers.Provider,
+  provider: Provider,
   ipfsGateway = 'zer0.infura-ipfs.io'
 ): Config => ({
   snapshot: {
@@ -44,7 +44,7 @@ export const developmentConfiguration = (
 });
 
 export const productionConfiguration = (
-  provider: ethers.providers.Provider,
+  provider: Provider,
   ipfsGateway = 'zer0.infura-ipfs.io'
 ): Config => ({
   snapshot: {

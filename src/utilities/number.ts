@@ -1,15 +1,15 @@
-import { ethers } from 'ethers';
+import { BigNumber } from '@ethersproject/bignumber';
 
-export const BIG_TEN = ethers.BigNumber.from(10);
-export const BIG_EITEEN = ethers.BigNumber.from(10).pow(18);
+export const BIG_TEN = BigNumber.from(10);
+export const BIG_EITEEN = BigNumber.from(10).pow(18);
 export const DECIMALS = 4;
 
-export const extendToDecimals = (decimals = 18): ethers.BigNumber => {
-  return ethers.BigNumber.from(10).pow(decimals);
+export const extendToDecimals = (decimals = 18): BigNumber => {
+  return BigNumber.from(10).pow(decimals);
 };
 
 export const getFullDisplayBalance = (
-  balance: ethers.BigNumber,
+  balance: BigNumber,
   decimals = 18,
   displayDecimals?: number
 ) => {
@@ -21,12 +21,12 @@ export const getFullDisplayBalance = (
     });
 };
 
-export const getDecimalAmount = (amount: ethers.BigNumber, decimals = 18) => {
+export const getDecimalAmount = (amount: BigNumber, decimals = 18) => {
   return extendToDecimals(decimals).mul(amount);
 };
 
-export const getBalanceAmount = (amount: ethers.BigNumber, decimals = 18) => {
-  return ethers.BigNumber.from(amount).div(BIG_TEN.pow(decimals));
+export const getBalanceAmount = (amount: BigNumber, decimals = 18) => {
+  return BigNumber.from(amount).div(BIG_TEN.pow(decimals));
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

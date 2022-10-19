@@ -1,3 +1,4 @@
+import { getAddress } from '@ethersproject/address';
 import {
   SafeBalanceResponse,
   SafeCollectibleResponse,
@@ -5,7 +6,6 @@ import {
   TransactionListItem as TransactionListItem,
 } from '@gnosis.pm/safe-react-gateway-sdk';
 import fetch from 'cross-fetch';
-import { ethers } from 'ethers';
 
 import { GnosisSafeConfig } from '../types';
 import { errorMessageForError } from '../utilities';
@@ -24,7 +24,7 @@ class GnosisSafeClient {
     selectedCurrency = 'USD'
   ): Promise<SafeBalanceResponse> {
     try {
-      const address = ethers.utils.getAddress(safeAddress);
+      const address = getAddress(safeAddress);
 
       const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/balances/${selectedCurrency}?exclude_spam=true&trusted=false`;
 
@@ -45,7 +45,7 @@ class GnosisSafeClient {
     network: string
   ): Promise<SafeCollectibleResponse[]> {
     try {
-      const address = ethers.utils.getAddress(safeAddress);
+      const address = getAddress(safeAddress);
 
       const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/collectibles?exclude_spam=true&trusted=false`;
 
@@ -66,7 +66,7 @@ class GnosisSafeClient {
     network: string
   ): Promise<Transaction[]> {
     try {
-      const address = ethers.utils.getAddress(safeAddress);
+      const address = getAddress(safeAddress);
 
       const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/transactions/history`;
 

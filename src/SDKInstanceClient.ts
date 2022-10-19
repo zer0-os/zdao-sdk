@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers';
+import { BigNumber } from '@ethersproject/bignumber';
 import shortid from 'shortid';
 
 import DAOClient from './client/DAOClient';

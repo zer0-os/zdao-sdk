@@ -1,6 +1,6 @@
+import { JsonRpcProvider } from '@ethersproject/providers';
 import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
-import { ethers } from 'ethers';
 
 import { createSDKInstance } from '../src';
 import { developmentConfiguration } from '../src/config';
@@ -14,10 +14,7 @@ describe('zNA test', async () => {
   let sdkInstance: SDKInstance;
 
   beforeEach('setup', async () => {
-    const provider = new ethers.providers.JsonRpcProvider(
-      env.rpcUrl,
-      env.network
-    );
+    const provider = new JsonRpcProvider(env.rpcUrl, env.network);
     const config: Config = developmentConfiguration(provider);
 
     sdkInstance = createSDKInstance(config);

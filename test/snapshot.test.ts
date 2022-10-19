@@ -1,6 +1,8 @@
+import { BigNumber } from '@ethersproject/bignumber';
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { Wallet } from '@ethersproject/wallet';
 import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
-import { BigNumber, ethers } from 'ethers';
 
 import { createSDKInstance } from '../src';
 import { developmentConfiguration } from '../src/config';
@@ -13,18 +15,15 @@ use(chaiAsPromised.default);
 describe('Snapshot test', async () => {
   const env = setEnv();
 
-  let signer: ethers.Wallet;
+  let signer: Wallet;
   let sdkInstance: SDKInstance, zDAO: zDAO;
 
   beforeEach('setup', async () => {
-    const provider = new ethers.providers.JsonRpcProvider(
-      env.rpcUrl,
-      env.network
-    );
+    const provider = new JsonRpcProvider(env.rpcUrl, env.network);
     const config: Config = developmentConfiguration(provider);
     const pk = process.env.PRIVATE_KEY;
     if (!pk) throw new Error(errorMessageForError('no-private-key'));
-    signer = new ethers.Wallet(pk, provider);
+    signer = new Wallet(pk, provider);
 
     sdkInstance = createSDKInstance(config);
 
@@ -64,7 +63,7 @@ describe('Snapshot test', async () => {
       '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C'
     );
     expect(proposal.metadata?.amount).to.be.equal(
-      ethers.BigNumber.from(10).pow(18).toString()
+      BigNumber.from(10).pow(18).toString()
     );
   });
 

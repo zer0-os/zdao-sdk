@@ -1,4 +1,6 @@
-import { BigNumber, ethers } from 'ethers';
+import { getAddress } from '@ethersproject/address';
+import { BigNumber } from '@ethersproject/bignumber';
+import { Provider } from '@ethersproject/providers';
 import { GraphQLClient } from 'graphql-request';
 
 import ZNAClient from '../client/ZNAClient';
@@ -13,7 +15,7 @@ class zDAORegistryClient {
   private readonly contract: ZDAORegistry;
   private readonly registryGQLClient: GraphQLClient;
 
-  constructor(config: zNAConfig, provider: ethers.providers.Provider) {
+  constructor(config: zNAConfig, provider: Provider) {
     this.contract = ZDAORegistry__factory.connect(
       config.zDAORegistry,
       provider
@@ -57,7 +59,7 @@ class zDAORegistryClient {
     return {
       id: zDAORecord.zDAOId.toString(),
       ens: zDAORecord.name,
-      gnosisSafe: ethers.utils.getAddress(zDAORecord.gnosisSafe.toString()),
+      gnosisSafe: getAddress(zDAORecord.gnosisSafe.toString()),
       zNAs,
     };
   }

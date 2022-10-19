@@ -1,10 +1,8 @@
-import { ethers } from 'ethers';
+import { BigNumber } from '@ethersproject/bignumber';
 
 // add 10%
-export const calculateGasMargin = (
-  value: ethers.BigNumber
-): ethers.BigNumber => {
+export const calculateGasMargin = (value: BigNumber): BigNumber => {
   return value
-    .mul(ethers.BigNumber.from(10000).add(ethers.BigNumber.from(1000)))
-    .div(ethers.BigNumber.from(10000));
+    .mul(BigNumber.from(10000).add(BigNumber.from(1000)))
+    .div(BigNumber.from(10000));
 };

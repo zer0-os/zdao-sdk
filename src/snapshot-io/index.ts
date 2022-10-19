@@ -1,8 +1,9 @@
+import { Web3Provider } from '@ethersproject/providers';
+import { Wallet } from '@ethersproject/wallet';
 import Client from '@snapshot-labs/snapshot.js';
 import { Proposal } from '@snapshot-labs/snapshot.js/dist/sign/types';
 import fetch from 'cross-fetch';
 import { addSeconds } from 'date-fns';
-import { ethers } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
 import { orderBy } from 'lodash';
 
@@ -450,7 +451,7 @@ class SnapshotClient {
   }
 
   async createProposal(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    provider: Web3Provider | Wallet,
     account: string,
     params: CreateProposalParams
   ): Promise<SnapshotProposalResponse> {
@@ -510,7 +511,7 @@ class SnapshotClient {
   }
 
   async voteProposal(
-    provider: ethers.providers.Web3Provider | ethers.Wallet,
+    provider: Web3Provider | Wallet,
     account: string,
     params: VoteProposalParams
   ): Promise<string> {
