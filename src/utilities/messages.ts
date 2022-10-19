@@ -24,6 +24,10 @@ const ErrorMessages = [
     value: 'Empty Voting ERC20 Token address',
   },
   {
+    key: 'not-zna-owner',
+    value: 'Not a zNA owner',
+  },
+  {
     key: 'already-exist-zdao',
     value: 'zDAO already exists',
   },
@@ -38,6 +42,10 @@ const ErrorMessages = [
   {
     key: 'not-implemented',
     value: 'Not implemented',
+  },
+  {
+    key: 'failed-create-gnosis-safe',
+    value: 'Failed to create Gnosis Safe Wallet',
   },
   {
     key: 'failed-create-token',
@@ -56,6 +64,14 @@ const ErrorMessages = [
     value: 'Not found any token related strategyies in snapshot',
   },
   {
+    key: 'invalid-parameter',
+    value: 'Invalid parameter: %name%',
+  },
+  {
+    key: 'invalid-token',
+    value: 'Invalid Token',
+  },
+  {
     key: 'invalid-ens',
     value: 'Invalid ENS',
   },
@@ -68,6 +84,10 @@ const ErrorMessages = [
     value: 'Funding proposal should have only two choices',
   },
   {
+    key: 'invalid-signer',
+    value: 'Invalid Signer',
+  },
+  {
     key: 'should-hold-token',
     value: 'Should hold at least %amount% tokens',
   },
@@ -78,6 +98,14 @@ const ErrorMessages = [
   {
     key: 'not-support-total-supply',
     value: 'Voting token does not support total supply',
+  },
+  {
+    key: 'network-error',
+    value: 'Network Error: %message%',
+  },
+  {
+    key: 'transaction-error',
+    value: 'Transaction Error: %message%',
   },
 ] as const;
 
