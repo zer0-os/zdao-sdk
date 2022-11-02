@@ -256,6 +256,13 @@ class DAOClient implements zDAO {
       }
     };
 
+    const spliceTxHash = (id: string): string => {
+      // transaction id([network]_[recipient]_[txHash]_[checksum?]):
+      // ethereum_0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa_0x0d3c7cde981f654a85d2fbbc76e47ed4bfd3641b12fbe34df36a8d98957d994b_0x3f5adae914eefce2
+      const words = id.split('_');
+      return words[2];
+    };
+
     return transactions.map((tx: GnosisTransaction) => {
       const txInfo = tx.transaction.txInfo as GnosisTransfer;
       return {
@@ -267,6 +274,7 @@ class DAOClient implements zDAO {
         from: txInfo.sender.value,
         to: txInfo.recipient.value,
         created: new Date(tx.transaction.timestamp),
+        txHash: spliceTxHash(tx.transaction.id),
         status: tx.transaction.txStatus as string as TransactionStatus,
       };
     });

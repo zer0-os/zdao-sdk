@@ -83,6 +83,7 @@ export interface Transaction {
   from: string; // Sender address
   to: string; // Recipient address
   created: Date; // Transaction time
+  txHash: string; // Transaction hash
   status: TransactionStatus;
 }
 
