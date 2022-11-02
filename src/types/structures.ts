@@ -121,6 +121,8 @@ export interface Transaction {
 
   created: Date; // Transaction time
 
+  txHash: string; // Transaction hash
+
   status: TransactionStatus;
 }
 

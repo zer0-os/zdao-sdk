@@ -21,7 +21,7 @@ export const zDAORegistryAddress: AddressMap = {
 export const zNSHubAddress: AddressMap = {
   [SupportedChainId.MAINNET]: '0x6141d5cb3517215a03519a464bf9c39814df7479',
   [SupportedChainId.RINKEBY]: '0x7F918CbbBf37e4358ad5f060F15110151d14E59e',
-  [SupportedChainId.GOERLI]: '0x9a35367c5e8C01cd009885e497a33a9761938832',
+  [SupportedChainId.GOERLI]: '0x99D776f477c37A9BCA081996Ed38175d6b189546',
 };
 
 /* -------------------------------------------------------------------------- */

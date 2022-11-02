@@ -6,7 +6,11 @@ import { ZDAORegistry__factory } from '../config/types/factories/ZDAORegistry__f
 import { ZDAORegistry } from '../config/types/ZDAORegistry';
 import { FailedTxError, NetworkError, zNAConfig } from '../types';
 import { zDAOId, zDAOProperties, zNA } from '../types';
-import { calculateGasMargin, graphQLQuery, validateAddress } from '../utilities';
+import {
+  calculateGasMargin,
+  graphQLQuery,
+  validateAddress,
+} from '../utilities';
 import {
   ZDAORECORDS_QUERY,
   ZNAASSOCIATION_BY_QUERY,
