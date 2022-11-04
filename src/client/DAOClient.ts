@@ -171,16 +171,18 @@ class DAOClient implements zDAO {
     );
     return {
       amountInUSD: Number(results.fiatTotal),
-      coins: results.items.map((item: any) => ({
-        type: item.tokenInfo.type as string as AssetType,
-        address: item.tokenInfo.address,
-        decimals: item.tokenInfo.decimals,
-        symbol: item.tokenInfo.symbol,
-        name: item.tokenInfo.name,
-        logoUri: item.tokenInfo.logoUri ?? undefined,
-        amount: item.balance,
-        amountInUSD: Number(item.fiatBalance),
-      })),
+      coins: results.items
+        .filter((item) => Number(item.fiatBalance) > 0)
+        .map((item) => ({
+          type: item.tokenInfo.type as string as AssetType,
+          address: item.tokenInfo.address,
+          decimals: item.tokenInfo.decimals,
+          symbol: item.tokenInfo.symbol,
+          name: item.tokenInfo.name,
+          logoUri: item.tokenInfo.logoUri ?? undefined,
+          amount: item.balance,
+          amountInUSD: Number(item.fiatBalance),
+        })),
     };
   }
 
