@@ -162,7 +162,7 @@ class ProposalClient implements Proposal {
   }
 
   async listVotes(pagination?: PaginationParam): Promise<Vote[]> {
-    const limit = 30000;
+    const limit = 1000;
     let from = pagination?.from ?? 0;
     let count = pagination?.count ?? limit;
     let numberOfResults = limit;
