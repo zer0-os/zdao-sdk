@@ -225,7 +225,7 @@ class SnapshotClient {
     spaceId: ENS,
     network: string,
     from = 0,
-    count = 30000
+    count = 1000
   ): Promise<SnapshotProposal[]> {
     const response = await graphQLQuery(
       this.graphQLClient,

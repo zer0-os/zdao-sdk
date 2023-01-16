@@ -292,7 +292,7 @@ class DAOClient implements zDAO {
   }
 
   async listProposals(pagination?: PaginationParam): Promise<Proposal[]> {
-    const limit = 3000;
+    const limit = 1000;
     let from = pagination?.from ?? 0;
     let count = pagination?.count ?? limit;
     let numberOfResults = limit;
