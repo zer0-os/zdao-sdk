@@ -150,8 +150,8 @@ const main = async () => {
   const signer = new Wallet(env.privateKey, provider);
 
   const config: Config = isDev
-    ? developmentConfiguration(provider, 'zer0.infura-ipfs.io')
-    : productionConfiguration(provider, 'zer0.infura-ipfs.io');
+    ? developmentConfiguration(provider, 'ipfs.io')
+    : productionConfiguration(provider, 'ipfs.io');
 
   console.time('createSDKInstance');
   const sdkInstance: SDKInstance = createSDKInstance(config);

@@ -21,17 +21,12 @@ export const DEFAULT_PROPOSAL_CHOICES = ['Approve', 'Deny'];
 
 export const developmentConfiguration = (
   provider: Provider,
-  ipfsGateway = 'zer0.infura-ipfs.io'
+  ipfsGateway = 'ipfs.io'
 ): Config => ({
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
     ipfsGateway,
     network: SupportedChainId.GOERLI.toString(),
-  },
-  gnosisSafe: {
-    serviceUri: 'https://safe-transaction.goerli.gnosis.io',
-    gateway: 'https://safe-client.staging.gnosisdev.com',
-    ipfsGateway,
   },
   zNA: {
     zDAORegistry: zDAORegistryAddress[SupportedChainId.GOERLI],
@@ -45,17 +40,12 @@ export const developmentConfiguration = (
 
 export const productionConfiguration = (
   provider: Provider,
-  ipfsGateway = 'zer0.infura-ipfs.io'
+  ipfsGateway = 'ipfs.io'
 ): Config => ({
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
     ipfsGateway,
     network: SupportedChainId.MAINNET.toString(),
-  },
-  gnosisSafe: {
-    serviceUri: 'https://safe-transaction.gnosis.io',
-    gateway: 'https://safe-client.gnosis.io',
-    ipfsGateway,
   },
   zNA: {
     zDAORegistry: zDAORegistryAddress[SupportedChainId.MAINNET],

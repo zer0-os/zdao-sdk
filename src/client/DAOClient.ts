@@ -3,18 +3,18 @@ import { Contract } from '@ethersproject/contracts';
 import { Web3Provider } from '@ethersproject/providers';
 import { Wallet } from '@ethersproject/wallet';
 import {
-  Erc20Transfer as GnosisErc20Transfer,
-  Erc721Transfer as GnosisErc721Transfer,
-  NativeCoinTransfer as GnosisNativeCoinTransfer,
-  Transaction as GnosisTransaction,
-  Transfer as GnosisTransfer,
-  TransferInfo as GnosisTransferInfo,
-} from '@gnosis.pm/safe-react-gateway-sdk';
+  Erc20Transfer as SafeGlobalErc20Transfer,
+  Erc721Transfer as SafeGlobalErc721Transfer,
+  NativeCoinTransfer as SafeGlobalNativeCoinTransfer,
+  Transaction as SafeGlobalTransaction,
+  Transfer as SafeGlobalTransfer,
+  TransferInfo as SafeGlobalTransferInfo,
+} from '@safe-global/safe-gateway-typescript-sdk';
 import { cloneDeep } from 'lodash';
 
 import { DEFAULT_PROPOSAL_CHOICES } from '../config';
 import ERC20Abi from '../config/abi/ERC20.json';
-import GnosisSafeClient from '../gnosis-safe';
+import SafeGlobalClient from '../safe-global';
 import SnapshotClient from '../snapshot-io';
 import { SnapshotProposal } from '../snapshot-io/types';
 import {
@@ -45,13 +45,13 @@ import ProposalClient from './ProposalClient';
 
 class DAOClient implements zDAO {
   protected readonly snapshotClient: SnapshotClient;
-  protected readonly gnosisSafeClient: GnosisSafeClient;
+  protected readonly safeGlobalClient: SafeGlobalClient;
   protected readonly properties: zDAOProperties;
   private readonly options: any;
 
   private constructor(
     snapshotClient: SnapshotClient,
-    gnosisSafeClient: GnosisSafeClient,
+    safeGlobalClient: SafeGlobalClient,
     properties: zDAOProperties,
     options: any
   ) {
@@ -59,7 +59,7 @@ class DAOClient implements zDAO {
     this.options = options;
 
     this.snapshotClient = snapshotClient;
-    this.gnosisSafeClient = gnosisSafeClient;
+    this.safeGlobalClient = safeGlobalClient;
   }
 
   get id() {
@@ -125,7 +125,7 @@ class DAOClient implements zDAO {
   static async createInstance(
     config: Config,
     snapshotClient: SnapshotClient,
-    gnosisSafeClient: GnosisSafeClient,
+    safeGlobalClient: SafeGlobalClient,
     properties: zDAOProperties,
     options: any
   ): Promise<zDAO> {
@@ -157,7 +157,7 @@ class DAOClient implements zDAO {
 
     const zDAO = new DAOClient(
       snapshotClient,
-      gnosisSafeClient,
+      safeGlobalClient,
       properties,
       options
     );
@@ -165,7 +165,7 @@ class DAOClient implements zDAO {
   }
 
   async listAssetsCoins(): Promise<zDAOCoins> {
-    const results = await this.gnosisSafeClient.listAssets(
+    const results = await this.safeGlobalClient.listAssets(
       this.safeAddress,
       this.network
     );
@@ -187,7 +187,7 @@ class DAOClient implements zDAO {
   }
 
   async listAssetsCollectibles(): Promise<zDAOCollectibles> {
-    const results = await this.gnosisSafeClient.listCollectibles(
+    const results = await this.safeGlobalClient.listCollectibles(
       this.safeAddress,
       this.network
     );
@@ -220,15 +220,15 @@ class DAOClient implements zDAO {
   }
 
   async listTransactions(): Promise<Transaction[]> {
-    const transactions: GnosisTransaction[] =
-      await this.gnosisSafeClient.listTransactions(
+    const transactions: SafeGlobalTransaction[] =
+      await this.safeGlobalClient.listTransactions(
         this.safeAddress,
         this.network
       );
 
-    const mapToTransferInfo = (info: GnosisTransferInfo): TransferInfo => {
+    const mapToTransferInfo = (info: SafeGlobalTransferInfo): TransferInfo => {
       if ((info.type as string) === AssetType.ERC20) {
-        const typedInfo = info as GnosisErc20Transfer;
+        const typedInfo = info as SafeGlobalErc20Transfer;
         return {
           type: AssetType.ERC20,
           tokenAddress: typedInfo.tokenAddress,
@@ -239,7 +239,7 @@ class DAOClient implements zDAO {
           value: typedInfo.value,
         };
       } else if ((info.type as string) === AssetType.ERC721) {
-        const typedInfo = info as GnosisErc721Transfer;
+        const typedInfo = info as SafeGlobalErc721Transfer;
         return {
           type: AssetType.ERC721,
           tokenAddress: typedInfo.tokenAddress,
@@ -250,7 +250,7 @@ class DAOClient implements zDAO {
         };
       } else {
         // AssetType.NATIVE_COIN
-        const typedInfo = info as GnosisNativeCoinTransfer;
+        const typedInfo = info as SafeGlobalNativeCoinTransfer;
         return {
           type: AssetType.NATIVE_TOKEN,
           value: typedInfo.value,
@@ -265,8 +265,8 @@ class DAOClient implements zDAO {
       return words[2];
     };
 
-    return transactions.map((tx: GnosisTransaction) => {
-      const txInfo = tx.transaction.txInfo as GnosisTransfer;
+    return transactions.map((tx: SafeGlobalTransaction) => {
+      const txInfo = tx.transaction.txInfo as SafeGlobalTransfer;
       return {
         type:
           txInfo.direction === 'INCOMING'
@@ -321,7 +321,7 @@ class DAOClient implements zDAO {
         ProposalClient.createInstance(
           this,
           this.snapshotClient,
-          this.gnosisSafeClient,
+          this.safeGlobalClient,
           {
             id: proposal.id,
             type: proposal.type,
@@ -362,7 +362,7 @@ class DAOClient implements zDAO {
     return await ProposalClient.createInstance(
       this,
       this.snapshotClient,
-      this.gnosisSafeClient,
+      this.safeGlobalClient,
       {
         id: proposal.id,
         type: proposal.type,

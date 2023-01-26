@@ -30,7 +30,7 @@ export async function ipfsJson(uri: string, gateway: string) {
   } catch (error: any) {
     throw new Error(
       errorMessageForError('network-error', {
-        message: error.message,
+        message: error.message ?? error.error_description,
       })
     );
   }
@@ -49,7 +49,7 @@ export async function ipfsGet(
   } catch (error: any) {
     throw new Error(
       errorMessageForError('network-error', {
-        message: error.message,
+        message: error.message ?? error.error_description,
       })
     );
   }

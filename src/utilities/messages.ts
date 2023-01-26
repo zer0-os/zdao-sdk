@@ -12,12 +12,12 @@ const ErrorMessages = [
     value: 'Empty zDAO title',
   },
   {
-    key: 'empty-gnosis-address',
-    value: 'Empty Gnosis Safe address',
+    key: 'empty-safe-global-address',
+    value: 'Empty Safe Global address',
   },
   {
-    key: 'empty-gnosis-owners',
-    value: 'Empty Gnosis Safe owners',
+    key: 'empty-safe-global-owners',
+    value: 'Empty Safe Global owners',
   },
   {
     key: 'empty-voting-token',
@@ -44,7 +44,7 @@ const ErrorMessages = [
     value: 'Not implemented',
   },
   {
-    key: 'failed-create-gnosis-safe',
+    key: 'failed-create-safe-global',
     value: 'Failed to create Gnosis Safe Wallet',
   },
   {
@@ -61,7 +61,7 @@ const ErrorMessages = [
   },
   {
     key: 'not-found-strategy-in-snapshot',
-    value: 'Not found any token related strategyies in snapshot',
+    value: 'Not found any token related strategies in snapshot',
   },
   {
     key: 'invalid-parameter',
@@ -120,7 +120,7 @@ export const errorMessageForError = (
   if (args) {
     Object.keys(args).forEach((key) => {
       const reg = new RegExp(`%${key}%`, 'g');
-      plain = plain.replace(reg, args[key].toString());
+      plain = plain.replace(reg, String(args[key]));
     });
   }
 
