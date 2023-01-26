@@ -113,6 +113,9 @@ const iterateZNAs = async (sdkInstance: SDKInstance) => {
   const zNAs: zNA[] = await sdkInstance.listZNAs();
   console.log('zNAs', zNAs);
 
+  let proposalId = '',
+    maxVoters = -1;
+
   console.time('iterateZNAs');
   // create zdao which is associated with `wilder.cats`
   for (const zNA of zNAs) {
@@ -133,6 +136,19 @@ const iterateZNAs = async (sdkInstance: SDKInstance) => {
     const proposals = await zDAO.listProposals();
     console.log('proposals', proposals.length);
 
+    proposals.forEach((proposal) => {
+      console.log('proposal.metadata', proposal.id, proposal.metadata);
+      if (proposal.votes > maxVoters) {
+        maxVoters = proposal.votes;
+        proposalId = proposal.id;
+      }
+    });
+
+    if (proposalId.length > 0) {
+      const proposal = await zDAO.getProposal(proposalId);
+      console.log('> proposal.metadata', proposal.id, proposal.metadata);
+    }
+
     const assets = await zDAO.listAssets();
     console.log('assets', assets);
 
@@ -150,8 +166,8 @@ const main = async () => {
   const signer = new Wallet(env.privateKey, provider);
 
   const config: Config = isDev
-    ? developmentConfiguration(provider, 'ipfs.io')
-    : productionConfiguration(provider, 'ipfs.io');
+    ? developmentConfiguration(provider, 'snapshot.mypinata.cloud')
+    : productionConfiguration(provider, 'snapshot.mypinata.cloud');
 
   console.time('createSDKInstance');
   const sdkInstance: SDKInstance = createSDKInstance(config);
