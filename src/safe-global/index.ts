@@ -4,20 +4,12 @@ import {
   SafeCollectibleResponse,
   Transaction as Transaction,
   TransactionListItem as TransactionListItem,
-} from '@gnosis.pm/safe-react-gateway-sdk';
+} from '@safe-global/safe-gateway-typescript-sdk';
 import fetch from 'cross-fetch';
 
-import { GnosisSafeConfig } from '../types';
 import { errorMessageForError } from '../utilities';
 
-class GnosisSafeClient {
-  private readonly config: GnosisSafeConfig;
-  private readonly EMPTY_DATA = '0x';
-
-  constructor(config: GnosisSafeConfig) {
-    this.config = config;
-  }
-
+class SafeGlobalClient {
   async listAssets(
     safeAddress: string,
     network: string,
@@ -34,7 +26,7 @@ class GnosisSafeClient {
     } catch (error: any) {
       throw new Error(
         errorMessageForError('network-error', {
-          message: error.message,
+          message: error.message ?? error.error_description,
         })
       );
     }
@@ -55,7 +47,7 @@ class GnosisSafeClient {
     } catch (error: any) {
       throw new Error(
         errorMessageForError('network-error', {
-          message: error.message,
+          message: error.message ?? error.error_description,
         })
       );
     }
@@ -87,11 +79,11 @@ class GnosisSafeClient {
     } catch (error: any) {
       throw new Error(
         errorMessageForError('network-error', {
-          message: error.message,
+          message: error.message ?? error.error_description,
         })
       );
     }
   }
 }
 
-export default GnosisSafeClient;
+export default SafeGlobalClient;

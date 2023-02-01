@@ -4,7 +4,7 @@ import shortid from 'shortid';
 import DAOClient from './client/DAOClient';
 import ZNAClient from './client/ZNAClient';
 import ZNSHubClient from './client/ZNSHubClient';
-import GnosisSafeClient from './gnosis-safe';
+import SafeGlobalClient from './safe-global';
 import SnapshotClient from './snapshot-io';
 import { Config, CreateZDAOParams, SDKInstance, zDAO, zNA } from './types';
 import { getDecimalAmount } from './utilities';
@@ -17,7 +17,7 @@ class SDKInstanceClient implements SDKInstance {
   private readonly config: Config;
   private readonly zDAORegistryClient: zDAORegistryClient;
   private readonly snapshotClient: SnapshotClient;
-  private readonly gnosisSafeClient: GnosisSafeClient;
+  private readonly safeGlobalClient: SafeGlobalClient;
   protected params: CreateZDAOParams[];
 
   constructor(config: Config) {
@@ -27,7 +27,7 @@ class SDKInstanceClient implements SDKInstance {
       config.provider
     );
     this.snapshotClient = new SnapshotClient(config.snapshot);
-    this.gnosisSafeClient = new GnosisSafeClient(config.gnosisSafe);
+    this.safeGlobalClient = new SafeGlobalClient();
     this.params = [];
 
     ZNSHubClient.initialize(config.zNA, config.provider);
@@ -82,7 +82,7 @@ class SDKInstanceClient implements SDKInstance {
     return await DAOClient.createInstance(
       this.config,
       this.snapshotClient,
-      this.gnosisSafeClient,
+      this.safeGlobalClient,
       {
         id: zDAORecord.id,
         ens: zDAORecord.ens,
@@ -91,7 +91,7 @@ class SDKInstanceClient implements SDKInstance {
         creator: space.admins.length > 0 ? space.admins[0] : zDAORecord.ens,
         network: this.config.snapshot.network, // space.network,
         duration: space.duration,
-        safeAddress: zDAORecord.gnosisSafe,
+        safeAddress: zDAORecord.safeGlobal,
         votingToken: {
           token: strategy.params.address,
           symbol,
@@ -131,7 +131,7 @@ class SDKInstanceClient implements SDKInstance {
       throw new Error(errorMessageForError('empty-zdao-title'));
     }
     if (param.safeAddress.length < 1) {
-      throw new Error(errorMessageForError('empty-gnosis-address'));
+      throw new Error(errorMessageForError('empty-safe-global-address'));
     }
     if (param.votingToken.length < 1) {
       throw new Error(errorMessageForError('empty-voting-token'));
@@ -147,7 +147,7 @@ class SDKInstanceClient implements SDKInstance {
     return await DAOClient.createInstance(
       this.config,
       this.snapshotClient,
-      this.gnosisSafeClient,
+      this.safeGlobalClient,
       {
         id: shortid.generate(),
         ens: param.ens,
@@ -189,7 +189,7 @@ class SDKInstanceClient implements SDKInstance {
     return await DAOClient.createInstance(
       this.config,
       this.snapshotClient,
-      this.gnosisSafeClient,
+      this.safeGlobalClient,
       {
         id: shortid.generate(),
         ens: found.ens,

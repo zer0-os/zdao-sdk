@@ -54,7 +54,7 @@ class SnapshotClient {
     } catch (error: any) {
       throw new Error(
         errorMessageForError('network-error', {
-          message: error.message,
+          message: error.message ?? error.error_description,
         })
       );
     }
@@ -80,7 +80,7 @@ class SnapshotClient {
     } catch (error: any) {
       throw new Error(
         errorMessageForError('network-error', {
-          message: error.message,
+          message: error.message ?? error.error_description,
         })
       );
     }
@@ -116,7 +116,7 @@ class SnapshotClient {
     } catch (error: any) {
       throw new Error(
         errorMessageForError('network-error', {
-          message: error.message,
+          message: error.message ?? error.error_description,
         })
       );
     }
@@ -495,7 +495,7 @@ class SnapshotClient {
     } catch (error: any) {
       throw new Error(
         errorMessageForError('network-error', {
-          message: error.message,
+          message: error.message ?? error.error_description,
         })
       );
     }
@@ -527,7 +527,7 @@ class SnapshotClient {
     } catch (error: any) {
       throw new Error(
         errorMessageForError('network-error', {
-          message: error.message,
+          message: error.message ?? error.error_description,
         })
       );
     }
@@ -547,7 +547,7 @@ class SnapshotClient {
     } catch (error: any) {
       throw new Error(
         errorMessageForError('network-error', {
-          message: error.message,
+          message: error.message ?? error.error_description,
         })
       );
     }

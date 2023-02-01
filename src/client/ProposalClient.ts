@@ -3,7 +3,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import { Wallet } from '@ethersproject/wallet';
 import { cloneDeep } from 'lodash';
 
-import GnosisSafeClient from '../gnosis-safe';
+import SafeGlobalClient from '../safe-global';
 import SnapshotClient from '../snapshot-io';
 import { SnapshotProposal } from '../snapshot-io/types';
 import {
@@ -20,20 +20,20 @@ import DAOClient from './DAOClient';
 class ProposalClient implements Proposal {
   private readonly zDAO: DAOClient;
   private readonly snapshotClient: SnapshotClient;
-  private readonly gnosisSafeClient: GnosisSafeClient;
+  private readonly safeGlobalClient: SafeGlobalClient;
   protected readonly properties: ProposalProperties;
   private readonly options: any;
 
   private constructor(
     zDAO: DAOClient,
     snapshotClient: SnapshotClient,
-    gnosisSafeClient: GnosisSafeClient,
+    safeGlobalClient: SafeGlobalClient,
     properties: ProposalProperties,
     options: any
   ) {
     this.zDAO = zDAO;
     this.snapshotClient = snapshotClient;
-    this.gnosisSafeClient = gnosisSafeClient;
+    this.safeGlobalClient = safeGlobalClient;
 
     this.properties = cloneDeep(properties);
     this.options = options;
@@ -106,14 +106,14 @@ class ProposalClient implements Proposal {
   static async createInstance(
     zDAO: DAOClient,
     snapshotClient: SnapshotClient,
-    gnosisSafeClient: GnosisSafeClient,
+    safeGlobalClient: SafeGlobalClient,
     properties: ProposalProperties,
     options: any
   ): Promise<Proposal> {
     const proposal = new ProposalClient(
       zDAO,
       snapshotClient,
-      gnosisSafeClient,
+      safeGlobalClient,
       properties,
       options
     );

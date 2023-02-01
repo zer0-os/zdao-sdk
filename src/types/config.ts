@@ -10,15 +10,6 @@ export interface SnapshotConfig {
   network: string;
 }
 
-export interface GnosisSafeConfig {
-  // uri to Gnosis Safe service
-  serviceUri: string;
-  // uri to Gnosis Safe gateway
-  gateway: string;
-  // ipfs gateway without schemes
-  ipfsGateway: string;
-}
-
 export interface zNAConfig {
   // address to zDAORegistry contract
   zDAORegistry: string;
@@ -32,7 +23,6 @@ export interface zNAConfig {
 
 export interface Config {
   snapshot: SnapshotConfig;
-  gnosisSafe: GnosisSafeConfig;
   zNA: zNAConfig;
   zNS: zNSConfig;
   provider: Provider; // web3 provider
