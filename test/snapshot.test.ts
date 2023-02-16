@@ -38,7 +38,7 @@ describe('Snapshot test', async () => {
     });
   });
 
-  it('should list proposals', async () => {
+  it('Should list proposals', async () => {
     const list = await zDAO.listProposals();
 
     expect(list.length).to.be.gt(0);
@@ -51,7 +51,7 @@ describe('Snapshot test', async () => {
     expect(found.length).to.be.equal(1);
   });
 
-  it('should get proposal detail', async () => {
+  it('Should get proposal detail', async () => {
     const proposal = await zDAO.getProposal(
       '0x082c3bc0417189d090d7e83083536f5d073737ef9ac32311e888ededa00e4d57'
     );
@@ -67,7 +67,7 @@ describe('Snapshot test', async () => {
     );
   });
 
-  it('should get votes from proposal', async () => {
+  it('Should get votes from proposal', async () => {
     const proposal = await zDAO.getProposal(
       '0x082c3bc0417189d090d7e83083536f5d073737ef9ac32311e888ededa00e4d57'
     );
@@ -81,7 +81,7 @@ describe('Snapshot test', async () => {
     );
   });
 
-  it('should get voting power', async () => {
+  it('Should get voting power', async () => {
     const proposal = await zDAO.getProposal(
       '0x082c3bc0417189d090d7e83083536f5d073737ef9ac32311e888ededa00e4d57'
     );
@@ -92,7 +92,8 @@ describe('Snapshot test', async () => {
     expect(vp).to.be.gt(0);
   });
 
-  it('should create a proposal with `erc20-with-balance` strategy and cast a vote', async () => {
+  it('Should create a proposal and cast a vote', async () => {
+    // Create new proposal
     const blockNumber = await signer.provider.getBlockNumber();
     const proposalId = await zDAO.createProposal(signer, signer.address, {
       title: 'Hello Proposal',
@@ -110,9 +111,10 @@ describe('Snapshot test', async () => {
     });
     expect(proposalId).to.be.not.empty;
 
-    // wait for 5 seconds to align IPFS
+    // Wait for 5 seconds to align IPFS
     await sleep(5000);
 
+    // Vote on new proposal
     const proposal = await zDAO.getProposal(proposalId);
     const vote = await proposal.vote(signer, signer.address, 1);
     expect(vote.length).to.be.gt(0);

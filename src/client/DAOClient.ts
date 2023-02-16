@@ -196,6 +196,7 @@ class DAOClient implements zDAO {
       tokenName: item.tokenName,
       tokenSymbol: item.tokenSymbol,
       id: item.id,
+      uri: item.uri,
       logoUri: item.logoUri,
       name: item.name,
       description: item.description,
@@ -268,6 +269,7 @@ class DAOClient implements zDAO {
     return transactions.map((tx: SafeGlobalTransaction) => {
       const txInfo = tx.transaction.txInfo as SafeGlobalTransfer;
       return {
+        id: tx.transaction.id,
         type:
           txInfo.direction === 'INCOMING'
             ? TransactionType.RECEIVED
