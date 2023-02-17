@@ -6,6 +6,7 @@ import ZNAClient from './client/ZNAClient';
 import ZNSHubClient from './client/ZNSHubClient';
 import SafeGlobalClient from './safe-global';
 import SnapshotClient from './snapshot-io';
+import { SnapshotSpaceDetails } from './snapshot-io/types';
 import { Config, CreateZDAOParams, SDKInstance, zDAO, zNA } from './types';
 import { getDecimalAmount } from './utilities';
 import { getToken, getTotalSupply } from './utilities/calls';
@@ -214,6 +215,42 @@ class SDKInstanceClient implements SDKInstance {
   doesZDAOExistFromParams(zNA: zNA): Promise<boolean> {
     const found = this.params.find((param) => param.zNA === zNA);
     return Promise.resolve(found ? true : false);
+  }
+
+  private async getSpaceDetails(
+    ens: string
+  ): Promise<SnapshotSpaceDetails | undefined> {
+    try {
+      return await this.snapshotClient.getSpaceDetails(ens);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === errorMessageForError('not-found-ens-in-snapshot')
+      ) {
+        return undefined;
+      }
+      throw error;
+    }
+  }
+
+  get snapshot() {
+    return {
+      getSpaceDetails: async (
+        ens: string
+      ): Promise<SnapshotSpaceDetails | undefined> => {
+        try {
+          return await this.snapshotClient.getSpaceDetails(ens);
+        } catch (error) {
+          if (
+            error instanceof Error &&
+            error.message === errorMessageForError('not-found-ens-in-snapshot')
+          ) {
+            return undefined;
+          }
+          throw error;
+        }
+      },
+    };
   }
 }
 
