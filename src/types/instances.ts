@@ -1,6 +1,5 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { Wallet } from '@ethersproject/wallet';
-import { Maybe } from '@zero-tech/zns-sdk';
 
 import { SnapshotSpaceDetails } from '../snapshot-io/types';
 import {
@@ -68,7 +67,7 @@ export interface SDKInstance {
   doesZDAOExistFromParams(zNA: zNA): Promise<boolean>;
 
   snapshot: {
-    getSpaceDetails(ens: ENS): Promise<Maybe<SnapshotSpaceDetails>>;
+    getSpaceDetails(ens: ENS): Promise<SnapshotSpaceDetails | undefined>;
   };
 }
 

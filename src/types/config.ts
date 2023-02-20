@@ -1,13 +1,13 @@
 import { Provider } from '@ethersproject/providers';
 import { Config as zNSConfig } from '@zero-tech/zns-sdk';
 
+import { SupportedChainId } from './enumerations';
+
 export interface SnapshotConfig {
   // uri to Snaphost Hub
   serviceUri: string;
   // ipfs gateway without schemes
   ipfsGateway: string;
-  // chain id as string where space created
-  network: string;
 }
 
 export interface zNAConfig {
@@ -22,6 +22,8 @@ export interface zNAConfig {
 }
 
 export interface Config {
+  // chain id as string where space created
+  network: SupportedChainId;
   snapshot: SnapshotConfig;
   zNA: zNAConfig;
   zNS: zNSConfig;
