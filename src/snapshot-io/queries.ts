@@ -13,6 +13,7 @@ export const SPACES_QUERY = gql`
       private
       domain
       admins
+      proposalsCount
       followersCount
       filters {
         minScore

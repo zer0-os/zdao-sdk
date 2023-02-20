@@ -1,8 +1,14 @@
-import { ENS, ProposalId, Token, TokenMetaData } from '../types';
+import {
+  ENS,
+  ProposalId,
+  SupportedChainId,
+  Token,
+  TokenMetaData,
+} from '../types';
 
 export interface SpaceParams {
   spaceId: ENS;
-  network: string;
+  network: SupportedChainId;
   strategies?: any;
 }
 
@@ -53,8 +59,8 @@ export interface SnapshotSpace {
   id: ENS; // space id(ens)
   name: string;
   avatar?: string;
-  network: string;
-  duration?: number;
+  network: SupportedChainId;
+  proposals: number;
   followers: number;
 }
 
@@ -62,6 +68,7 @@ export interface SnapshotSpaceDetails extends SnapshotSpace {
   admins: string[];
   strategies: any[];
   threshold?: number; // proposal threshold, minimum voting power to cast a vote
+  duration?: number; // voting duration
   delay?: number; // voting delay
   quorum?: number; // minimum voting power required for the proposal to pass
 }
@@ -87,7 +94,7 @@ export interface SnapshotProposal {
   end: Date;
   state: 'pending' | 'active' | 'closed';
   scores_state: 'final' | 'invalid' | 'pending';
-  network: string; // chain id
+  network: SupportedChainId; // chain id
   snapshot: number; // snapshot block number
   scores: number[]; // scores per all the choices
   votes: number; // number of voters

@@ -23,10 +23,10 @@ export const developmentConfiguration = (
   provider: Provider,
   ipfsGateway = 'snapshot.mypinata.cloud'
 ): Config => ({
+  network: SupportedChainId.GOERLI,
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
     ipfsGateway,
-    network: SupportedChainId.GOERLI.toString(),
   },
   zNA: {
     zDAORegistry: zDAORegistryAddress[SupportedChainId.GOERLI],
@@ -42,10 +42,10 @@ export const productionConfiguration = (
   provider: Provider,
   ipfsGateway = 'snapshot.mypinata.cloud'
 ): Config => ({
+  network: SupportedChainId.MAINNET,
   snapshot: {
     serviceUri: 'https://hub.snapshot.org',
     ipfsGateway,
-    network: SupportedChainId.MAINNET.toString(),
   },
   zNA: {
     zDAORegistry: zDAORegistryAddress[SupportedChainId.MAINNET],
