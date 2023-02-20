@@ -5,6 +5,7 @@ import DAOClient from './client/DAOClient';
 import ZNAClient from './client/ZNAClient';
 import ZNSHubClient from './client/ZNSHubClient';
 import SafeGlobalClient from './safe-global';
+import { SafeGlobalAccountDetails } from './safe-global/types';
 import SnapshotClient from './snapshot-io';
 import { Config, CreateZDAOParams, SDKInstance, zDAO, zNA } from './types';
 import { getDecimalAmount } from './utilities';
@@ -214,6 +215,20 @@ class SDKInstanceClient implements SDKInstance {
   doesZDAOExistFromParams(zNA: zNA): Promise<boolean> {
     const found = this.params.find((param) => param.zNA === zNA);
     return Promise.resolve(found ? true : false);
+  }
+
+  get safeGlobal() {
+    return {
+      getAccountDetails: async (
+        network: string,
+        safeAddress: string
+      ): Promise<SafeGlobalAccountDetails | undefined> => {
+        return await this.safeGlobalClient.getAccountDetails(
+          network,
+          safeAddress
+        );
+      },
+    };
   }
 }
 

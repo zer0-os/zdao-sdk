@@ -1,6 +1,7 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { Wallet } from '@ethersproject/wallet';
 
+import { SafeGlobalAccountDetails } from '../safe-global/types';
 import {
   CreateProposalParams,
   CreateZDAOParams,
@@ -64,6 +65,13 @@ export interface SDKInstance {
    * @param zNA
    */
   doesZDAOExistFromParams(zNA: zNA): Promise<boolean>;
+
+  safeGlobal: {
+    getAccountDetails(
+      network: string, // Chain Id
+      safeAddress: string // Address to Safe Global
+    ): Promise<SafeGlobalAccountDetails | undefined>;
+  };
 }
 
 export interface zDAO extends zDAOProperties {

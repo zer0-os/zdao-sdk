@@ -166,8 +166,8 @@ class DAOClient implements zDAO {
 
   async listAssetsCoins(): Promise<zDAOCoins> {
     const results = await this.safeGlobalClient.listAssets(
-      this.safeAddress,
-      this.network
+      this.network,
+      this.safeAddress
     );
     return {
       amountInUSD: Number(results.fiatTotal),
@@ -188,8 +188,8 @@ class DAOClient implements zDAO {
 
   async listAssetsCollectibles(): Promise<zDAOCollectibles> {
     const results = await this.safeGlobalClient.listCollectibles(
-      this.safeAddress,
-      this.network
+      this.network,
+      this.safeAddress
     );
     return results.map((item: any) => ({
       address: item.address,
@@ -223,8 +223,8 @@ class DAOClient implements zDAO {
   async listTransactions(): Promise<Transaction[]> {
     const transactions: SafeGlobalTransaction[] =
       await this.safeGlobalClient.listTransactions(
-        this.safeAddress,
-        this.network
+        this.network,
+        this.safeAddress
       );
 
     const mapToTransferInfo = (info: SafeGlobalTransferInfo): TransferInfo => {
