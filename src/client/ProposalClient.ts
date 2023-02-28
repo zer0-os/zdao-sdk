@@ -260,7 +260,7 @@ class ProposalClient implements Proposal {
   }
 
   canExecute(): boolean {
-    if (this.zDAO.isRelativeMajority) return false;
+    if (!this.zDAO.isRelativeMajority) return false;
 
     const totalScore = this.scores.reduce((prev, current) => prev + current, 0);
     const totalScoreAsBN = getDecimalAmount(
@@ -268,6 +268,13 @@ class ProposalClient implements Proposal {
       this.zDAO.votingToken.decimals
     );
     if (totalScoreAsBN.gte(this.zDAO.minimumTotalVotingTokens)) {
+      // Assume score[0] is the score for Approval or Yes
+      // If Approval > Deny in score, can execute
+      for (const score of this.scores) {
+        if (score > this.scores[0]) {
+          return false;
+        }
+      }
       return true;
     }
     return false;
