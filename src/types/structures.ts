@@ -39,6 +39,8 @@ export interface Collectible {
   tokenSymbol: string;
   // token id
   id: string;
+  // token uri
+  uri: string;
   // token logo
   logoUri?: string;
   // collectible name
@@ -78,6 +80,7 @@ export interface NativeCoinTransfer {
 export type TransferInfo = ERC20Transfer | ERC721Transfer | NativeCoinTransfer;
 
 export interface Transaction {
+  id: string; // Transaction id containing transaction hash
   type: TransactionType;
   asset: TransferInfo; // Asset information
   from: string; // Sender address
