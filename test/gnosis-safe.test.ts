@@ -145,7 +145,7 @@ describe('Gnosis Safe test', async () => {
     });
   });
 
-  it('should return account details if valid address', async () => {
+  it('Should return account details if valid address', async () => {
     const accountDetails = await sdkInstance.safeGlobal.getAccountDetails(
       SupportedChainId.MAINNET.toString(),
       '0x2A83Aaf231644Fa328aE25394b0bEB17eBd12150'
@@ -161,7 +161,7 @@ describe('Gnosis Safe test', async () => {
     expect(accountDetails?.threshold).to.be.gt(0);
   });
 
-  it('should return undefined if invalid address', async () => {
+  it('Should return undefined if invalid address', async () => {
     const accountDetails = await sdkInstance.safeGlobal.getAccountDetails(
       SupportedChainId.MAINNET.toString(),
       '0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53'
@@ -169,7 +169,7 @@ describe('Gnosis Safe test', async () => {
     expect(accountDetails).to.be.undefined;
   });
 
-  it('should throw error if bad address checksum', async () => {
+  it('Should throw error if bad address checksum', async () => {
     await expect(
       sdkInstance.safeGlobal.getAccountDetails(
         SupportedChainId.MAINNET.toString(),
