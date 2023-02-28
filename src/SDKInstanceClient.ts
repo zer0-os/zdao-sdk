@@ -107,7 +107,7 @@ class SDKInstanceClient implements SDKInstance {
         votingThreshold,
         minimumVotingParticipants: 1,
         minimumTotalVotingTokens,
-        isRelativeMajority: false,
+        isRelativeMajority: true, // All the DAOs in snapshot are relative majority
       },
       {
         delay: space.delay,
@@ -163,7 +163,7 @@ class SDKInstanceClient implements SDKInstance {
         votingThreshold: 0,
         minimumVotingParticipants: 1,
         minimumTotalVotingTokens: '0',
-        isRelativeMajority: false,
+        isRelativeMajority: true,
       },
       undefined
     );
@@ -205,7 +205,7 @@ class SDKInstanceClient implements SDKInstance {
         votingThreshold: 0,
         minimumVotingParticipants: 1,
         minimumTotalVotingTokens: '0',
-        isRelativeMajority: false,
+        isRelativeMajority: true,
       },
       undefined
     );
