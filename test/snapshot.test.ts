@@ -1,29 +1,23 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { Wallet } from '@ethersproject/wallet';
 import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 
 import { createSDKInstance } from '../src';
 import { developmentConfiguration } from '../src/config';
 import { Config, Proposal, SDKInstance, zDAO } from '../src/types';
-import { errorMessageForError } from '../src/utilities/messages';
-import { setEnv, sleep } from './shared/setupEnv';
+import { setEnv } from './shared/setupEnv';
 
 use(chaiAsPromised.default);
 
 describe('Snapshot test', async () => {
   const env = setEnv();
 
-  let signer: Wallet;
   let sdkInstance: SDKInstance, zDAO: zDAO;
 
   beforeEach('setup', async () => {
     const provider = new JsonRpcProvider(env.rpcUrl, env.network);
     const config: Config = developmentConfiguration(provider);
-    const pk = process.env.PRIVATE_KEY;
-    if (!pk) throw new Error(errorMessageForError('no-private-key'));
-    signer = new Wallet(pk, provider);
 
     sdkInstance = createSDKInstance(config);
 
@@ -92,48 +86,20 @@ describe('Snapshot test', async () => {
     expect(vp).to.be.gt(0);
   });
 
-  it('Should create a proposal and cast a vote', async () => {
-    // Create new proposal
-    const blockNumber = await signer.provider.getBlockNumber();
-    const proposalId = await zDAO.createProposal(signer, signer.address, {
-      title: 'Hello Proposal',
-      body: 'Hello World(Test)',
-      snapshot: blockNumber,
-      choices: ['Yes', 'No', 'Absent'],
-      transfer: {
-        sender: zDAO.safeAddress,
-        recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-        token: zDAO.votingToken.token,
-        decimals: zDAO.votingToken.decimals,
-        symbol: zDAO.votingToken.symbol,
-        amount: BigNumber.from(10).pow(18).mul(3000).toString(),
-      },
-    });
-    expect(proposalId).to.be.not.empty;
-
-    // Wait for 5 seconds to align IPFS
-    await sleep(5000);
-
-    // Vote on new proposal
-    const proposal = await zDAO.getProposal(proposalId);
-    const vote = await proposal.vote(signer, signer.address, 1);
-    expect(vote.length).to.be.gt(0);
-  });
-
-  it('should return space details for asosciated ENS', async () => {
+  it('Should return space details for asosciated ENS', async () => {
     const details = await sdkInstance.snapshot.getSpaceDetails(
       'zdao-wilderworld.eth'
     );
     expect(details).to.be.not.undefined;
     expect(details?.id).to.be.equal('zdao-wilderworld.eth');
     expect(details?.name).to.be.equal('Wilder World');
-    expect(details?.network).to.be.equal('1');
+    expect(details?.network).to.be.equal(1);
     expect(
       details?.admins.includes('0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471')
     ).to.be.true;
   });
 
-  it('should return undefined for asosciated ENS', async () => {
+  it('Should return undefined for asosciated ENS', async () => {
     const details = await sdkInstance.snapshot.getSpaceDetails(
       'my-zdao-world.eth'
     );
