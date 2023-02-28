@@ -6,3 +6,4 @@ export type ENSId = string;
 export type ProposalId = string;
 export type VoteId = string;
 export type Choice = number;
+export type Maybe<T> = T | undefined;

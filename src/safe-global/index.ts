@@ -7,6 +7,7 @@ import {
 } from '@safe-global/safe-gateway-typescript-sdk';
 import fetch from 'cross-fetch';
 
+import { Maybe } from '../types';
 import { errorMessageForError } from '../utilities';
 import { SafeGlobalAccountDetails } from './types';
 
@@ -14,7 +15,7 @@ class SafeGlobalClient {
   async getAccountDetails(
     network: string,
     safeAddress: string
-  ): Promise<SafeGlobalAccountDetails | undefined> {
+  ): Promise<Maybe<SafeGlobalAccountDetails>> {
     try {
       // https://safe-client.safe.global/v1/chains/1/safes/0x2A83Aaf231644Fa328aE25394b0bEB17eBd12150
 

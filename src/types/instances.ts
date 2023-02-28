@@ -7,7 +7,7 @@ import {
   CreateZDAOParams,
   PaginationParam,
 } from './params';
-import { Choice, ProposalId, VoteId, zNA } from './primitives';
+import { Choice, Maybe, ProposalId, VoteId, zNA } from './primitives';
 import {
   ProposalProperties,
   Transaction,
@@ -70,7 +70,7 @@ export interface SDKInstance {
     getAccountDetails(
       network: string, // Chain Id
       safeAddress: string // Address to Safe Global
-    ): Promise<SafeGlobalAccountDetails | undefined>;
+    ): Promise<Maybe<SafeGlobalAccountDetails>>;
   };
 }
 

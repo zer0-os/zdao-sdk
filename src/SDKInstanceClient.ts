@@ -7,7 +7,14 @@ import ZNSHubClient from './client/ZNSHubClient';
 import SafeGlobalClient from './safe-global';
 import { SafeGlobalAccountDetails } from './safe-global/types';
 import SnapshotClient from './snapshot-io';
-import { Config, CreateZDAOParams, SDKInstance, zDAO, zNA } from './types';
+import {
+  Config,
+  CreateZDAOParams,
+  Maybe,
+  SDKInstance,
+  zDAO,
+  zNA,
+} from './types';
 import { getDecimalAmount } from './utilities';
 import { getToken, getTotalSupply } from './utilities/calls';
 import { errorMessageForError } from './utilities/messages';
@@ -222,7 +229,7 @@ class SDKInstanceClient implements SDKInstance {
       getAccountDetails: async (
         network: string,
         safeAddress: string
-      ): Promise<SafeGlobalAccountDetails | undefined> => {
+      ): Promise<Maybe<SafeGlobalAccountDetails>> => {
         return await this.safeGlobalClient.getAccountDetails(
           network,
           safeAddress
