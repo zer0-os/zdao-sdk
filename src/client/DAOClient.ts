@@ -166,8 +166,8 @@ class DAOClient implements zDAO {
 
   async listAssetsCoins(): Promise<zDAOCoins> {
     const results = await this.safeGlobalClient.listAssets(
-      this.safeAddress,
-      this.network
+      this.network,
+      this.safeAddress
     );
     return {
       amountInUSD: Number(results.fiatTotal),
@@ -188,14 +188,15 @@ class DAOClient implements zDAO {
 
   async listAssetsCollectibles(): Promise<zDAOCollectibles> {
     const results = await this.safeGlobalClient.listCollectibles(
-      this.safeAddress,
-      this.network
+      this.network,
+      this.safeAddress
     );
     return results.map((item: any) => ({
       address: item.address,
       tokenName: item.tokenName,
       tokenSymbol: item.tokenSymbol,
       id: item.id,
+      uri: item.uri,
       logoUri: item.logoUri,
       name: item.name,
       description: item.description,
@@ -222,8 +223,8 @@ class DAOClient implements zDAO {
   async listTransactions(): Promise<Transaction[]> {
     const transactions: SafeGlobalTransaction[] =
       await this.safeGlobalClient.listTransactions(
-        this.safeAddress,
-        this.network
+        this.network,
+        this.safeAddress
       );
 
     const mapToTransferInfo = (info: SafeGlobalTransferInfo): TransferInfo => {
@@ -268,6 +269,7 @@ class DAOClient implements zDAO {
     return transactions.map((tx: SafeGlobalTransaction) => {
       const txInfo = tx.transaction.txInfo as SafeGlobalTransfer;
       return {
+        id: tx.transaction.id,
         type:
           txInfo.direction === 'INCOMING'
             ? TransactionType.RECEIVED

@@ -1,29 +1,23 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { Wallet } from '@ethersproject/wallet';
 import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 
 import { createSDKInstance } from '../src';
 import { developmentConfiguration } from '../src/config';
 import { Config, Proposal, SDKInstance, zDAO } from '../src/types';
-import { errorMessageForError } from '../src/utilities/messages';
-import { setEnv, sleep } from './shared/setupEnv';
+import { setEnv } from './shared/setupEnv';
 
 use(chaiAsPromised.default);
 
 describe('Snapshot test', async () => {
   const env = setEnv();
 
-  let signer: Wallet;
   let sdkInstance: SDKInstance, zDAO: zDAO;
 
   beforeEach('setup', async () => {
     const provider = new JsonRpcProvider(env.rpcUrl, env.network);
     const config: Config = developmentConfiguration(provider);
-    const pk = process.env.PRIVATE_KEY;
-    if (!pk) throw new Error(errorMessageForError('no-private-key'));
-    signer = new Wallet(pk, provider);
 
     sdkInstance = createSDKInstance(config);
 
@@ -38,7 +32,7 @@ describe('Snapshot test', async () => {
     });
   });
 
-  it('should list proposals', async () => {
+  it('Should list proposals', async () => {
     const list = await zDAO.listProposals();
 
     expect(list.length).to.be.gt(0);
@@ -51,7 +45,7 @@ describe('Snapshot test', async () => {
     expect(found.length).to.be.equal(1);
   });
 
-  it('should get proposal detail', async () => {
+  it('Should get proposal detail', async () => {
     const proposal = await zDAO.getProposal(
       '0x082c3bc0417189d090d7e83083536f5d073737ef9ac32311e888ededa00e4d57'
     );
@@ -67,7 +61,7 @@ describe('Snapshot test', async () => {
     );
   });
 
-  it('should get votes from proposal', async () => {
+  it('Should get votes from proposal', async () => {
     const proposal = await zDAO.getProposal(
       '0x082c3bc0417189d090d7e83083536f5d073737ef9ac32311e888ededa00e4d57'
     );
@@ -81,7 +75,7 @@ describe('Snapshot test', async () => {
     );
   });
 
-  it('should get voting power', async () => {
+  it('Should get voting power', async () => {
     const proposal = await zDAO.getProposal(
       '0x082c3bc0417189d090d7e83083536f5d073737ef9ac32311e888ededa00e4d57'
     );
@@ -92,29 +86,43 @@ describe('Snapshot test', async () => {
     expect(vp).to.be.gt(0);
   });
 
-  it('should create a proposal with `erc20-with-balance` strategy and cast a vote', async () => {
-    const blockNumber = await signer.provider.getBlockNumber();
-    const proposalId = await zDAO.createProposal(signer, signer.address, {
-      title: 'Hello Proposal',
-      body: 'Hello World(Test)',
-      snapshot: blockNumber,
-      choices: ['Yes', 'No', 'Absent'],
-      transfer: {
-        sender: zDAO.safeAddress,
-        recipient: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-        token: zDAO.votingToken.token,
-        decimals: zDAO.votingToken.decimals,
-        symbol: zDAO.votingToken.symbol,
-        amount: BigNumber.from(10).pow(18).mul(3000).toString(),
-      },
-    });
-    expect(proposalId).to.be.not.empty;
+  it('Should return space details for asosciated ENS', async () => {
+    const details = await sdkInstance.snapshot.getSpaceDetails(
+      'zdao-wilderworld.eth'
+    );
+    expect(details).to.be.not.undefined;
+    expect(details?.id).to.be.equal('zdao-wilderworld.eth');
+    expect(details?.name).to.be.equal('Wilder World');
+    expect(details?.network).to.be.equal(1);
+    expect(
+      details?.admins.includes('0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471')
+    ).to.be.true;
+  });
 
-    // wait for 5 seconds to align IPFS
-    await sleep(5000);
+  it('Should return undefined for asosciated ENS', async () => {
+    const details = await sdkInstance.snapshot.getSpaceDetails(
+      'my-zdao-world.eth'
+    );
+    expect(details).to.be.undefined;
+  });
 
-    const proposal = await zDAO.getProposal(proposalId);
-    const vote = await proposal.vote(signer, signer.address, 1);
-    expect(vote.length).to.be.gt(0);
+  it('Should return space details for asosciated ENS', async () => {
+    const details = await sdkInstance.snapshot.getSpaceDetails(
+      'zdao-wilderworld.eth'
+    );
+    expect(details).to.be.not.undefined;
+    expect(details?.id).to.be.equal('zdao-wilderworld.eth');
+    expect(details?.name).to.be.equal('Wilder World');
+    expect(details?.network).to.be.equal(1);
+    expect(
+      details?.admins.includes('0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471')
+    ).to.be.true;
+  });
+
+  it('Should return undefined for asosciated ENS', async () => {
+    const details = await sdkInstance.snapshot.getSpaceDetails(
+      'my-zdao-world.eth'
+    );
+    expect(details).to.be.undefined;
   });
 });

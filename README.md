@@ -33,3 +33,4 @@ zDAO has multiple associated zNA, this association is defined in `ZDAORegistry` 
 - [x] List all the votes and voting result of proposal
 - [x] Cast a vote on proposal who has holding of certain amount of voting token
 - [x] Execute a proposal by Safe Global owners
+.

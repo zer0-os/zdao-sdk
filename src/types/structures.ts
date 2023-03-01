@@ -1,6 +1,7 @@
 import {
   AssetType,
   ProposalState,
+  SupportedChainId,
   TransactionStatus,
   TransactionType,
 } from './enumerations';
@@ -39,6 +40,8 @@ export interface Collectible {
   tokenSymbol: string;
   // token id
   id: string;
+  // token uri
+  uri: string;
   // token logo
   logoUri?: string;
   // collectible name
@@ -78,6 +81,7 @@ export interface NativeCoinTransfer {
 export type TransferInfo = ERC20Transfer | ERC721Transfer | NativeCoinTransfer;
 
 export interface Transaction {
+  id: string; // Transaction id containing transaction hash
   type: TransactionType;
   asset: TransferInfo; // Asset information
   from: string; // Sender address
@@ -116,7 +120,7 @@ export interface zDAOProperties {
   zNAs: zNA[]; // Linked zNA
   title: string; // zDAO title, zNA by default
   creator: string; // Creator wallet address
-  network: string; // Chain id
+  network: SupportedChainId; // Chain id
   duration?: number; // Proposal duration if DAO has fixed duration
   safeAddress: string; // Gnosis Safe address
   votingToken: Token; // Voting token
@@ -140,7 +144,7 @@ export interface ProposalProperties {
   start: Date;
   end: Date;
   state: ProposalState;
-  network: string; // chain id
+  network: SupportedChainId; // chain id
   snapshot: number; // snapshot block number
   scores: number[]; // scores per all the choices
   votes: number; // number of voters

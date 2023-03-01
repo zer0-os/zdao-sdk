@@ -1,6 +1,7 @@
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
+import { ethers } from 'ethers';
 
 import { createSDKInstance } from '../src';
 import { developmentConfiguration } from '../src/config';
@@ -11,7 +12,9 @@ import {
   Config,
   ERC20Transfer,
   SDKInstance,
+  SupportedChainId,
   Transaction,
+  TransactionType,
   zDAO,
 } from '../src/types';
 import { setEnv } from './shared/setupEnv';
@@ -21,7 +24,7 @@ import { setEnv } from './shared/setupEnv';
 use(chaiAsPromised.default);
 
 describe('Gnosis Safe test', async () => {
-  const env = setEnv();
+  const env = setEnv(false);
 
   let sdkInstance: SDKInstance, zDAO: zDAO;
 
@@ -32,84 +35,144 @@ describe('Gnosis Safe test', async () => {
     sdkInstance = createSDKInstance(config);
 
     zDAO = await sdkInstance.createZDAOFromParams({
-      ens: env.DAOs[0].ens,
-      zNA: env.DAOs[0].zNAs[0],
-      title: env.DAOs[0].title,
-      creator: 'creator',
-      network: env.network,
-      safeAddress: env.DAOs[0].safeAddress,
-      votingToken: env.DAOs[0].votingToken,
+      ens: 'zdao-ww-kicks.eth',
+      zNA: 'wilder.kicks',
+      title: 'Wilder Kicks',
+      creator: '0x2A83Aaf231644Fa328aE25394b0bEB17eBd12150',
+      network: SupportedChainId.MAINNET,
+      safeAddress: '0x2A83Aaf231644Fa328aE25394b0bEB17eBd12150',
+      votingToken: '0x2a3bFF78B79A009976EeA096a51A948a3dC00e34',
     });
   });
 
-  it('should list assets with test tokens', async () => {
+  it('Should have `$WILD`, `$ETH`, and `$WETH` tokens', async () => {
     const assets = await zDAO.listAssets();
     expect(assets.coins.length).to.gte(2);
 
-    // should contain ether token
+    // Should have $ETH token
     const nativeToken = assets.coins.find(
       (item: Coin) => item.type === AssetType.NATIVE_TOKEN
     );
-    expect(nativeToken).to.be.not.equal(undefined);
+    expect(nativeToken).to.be.not.undefined;
+    expect(nativeToken?.address).to.be.equal(ethers.constants.AddressZero);
+    expect(nativeToken?.amountInUSD).to.be.gt(0);
 
-    // should contain zDAOToken
-    const votingToken = assets.coins.find(
+    // Should have $WETH token
+    const wethToken = assets.coins.find(
       (item: Coin) =>
-        item.type === AssetType.ERC20 && item.address === zDAO.votingToken.token
+        item.address === '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
     );
-    expect(votingToken).to.be.not.equal(undefined);
+    expect(wethToken).to.be.not.undefined;
+    expect(wethToken?.amountInUSD).to.be.gt(0);
 
-    // should contain collectibles
-    const collectible = assets.collectibles.find(
-      (item: Collectible) =>
-        item.id ===
-        '82385085784613862901980440101751000042155349045784956518423312851800568596744'
+    // Should have `$WILD`
+    const wildToken = assets.coins.find(
+      (item: Coin) =>
+        item.address === '0x2a3bFF78B79A009976EeA096a51A948a3dC00e34'
     );
-    expect(collectible).to.be.not.equal(undefined);
+    expect(wildToken).to.be.not.undefined;
+    expect(wildToken?.amountInUSD).to.be.gt(0);
+    expect(wildToken?.type).to.be.equal(AssetType.ERC20);
   });
 
-  it('should have metadata for `Zer0 Name Service` token', async () => {
+  it('Should have metadata for `Zer0 Name Service` token', async () => {
     const assets = await zDAO.listAssets();
 
-    // should contain collectibles
-    const collectible = assets.collectibles.find(
+    // Should have zNS NFT token
+    const collectibles = assets.collectibles.filter(
       (item: Collectible) =>
-        item.address === '0x009A11617dF427319210e842D6B202f3831e0116'
+        item.address === '0x35D2F3CDAf5e2DeA9e6Ae3553A4CaACBA860A395'
     );
-    expect(collectible).to.be.not.equal(undefined);
-    // should contain metadata
-    expect(Object.keys(collectible!.metadata).length).to.be.gt(0);
+    expect(collectibles.length).to.be.gt(0);
+    collectibles.forEach((token: Collectible) => {
+      expect(token.tokenName).to.be.equal('Zer0 Name Service');
+      expect(token.tokenSymbol).to.be.equal('ZNS');
+      expect(token.uri.length).to.be.gt(0);
+      expect('name' in token).to.be.true;
+      expect('description' in token).to.be.true;
+      expect('imageUri' in token).to.be.true;
+      expect('metadata' in token).to.be.true;
+      if (Object.keys(token.metadata).length > 0) {
+        // If has metadata, should have at least the following keys
+        expect('name' in token.metadata).to.be.true;
+        expect('description' in token.metadata).to.be.true;
+        expect('image' in token.metadata).to.be.true;
+        expect('attributes' in token.metadata).to.be.true;
+      }
+    });
   });
 
-  it('should not have empty metadata for `Zer0 Name Service` token in Beasts Gnosis Safe', async () => {
-    const assets = await zDAO.listAssets();
-
-    // looking for empty meta data
-    const patches = assets.collectibles.filter(
-      (collectible) => Object.keys(collectible.metadata).length < 1
-    );
-    expect(patches.length).to.be.equal(0);
-  });
-
-  it('should list transactions', async () => {
+  it('Should list transactions', async () => {
     const txs = await zDAO.listTransactions();
 
-    // should be not empty
+    // Should be not empty
     expect(txs.length).to.be.gt(0);
 
-    // should contain txs from voting token
-    const filtered = txs.filter((tx: Transaction) => {
-      if (tx.asset.type !== AssetType.ERC20) return false;
-      const transferInfo = tx.asset as unknown as ERC20Transfer;
-      return transferInfo.tokenAddress === zDAO.votingToken.token;
+    // Should have `RECEIVE` transaction of $ETH, $WILD, $WETH
+    const receivedEth = txs.filter((tx: Transaction) => {
+      if (
+        tx.asset.type !== AssetType.NATIVE_TOKEN &&
+        tx.type !== TransactionType.RECEIVED
+      )
+        return false;
+      return true;
     });
-    expect(filtered.length).to.be.gt(0);
+    expect(receivedEth.length).to.be.gt(0);
 
-    // should contain tx to `0x8a6AAe4B05601CDe4cecbb99941f724D7292867b`
-    const toFiltered = filtered.filter(
-      (tx: Transaction) =>
-        tx.to === '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C'
+    const receivedWETH = txs.filter((tx: Transaction) => {
+      if (
+        tx.asset.type !== AssetType.ERC20 &&
+        tx.type !== TransactionType.RECEIVED
+      )
+        return false;
+      const transferInfo = tx.asset as unknown as ERC20Transfer;
+      return (
+        transferInfo.tokenAddress ===
+        '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+      );
+    });
+    expect(receivedWETH.length).to.be.gt(0);
+  });
+
+  it('Should not have same id in transactions', async () => {
+    const txs = await zDAO.listTransactions();
+
+    txs.forEach((tx: Transaction, index: number) => {
+      const sameTxs = txs.filter(
+        (item, filterIndex) => item.id === tx.id && filterIndex !== index
+      );
+      expect(sameTxs.length).to.be.equal(0);
+    });
+  });
+
+  it('Should return account details if valid address', async () => {
+    const accountDetails = await sdkInstance.safeGlobal.getAccountDetails(
+      SupportedChainId.MAINNET,
+      '0x2A83Aaf231644Fa328aE25394b0bEB17eBd12150'
     );
-    expect(toFiltered.length).to.be.gt(0);
+    expect(accountDetails).to.be.not.undefined;
+    expect(accountDetails?.network).to.be.equal(SupportedChainId.MAINNET);
+    expect(accountDetails?.safeAddress).to.be.equal(
+      '0x2A83Aaf231644Fa328aE25394b0bEB17eBd12150'
+    );
+    expect(accountDetails?.owners.length).to.be.gt(1);
+    expect(accountDetails?.threshold).to.be.gt(0);
+  });
+
+  it('Should return undefined if invalid address', async () => {
+    const accountDetails = await sdkInstance.safeGlobal.getAccountDetails(
+      SupportedChainId.MAINNET,
+      '0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53'
+    );
+    expect(accountDetails).to.be.undefined;
+  });
+
+  it('Should throw error if bad address checksum', async () => {
+    await expect(
+      sdkInstance.safeGlobal.getAccountDetails(
+        SupportedChainId.MAINNET,
+        '0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a54'
+      )
+    ).to.be.rejected;
   });
 });

@@ -20,7 +20,7 @@ describe('zNA test', async () => {
     sdkInstance = createSDKInstance(config);
   });
 
-  it('should create successfully', async () => {
+  it('Should create successfully', async () => {
     const zDAO: zDAO = await sdkInstance.createZDAOFromParams({
       ens: env.DAOs[0].ens,
       zNA: env.DAOs[0].zNAs[0],
@@ -34,7 +34,7 @@ describe('zNA test', async () => {
     expect(zDAO.ens).to.be.equal(env.DAOs[0].ens);
   });
 
-  it('should throw error if create same zNA', async () => {
+  it('Should throw error if create same zNA', async () => {
     await sdkInstance.createZDAOFromParams({
       ens: env.DAOs[0].ens,
       zNA: env.DAOs[0].zNAs[0],
@@ -58,30 +58,30 @@ describe('zNA test', async () => {
     ).to.be.rejectedWith('zDAO already exists');
   });
 
-  it('should exist zDAO', async () => {
+  it('Should exist zDAO', async () => {
     const exist = await sdkInstance.doesZDAOExist('wilder.cats');
     expect(exist).to.be.eq(true);
   });
 
-  it('should list all the zDAOs', async () => {
+  it('Should list all the zDAOs', async () => {
     const zNAs = await sdkInstance.listZNAs();
     expect(zNAs.length).to.be.gt(0);
   });
 
-  it('should create zDAO from zNA', async () => {
+  it('Should create zDAO from zNA', async () => {
     const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
     expect(dao).to.be.not.equal(undefined);
     expect(dao.ens).to.be.equal('zdao-sky.eth');
   });
 
-  it('should associated with zNA', async () => {
+  it('Should associated with zNA', async () => {
     const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
 
     const found = dao.zNAs.find((zNA) => zNA === 'wilder.cats');
     expect(found).to.be.not.equal(undefined);
   });
 
-  it('should associated with multiple zNA', async () => {
+  it('Should associated with multiple zNA', async () => {
     const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
 
     const found = dao.zNAs.filter(
