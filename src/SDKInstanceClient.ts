@@ -6,6 +6,7 @@ import ZNAClient from './client/ZNAClient';
 import ZNSHubClient from './client/ZNSHubClient';
 import SafeGlobalClient from './safe-global';
 import SnapshotClient from './snapshot-io';
+import { SnapshotSpaceDetails } from './snapshot-io/types';
 import { Config, CreateZDAOParams, SDKInstance, zDAO, zNA } from './types';
 import { getDecimalAmount } from './utilities';
 import { getToken, getTotalSupply } from './utilities/calls';
@@ -89,7 +90,7 @@ class SDKInstanceClient implements SDKInstance {
         zNAs: zDAORecord.zNAs,
         title: space.name,
         creator: space.admins.length > 0 ? space.admins[0] : zDAORecord.ens,
-        network: this.config.snapshot.network, // space.network,
+        network: this.config.network,
         duration: space.duration,
         safeAddress: zDAORecord.safeGlobal,
         votingToken: {
@@ -154,7 +155,7 @@ class SDKInstanceClient implements SDKInstance {
         zNAs: [param.zNA],
         title: param.title,
         creator: param.creator,
-        network: param.network.toString(),
+        network: param.network,
         duration: param.duration,
         safeAddress: param.safeAddress,
         votingToken: calls[0],
@@ -196,7 +197,7 @@ class SDKInstanceClient implements SDKInstance {
         zNAs: [found.zNA],
         title: found.title,
         creator: found.creator,
-        network: found.network.toString(),
+        network: found.network,
         duration: found.duration,
         safeAddress: found.safeAddress,
         votingToken: calls[0],
@@ -214,6 +215,26 @@ class SDKInstanceClient implements SDKInstance {
   doesZDAOExistFromParams(zNA: zNA): Promise<boolean> {
     const found = this.params.find((param) => param.zNA === zNA);
     return Promise.resolve(found ? true : false);
+  }
+
+  get snapshot() {
+    return {
+      getSpaceDetails: async (
+        ens: string
+      ): Promise<SnapshotSpaceDetails | undefined> => {
+        try {
+          return await this.snapshotClient.getSpaceDetails(ens);
+        } catch (error) {
+          if (
+            error instanceof Error &&
+            error.message === errorMessageForError('not-found-ens-in-snapshot')
+          ) {
+            return undefined;
+          }
+          throw error;
+        }
+      },
+    };
   }
 }
 

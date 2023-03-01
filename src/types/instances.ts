@@ -1,12 +1,13 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { Wallet } from '@ethersproject/wallet';
 
+import { SnapshotSpaceDetails } from '../snapshot-io/types';
 import {
   CreateProposalParams,
   CreateZDAOParams,
   PaginationParam,
 } from './params';
-import { Choice, ProposalId, VoteId, zNA } from './primitives';
+import { Choice, ENS, ProposalId, VoteId, zNA } from './primitives';
 import {
   ProposalProperties,
   Transaction,
@@ -64,6 +65,10 @@ export interface SDKInstance {
    * @param zNA
    */
   doesZDAOExistFromParams(zNA: zNA): Promise<boolean>;
+
+  snapshot: {
+    getSpaceDetails(ens: ENS): Promise<SnapshotSpaceDetails | undefined>;
+  };
 }
 
 export interface zDAO extends zDAOProperties {

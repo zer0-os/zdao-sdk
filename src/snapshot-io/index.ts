@@ -63,7 +63,7 @@ class SnapshotClient {
   private getScores(
     space: string,
     strategies: any[],
-    network: string,
+    network: SupportedChainId,
     addresses: string[],
     snapshot?: number | string,
     scoreApiUrl?: string
@@ -72,7 +72,7 @@ class SnapshotClient {
       return Client.utils.getScores(
         space,
         strategies,
-        network,
+        network.toString(),
         addresses,
         snapshot,
         scoreApiUrl
@@ -103,7 +103,7 @@ class SnapshotClient {
     ];
   }
 
-  async listSpaces(network: string): Promise<SnapshotSpace[]> {
+  async listSpaces(network: SupportedChainId): Promise<SnapshotSpace[]> {
     if (this.spaces.length > 0) {
       return this.spaces;
     }
@@ -147,23 +147,22 @@ class SnapshotClient {
       })
       .filter(
         (space) =>
-          ((network === SupportedChainId.MAINNET.toString() &&
-            !space.private) ||
-            network !== SupportedChainId.MAINNET.toString()) &&
+          ((network === SupportedChainId.MAINNET && !space.private) ||
+            network !== SupportedChainId.MAINNET) &&
           (verified as any)[space.id] !== -1
       )
-      .filter((space) => space.network === network);
+      .filter((space) => space.network === network.toString());
     const list = orderBy(filters, ['followers', 'score'], ['desc', 'desc']);
-    this.spaces = list.map((item: any) => ({
-      id: item.id,
-      name: item.name,
-      avatar: item.avatarUri,
-      network: item.network,
-      admins: item.admins,
-      period: item.voting.period ? item.voting.period : undefined,
-      strategies: item.strategies,
-      followers: item.followers,
-    }));
+    this.spaces = list.map(
+      (item: any): SnapshotSpace => ({
+        id: item.id,
+        name: item.name,
+        avatar: item.avatarUri,
+        network: Number(item.network) as SupportedChainId,
+        proposals: item.proposals ? Number(item.proposals) : 0,
+        followers: item.followers,
+      })
+    );
     return this.spaces;
   }
 
@@ -185,15 +184,16 @@ class SnapshotClient {
       id: item.id,
       name: item.name,
       avatar: Client.utils.getUrl(item.avatar, this.config.ipfsGateway),
-      network: item.network,
-      duration: item.voting.period,
+      network: Number(item.network) as SupportedChainId,
+      proposals: item.proposalsCount ? Number(item.proposalsCount) : 0,
       followers: item.followersCount,
       admins: item.admins,
       strategies: item.strategies,
       threshold: item.filters.minScore,
+      duration: item.voting.period,
       delay: item.voting.delay,
       quorum: item.voting.quorum,
-    };
+    } as SnapshotSpaceDetails;
   }
 
   async getSpaceOptions(spaceId: ENS): Promise<SnapshotSpaceOptions> {
@@ -223,7 +223,7 @@ class SnapshotClient {
   // we should call updateScore per every proposal to update scores and voters
   async listProposals(
     spaceId: ENS,
-    network: string,
+    network: SupportedChainId,
     from = 0,
     count = 1000
   ): Promise<SnapshotProposal[]> {
@@ -232,7 +232,7 @@ class SnapshotClient {
       PROPOSALS_QUERY,
       {
         spaceId,
-        network,
+        network: network.toString(),
         skip: from,
         first: count,
       },
@@ -252,7 +252,7 @@ class SnapshotClient {
         end: new Date(response.end * 1000),
         state: response.state,
         scores_state: response.scores_state,
-        network: response.network,
+        network: Number(response.network) as SupportedChainId,
         snapshot: Number(response.snapshot),
         scores: response.scores,
         votes: response.votes,
@@ -352,7 +352,7 @@ class SnapshotClient {
       end: new Date(response.end * 1000),
       state: response.state,
       scores_state: response.scores_state,
-      network: response.network,
+      network: Number(response.network) as SupportedChainId,
       snapshot: Number(response.snapshot),
       scores: response.scores,
       votes: response.votes,
