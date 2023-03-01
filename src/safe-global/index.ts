@@ -7,13 +7,13 @@ import {
 } from '@safe-global/safe-gateway-typescript-sdk';
 import fetch from 'cross-fetch';
 
-import { Maybe } from '../types';
+import { Maybe, SupportedChainId } from '../types';
 import { errorMessageForError } from '../utilities';
 import { SafeGlobalAccountDetails } from './types';
 
 class SafeGlobalClient {
   async getAccountDetails(
-    network: string,
+    network: SupportedChainId,
     safeAddress: string
   ): Promise<Maybe<SafeGlobalAccountDetails>> {
     try {
@@ -45,7 +45,7 @@ class SafeGlobalClient {
   }
 
   async listAssets(
-    network: string,
+    network: SupportedChainId,
     safeAddress: string,
     selectedCurrency = 'USD'
   ): Promise<SafeBalanceResponse> {
@@ -67,7 +67,7 @@ class SafeGlobalClient {
   }
 
   async listCollectibles(
-    network: string,
+    network: SupportedChainId,
     safeAddress: string
   ): Promise<SafeCollectibleResponse[]> {
     try {
@@ -88,7 +88,7 @@ class SafeGlobalClient {
   }
 
   async listTransactions(
-    network: string,
+    network: SupportedChainId,
     safeAddress: string
   ): Promise<Transaction[]> {
     try {

@@ -2,12 +2,14 @@ import { Web3Provider } from '@ethersproject/providers';
 import { Wallet } from '@ethersproject/wallet';
 
 import { SafeGlobalAccountDetails } from '../safe-global/types';
+import { SnapshotSpaceDetails } from '../snapshot-io/types';
+import { SupportedChainId } from './enumerations';
 import {
   CreateProposalParams,
   CreateZDAOParams,
   PaginationParam,
 } from './params';
-import { Choice, Maybe, ProposalId, VoteId, zNA } from './primitives';
+import { Choice, ENS, Maybe, ProposalId, VoteId, zNA } from './primitives';
 import {
   ProposalProperties,
   Transaction,
@@ -66,9 +68,13 @@ export interface SDKInstance {
    */
   doesZDAOExistFromParams(zNA: zNA): Promise<boolean>;
 
+  snapshot: {
+    getSpaceDetails(ens: ENS): Promise<Maybe<SnapshotSpaceDetails>>;
+  };
+
   safeGlobal: {
     getAccountDetails(
-      network: string, // Chain Id
+      network: SupportedChainId, // Chain Id
       safeAddress: string // Address to Safe Global
     ): Promise<Maybe<SafeGlobalAccountDetails>>;
   };

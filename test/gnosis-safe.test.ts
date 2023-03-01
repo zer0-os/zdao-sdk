@@ -147,13 +147,11 @@ describe('Gnosis Safe test', async () => {
 
   it('Should return account details if valid address', async () => {
     const accountDetails = await sdkInstance.safeGlobal.getAccountDetails(
-      SupportedChainId.MAINNET.toString(),
+      SupportedChainId.MAINNET,
       '0x2A83Aaf231644Fa328aE25394b0bEB17eBd12150'
     );
     expect(accountDetails).to.be.not.undefined;
-    expect(accountDetails?.network).to.be.equal(
-      SupportedChainId.MAINNET.toString()
-    );
+    expect(accountDetails?.network).to.be.equal(SupportedChainId.MAINNET);
     expect(accountDetails?.safeAddress).to.be.equal(
       '0x2A83Aaf231644Fa328aE25394b0bEB17eBd12150'
     );
@@ -163,7 +161,7 @@ describe('Gnosis Safe test', async () => {
 
   it('Should return undefined if invalid address', async () => {
     const accountDetails = await sdkInstance.safeGlobal.getAccountDetails(
-      SupportedChainId.MAINNET.toString(),
+      SupportedChainId.MAINNET,
       '0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53'
     );
     expect(accountDetails).to.be.undefined;
@@ -172,7 +170,7 @@ describe('Gnosis Safe test', async () => {
   it('Should throw error if bad address checksum', async () => {
     await expect(
       sdkInstance.safeGlobal.getAccountDetails(
-        SupportedChainId.MAINNET.toString(),
+        SupportedChainId.MAINNET,
         '0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a54'
       )
     ).to.be.rejected;
