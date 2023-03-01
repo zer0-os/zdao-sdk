@@ -5,9 +5,18 @@ import DAOClient from './client/DAOClient';
 import ZNAClient from './client/ZNAClient';
 import ZNSHubClient from './client/ZNSHubClient';
 import SafeGlobalClient from './safe-global';
+import { SafeGlobalAccountDetails } from './safe-global/types';
 import SnapshotClient from './snapshot-io';
 import { SnapshotSpaceDetails } from './snapshot-io/types';
-import { Config, CreateZDAOParams, SDKInstance, zDAO, zNA } from './types';
+import {
+  Config,
+  CreateZDAOParams,
+  Maybe,
+  SDKInstance,
+  SupportedChainId,
+  zDAO,
+  zNA,
+} from './types';
 import { getDecimalAmount } from './utilities';
 import { getToken, getTotalSupply } from './utilities/calls';
 import { errorMessageForError } from './utilities/messages';
@@ -233,6 +242,20 @@ class SDKInstanceClient implements SDKInstance {
           }
           throw error;
         }
+      },
+    };
+  }
+
+  get safeGlobal() {
+    return {
+      getAccountDetails: async (
+        network: SupportedChainId,
+        safeAddress: string
+      ): Promise<Maybe<SafeGlobalAccountDetails>> => {
+        return await this.safeGlobalClient.getAccountDetails(
+          network,
+          safeAddress
+        );
       },
     };
   }

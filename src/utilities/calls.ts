@@ -6,12 +6,12 @@ import { Wallet } from '@ethersproject/wallet';
 
 import ERC20Abi from '../config/abi/ERC20.json';
 import ERC721Abi from '../config/abi/ERC721.json';
-import { Token } from '../types';
+import { Maybe, Token } from '../types';
 import { errorMessageForError } from './messages';
 
 export const getSigner = (
   provider: Web3Provider | Wallet,
-  account: string | undefined
+  account: Maybe<string>
 ): Signer => {
   if (provider instanceof Wallet) {
     return provider;

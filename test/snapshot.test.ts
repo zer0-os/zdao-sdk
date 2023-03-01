@@ -106,20 +106,20 @@ describe('Snapshot test', async () => {
     expect(details).to.be.undefined;
   });
 
-  it('should return space details for asosciated ENS', async () => {
+  it('Should return space details for asosciated ENS', async () => {
     const details = await sdkInstance.snapshot.getSpaceDetails(
       'zdao-wilderworld.eth'
     );
     expect(details).to.be.not.undefined;
     expect(details?.id).to.be.equal('zdao-wilderworld.eth');
     expect(details?.name).to.be.equal('Wilder World');
-    expect(details?.network).to.be.equal('1');
+    expect(details?.network).to.be.equal(1);
     expect(
       details?.admins.includes('0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471')
     ).to.be.true;
   });
 
-  it('should return undefined for asosciated ENS', async () => {
+  it('Should return undefined for asosciated ENS', async () => {
     const details = await sdkInstance.snapshot.getSpaceDetails(
       'my-zdao-world.eth'
     );

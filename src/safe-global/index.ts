@@ -7,13 +7,46 @@ import {
 } from '@safe-global/safe-gateway-typescript-sdk';
 import fetch from 'cross-fetch';
 
-import { SupportedChainId } from '../types';
+import { Maybe, SupportedChainId } from '../types';
 import { errorMessageForError } from '../utilities';
+import { SafeGlobalAccountDetails } from './types';
 
 class SafeGlobalClient {
-  async listAssets(
-    safeAddress: string,
+  async getAccountDetails(
     network: SupportedChainId,
+    safeAddress: string
+  ): Promise<Maybe<SafeGlobalAccountDetails>> {
+    try {
+      // https://safe-client.safe.global/v1/chains/1/safes/0x2A83Aaf231644Fa328aE25394b0bEB17eBd12150
+
+      const address = getAddress(safeAddress);
+      const url = `https://safe-client.safe.global/v1/chains/${network}/safes/${address}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+      const code = data.code ? Number(data.code) : 0;
+      if (code > 0) {
+        return undefined;
+      }
+
+      return {
+        network,
+        safeAddress: address,
+        owners: data.owners.map((item: any) => item.value),
+        threshold: Number(data.threshold),
+      } as SafeGlobalAccountDetails;
+    } catch (error: any) {
+      throw new Error(
+        errorMessageForError('network-error', {
+          message: error.message ?? error.error_description,
+        })
+      );
+    }
+  }
+
+  async listAssets(
+    network: SupportedChainId,
+    safeAddress: string,
     selectedCurrency = 'USD'
   ): Promise<SafeBalanceResponse> {
     try {
@@ -34,8 +67,8 @@ class SafeGlobalClient {
   }
 
   async listCollectibles(
-    safeAddress: string,
-    network: SupportedChainId
+    network: SupportedChainId,
+    safeAddress: string
   ): Promise<SafeCollectibleResponse[]> {
     try {
       const address = getAddress(safeAddress);
@@ -55,8 +88,8 @@ class SafeGlobalClient {
   }
 
   async listTransactions(
-    safeAddress: string,
-    network: SupportedChainId
+    network: SupportedChainId,
+    safeAddress: string
   ): Promise<Transaction[]> {
     try {
       const address = getAddress(safeAddress);
