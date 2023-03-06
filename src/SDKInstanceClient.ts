@@ -1,4 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber';
+import { parseUnits } from '@ethersproject/units';
 import shortid from 'shortid';
 
 import DAOClient from './client/DAOClient';
@@ -17,7 +18,6 @@ import {
   zDAO,
   zNA,
 } from './types';
-import { getDecimalAmount } from './utilities';
 import { getToken, getTotalSupply } from './utilities/calls';
 import { errorMessageForError } from './utilities/messages';
 import zDAORegistryClient from './zDAORegistry';
@@ -76,10 +76,7 @@ class SDKInstanceClient implements SDKInstance {
       strategy.params.address
     );
     const minimumTotalVotingTokens = space.quorum
-      ? getDecimalAmount(
-          BigNumber.from(space.quorum.toString()),
-          decimals
-        ).toString()
+      ? parseUnits(space.quorum.toString(), decimals).toString()
       : '0';
     const votingThreshold =
       totalSupplyOfVotingToken === BigNumber.from(0)
@@ -108,16 +105,13 @@ class SDKInstanceClient implements SDKInstance {
           decimals,
         },
         amount: space.threshold
-          ? getDecimalAmount(
-              BigNumber.from(space.threshold.toString()),
-              decimals
-            ).toString()
+          ? parseUnits(space.threshold.toString(), decimals).toString()
           : '0',
         totalSupplyOfVotingToken: totalSupplyOfVotingToken.toString(),
         votingThreshold,
         minimumVotingParticipants: 1,
         minimumTotalVotingTokens,
-        isRelativeMajority: false,
+        isRelativeMajority: true, // All the DAOs in snapshot are relative majority
       },
       {
         delay: space.delay,
@@ -173,7 +167,7 @@ class SDKInstanceClient implements SDKInstance {
         votingThreshold: 0,
         minimumVotingParticipants: 1,
         minimumTotalVotingTokens: '0',
-        isRelativeMajority: false,
+        isRelativeMajority: true,
       },
       undefined
     );
@@ -215,7 +209,7 @@ class SDKInstanceClient implements SDKInstance {
         votingThreshold: 0,
         minimumVotingParticipants: 1,
         minimumTotalVotingTokens: '0',
-        isRelativeMajority: false,
+        isRelativeMajority: true,
       },
       undefined
     );

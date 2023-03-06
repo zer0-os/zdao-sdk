@@ -21,7 +21,7 @@ export const DEFAULT_PROPOSAL_CHOICES = ['Approve', 'Deny'];
 
 export const developmentConfiguration = (
   provider: Provider,
-  ipfsGateway = 'snapshot.mypinata.cloud'
+  ipfsGateway = 'ipfs.io'
 ): Config => ({
   network: SupportedChainId.GOERLI,
   snapshot: {
@@ -40,7 +40,7 @@ export const developmentConfiguration = (
 
 export const productionConfiguration = (
   provider: Provider,
-  ipfsGateway = 'snapshot.mypinata.cloud'
+  ipfsGateway = 'ipfs.io'
 ): Config => ({
   network: SupportedChainId.MAINNET,
   snapshot: {
