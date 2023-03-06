@@ -1,5 +1,5 @@
-import { BigNumber } from '@ethersproject/bignumber';
 import { Web3Provider } from '@ethersproject/providers';
+import { parseUnits } from '@ethersproject/units';
 import { Wallet } from '@ethersproject/wallet';
 import { cloneDeep } from 'lodash';
 
@@ -13,7 +13,6 @@ import {
   VoteId,
 } from '../types';
 import { Choice, Proposal, Vote } from '../types';
-import { getDecimalAmount } from '../utilities';
 import { errorMessageForError } from '../utilities/messages';
 import DAOClient from './DAOClient';
 
@@ -263,8 +262,8 @@ class ProposalClient implements Proposal {
     if (!this.zDAO.isRelativeMajority) return false;
 
     const totalScore = this.scores.reduce((prev, current) => prev + current, 0);
-    const totalScoreAsBN = getDecimalAmount(
-      BigNumber.from(totalScore),
+    const totalScoreAsBN = parseUnits(
+      totalScore.toString(),
       this.zDAO.votingToken.decimals
     );
     if (totalScoreAsBN.gte(this.zDAO.minimumTotalVotingTokens)) {

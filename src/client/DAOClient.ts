@@ -1,6 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { Web3Provider } from '@ethersproject/providers';
+import { parseUnits } from '@ethersproject/units';
 import { Wallet } from '@ethersproject/wallet';
 import {
   Erc20Transfer as SafeGlobalErc20Transfer,
@@ -35,11 +36,7 @@ import {
   zDAOCollectibles,
   zDAOProperties,
 } from '../types';
-import {
-  getDecimalAmount,
-  getFullDisplayBalance,
-  getSigner,
-} from '../utilities';
+import { getFullDisplayBalance, getSigner } from '../utilities';
 import { errorMessageForError } from '../utilities/messages';
 import ProposalClient from './ProposalClient';
 
@@ -135,14 +132,14 @@ class DAOClient implements zDAO {
       options = { strategies, delay };
       properties.duration = duration;
       properties.amount = threshold
-        ? getDecimalAmount(
-            BigNumber.from(threshold),
+        ? parseUnits(
+            threshold.toString(),
             properties.votingToken.decimals
           ).toString()
         : '0';
       properties.minimumTotalVotingTokens = quorum
-        ? getDecimalAmount(
-            BigNumber.from(quorum),
+        ? parseUnits(
+            quorum.toString(),
             properties.votingToken.decimals
           ).toString()
         : '0';
@@ -415,10 +412,7 @@ class DAOClient implements zDAO {
     if (balance.lt(this.amount)) {
       throw new Error(
         errorMessageForError('should-hold-token', {
-          amount: getFullDisplayBalance(
-            BigNumber.from(this.amount),
-            this.votingToken.decimals
-          ),
+          amount: getFullDisplayBalance(this.amount, this.votingToken.decimals),
         })
       );
     }
