@@ -1,7 +1,7 @@
+import { AddressZero } from '@ethersproject/constants';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
-import { ethers } from 'ethers';
 
 import { createSDKInstance } from '../src';
 import { developmentConfiguration } from '../src/config';
@@ -54,7 +54,7 @@ describe('Gnosis Safe test', async () => {
       (item: Coin) => item.type === AssetType.NATIVE_TOKEN
     );
     expect(nativeToken).to.be.not.undefined;
-    expect(nativeToken?.address).to.be.equal(ethers.constants.AddressZero);
+    expect(nativeToken?.address).to.be.equal(AddressZero);
     expect(nativeToken?.amountInUSD).to.be.gt(0);
 
     // Should have $WETH token

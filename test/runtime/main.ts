@@ -1,7 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Wallet } from '@ethersproject/wallet';
-import { createInstance as createZNSInstance } from '@zero-tech/zns-sdk';
 
 import { createSDKInstance } from '../../src';
 import {
@@ -136,13 +135,18 @@ const iterateZNAs = async (sdkInstance: SDKInstance) => {
     const proposals = await zDAO.listProposals();
     console.log('proposals', proposals.length);
 
-    proposals.forEach((proposal) => {
+    for (const proposal of proposals) {
       console.log('proposal.metadata', proposal.id, proposal.metadata);
       if (proposal.votes > maxVoters) {
         maxVoters = proposal.votes;
         proposalId = proposal.id;
       }
-    });
+      const votes = await proposal.listVotes({
+        from: 0,
+        count: 3000,
+      });
+      console.log('votes', votes.length);
+    }
 
     if (proposalId.length > 0) {
       const proposal = await zDAO.getProposal(proposalId);
@@ -163,17 +167,14 @@ const main = async () => {
   const env = setEnv(isDev);
 
   const provider = new JsonRpcProvider(env.rpcUrl, env.network);
-  const signer = new Wallet(env.privateKey, provider);
 
   const config: Config = isDev
-    ? developmentConfiguration(provider, 'snapshot.mypinata.cloud')
-    : productionConfiguration(provider, 'snapshot.mypinata.cloud');
+    ? developmentConfiguration(provider, 'ipfs.io')
+    : productionConfiguration(provider, 'ipfs.io');
 
   console.time('createSDKInstance');
   const sdkInstance: SDKInstance = createSDKInstance(config);
   console.timeEnd('createSDKInstance');
-
-  const znsInstance = createZNSInstance(config.zNS);
 
   for (const DAO of env.DAOs) {
     const zDAO = await sdkInstance.createZDAOFromParams({
