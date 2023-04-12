@@ -56,6 +56,7 @@ class SafeGlobalClient {
 
       const res = await fetch(url);
       const data = await res.json();
+      //console.log(data);
       return data;
     } catch (error: any) {
       throw new Error(
@@ -77,7 +78,8 @@ class SafeGlobalClient {
 
       const res = await fetch(url);
       const data = await res.json();
-      return data;
+      const results = data.results;
+      return results;
     } catch (error: any) {
       throw new Error(
         errorMessageForError('network-error', {
