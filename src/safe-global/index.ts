@@ -53,10 +53,9 @@ class SafeGlobalClient {
       const address = getAddress(safeAddress);
 
       const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/balances/${selectedCurrency}?exclude_spam=true&trusted=false`;
-
+      //const url = `https://safe-client.gnosis.io/v2/chains/${network}/safes/${address}/balances`;
       const res = await fetch(url);
       const data = await res.json();
-      //console.log(data);
       return data;
     } catch (error: any) {
       throw new Error(
@@ -75,11 +74,11 @@ class SafeGlobalClient {
       const address = getAddress(safeAddress);
 
       const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/collectibles?exclude_spam=true&trusted=false`;
-
+      //const url = `https://safe-client.gnosis.io/v2/chains/${network}/safes/${address}/collectibles`;
+      console.log("url: ", url);
       const res = await fetch(url);
       const data = await res.json();
-      const results = data.results;
-      return results;
+      return data.results;
     } catch (error: any) {
       throw new Error(
         errorMessageForError('network-error', {
@@ -97,7 +96,7 @@ class SafeGlobalClient {
       const address = getAddress(safeAddress);
 
       const url = `https://zero-service-gateway.azure-api.net/gnosis/${network}/safes/${address}/transactions/history`;
-
+      //const url = `https://safe-client.gnosis.io/v2/chains/${network}/safes/${address}/transactions/history`;
       const resp = await fetch(url).then((res) => res.json());
       const { results } = resp;
 
