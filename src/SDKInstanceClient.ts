@@ -85,12 +85,13 @@ class SDKInstanceClient implements SDKInstance {
         decimals
       ).toString()
       : '0';
-    const votingThreshold = totalSupplyOfVotingToken === BigNumber.from(0)
-      ? 0
-      : BigNumber.from(minimumTotalVotingTokens)
-        .mul(10000)
-        .div(totalSupplyOfVotingToken)
-        .toNumber();
+    const votingThreshold =
+      totalSupplyOfVotingToken === BigNumber.from(0)
+        ? 0
+        : BigNumber.from(minimumTotalVotingTokens)
+          .mul(10000)
+          .div(totalSupplyOfVotingToken)
+          .toNumber();
 
     return await DAOClient.createInstance(
       this.config,
