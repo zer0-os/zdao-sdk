@@ -77,17 +77,17 @@ class SDKInstanceClient implements SDKInstance {
     );
     const minimumTotalVotingTokens = space.quorum
       ? getDecimalAmount(
-          BigNumber.from(space.quorum.toString()),
-          decimals
-        ).toString()
+        BigNumber.from(space.quorum.toString()),
+        decimals
+      ).toString()
       : '0';
     const votingThreshold =
       totalSupplyOfVotingToken === BigNumber.from(0)
         ? 0
         : BigNumber.from(minimumTotalVotingTokens)
-            .mul(10000)
-            .div(totalSupplyOfVotingToken)
-            .toNumber();
+          .mul(10000)
+          .div(totalSupplyOfVotingToken)
+          .toNumber();
 
     return await DAOClient.createInstance(
       this.config,
@@ -109,9 +109,9 @@ class SDKInstanceClient implements SDKInstance {
         },
         amount: space.threshold
           ? getDecimalAmount(
-              BigNumber.from(space.threshold.toString()),
-              decimals
-            ).toString()
+            BigNumber.from(space.threshold.toString()),
+            decimals
+          ).toString()
           : '0',
         totalSupplyOfVotingToken: totalSupplyOfVotingToken.toString(),
         votingThreshold,

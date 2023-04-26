@@ -77,7 +77,7 @@ class SafeGlobalClient {
 
       const res = await fetch(url);
       const data = await res.json();
-      return data;
+      return data.results;
     } catch (error: any) {
       throw new Error(
         errorMessageForError('network-error', {

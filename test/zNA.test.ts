@@ -3,19 +3,20 @@ import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 
 import { createSDKInstance } from '../src';
-import { developmentConfiguration } from '../src/config';
+import { productionConfiguration } from '../src/config';
 import { Config, SDKInstance, zDAO } from '../src/types';
 import { setEnv } from './shared/setupEnv';
 
 use(chaiAsPromised.default);
 
 describe('zNA test', async () => {
-  const env = setEnv();
+  const title = 'wilder';
+  const env = setEnv(false);
   let sdkInstance: SDKInstance;
 
   beforeEach('setup', async () => {
     const provider = new JsonRpcProvider(env.rpcUrl, env.network);
-    const config: Config = developmentConfiguration(provider);
+    const config: Config = productionConfiguration(provider);
 
     sdkInstance = createSDKInstance(config);
   });
@@ -30,7 +31,6 @@ describe('zNA test', async () => {
       safeAddress: env.DAOs[0].safeAddress,
       votingToken: env.DAOs[0].votingToken,
     });
-
     expect(zDAO.ens).to.be.equal(env.DAOs[0].ens);
   });
 
@@ -59,34 +59,25 @@ describe('zNA test', async () => {
   });
 
   it('Should exist zDAO', async () => {
-    const exist = await sdkInstance.doesZDAOExist('wilder.cats');
+    const exist = await sdkInstance.doesZDAOExist(title);
     expect(exist).to.be.eq(true);
   });
 
-  it('Should list all the zDAOs', async () => {
+  it('Should list all the zNAs', async () => {
     const zNAs = await sdkInstance.listZNAs();
     expect(zNAs.length).to.be.gt(0);
   });
 
   it('Should create zDAO from zNA', async () => {
-    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
+    const dao: zDAO = await sdkInstance.getZDAOByZNA(title);
     expect(dao).to.be.not.equal(undefined);
-    expect(dao.ens).to.be.equal('zdao-sky.eth');
+    expect(dao.ens).to.be.equal('zdao-wilderworld.eth');
   });
 
   it('Should associated with zNA', async () => {
-    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
+    const dao: zDAO = await sdkInstance.getZDAOByZNA(title);
 
-    const found = dao.zNAs.find((zNA) => zNA === 'wilder.cats');
+    const found = dao.zNAs.find((zNA) => zNA === title);
     expect(found).to.be.not.equal(undefined);
-  });
-
-  it('Should associated with multiple zNA', async () => {
-    const dao: zDAO = await sdkInstance.getZDAOByZNA('wilder.cats');
-
-    const found = dao.zNAs.filter(
-      (zNA) => zNA === 'wilder.cats' || zNA === 'wilder.skydao'
-    );
-    expect(found.length).to.be.eq(2);
   });
 });

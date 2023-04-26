@@ -7,6 +7,10 @@ import {
 } from './enumerations';
 import { Choice, ENS, ProposalId, zDAOId, zNA } from './primitives';
 
+export interface zNAAssociation {
+  id: string;
+};
+
 export interface Vote {
   voter: string;
   choice: Choice;
