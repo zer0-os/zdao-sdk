@@ -48,10 +48,6 @@ class SDKInstanceClient implements SDKInstance {
     return await this.zDAORegistryClient.listZNAs();
   }
 
-  async listZDAOs(): Promise<any> {
-    return await this.zDAORegistryClient.listZDAOs();
-  }
-
   async getZDAOByZNA(zNA: zNA): Promise<zDAO> {
     // get zDAO information associated with zNA
     const zDAORecord: ZDAORecord =

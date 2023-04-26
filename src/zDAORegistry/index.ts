@@ -24,22 +24,17 @@ class zDAORegistryClient {
 
   async listZNAs(): Promise<zNA[]> {
     const znaassociations = await getZNAs(this.contract);
-    const promises: Promise<zNA>[] = znaassociations.map((zNA: any) =>
+    const promises: Promise<zNA>[] = znaassociations.map((zNA) =>
       ZNAClient.zNAIdTozNA(BigNumber.from(zNA.id).toHexString())
     );
     return await Promise.all(promises);
-  }
-
-  async listZDAOs(): Promise<any> {
-    const zdaos = await this.contract.listzDAOs(1, await this.contract.numberOfzDAOs());
-    return zdaos;
   }
 
   async getZDAORecordByZNA(zNA: zNA): Promise<ZDAORecord> {
     const znaId = await ZNAClient.zNATozNAId(zNA);
     const zDAORecord = await this.contract.getzDaoByZNA(znaId);
     const zNAs: zNA[] = await Promise.all(
-      zDAORecord.associatedzNAs.map((association: any) =>
+      zDAORecord.associatedzNAs.map((association) =>
         ZNAClient.zNAIdTozNA(BigNumber.from(association).toHexString())
       )
     );

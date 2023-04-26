@@ -68,11 +68,6 @@ describe('zNA test', async () => {
     expect(zNAs.length).to.be.gt(0);
   });
 
-  it('Should list all the zDAOs', async () => {
-    const zNAs = await sdkInstance.listZDAOs();
-    expect(zNAs.length).to.be.gt(0);
-  });
-
   it('Should create zDAO from zNA', async () => {
     const dao: zDAO = await sdkInstance.getZDAOByZNA(title);
     expect(dao).to.be.not.equal(undefined);

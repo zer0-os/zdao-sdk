@@ -28,12 +28,6 @@ export interface SDKInstance {
   listZNAs(): Promise<zNA[]>;
 
   /**
-   * Get all the list of zDAO
-   * @returns list of zDAO
-   */
-  listZDAOs(): Promise<any>;
-
-  /**
    * Create an zDAO instance by zNA
    * @param zNA zNA address
    * @returns created zDAO instance

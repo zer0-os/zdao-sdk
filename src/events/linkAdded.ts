@@ -5,7 +5,7 @@ export async function readLinkAddedEvents(contract: ethers.Contract) {
     const blockNumber = await contract.provider.getBlockNumber();
 
     // Define the range of blocks to search for the event
-    const startBlock = 0;//blockNumber - 1000; // Set this according to how far back you want to search
+    const startBlock = 14526282 //Mainnet zDAOregistry deployed at this block
     const endBlock = blockNumber;
 
     // Read the DAOCreated event data
