@@ -178,7 +178,6 @@ class ProposalClient implements Proposal {
         snapshot: Number(this.snapshot),
         from,
         count: count >= limit ? limit : count,
-        voter: '',
       });
       votes.push(
         ...results.map((vote: any) => ({
