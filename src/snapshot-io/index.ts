@@ -373,7 +373,7 @@ class SnapshotClient {
       VOTES_QUERY,
       {
         id: params.proposalId,
-        orderBy: 'vp',
+        orderBy: 'created',
         orderDirection: 'desc',
         first: params.count,
         skip: params.from,
