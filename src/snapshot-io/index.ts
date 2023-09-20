@@ -377,6 +377,7 @@ class SnapshotClient {
         orderDirection: 'desc',
         first: params.count,
         skip: params.from,
+        voter: params.voter,
       },
       'votes'
     );
