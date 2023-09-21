@@ -5,7 +5,7 @@ import { cloneDeep } from 'lodash';
 
 import SafeGlobalClient from '../safe-global';
 import SnapshotClient from '../snapshot-io';
-import { ListVotesParams, SnapshotProposal } from "../snapshot-io/types";
+import { ListVotesParams, SnapshotProposal } from '../snapshot-io/types';
 import { ProposalProperties, ProposalState, VoteId } from '../types';
 import { Choice, Proposal, Vote } from '../types';
 import { getDecimalAmount } from '../utilities';
