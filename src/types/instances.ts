@@ -2,7 +2,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import { Wallet } from '@ethersproject/wallet';
 
 import { SafeGlobalAccountDetails } from '../safe-global/types';
-import { SnapshotSpaceDetails } from '../snapshot-io/types';
+import { ListVotesParams, SnapshotSpaceDetails } from "../snapshot-io/types";
 import { SupportedChainId } from './enumerations';
 import {
   CreateProposalParams,
@@ -143,7 +143,9 @@ export interface Proposal extends ProposalProperties {
    * Get all the votes by proposal id filtering with the function parameter
    * @returns list of votes
    */
-  listVotes(pagination?: PaginationParam): Promise<Vote[]>;
+  listVotes(
+    options?: Partial<Pick<ListVotesParams, 'from' | 'count' | 'voter'>>
+  ): Promise<Vote[]>;
 
   /**
    * Get voting power of the user in zDAO

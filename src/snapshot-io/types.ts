@@ -22,7 +22,7 @@ export interface ListVotesParams extends SpaceParams {
   snapshot: number;
   from: number;
   count: number;
-  voter: string;
+  voter?: string;
 }
 
 export interface ERC20BalanceOfParams extends SpaceParams {

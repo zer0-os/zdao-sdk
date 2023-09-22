@@ -5,13 +5,8 @@ import { cloneDeep } from 'lodash';
 
 import SafeGlobalClient from '../safe-global';
 import SnapshotClient from '../snapshot-io';
-import { SnapshotProposal } from '../snapshot-io/types';
-import {
-  PaginationParam,
-  ProposalProperties,
-  ProposalState,
-  VoteId,
-} from '../types';
+import { ListVotesParams, SnapshotProposal } from '../snapshot-io/types';
+import { ProposalProperties, ProposalState, VoteId } from '../types';
 import { Choice, Proposal, Vote } from '../types';
 import { getDecimalAmount } from '../utilities';
 import { errorMessageForError } from '../utilities/messages';
@@ -161,10 +156,12 @@ class ProposalClient implements Proposal {
     };
   }
 
-  async listVotes(pagination?: PaginationParam): Promise<Vote[]> {
+  async listVotes(
+    options?: Partial<Pick<ListVotesParams, 'from' | 'count' | 'voter'>>
+  ): Promise<Vote[]> {
     const limit = 1000;
-    let from = pagination?.from ?? 0;
-    let count = pagination?.count ?? limit;
+    let from = options?.from ?? 0;
+    let count = options?.count ?? limit;
     let numberOfResults = limit;
     const votes: Vote[] = [];
 
@@ -178,7 +175,7 @@ class ProposalClient implements Proposal {
         snapshot: Number(this.snapshot),
         from,
         count: count >= limit ? limit : count,
-        voter: '',
+        voter: options?.voter,
       });
       votes.push(
         ...results.map((vote: any) => ({
