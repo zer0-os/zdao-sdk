@@ -356,6 +356,7 @@ class SnapshotClient {
       snapshot: Number(response.snapshot),
       scores: response.scores,
       votes: response.votes,
+      quorum: response.quorum,
     };
     return proposal;
 

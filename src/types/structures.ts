@@ -153,4 +153,5 @@ export interface ProposalProperties {
   scores: number[]; // scores per all the choices
   votes: number; // number of voters
   metadata?: TokenMetaData; // token meta data is stored in ipfs
+  quorum?: number;
 }
