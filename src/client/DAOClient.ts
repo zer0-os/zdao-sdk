@@ -381,6 +381,7 @@ class DAOClient implements zDAO {
         snapshot: Number(proposal.snapshot),
         scores: proposal.scores,
         votes: proposal.votes,
+        quorum: proposal.quorum,
       },
       {
         strategies: this.options.strategies,

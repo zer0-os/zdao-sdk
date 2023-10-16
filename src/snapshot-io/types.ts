@@ -98,6 +98,7 @@ export interface SnapshotProposal {
   snapshot: number; // snapshot block number
   scores: number[]; // scores per all the choices
   votes: number; // number of voters
+  quorum?: number;
 }
 
 export interface SnapshotProposalResponse {
